@@ -1,0 +1,1543 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schreib zurück! — Chatsprache &amp; Abkürzungen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F5F7FA;
+  --paper-warm:#FBFCFD;
+  --grid:#DCE4F0;
+  --grid-strong:#C6D3E6;
+  --ink:#1C2333;
+  --ink-soft:#57617A;
+  --tinte:#2947C8;
+  --tinte-deep:#1B32A0;
+  --tinte-wash:#E4E9FB;
+  --rot:#D93B2B;
+  --rot-wash:#FCEAE7;
+  --gruen:#127A55;
+  --gruen-wash:#E1F3EB;
+  --gold:#E0A020;
+  --shadow:0 1px 0 rgba(28,35,51,.06), 0 12px 30px -18px rgba(28,35,51,.45);
+  --radius:14px;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --hand:"Caveat","Segoe Script",cursive;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:26px 26px;
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+  padding:14px;
+  min-height:100vh;
+}
+.wrap{max-width:1080px;margin:0 auto}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  background:var(--paper-warm);
+  border:1px solid var(--grid-strong);
+  border-radius:var(--radius);
+  padding:10px 14px;margin-bottom:14px;box-shadow:var(--shadow);
+}
+.brand{font-family:var(--display);font-weight:800;font-size:1.05rem;letter-spacing:-.02em;margin-right:auto;display:flex;align-items:center;gap:9px}
+.brand .dot{width:11px;height:11px;border-radius:50%;background:var(--tinte);box-shadow:0 0 0 4px var(--tinte-wash)}
+.pips{display:flex;gap:5px;align-items:center}
+.pip{width:9px;height:9px;border-radius:50%;background:var(--grid-strong);transition:background .3s,transform .3s}
+.pip.done{background:var(--tinte)}
+.pip.now{background:var(--gold);transform:scale(1.45)}
+.score{font-family:var(--display);font-weight:600;font-size:.86rem;background:var(--tinte-wash);color:var(--tinte-deep);padding:5px 11px;border-radius:999px;white-space:nowrap}
+button{font-family:inherit;font-size:1rem;cursor:pointer}
+.mini{
+  font-family:var(--display);font-weight:600;font-size:.8rem;
+  background:transparent;border:1px solid var(--grid-strong);color:var(--ink-soft);
+  padding:6px 11px;border-radius:999px;transition:.2s;
+}
+.mini:hover{border-color:var(--tinte);color:var(--tinte)}
+.mini[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ---------- panels ---------- */
+.panel{
+  background:var(--paper-warm);
+  border:1px solid var(--grid-strong);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:26px;
+}
+.hidden{display:none !important}
+
+/* ---------- start ---------- */
+.hero{text-align:left;max-width:680px;margin-bottom:26px}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:.76rem;letter-spacing:.16em;text-transform:uppercase;color:var(--tinte);margin:0 0 10px}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(2rem,6vw,3.1rem);line-height:1.02;letter-spacing:-.035em;margin:0 0 6px}
+h1 em{font-style:normal;color:var(--tinte);position:relative;white-space:nowrap}
+h1 em::after{content:"";position:absolute;left:-2px;right:-2px;bottom:.06em;height:.32em;background:rgba(224,160,32,.35);z-index:-1;border-radius:2px}
+.lede{font-size:1.05rem;color:var(--ink-soft);margin:0 0 22px;max-width:52ch}
+.howto{list-style:none;padding:0;margin:0 0 24px;display:grid;gap:10px;max-width:56ch}
+.howto li{display:flex;gap:11px;align-items:flex-start;font-size:.94rem}
+.howto b{font-family:var(--display);font-weight:800;color:var(--tinte);flex:0 0 auto;min-width:1.6em}
+.namefield{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}
+label{font-family:var(--display);font-weight:600;font-size:.82rem;display:block;margin-bottom:5px;color:var(--ink-soft)}
+input[type=text]{
+  font-family:var(--body);font-size:1rem;padding:11px 13px;border-radius:10px;
+  border:1px solid var(--grid-strong);background:#fff;color:var(--ink);min-width:230px;
+}
+input[type=text].needed{border-color:var(--rot);background:var(--rot-wash);animation:nudge .4s ease}
+@keyframes nudge{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+input[type=text]:focus{outline:3px solid rgba(41,71,200,.28);outline-offset:1px;border-color:var(--tinte)}
+.btn{
+  font-family:var(--display);font-weight:800;font-size:1rem;letter-spacing:-.01em;
+  background:var(--tinte);color:#fff;border:none;padding:13px 24px;border-radius:11px;
+  transition:transform .15s, background .2s, box-shadow .2s;
+  box-shadow:0 4px 0 var(--tinte-deep);
+}
+.btn:hover{background:var(--tinte-deep)}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--tinte-deep)}
+.btn.ghost{background:#fff;color:var(--tinte);border:1.5px solid var(--tinte);box-shadow:0 4px 0 var(--tinte-wash)}
+.fineprint{font-size:.8rem;color:var(--ink-soft);margin-top:14px}
+.fineprint button{background:none;border:none;color:var(--tinte);text-decoration:underline;font-size:.8rem;padding:0}
+
+/* ---------- chat intro card ---------- */
+.introcard{max-width:520px;margin:6vh auto;text-align:center}
+.avatar{
+  width:70px;height:70px;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--display);font-weight:800;font-size:1.6rem;color:#fff;margin:0 auto 14px;
+  box-shadow:0 6px 18px -8px rgba(28,35,51,.6);
+}
+.introcard h2{font-family:var(--display);font-weight:800;font-size:1.9rem;margin:0 0 2px;letter-spacing:-.03em}
+.introcard .role{font-size:.85rem;color:var(--ink-soft);margin:0 0 16px;font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.introcard p.sit{font-size:1rem;color:var(--ink);margin:0 auto 22px;max-width:40ch}
+.warnbox{background:var(--rot-wash);border:1px dashed var(--rot);color:#8C2418;border-radius:11px;padding:11px 14px;font-size:.9rem;margin:0 auto 20px;max-width:42ch}
+
+/* ---------- chat layout ---------- */
+.chatgrid{display:grid;grid-template-columns:minmax(0,1fr) 258px;gap:0}
+.thread-col{padding-right:26px;min-width:0}
+.margin-col{
+  border-left:2px solid rgba(217,59,43,.5);
+  padding-left:20px;padding-top:4px;
+}
+.chathead{display:flex;align-items:center;gap:11px;padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid var(--grid)}
+.chathead .avatar{width:38px;height:38px;font-size:.9rem;margin:0;box-shadow:none}
+.chathead .who{font-family:var(--display);font-weight:800;font-size:1rem;line-height:1.15}
+.chathead .who span{display:block;font-weight:600;font-size:.72rem;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.08em}
+.thread{display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
+.row{display:flex;gap:8px;align-items:flex-end;max-width:82%}
+.row.them{align-self:flex-start}
+.row.me{align-self:flex-end;flex-direction:row-reverse}
+.tag{font-size:.68rem;color:var(--ink-soft);font-family:var(--display);font-weight:600;margin:0 0 3px 12px;letter-spacing:.04em}
+.bubble{
+  padding:10px 14px;border-radius:17px;font-size:.98rem;position:relative;
+  animation:pop .32s cubic-bezier(.2,1.2,.4,1) both;
+  word-wrap:break-word;overflow-wrap:anywhere;
+}
+.row.them .bubble{background:#fff;border:1px solid var(--grid-strong);border-bottom-left-radius:5px}
+.row.me .bubble{background:var(--tinte);color:#fff;border-bottom-right-radius:5px}
+.row.sys{align-self:center;max-width:100%}
+.row.sys .bubble{background:var(--tinte-wash);color:var(--tinte-deep);font-size:.85rem;text-align:center;border-radius:10px;font-family:var(--display);font-weight:600;animation:none}
+@keyframes pop{from{opacity:0;transform:translateY(9px) scale(.94)}to{opacity:1;transform:none}}
+.typing{display:inline-flex;gap:4px;padding:3px 2px}
+.typing i{width:7px;height:7px;border-radius:50%;background:var(--ink-soft);opacity:.55;animation:bounce 1.1s infinite}
+.typing i:nth-child(2){animation-delay:.16s}
+.typing i:nth-child(3){animation-delay:.32s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* abbreviations */
+.abbr{
+  font-weight:600;border-bottom:2px dotted currentColor;padding-bottom:1px;
+  cursor:default;background:none;border-left:none;border-right:none;border-top:none;
+  font-family:inherit;font-size:inherit;color:inherit;padding-left:0;padding-right:0;
+}
+.abbr.unlocked{cursor:pointer;border-bottom-style:solid;border-bottom-color:var(--gold)}
+.row.them .abbr.unlocked{background:rgba(224,160,32,.16);border-radius:4px 4px 0 0;padding:0 3px}
+.row.me .abbr.unlocked{background:rgba(255,255,255,.2);border-radius:4px 4px 0 0;padding:0 3px}
+.abbr.unlocked:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.unfold{
+  display:block;margin:7px 0 2px;background:#fff;color:var(--ink);
+  border:1px solid var(--gold);border-radius:9px;padding:8px 11px;font-size:.85rem;
+  transform-origin:top center;animation:unfold .3s ease both;
+}
+.unfold b{font-family:var(--display);font-weight:800;color:var(--tinte-deep)}
+.unfold .en{display:block;color:var(--ink-soft);font-size:.8rem;margin-top:2px}
+.unfold .reg{display:inline-block;margin-top:6px;font-size:.7rem;font-family:var(--display);font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+.reg-f{background:var(--tinte-wash);color:var(--tinte-deep)}
+.reg-n{background:var(--gruen-wash);color:var(--gruen)}
+.reg-x{background:var(--rot-wash);color:var(--rot)}
+@keyframes unfold{from{opacity:0;transform:scaleY(.4) translateY(-6px)}to{opacity:1;transform:none}}
+
+/* prompt + options */
+.prompt{font-family:var(--display);font-weight:600;font-size:.82rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 10px}
+.longform{background:#fff;border:1px dashed var(--grid-strong);border-radius:11px;padding:12px 14px;margin-bottom:14px;font-size:1rem}
+.options{display:grid;gap:9px;margin-bottom:6px}
+.opt{
+  position:relative;text-align:left;background:#fff;border:1.5px solid var(--grid-strong);
+  border-radius:13px;padding:12px 14px 12px 44px;font-size:.97rem;color:var(--ink);
+  transition:border-color .18s, transform .12s, background .18s;line-height:1.45;
+}
+.opt:hover:not(:disabled){border-color:var(--tinte);transform:translateX(2px)}
+.opt:focus-visible{outline:3px solid rgba(41,71,200,.3);outline-offset:2px}
+.opt .key{
+  position:absolute;left:12px;top:11px;width:22px;height:22px;border-radius:6px;
+  background:var(--tinte-wash);color:var(--tinte-deep);display:grid;place-items:center;
+  font-family:var(--display);font-weight:800;font-size:.78rem;
+}
+.opt:disabled{cursor:default;opacity:.95}
+.opt.wrong{border-color:var(--rot);background:var(--rot-wash)}
+.opt.wrong .key{background:var(--rot);color:#fff}
+.opt.right{border-color:var(--gruen);background:var(--gruen-wash)}
+.opt.right .key{background:var(--gruen);color:#fff}
+.opt.faded{opacity:.42}
+.squig{position:absolute;left:40px;right:10px;bottom:4px;height:9px;pointer-events:none;overflow:visible}
+.squig path{fill:none;stroke:var(--rot);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:420;stroke-dashoffset:420;animation:draw .55s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.stamp{
+  position:absolute;right:10px;top:50%;transform:translateY(-50%) rotate(-11deg);
+  font-family:var(--hand);font-size:1.4rem;color:var(--gruen);font-weight:700;
+  animation:stamp .35s cubic-bezier(.2,1.6,.4,1) both;
+}
+@keyframes stamp{from{opacity:0;transform:translateY(-50%) rotate(-11deg) scale(2.2)}to{opacity:1;transform:translateY(-50%) rotate(-11deg) scale(1)}}
+
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+
+/* margin notes */
+.margin-title{font-family:var(--display);font-weight:600;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;color:var(--rot);margin:0 0 12px}
+.note{
+  font-family:var(--hand);font-size:1.24rem;line-height:1.32;color:var(--rot);
+  margin-bottom:18px;animation:inkin .45s ease both;
+}
+.note.good{color:var(--gruen)}
+.note .lead{display:block;font-family:var(--display);font-weight:800;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;opacity:.85}
+@keyframes inkin{from{opacity:0;transform:translateY(7px) rotate(-1.4deg)}to{opacity:1;transform:none}}
+.margin-empty{font-family:var(--hand);font-size:1.15rem;color:var(--grid-strong)}
+
+/* ---------- chat complete ---------- */
+.plane{font-size:2.6rem;animation:fly 1s ease both}
+@keyframes fly{from{opacity:0;transform:translate(-40px,20px) rotate(-18deg)}to{opacity:1;transform:none}}
+
+/* ---------- end ---------- */
+.scorebig{font-family:var(--display);font-weight:800;font-size:clamp(2.6rem,9vw,4.4rem);line-height:1;letter-spacing:-.04em;color:var(--tinte)}
+.meter{height:12px;background:var(--grid);border-radius:999px;overflow:hidden;margin:14px 0 6px;max-width:440px}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,var(--tinte),var(--gold));width:0;transition:width 1.1s cubic-bezier(.2,.9,.3,1)}
+.badge{display:inline-block;font-family:var(--display);font-weight:800;background:var(--gold);color:#3B2A05;padding:7px 15px;border-radius:999px;font-size:.92rem;margin-top:10px}
+.codebox{
+  background:var(--ink);color:#fff;border-radius:13px;padding:18px 20px;margin:22px 0;
+  display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+}
+.codebox .lbl{font-family:var(--display);font-weight:600;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;opacity:.65;display:block;margin-bottom:3px}
+.codebox .val{font-family:var(--display);font-weight:800;font-size:1.5rem;letter-spacing:.09em}
+.codebox button{margin-left:auto;background:#fff;color:var(--ink);border:none;padding:9px 15px;border-radius:9px;font-family:var(--display);font-weight:700;font-size:.85rem}
+h3{font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.02em;margin:26px 0 10px}
+.review{display:grid;gap:9px}
+.review-item{background:#fff;border:1px solid var(--grid-strong);border-left:4px solid var(--rot);border-radius:10px;padding:11px 14px;font-size:.92rem}
+.review-item b{font-family:var(--display);font-weight:800;display:block;font-size:.8rem;color:var(--rot);letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+
+/* ---------- glossary drawer ---------- */
+.scrim{position:fixed;inset:0;background:rgba(28,35,51,.42);backdrop-filter:blur(2px);z-index:40;animation:fade .25s both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.drawer{
+  position:fixed;right:0;top:0;bottom:0;width:min(420px,92vw);background:var(--paper-warm);
+  z-index:41;box-shadow:-14px 0 40px -20px rgba(0,0,0,.5);padding:20px;overflow-y:auto;
+  animation:slidein .3s cubic-bezier(.2,.9,.3,1) both;
+}
+@keyframes slidein{from{transform:translateX(100%)}to{transform:none}}
+.drawer h2{font-family:var(--display);font-weight:800;font-size:1.3rem;margin:0 0 4px;letter-spacing:-.02em}
+.drawer .sub{font-size:.85rem;color:var(--ink-soft);margin:0 0 16px}
+.gitem{border-bottom:1px solid var(--grid);padding:11px 0}
+.gitem .k{font-family:var(--display);font-weight:800;color:var(--tinte-deep);font-size:1rem}
+.gitem .f{font-size:.95rem}
+.gitem .e{font-size:.82rem;color:var(--ink-soft)}
+.gitem .reg{display:inline-block;margin-top:5px;font-size:.68rem;font-family:var(--display);font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+.locked-note{font-size:.85rem;color:var(--ink-soft);font-style:italic}
+.closeX{position:absolute;top:16px;right:18px;background:none;border:none;font-size:1.5rem;line-height:1;color:var(--ink-soft)}
+
+/* teacher panel */
+.teacher{margin-top:18px;background:#fff;border:1px solid var(--grid-strong);border-radius:12px;padding:16px}
+.teacher .row2{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.verdict{margin-top:11px;font-size:.92rem;font-family:var(--display);font-weight:600}
+.verdict.ok{color:var(--gruen)}
+.verdict.no{color:var(--rot)}
+
+/* ---------- hub ---------- */
+.hubhead{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;margin-bottom:20px}
+.hubhead > div:first-child{flex:1 1 320px}
+.hubtitle{font-family:var(--display);font-weight:800;font-size:clamp(1.6rem,4.5vw,2.3rem);letter-spacing:-.03em;margin:0 0 6px}
+.chatlist{display:grid;gap:9px}
+.chatrow{
+  display:flex;gap:13px;align-items:center;width:100%;text-align:left;
+  background:#fff;border:1.5px solid var(--grid-strong);border-radius:13px;padding:12px 14px;
+  transition:border-color .18s, transform .12s;font-size:1rem;color:var(--ink);
+}
+.chatrow:hover{border-color:var(--tinte);transform:translateX(2px)}
+.chatrow:focus-visible{outline:3px solid rgba(41,71,200,.3);outline-offset:2px}
+.chatrow .avatar{width:44px;height:44px;font-size:1rem;margin:0;flex:0 0 auto;box-shadow:none}
+.chatrow .meta{flex:1 1 auto;min-width:0}
+.chatrow .nm{display:block;font-family:var(--display);font-weight:800;font-size:1.02rem;letter-spacing:-.01em}
+.chatrow .tp{display:block;font-size:.86rem;color:var(--ink-soft);margin-bottom:4px}
+.chatrow .terms{display:block;font-family:var(--display);font-weight:600;font-size:.74rem;color:var(--tinte);letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chatrow .status{
+  flex:0 0 auto;font-family:var(--display);font-weight:800;font-size:.8rem;
+  padding:6px 11px;border-radius:999px;background:var(--grid);color:var(--ink-soft);white-space:nowrap;
+}
+.chatrow.played{border-color:var(--gruen)}
+.chatrow.played .status{background:var(--gruen-wash);color:var(--gruen)}
+.chatrow.played .replay{display:block;font-size:.68rem;font-family:var(--display);font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);margin-top:3px;text-align:center}
+.chatrow .flag{
+  display:inline-block;font-family:var(--display);font-weight:700;font-size:.66rem;letter-spacing:.08em;
+  text-transform:uppercase;background:var(--rot-wash);color:var(--rot);padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:2px;
+}
+.breakdown{display:grid;gap:7px;margin-top:6px}
+.bd-row{display:flex;gap:10px;align-items:center;font-size:.9rem;background:#fff;border:1px solid var(--grid-strong);border-radius:9px;padding:8px 12px}
+.bd-row .nm{font-family:var(--display);font-weight:700;flex:1 1 auto}
+.bd-row .sc{font-family:var(--display);font-weight:800;color:var(--tinte-deep)}
+.bd-row.skipped{opacity:.55}
+.bd-row.skipped .sc{color:var(--ink-soft)}
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (max-width:820px){
+  .chatgrid{grid-template-columns:1fr}
+  .thread-col{padding-right:0}
+  .margin-col{border-left:none;border-top:2px solid rgba(217,59,43,.5);padding-left:0;padding-top:16px;margin-top:20px}
+  .panel{padding:18px}
+  body{padding:8px}
+  .row{max-width:92%}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span><span>Schreib zurück!</span></div>
+    <div class="pips" id="pips" aria-hidden="true"></div>
+    <div class="score" id="score">0 / 48</div>
+    <button class="mini" id="langBtn" aria-pressed="false">EN</button>
+    <button class="mini" id="glossBtn">📖 <span data-t="gloss">Wörterbuch</span></button>
+    <button class="mini" id="restartBtn" data-t="restart">Neu starten</button>
+  </div>
+
+  <!-- START -->
+  <section class="panel" id="startScreen">
+    <div class="hero">
+      <p class="eyebrow" data-t="eyebrow">Deutsch · Chatsprache · Register</p>
+      <h1><span data-t="h1a">Dein Handy </span><em data-t="h1b">vibriert.</em></h1>
+      <p class="lede" data-t="lede">Fünf Chats, 24 Nachrichten, ein Problem: Deine Freunde schreiben in Kürzeln. Lies mit, antworte richtig — und merk dir, bei wem du das lieber lässt.</p>
+      <ul class="howto">
+        <li><b>1</b><span data-t="how1">Lies die eingehende Nachricht. Gepunktete Wörter sind Slang oder Abkürzungen.</span></li>
+        <li><b>2</b><span data-t="how2">Wähl die beste Antwort — mit Maus, Tab/Enter oder den Tasten 1, 2, 3.</span></li>
+        <li><b>3</b><span data-t="how3">Erster Versuch richtig: 2 Punkte. Zweiter Versuch: 1 Punkt.</span></li>
+        <li><b>4</b><span data-t="how4">Nach jeder Runde kannst du die Kürzel antippen und siehst sie im Wörterbuch.</span></li>
+      </ul>
+      <div class="namefield">
+        <div>
+          <label for="nameIn" data-t="namelbl">Dein Name (für den Abschlusscode)</label>
+          <input type="text" id="nameIn" maxlength="40" autocomplete="off" placeholder="Vorname Nachname">
+        </div>
+        <button class="btn" id="playAllBtn" data-t="playall">▶ Alle fünf spielen</button>
+      </div>
+      <p class="fineprint" style="margin-bottom:26px">
+        <span data-t="fine">Nichts wird gespeichert oder gesendet. Den Code am Ende gibst du in Canvas ab.</span>
+      </p>
+    </div>
+
+    <h3 style="margin-top:0" data-t="orsingle">Oder einzelne Chats — jeder dauert ein paar Minuten:</h3>
+    <div class="chatlist" id="chatlist"></div>
+
+    <div class="codebox hidden" id="hubCodeBox">
+      <div><span class="lbl" data-t="codelbl">Abschlusscode</span><span class="val" id="hubCode">—</span></div>
+      <button id="hubCopyBtn" data-t="copy">Kopieren</button>
+    </div>
+
+    <p class="fineprint">
+      <span id="hubProgress"></span>
+      <button id="teachToggle" data-t="teachlink">Für Lehrkräfte</button>
+    </p>
+    <div class="teacher hidden" id="teachPanel">
+      <p style="margin:0 0 10px;font-size:.9rem" data-t="teachintro"><b>Code prüfen.</b> Name und Abschlusscode der Schülerin/des Schülers eingeben. Der Code ist an die exakte Namensschreibung gekoppelt.</p>
+      <div class="row2">
+        <div><label for="vName" data-t="vname">Name</label><input type="text" id="vName" autocomplete="off"></div>
+        <div><label for="vCode" data-t="vcode">Code</label><input type="text" id="vCode" autocomplete="off" placeholder="SLNG-00-00-XXXX"></div>
+        <button class="mini" id="vBtn" data-t="vcheck">Prüfen</button>
+      </div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+  </section>
+
+  <!-- CHAT INTRO -->
+  <section class="panel hidden" id="introScreen">
+    <div class="introcard">
+      <div class="avatar" id="introAv"></div>
+      <h2 id="introName"></h2>
+      <p class="role" id="introRole"></p>
+      <p class="sit" id="introSit"></p>
+      <div class="warnbox hidden" id="introWarn"></div>
+      <button class="btn" id="introBtn" data-t="open">Chat öffnen</button>
+    </div>
+  </section>
+
+  <!-- CHAT -->
+  <section class="panel hidden" id="chatScreen">
+    <div class="chatgrid">
+      <div class="thread-col">
+        <div class="chathead">
+          <div class="avatar" id="headAv"></div>
+          <div class="who" id="headName">—<span id="headRole"></span></div>
+        </div>
+        <div class="thread" id="thread" aria-live="polite" aria-atomic="false"></div>
+        <div id="qBlock">
+          <p class="prompt" id="qPrompt" data-t="qprompt">Was schreibst du zurück?</p>
+          <div class="longform hidden" id="longform"></div>
+          <div class="options" id="options" role="group" aria-label="Antwortmöglichkeiten"></div>
+          <div class="actions" id="actions"></div>
+        </div>
+      </div>
+      <aside class="margin-col">
+        <p class="margin-title" data-t="korr">Korrekturrand</p>
+        <div id="notes"><p class="margin-empty" data-t="marginempty">noch nichts angestrichen …</p></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- CHAT DONE -->
+  <section class="panel hidden" id="doneScreen">
+    <div class="introcard">
+      <div class="plane">✈️</div>
+      <h2 id="doneTitle"></h2>
+      <div><span class="badge" id="doneScore"></span></div>
+      <p class="sit" id="doneText" style="margin-top:16px"></p>
+      <div class="actions" style="justify-content:center">
+        <button class="btn" id="doneBtn" data-t="next">Weiter</button>
+        <button class="btn ghost hidden" id="doneRetry" data-t="replayep">Chat wiederholen</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- END -->
+  <section class="panel hidden" id="endScreen">
+    <p class="eyebrow" data-t="endeyebrow">Alle Chats beantwortet</p>
+    <div class="scorebig" id="endScore">0 %</div>
+    <div class="meter"><i id="endMeter"></i></div>
+    <p id="endLine" style="color:var(--ink-soft);margin:6px 0 0"></p>
+    <div><span class="badge" id="endBadge"></span></div>
+    <div class="codebox">
+      <div><span class="lbl" data-t="codelbl">Abschlusscode</span><span class="val" id="endCode">—</span></div>
+      <button id="copyBtn" data-t="copy">Kopieren</button>
+    </div>
+    <h3 data-t="breakdownh">Die einzelnen Chats</h3>
+    <div class="breakdown" id="breakdown"></div>
+    <h3 data-t="reviewh">Zum Wiederholen</h3>
+    <div class="review" id="review"></div>
+    <div class="actions">
+      <button class="btn" id="againBtn" data-t="tohub">Zur Übersicht</button>
+      <button class="btn ghost" id="endGloss" data-t="opengloss">Wörterbuch öffnen</button>
+    </div>
+  </section>
+
+</div>
+
+<div id="drawerHost"></div>
+<div class="sr" id="srLive" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   Schreib zurück! — German texting slang trainer
+   Single file. No storage APIs. Canvas-iframe safe.
+   ============================================================ */
+
+/* ---------- glossary ---------- */
+/* reg: f = nur unter Freunden | n = neutral/überall | x = Vorsicht */
+const GLOSSARY = {
+  "wmd":   {f:"was machst du?", e:"what are you doing?", reg:"f"},
+  "ka":    {f:"keine Ahnung", e:"no idea", reg:"f"},
+  "kp":    {f:"kein Plan (auch: kein Problem)", e:"no clue / no problem", reg:"f"},
+  "vllt":  {f:"vielleicht (auch: vlt)", e:"maybe", reg:"f"},
+  "bock":  {f:"Bock haben = Lust haben", e:"to feel like / to be up for", reg:"f"},
+  "lw":    {f:"langweilig", e:"boring", reg:"f"},
+  "wayne": {f:"wen interessiert's? / egal", e:"who cares", reg:"x"},
+  "bd":    {f:"bis dann", e:"see you then", reg:"f"},
+  "bb":    {f:"bis bald", e:"see you soon", reg:"f"},
+  "safe":  {f:"auf jeden Fall, klar", e:"for sure, definitely", reg:"f"},
+  "iwie":  {f:"irgendwie", e:"somehow", reg:"f"},
+  "iwas":  {f:"irgendwas", e:"something", reg:"f"},
+  "iwann": {f:"irgendwann", e:"sometime", reg:"f"},
+  "krass": {f:"extrem — positiv oder negativ", e:"intense / wild (good or bad)", reg:"f"},
+  "alter": {f:"Anrede unter Freunden, wie „Mann!“ (auch: Digga)", e:"dude, mate", reg:"x"},
+  "gn8":   {f:"gute Nacht (8 = „acht“)", e:"good night", reg:"f"},
+  "k":     {f:"ok — allein geschrieben wirkt es kalt", e:"ok (curt on its own)", reg:"x"},
+  "hdl":   {f:"hab dich lieb", e:"love you (platonic)", reg:"f"},
+  "hdgdl": {f:"hab dich ganz doll lieb", e:"love you loads (platonic)", reg:"f"},
+  "mmn":   {f:"meiner Meinung nach (auch: mMn)", e:"in my opinion", reg:"n"},
+  "ne":    {f:"…, ne? = Rückfrage wie „oder?“", e:"…, right?", reg:"f"},
+  "lg":    {f:"liebe Grüße", e:"kind regards (warm)", reg:"n"},
+  "mfg":   {f:"mit freundlichen Grüßen", e:"yours sincerely", reg:"n"},
+  "we":    {f:"Wochenende", e:"weekend", reg:"f"},
+  "jz":    {f:"jetzt (auch: jetz)", e:"now", reg:"f"},
+  "sry":   {f:"sorry, entschuldige", e:"sorry", reg:"f"},
+  "kk":    {f:"okay okay / alles klar", e:"okay okay", reg:"f"}
+};
+
+/* ---------- chats ---------- */
+const CHATS = [
+  {
+    name:"Lena", role:"beste Freundin", roleEn:"best friend", color:"#2947C8", av:"L",
+    topic:"Nachmittagspläne", topicEn:"Afternoon plans",
+    sit:"Freitag, 15:40. Der Unterricht ist vorbei und dein Handy vibriert schon in der Tasche.",
+    sitEn:"Friday, 3:40 pm. Class is over and your phone is already buzzing in your pocket.",
+    done:"Kino steht. Lena tippt jetzt vermutlich schon im Gruppenchat weiter.",
+    doneEn:"Cinema's on. Lena is probably already typing in the group chat.",
+    turns:[
+      { msgs:[["them","Heyyy 👋"],["them","[[wmd]]?"]],
+        options:[
+          "Mir geht's gut, danke! Und dir?",
+          "Nix Besonderes, ich chill grad zu Hause. Und du?",
+          "Guten Tag Lena, ich befinde mich derzeit in meiner Wohnung."
+        ], correct:1, terms:["wmd"],
+        good:"„wmd“ = was machst du? Kurz, locker, mit Gegenfrage — perfekt.",
+        goodEn:"„wmd“ = what are you doing? Short, casual, question back — perfect.",
+        bad:"„wmd“ ist nicht „wie geht's“. Es heißt was machst du? — erzähl also, was du gerade tust. Und Lena ist deine Freundin, kein Amt.",
+        badEn:"„wmd“ isn't „how are you“. It means what are you doing? — so say what you're up to. And Lena is your friend, not an office."
+      },
+      { msgs:[["them","Hast du [[Bock]] auf Kino heute Abend? 🎬"]],
+        options:[
+          "Nein danke, ich esse kein Fleisch 🐐",
+          "[[kA]], [[vllt]] — wann denn?",
+          "Ja gern, zwei Bock bitte 🍺"
+        ], correct:1, terms:["bock","ka","vllt"],
+        good:"Genau: Bock haben = Lust haben. „kA, vllt“ hält dir noch alles offen.",
+        goodEn:"Right: Bock haben = to feel like doing something. „kA, vllt“ keeps your options open.",
+        bad:"„Bock“ ist hier kein Tier und kein Bier: Bock haben auf etwas = Lust haben. Das Gegenteil: „null Bock“.",
+        badEn:"„Bock“ here is neither a goat nor a beer: Bock haben auf etwas = to feel like doing it. Opposite: „null Bock“."
+      },
+      { msgs:[["them","Um 8. Aber alle sagen, der Film ist voll [[lw]] 😐"]],
+        options:[
+          "Super, dann freu ich mich richtig 🍿",
+          "Langweilig? Dann lass uns was anderes gucken 😄",
+          "Ist „lw“ ein Horrorfilm?"
+        ], correct:1, terms:["lw"],
+        good:"lw = langweilig. Du hast Lenas Warnung verstanden und was vorgeschlagen.",
+        goodEn:"lw = boring. You caught Lena's warning and offered an alternative.",
+        bad:"lw = langweilig. Zusammen mit dem 😐 ist klar: Lena hat keine Lust auf den Film.",
+        badEn:"lw = boring. Together with the 😐 it's clear: Lena isn't sold on the film."
+      },
+      { msgs:[["them","[[kp]], mir egal. [[Wayne]] 🤷"]],
+        options:[
+          "Wer ist Wayne? Kommt der mit?",
+          "Ok, dann entscheide ich: der Actionfilm 😎",
+          "Sei doch nicht gleich sauer 😔"
+        ], correct:1, terms:["kp","wayne"],
+        good:"„wayne“ heißt „egal“ — also übernimmst du. Genau die richtige Reaktion.",
+        goodEn:"„wayne“ means „whatever“ — so you take charge. Exactly the right move.",
+        bad:"„Wayne“ ist keine Person. Es kommt von „Wen interessiert's?“ und heißt: völlig egal. kp = kein Plan. Lena ist nicht sauer, ihr ist die Entscheidung nur egal.",
+        badEn:"„Wayne“ isn't a person. It comes from „who cares?“ and means: doesn't matter. kp = no clue. Lena isn't cross, she just doesn't mind."
+      },
+      { msgs:[["them","Passt. [[Bd]]! 👋"]],
+        options:[
+          "Bin dabei!",
+          "Alles klar, bis dann! 👋",
+          "Bitte danke gerne?"
+        ], correct:1, terms:["bd","bb"],
+        good:"bd = bis dann. Und bb = bis bald — die beiden verwechselt man leicht.",
+        goodEn:"bd = see you then. And bb = see you soon — easy to mix up.",
+        bad:"bd = bis dann, nicht „bin dabei“. Merk dir das Paar: bd = bis dann, bb = bis bald.",
+        badEn:"bd = see you then, not „I'm in“. Remember the pair: bd = see you then, bb = see you soon."
+      }
+    ]
+  },
+
+  {
+    name:"Die Bande", role:"Gruppenchat · 4 Personen", roleEn:"group chat · 4 people", color:"#127A55", av:"DB",
+    topic:"Eine Party planen — drei Leute tippen gleichzeitig", topicEn:"Planning a party — three people typing at once",
+    sit:"Im Gruppenchat wird eine Party geplant. Drei Leute schreiben gleichzeitig — und niemand schreibt Wörter zu Ende.",
+    sitEn:"The group chat is planning a party. Three people typing at once — and nobody finishes a word.",
+    done:"Samstag steht. Luftballons sind dein Problem.",
+    doneEn:"Saturday is set. Balloons are now your problem.",
+    turns:[
+      { msgs:[["them","Leute! Sa Party bei mir, ab 7. Wer kommt? 🎉","Jonas"],["them","[[Safe]]! 🙌","Aylin"]],
+        options:[
+          "Wieso safe? Ist bei Jonas was passiert?",
+          "Ich bin auch dabei! 🙌",
+          "Ok, ich schau mal nach, ob es dort sicher ist."
+        ], correct:1, terms:["safe"],
+        good:"safe = auf jeden Fall. Aylin sagt zu, du auch.",
+        goodEn:"safe = definitely. Aylin's in, so are you.",
+        bad:"„Safe“ ist aus dem Englischen entlehnt, heißt im Chat aber auf jeden Fall / klar. Mit Sicherheit hat es nichts zu tun.",
+        badEn:"„Safe“ is borrowed from English but in chat means definitely / for sure. Nothing to do with safety."
+      },
+      { msgs:[["them","Kann [[iwie]] erst ab 9, muss noch arbeiten 😩","Mo"]],
+        options:[
+          "Wo ist denn „iwie“? Kenn ich nicht.",
+          "Kein Ding, wir warten auf dich 👍",
+          "Also kommst du gar nicht?"
+        ], correct:1, terms:["iwie","iwann","iwas"],
+        good:"iwie = irgendwie. Die ganze Familie funktioniert so: iwann, iwo, iwas, iwer.",
+        goodEn:"iwie = somehow. The whole family works this way: iwann, iwo, iwas, iwer.",
+        bad:"iw… steht immer für irgend…: iwie = irgendwie, iwann = irgendwann, iwo = irgendwo, iwas = irgendwas. Mo kommt also — nur später.",
+        badEn:"iw… always stands for irgend…: iwie = somehow, iwann = sometime, iwo = somewhere, iwas = something. So Mo is coming, just later."
+      },
+      { msgs:[["them","Jonas, deine letzte Playlist war echt [[krass]] 🔥","Aylin"]],
+        options:[
+          "Ja, war echt schlimm 😬",
+          "Stimmt, die war mega! Machst du wieder eine? 🎶",
+          "Krass? Was hat die denn gekostet?"
+        ], correct:1, terms:["krass"],
+        good:"krass heißt extrem — ob gut oder schlecht, sagt der Kontext. Das 🔥 macht es eindeutig.",
+        goodEn:"krass means extreme — good or bad depends on context. The 🔥 settles it.",
+        bad:"krass kann beides sein: „krass gut“ oder „krass schlimm“. Hier zeigt das 🔥, dass Aylin die Playlist gefeiert hat.",
+        badEn:"krass can go either way: „krass good“ or „krass awful“. Here the 🔥 shows Aylin loved the playlist."
+      },
+      { msgs:[["them","[[Alter]], ich hab die Deko vergessen 💀","Jonas"]],
+        options:[
+          "Wen nennst du hier alt?! 😠",
+          "Kein Ding, ich bring Luftballons mit 🎈",
+          "Wie alt bist du denn geworden?"
+        ], correct:1, terms:["alter"],
+        good:"„Alter“ ist eine Anrede unter Freunden, kein Kommentar zum Geburtsjahr. 💀 heißt hier: „ich sterb vor Fremdscham“.",
+        goodEn:"„Alter“ is how friends address each other, not a comment on age. 💀 here means „I'm dying of embarrassment“.",
+        bad:"„Alter“ (und „Digga“) heißt ungefähr „Mann!“ — Anrede unter engen Freunden, niemals bei Fremden oder Lehrkräften. Und 💀 steht für Lachen oder Fremdscham, nicht für Tod.",
+        badEn:"„Alter“ (and „Digga“) roughly means „dude“ — for close friends only, never strangers or teachers. And 💀 signals laughing or cringe, not death."
+      },
+      { msgs:[["them","Top. Bis Sa dann! [[Gn8]] 🌙","Jonas"]],
+        options:[
+          "Ich bin nicht 8 Jahre alt 😅",
+          "Gute Nacht! 😴",
+          "Wer hat denn was von 8 Uhr gesagt?"
+        ], correct:1, terms:["gn8"],
+        good:"gn8 = gute Nacht. Die 8 liest man als „acht“ — genau wie in 8ung = Achtung.",
+        goodEn:"gn8 = good night. The 8 is read as „acht“ — same trick as 8ung = Achtung.",
+        bad:"Zahlen ersetzen im Chat Silben: gn8 = gute N-acht, 8ung = Acht-ung. Keine Uhrzeit, kein Alter.",
+        badEn:"Digits replace syllables in chat: gn8 = gute N-acht, 8ung = Acht-ung. Not a time, not an age."
+      }
+    ]
+  },
+
+  {
+    name:"Aylin", role:"Freundin", roleEn:"friend", color:"#B0471E", av:"A",
+    topic:"Ein Missverständnis — Tonfall statt Vokabeln", topicEn:"A misunderstanding — tone, not vocabulary",
+    sit:"Aylin schreibt am nächsten Morgen. Sie klingt vorsichtig — dabei geht es um einen einzigen Buchstaben.",
+    sitEn:"Aylin writes the next morning. She sounds careful — and it's all about a single letter.",
+    done:"Wieder alles gut. Ein Buchstabe kann viel kaputt machen.",
+    doneEn:"All good again. One letter can do a lot of damage.",
+    turns:[
+      { msgs:[["them","Bist du sauer auf mich?"],["them","Du hast gestern nur „[[k]]“ geschrieben 😢"]],
+        options:[
+          "k",
+          "Nee, überhaupt nicht! Sorry, ich war in Eile — bei uns ist alles gut 💛",
+          "Ja."
+        ], correct:1, terms:["k","kk"],
+        good:"Genau. Ein einzelnes „k“ kommt kalt an — mit einem Satz und einem Emoji ist es sofort freundlich.",
+        goodEn:"Exactly. A lone „k“ lands cold — one sentence plus an emoji fixes it instantly.",
+        bad:"„k“ allein wirkt im Deutschen genauso schroff wie im Englischen. Wenn du kurz antworten willst, mach ein Wort oder Emoji dran: „kk 😊“, „alles klar 👍“.",
+        badEn:"A lone „k“ reads just as curt in German as in English. If you want to be brief, add a word or emoji: „kk 😊“, „alles klar 👍“."
+      },
+      { msgs:[["them","Puh. Ich dachte, [[iwas]] stimmt nicht zwischen uns."],["them","[[Hdl]] 🥰"]],
+        options:[
+          "Ich hab leider kein Hundefutter da 🐶",
+          "Hab dich auch lieb! ❤️",
+          "Vielen Dank, ebenso mit freundlichen Grüßen."
+        ], correct:1, terms:["hdl","hdgdl"],
+        good:"hdl = hab dich lieb. Freundschaftlich, warm — und man antwortet in derselben Tonlage.",
+        goodEn:"hdl = love you (platonic). Warm and friendly — and you answer in the same key.",
+        bad:"hdl = hab dich lieb, hdgdl = hab dich ganz doll lieb. Das ist Freundschaft und Familie, nicht „ich liebe dich“ — und ganz sicher nicht Briefsprache.",
+        badEn:"hdl = love you, hdgdl = love you loads. Friends and family — not „I'm in love with you“, and definitely not letter language."
+      },
+      { msgs:[["them","Kommst du morgen mit in die Stadt? [[Mmn]] brauchst du dringend neue Schuhe 😅"]],
+        options:[
+          "Mmn? Ist das ein Laden im Zentrum?",
+          "Meiner Meinung nach nicht 😄 Aber ich komm trotzdem mit!",
+          "Mmh, ich hab auch Hunger."
+        ], correct:1, terms:["mmn"],
+        good:"mmn = meiner Meinung nach. Du hast die Formel erkannt und gleich selbst benutzt.",
+        goodEn:"mmn = in my opinion. You spotted the formula and used it right back.",
+        bad:"mmn (auch mMn) = meiner Meinung nach, das deutsche „imo“. Aylin sagt also, was sie denkt — kein Ort, kein Geräusch.",
+        badEn:"mmn (also mMn) = in my opinion, the German „imo“. Aylin is stating her view — not a place, not a sound."
+      },
+      { msgs:[["them","Wir treffen uns um 3, [[ne]]?"]],
+        options:[
+          "Nein.",
+          "Ja genau, um 3 👍",
+          "Ne, ne, ne — sag doch mal was."
+        ], correct:1, terms:["ne"],
+        good:"„…, ne?“ ist eine Rückfrage: „oder?“, „nicht wahr?“. Regional auch gell (Süden) oder wa (Berlin).",
+        goodEn:"„…, ne?“ is a tag question: „right?“, „isn't it?“. Regionally also gell (south) or wa (Berlin).",
+        bad:"Vorsicht: „ne“ am Satzanfang heißt nein — am Satzende heißt es „oder?“. Aylin fragt hier nur nach, ob 3 Uhr stimmt.",
+        badEn:"Careful: „ne“ at the start means no — at the end it means „right?“. Aylin is just checking that 3 o'clock is right."
+      },
+      { msgs:[["them","Super. [[Bb]] und [[lg]] 💛"]],
+        options:[
+          "Bitte bitte!",
+          "Bis bald, liebe Grüße zurück! 😊",
+          "Baby? 😳"
+        ], correct:1, terms:["bb","lg","mfg"],
+        good:"bb = bis bald, lg = liebe Grüße. Warm, aber nicht formell — dafür gäbe es MfG.",
+        goodEn:"bb = see you soon, lg = kind regards. Warm but not formal — that would be MfG.",
+        bad:"bb = bis bald, lg = liebe Grüße. Merk dir die Grußleiter: hdl (sehr nah) → lg (freundlich) → mfg (formell).",
+        badEn:"bb = see you soon, lg = kind regards. Remember the ladder: hdl (very close) → lg (friendly) → mfg (formal)."
+      }
+    ]
+  },
+
+  {
+    name:"Frau Vogel", role:"deine Deutschlehrerin", roleEn:"your German teacher", color:"#3C4658", av:"FV",
+    topic:"E-Mail an die Lehrerin — Siezen und Register", topicEn:"Emailing your teacher — Sie and register",
+    sit:"Neue Nachricht — aber diesmal nicht von einer Freundin. Frau Vogel antwortet auf deine E-Mail.",
+    sitEn:"New message — but not from a friend this time. Frau Vogel is replying to your email.",
+    warn:"Achtung: Hier wird gesiezt. Alles, was du bis jetzt gelernt hast, gilt hier NICHT.",
+    warnEn:"Careful: this is the formal Sie. Everything you've learned so far does NOT apply here.",
+    done:"Peinlich, aber gerettet. Register ist keine Feinheit — es ist die halbe Nachricht.",
+    doneEn:"Awkward, but salvaged. Register isn't a nicety — it's half the message.",
+    turns:[
+      { msgs:[["them","Guten Tag! Ich habe Ihre E-Mail erhalten. Passt Ihnen morgen um 14 Uhr?"]],
+        options:[
+          "Jo safe, passt 👍",
+          "Guten Tag! Ja, 14 Uhr passt mir gut. Vielen Dank.",
+          "kA, vllt"
+        ], correct:1, terms:["mfg"],
+        good:"Richtig: beim Siezen ganze Sätze, keine Kürzel, keine Emojis.",
+        goodEn:"Correct: with Sie you use full sentences, no abbreviations, no emojis.",
+        bad:"Sobald jemand Sie schreibt, sind Kürzel und Emojis raus. Slang wirkt hier nicht locker, sondern respektlos.",
+        badEn:"The moment someone uses Sie, abbreviations and emojis are out. Slang doesn't read as relaxed here — it reads as rude."
+      },
+      { msgs:[["them","Sehr gut. Bringen Sie bitte Ihr Vokabelheft mit."]],
+        options:[
+          "kk 👌",
+          "In Ordnung, ich bringe es mit.",
+          "Hdl!"
+        ], correct:1, terms:["kk","hdl"],
+        good:"Sachlich, vollständig, freundlich. Genau die richtige Länge.",
+        goodEn:"Plain, complete, polite. Exactly the right length.",
+        bad:"„hdl“ an eine Lehrkraft ist ein Klassiker — leider der falsche. Kürzel wie kk oder hdl sind ausschließlich für enge Freunde und Familie.",
+        badEn:"„hdl“ to a teacher is a classic — the wrong kind. Abbreviations like kk or hdl are strictly for close friends and family."
+      },
+      { msgs:[["them","Bis morgen dann."]],
+        options:[
+          "Lg, hdgdl 💛",
+          "Vielen Dank, bis morgen. Mit freundlichen Grüßen",
+          "Bb 👋"
+        ], correct:1, terms:["mfg","lg"],
+        good:"Mit freundlichen Grüßen ist der Standard. In echten Briefen und Bewerbungen schreibt man ihn aus — „MfG“ wirkt schnell faul.",
+        goodEn:"Mit freundlichen Grüßen is the standard. In real letters and applications, spell it out — „MfG“ can read as lazy.",
+        bad:"Die Grußformel verrät das Register sofort: hdgdl (sehr nah) → lg (freundlich) → mit freundlichen Grüßen (formell). Bei einer Lehrkraft nimmst du die letzte.",
+        badEn:"The sign-off gives away the register instantly: hdgdl (very close) → lg (friendly) → mit freundlichen Grüßen (formal). With a teacher, take the last one."
+      },
+      { msgs:[["sys","Zwei Minuten später. Falscher Chat."],["me","[[Alter]], ich kann morgen doch nicht, so ein Mist 💀"],["them","Wie bitte?"]],
+        options:[
+          "sry falscher chat lol",
+          "Entschuldigen Sie bitte, die Nachricht war nicht für Sie bestimmt. Ich melde mich gleich noch einmal richtig.",
+          "Ignorieren Sie das einfach."
+        ], correct:1, terms:["sry"],
+        good:"Die Reparatur läuft im selben Register wie der Rest: Siezen, ganzer Satz, kurze Entschuldigung, weiter.",
+        goodEn:"The repair happens in the same register as the rest: Sie, full sentence, brief apology, move on.",
+        bad:"Panik ist verständlich — aber jetzt erst recht nicht ins Du und in den Slang rutschen. Ruhig, gesiezt, ein Satz Entschuldigung, dann die richtige Nachricht.",
+        badEn:"Panic is understandable — but this is the worst moment to slip into du and slang. Calm, formal, one sentence of apology, then the real message."
+      }
+    ]
+  },
+
+  {
+    name:"Lena", role:"beste Freundin · Wiederholung", roleEn:"best friend · review", color:"#2947C8", av:"L",
+    topic:"Selbst abkürzen — Wiederholung", topicEn:"Abbreviate it yourself — review",
+    sit:"Abends. Lena will alles wissen — und diesmal schreibst du auch selbst in Kürzeln.",
+    sitEn:"Evening. Lena wants the whole story — and this time you'll be abbreviating too.",
+    done:"Geschafft. Du kannst entschlüsseln, selbst schreiben — und weißt, wann du es besser lässt.",
+    doneEn:"Done. You can decode, write it yourself — and you know when not to.",
+    turns:[
+      { msgs:[["them","Und?? Wie war's bei Frau Vogel 😅"]],
+        options:[
+          "Sehr geehrte Lena, das Gespräch verlief zufriedenstellend.",
+          "Frag nicht 💀 Erzähl ich dir morgen — war aber halb so wild",
+          "Mit freundlichen Grüßen, es war ok."
+        ], correct:1, terms:["alter"],
+        good:"Und zurück ins Du: bei Freunden sind Kürzel, Emojis und halbe Sätze genau richtig.",
+        goodEn:"And back to du: with friends, abbreviations, emojis and half-sentences are exactly right.",
+        bad:"Register-Wechsel funktioniert in beide Richtungen. Was bei Frau Vogel höflich war, klingt bei Lena wie ein Scherz — oder wie Distanz.",
+        badEn:"Register switching goes both ways. What was polite with Frau Vogel sounds like a joke with Lena — or like distance."
+      },
+      { type:"short", long:"Ich habe keine Ahnung, vielleicht am Wochenende.",
+        msgs:[["them","Wann hast du wieder Zeit? 🤔"]],
+        options:[
+          "kA, vllt am WE",
+          "ka, vlt am WA",
+          "kP, vlei am Wo"
+        ], correct:0, terms:["ka","vllt","we"],
+        good:"kA = keine Ahnung, vllt (oder vlt) = vielleicht, WE = Wochenende.",
+        goodEn:"kA = no idea, vllt (or vlt) = maybe, WE = weekend.",
+        bad:"kA = keine Ahnung, vllt = vielleicht, WE = Wochenende. Achtung: WA ist WhatsApp, nicht das Wochenende — und „vlei“ gibt es nicht.",
+        badEn:"kA = no idea, vllt = maybe, WE = weekend. Careful: WA is WhatsApp, not the weekend — and „vlei“ isn't a thing."
+      },
+      { msgs:[["them","[[Iwann]] müssen wir das nochmal machen. Aber [[jz]] erstmal [[WE]]! 🎉"]],
+        options:[
+          "WE? Wer ist das denn?",
+          "Ja! Endlich Wochenende 🙌",
+          "Und um wie viel Uhr ist WE?"
+        ], correct:1, terms:["we","jz","iwann"],
+        good:"WE = Wochenende, jz = jetzt, iwann = irgendwann. Drei auf einmal, alle erkannt.",
+        goodEn:"WE = weekend, jz = now, iwann = sometime. Three at once, all spotted.",
+        bad:"WE = Wochenende (die englischen Buchstaben, das deutsche Wort), jz = jetzt, iwann = irgendwann.",
+        badEn:"WE = Wochenende (English letters, German word), jz = now, iwann = sometime."
+      },
+      { type:"short", long:"Meiner Meinung nach ist das irgendwie langweilig. Melde dich, bis dann!",
+        msgs:[["them","Und was war jetzt mit dem Film? 🎬"]],
+        options:[
+          "Mfg ist das iwer lw. Meld dich, hdl!",
+          "Mmn ist das iwie lw. Meld dich, bd!",
+          "Mmh ist das iwo lg. Meld dich, bb!"
+        ], correct:1, terms:["mmn","iwie","lw","bd"],
+        good:"Mmn + iwie + lw + bd. Du schreibst jetzt selbst wie eine Muttersprachlerin.",
+        goodEn:"Mmn + iwie + lw + bd. You're abbreviating like a native now.",
+        bad:"Jedes Kürzel hat genau eine Bedeutung: mmn = meiner Meinung nach, iwie = irgendwie, lw = langweilig, bd = bis dann. iwo, lg und hdl passen hier inhaltlich nicht.",
+        badEn:"Each abbreviation has exactly one meaning: mmn = in my opinion, iwie = somehow, lw = boring, bd = see you then. iwo, lg and hdl don't fit here."
+      },
+      { msgs:[["them","Haha ok 😄"],["them","[[Hdgdl]], schlaf gut 💛 [[Gn8]]"]],
+        options:[
+          "Danke gleichfalls, mit freundlichen Grüßen.",
+          "Hab dich auch ganz doll lieb! Gute Nacht 🌙",
+          "Hdgdl? Ist das ein Fernsehsender?"
+        ], correct:1, terms:["hdgdl","gn8"],
+        good:"Und damit ist der Chat zu. Ton getroffen, Register gehalten, alles verstanden.",
+        goodEn:"And that closes the chat. Right tone, right register, everything understood.",
+        bad:"hdgdl = hab dich ganz doll lieb, gn8 = gute Nacht. Auf beides antwortet man warm — mit „mit freundlichen Grüßen“ würde Lena sich fragen, was los ist.",
+        badEn:"hdgdl = love you loads, gn8 = good night. Both deserve a warm reply — „mit freundlichen Grüßen“ would leave Lena wondering what's wrong."
+      }
+    ]
+  }
+];
+
+/* ---------- i18n for chrome ---------- */
+const T = {
+  gloss:["Wörterbuch","Glossary"],
+  restart:["Neu starten","Restart"],
+  eyebrow:["Deutsch · Chatsprache · Register","German · chat language · register"],
+  h1a:["Dein Handy ","Your phone is "],
+  h1b:["vibriert.","buzzing."],
+  lede:["Fünf Chats, 24 Nachrichten, ein Problem: Deine Freunde schreiben in Kürzeln. Lies mit, antworte richtig — und merk dir, bei wem du das lieber lässt.",
+        "Five chats, 24 messages, one problem: your friends write in abbreviations. Keep up, reply well — and learn who you should never write that way to."],
+  how1:["Lies die eingehende Nachricht. Gepunktete Wörter sind Slang oder Abkürzungen.",
+        "Read the incoming message. Dotted words are slang or abbreviations."],
+  how2:["Wähl die beste Antwort — mit Maus, Tab/Enter oder den Tasten 1, 2, 3.",
+        "Pick the best reply — mouse, Tab/Enter, or the 1, 2, 3 keys."],
+  how3:["Erster Versuch richtig: 2 Punkte. Zweiter Versuch: 1 Punkt.",
+        "Right on the first try: 2 points. Second try: 1 point."],
+  how4:["Nach jeder Runde kannst du die Kürzel antippen und siehst sie im Wörterbuch.",
+        "After each round you can tap the abbreviations and find them in the glossary."],
+  namelbl:["Dein Name (für den Abschlusscode)","Your name (for the completion code)"],
+  fine:["Nichts wird gespeichert oder gesendet. Den Code am Ende gibst du in Canvas ab.",
+        "Nothing is stored or sent. Submit the code at the end in Canvas."],
+  teachlink:["Für Lehrkräfte","For teachers"],
+  teachintro:["<b>Code prüfen.</b> Name und Abschlusscode der Schülerin/des Schülers eingeben. Der Code ist an die exakte Namensschreibung gekoppelt.",
+              "<b>Check a code.</b> Enter the student's name and completion code. The code is tied to the exact spelling of the name."],
+  vname:["Name","Name"], vcode:["Code","Code"], vcheck:["Prüfen","Check"],
+  open:["Chat öffnen","Open chat"],
+  qprompt:["Was schreibst du zurück?","What do you write back?"],
+  shortprompt:["Das willst du sagen — wähl die richtige Kurzform:","This is what you mean — pick the correct short version:"],
+  korr:["Korrekturrand","Margin notes"],
+  marginempty:["noch nichts angestrichen …","nothing marked yet …"],
+  next:["Weiter","Continue"],
+  copy:["Kopieren","Copy"],
+  copied:["Kopiert ✓","Copied ✓"],
+  codelbl:["Abschlusscode","Completion code"],
+  reviewh:["Zum Wiederholen","Worth reviewing"],
+  endeyebrow:["Alle Chats beantwortet","All chats answered"],
+  opengloss:["Wörterbuch öffnen","Open glossary"],
+  send:["Senden","Send"],
+  retry:["Nochmal versuchen","Try again"],
+  cont:["Weiter","Continue"],
+  glosstitle:["Wörterbuch","Glossary"],
+  glosssub:["Alles, was du bisher freigeschaltet hast.","Everything you have unlocked so far."],
+  glossempty:["Noch nichts freigeschaltet. Beantworte eine Runde, dann erscheinen die Kürzel hier.",
+              "Nothing unlocked yet. Answer a round and the abbreviations show up here."],
+  regf:["nur unter Freunden","friends only"],
+  regn:["überall ok","fine anywhere"],
+  regx:["Vorsicht","careful"],
+  nameerr:["Bitte trag deinen Namen ein.","Please enter your name."],
+  vok:["Gültig. Punkte: ","Valid. Score: "],
+  vbad:["Ungültig — Code und Name passen nicht zusammen.","Invalid — code and name do not match."],
+  perfect:["Perfekt — kein einziger Fehler.","Perfect — not a single mistake."],
+  badges:[["Slang-Profi","Slang pro"],["Fast Muttersprache","Nearly native"],["Solide Chatterin","Solid texter"],["Weiter üben","Keep practising"]],
+  reviewempty:["Nichts. Du hast jede Runde beim ersten Versuch getroffen.","Nothing. You got every round on the first try."],
+  msgsent:["Nachricht gesendet","Message sent"],
+  playall:["▶ Alle fünf spielen","▶ Play all five"],
+  orsingle:["Oder einzelne Chats — jeder dauert ein paar Minuten:","Or play a single chat — each takes a few minutes:"],
+  tohub:["Zur Übersicht","Back to inbox"],
+  replayep:["Chat wiederholen","Replay this chat"],
+  breakdownh:["Die einzelnen Chats","Chat by chat"],
+  neu:["5 Runden","5 rounds"],
+  rounds:["Runden","rounds"],
+  replay:["wiederholen","replay"],
+  formal:["förmlich","formal"],
+  progress:["Gespielt: ","Played: "],
+  progressnone:["Noch kein Chat gespielt.","No chats played yet."],
+  notplayed:["nicht gespielt","not played"],
+  epdone:["Punkte in diesem Chat","points in this chat"],
+  vepisodes:[" · Chats: "," · chats: "],
+  allbadge:["alle fünf Chats","all five chats"]
+};
+
+/* ---------- state ---------- */
+let lang = 0; // 0 = DE, 1 = EN
+const state = {
+  name:"",           // student name (drives the completion code)
+  mode:"single",     // "single" = one episode, then back to the inbox | "all" = play straight through
+  order:[],          // queue of chat indices for the current run
+  orderIdx:0,
+  chat:0, turn:0, tries:0,
+  cur:0,             // points earned in the episode currently being played
+  curMissed:[],
+  results:[],        // results[i] = {score, missed:[...]} once episode i has been finished
+  active:false,      // true while an episode is being played
+  unlocked:new Set()
+};
+const MAX = CHATS.reduce((a,c)=>a+c.turns.length,0)*2;
+const epMax = i => CHATS[i].turns.length * 2;
+const doneCount = () => state.results.filter(Boolean).length;
+const bankedScore = () => state.results.reduce((a,r)=>a+(r?r.score:0),0);
+const bankedMax = () => state.results.reduce((a,r,i)=>a+(r?epMax(i):0),0);
+const epMask = () => state.results.reduce((m,r,i)=>r?(m|(1<<i)):m, 0);
+const allMissed = () => state.results.reduce((a,r)=>r?a.concat(r.missed):a, []);
+const chatTerms = i => {
+  const seen = [];
+  CHATS[i].turns.forEach(t=>(t.terms||[]).forEach(k=>{ if(!seen.includes(k)) seen.push(k); }));
+  return seen;
+};
+
+const $ = id => document.getElementById(id);
+const t = k => T[k] ? T[k][lang] : k;
+
+/* ---------- text rendering with [[abbr]] ---------- */
+function renderText(str, host){
+  const parts = String(str).split(/(\[\[[^\]]+\]\])/g);
+  parts.forEach(p=>{
+    const m = p.match(/^\[\[([^\]]+)\]\]$/);
+    if(m){
+      const raw = m[1];
+      const key = raw.toLowerCase().replace(/[^a-zäöüß0-9]/g,"");
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "abbr";
+      b.dataset.term = key;
+      b.textContent = raw;
+      b.setAttribute("aria-label", raw);
+      b.addEventListener("click", ()=>toggleUnfold(b, key));
+      host.appendChild(b);
+    } else if(p){
+      host.appendChild(document.createTextNode(p));
+    }
+  });
+}
+function plainText(str){ return String(str).replace(/\[\[([^\]]+)\]\]/g,"$1"); }
+
+function toggleUnfold(btn, key){
+  if(!btn.classList.contains("unlocked")) return;
+  const bubble = btn.closest(".bubble") || btn.closest(".opt") || btn.parentElement;
+  const existing = bubble.querySelector('.unfold[data-for="'+key+'"]');
+  if(existing){ existing.remove(); btn.setAttribute("aria-expanded","false"); return; }
+  const g = GLOSSARY[key];
+  if(!g) return;
+  const div = document.createElement("div");
+  div.className = "unfold";
+  div.dataset.for = key;
+  div.innerHTML = "<b>"+btn.textContent+"</b> — "+g.f+"<span class='en'>"+g.e+"</span>"+
+                  "<span class='reg reg-"+g.reg+"'>"+regLabel(g.reg)+"</span>";
+  bubble.appendChild(div);
+  btn.setAttribute("aria-expanded","true");
+}
+function regLabel(r){ return r==="f"?t("regf"):r==="n"?t("regn"):t("regx"); }
+
+function unlockTerms(terms){
+  (terms||[]).forEach(k=>state.unlocked.add(k));
+  document.querySelectorAll(".abbr").forEach(b=>{
+    if(state.unlocked.has(b.dataset.term) && GLOSSARY[b.dataset.term]){
+      b.classList.add("unlocked");
+      b.setAttribute("aria-expanded","false");
+      b.setAttribute("aria-label", b.textContent + " — " + GLOSSARY[b.dataset.term].f);
+    }
+  });
+}
+
+/* ---------- screens ---------- */
+const SCREENS = ["startScreen","introScreen","chatScreen","doneScreen","endScreen"];
+function show(id){ SCREENS.forEach(s=>$(s).classList.toggle("hidden", s!==id)); }
+
+function updateChrome(){
+  const pips = $("pips");
+  pips.innerHTML = "";
+  const live = state.active;
+  CHATS.forEach((c,i)=>{
+    const d = document.createElement("span");
+    d.className = "pip" + (state.results[i] ? " done" : (live && i===state.chat) ? " now" : "");
+    pips.appendChild(d);
+  });
+  const shown = bankedScore() + (live ? state.cur : 0);
+  const outOf = bankedMax() + (live ? epMax(state.chat) : 0);
+  $("score").textContent = shown + " / " + (outOf || MAX);
+}
+
+function applyLang(){
+  document.querySelectorAll("[data-t]").forEach(el=>{
+    const k = el.getAttribute("data-t");
+    if(!T[k]) return;
+    if(k==="teachintro") el.innerHTML = t(k); else el.textContent = t(k);
+  });
+  $("langBtn").textContent = lang===0 ? "EN" : "DE";
+  $("langBtn").setAttribute("aria-pressed", lang===1 ? "true":"false");
+  document.documentElement.lang = lang===0 ? "de" : "en";
+}
+
+/* ---------- home screen: title + chat list on one page ---------- */
+function requireName(){
+  const n = $("nameIn").value.trim();
+  if(!n){
+    $("nameIn").focus();
+    $("nameIn").classList.add("needed");
+    $("nameIn").placeholder = t("nameerr");
+    announce(t("nameerr"));
+    return false;
+  }
+  $("nameIn").classList.remove("needed");
+  if(normName(n) !== normName(state.name)){
+    state.name = n;
+    state.results = new Array(CHATS.length).fill(null); // new name = new attempt
+    state.unlocked = new Set();
+  } else {
+    state.name = n;
+  }
+  return true;
+}
+
+function showHub(focusList){
+  clearTimers();
+  state.active = false;
+  if(!state.results.length) state.results = new Array(CHATS.length).fill(null);
+  if(state.name && !$("nameIn").value.trim()) $("nameIn").value = state.name;
+  const list = $("chatlist");
+  list.innerHTML = "";
+  CHATS.forEach((c,i)=>{
+    const r = state.results[i];
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chatrow" + (r ? " played" : "");
+    const av = document.createElement("span");
+    av.className = "avatar"; av.style.background = c.color; av.textContent = c.av;
+    const meta = document.createElement("span");
+    meta.className = "meta";
+    const nm = document.createElement("span");
+    nm.className = "nm";
+    nm.textContent = c.name;
+    if(c.warn){ const f = document.createElement("span"); f.className = "flag"; f.textContent = t("formal"); nm.appendChild(f); }
+    const tp = document.createElement("span");
+    tp.className = "tp"; tp.textContent = lang===0 ? c.topic : c.topicEn;
+    const tm = document.createElement("span");
+    tm.className = "terms"; tm.textContent = chatTerms(i).join(" · ");
+    meta.appendChild(nm); meta.appendChild(tp); meta.appendChild(tm);
+    const st = document.createElement("span");
+    st.className = "status";
+    st.textContent = r ? (r.score + " / " + epMax(i)) : (c.turns.length + " " + t("rounds"));
+    b.appendChild(av); b.appendChild(meta); b.appendChild(st);
+    b.setAttribute("aria-label", c.name + " — " + (lang===0?c.topic:c.topicEn) + " — " +
+      (r ? r.score+"/"+epMax(i)+", "+t("replay") : c.turns.length+" "+t("rounds")));
+    b.addEventListener("click", ()=>playOne(i));
+    list.appendChild(b);
+  });
+  refreshHubCode();
+  show("startScreen");
+  updateChrome();
+  if(focusList){ const f = list.querySelector(".chatrow"); if(f) f.focus(); }
+}
+
+function refreshHubCode(){
+  const done = doneCount();
+  $("hubProgress").textContent = done === 0 ? t("progressnone")
+    : t("progress") + done + " / " + CHATS.length + " · " + bankedScore() + " / " + bankedMax();
+  const box = $("hubCodeBox");
+  if(done > 0 && state.name){
+    box.classList.remove("hidden");
+    $("hubCode").textContent = makeCode(state.name, epMask(), bankedScore());
+  } else box.classList.add("hidden");
+}
+
+function playOne(i){
+  if(!requireName()) return;
+  state.mode = "single";
+  state.order = [i];
+  state.orderIdx = 0;
+  beginEpisode(i);
+}
+function playAll(){
+  if(!requireName()) return;
+  state.mode = "all";
+  state.order = CHATS.map((c,i)=>i);
+  state.orderIdx = 0;
+  state.results = new Array(CHATS.length).fill(null);
+  beginEpisode(0);
+}
+function beginEpisode(i){
+  state.chat = i;
+  state.turn = 0;
+  state.cur = 0;
+  state.curMissed = [];
+  state.results[i] = null;   // replaying an episode replaces its old result
+  state.active = true;
+  showIntro();
+}
+
+function showIntro(){
+  const c = CHATS[state.chat];
+  updateChrome();
+  $("introAv").textContent = c.av;
+  $("introAv").style.background = c.color;
+  $("introName").textContent = c.name;
+  $("introRole").textContent = lang===0 ? c.role : c.roleEn;
+  $("introSit").textContent = lang===0 ? c.sit : c.sitEn;
+  const w = $("introWarn");
+  if(c.warn){ w.classList.remove("hidden"); w.textContent = lang===0 ? c.warn : c.warnEn; }
+  else w.classList.add("hidden");
+  show("introScreen");
+  $("introBtn").focus();
+}
+
+function openChat(){
+  const c = CHATS[state.chat];
+  $("headAv").textContent = c.av;
+  $("headAv").style.background = c.color;
+  $("headName").childNodes[0].nodeValue = c.name;
+  $("headRole").textContent = lang===0 ? c.role : c.roleEn;
+  $("thread").innerHTML = "";
+  $("notes").innerHTML = '<p class="margin-empty">'+t("marginempty")+'</p>';
+  state.turn = 0;
+  show("chatScreen");
+  playTurn();
+}
+
+let timers = [];
+function clearTimers(){ timers.forEach(clearTimeout); timers = []; }
+
+function playTurn(){
+  clearTimers();
+  const c = CHATS[state.chat];
+  const turn = c.turns[state.turn];
+  state.tries = 0;
+  $("options").innerHTML = "";
+  $("actions").innerHTML = "";
+  $("qBlock").style.visibility = "hidden";
+  $("longform").classList.add("hidden");
+
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let delay = 0;
+  turn.msgs.forEach((m, i)=>{
+    const [who, text, sender] = m;
+    if(who === "them" && !reduce){
+      const typ = addTypingRow();
+      timers.push(setTimeout(()=>{ typ.remove(); addBubble(who, text, sender); }, delay + 620));
+      delay += 620 + 260;
+    } else {
+      timers.push(setTimeout(()=>addBubble(who, text, sender), delay));
+      delay += reduce ? 0 : 300;
+    }
+  });
+  timers.push(setTimeout(showQuestion, delay + (reduce?0:200)));
+}
+
+function addTypingRow(){
+  const row = document.createElement("div");
+  row.className = "row them";
+  row.innerHTML = '<div class="bubble"><span class="typing"><i></i><i></i><i></i></span></div>';
+  $("thread").appendChild(row);
+  scrollIn(row);
+  return row;
+}
+
+function addBubble(who, text, sender){
+  const wrapEl = document.createElement("div");
+  wrapEl.style.display = "flex";
+  wrapEl.style.flexDirection = "column";
+  wrapEl.style.alignItems = who==="me" ? "flex-end" : who==="sys" ? "center" : "flex-start";
+  if(sender){
+    const tg = document.createElement("div");
+    tg.className = "tag";
+    tg.textContent = sender;
+    wrapEl.appendChild(tg);
+  }
+  const row = document.createElement("div");
+  row.className = "row " + who;
+  const b = document.createElement("div");
+  b.className = "bubble";
+  renderText(text, b);
+  row.appendChild(b);
+  wrapEl.appendChild(row);
+  $("thread").appendChild(wrapEl);
+  unlockTerms([]);
+  scrollIn(wrapEl);
+  if(who==="them") announce((sender? sender+": ":"") + plainText(text));
+  return wrapEl;
+}
+
+function scrollIn(el){
+  if(el.scrollIntoView) el.scrollIntoView({block:"nearest", behavior:"smooth"});
+}
+
+function showQuestion(){
+  const turn = CHATS[state.chat].turns[state.turn];
+  const box = $("options");
+  box.innerHTML = "";
+  $("qPrompt").textContent = turn.type === "short" ? t("shortprompt") : t("qprompt");
+  if(turn.type === "short"){
+    const lf = $("longform");
+    lf.classList.remove("hidden");
+    lf.textContent = "„" + turn.long + "“";
+  }
+  turn.options.forEach((opt, i)=>{
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.type = "button";
+    const key = document.createElement("span");
+    key.className = "key";
+    key.textContent = String(i+1);
+    b.appendChild(key);
+    const span = document.createElement("span");
+    renderText(opt, span);
+    b.appendChild(span);
+    b.addEventListener("click", ()=>choose(i, b));
+    box.appendChild(b);
+  });
+  $("qBlock").style.visibility = "visible";
+  unlockTerms([]);
+  const first = box.querySelector(".opt");
+  if(first) first.focus();
+}
+
+function choose(i, btn){
+  const turn = CHATS[state.chat].turns[state.turn];
+  const opts = Array.from($("options").children);
+  if(btn.disabled) return;
+
+  if(i === turn.correct){
+    const gained = state.tries === 0 ? 2 : 1;
+    state.cur += gained;
+    opts.forEach(o=>{ o.disabled = true; if(o!==btn) o.classList.add("faded"); });
+    btn.classList.add("right");
+    const st = document.createElement("span");
+    st.className = "stamp";
+    st.textContent = "✓";
+    btn.appendChild(st);
+    addBubble("me", turn.options[i]);
+    unlockTerms(turn.terms);
+    addNote(true, lang===0 ? turn.good : turn.goodEn, "+"+gained);
+    updateChrome();
+    announce(t("msgsent"));
+    nextAction();
+  } else {
+    state.tries++;
+    btn.disabled = true;
+    btn.classList.add("wrong");
+    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    svg.setAttribute("class","squig");
+    svg.setAttribute("viewBox","0 0 400 9");
+    svg.setAttribute("preserveAspectRatio","none");
+    const p = document.createElementNS("http://www.w3.org/2000/svg","path");
+    p.setAttribute("d","M0 5 Q 10 0, 20 5 T 40 5 T 60 5 T 80 5 T 100 5 T 120 5 T 140 5 T 160 5 T 180 5 T 200 5 T 220 5 T 240 5 T 260 5 T 280 5 T 300 5 T 320 5 T 340 5 T 360 5 T 380 5 T 400 5");
+    svg.appendChild(p);
+    btn.appendChild(svg);
+
+    if(state.tries === 1){
+      addNote(false, lang===0 ? turn.bad : turn.badEn, null);
+      state.curMissed.push({chat:CHATS[state.chat].name, de:turn.bad, en:turn.badEn});
+      announce(lang===0 ? turn.bad : turn.badEn);
+      const live = opts.filter(o=>!o.disabled);
+      if(live.length) live[0].focus();
+    } else {
+      opts.forEach(o=>{ o.disabled = true; });
+      const right = opts[turn.correct];
+      right.classList.remove("faded");
+      right.classList.add("right");
+      addBubble("me", turn.options[turn.correct]);
+      unlockTerms(turn.terms);
+      addNote(true, lang===0 ? turn.good : turn.goodEn, "+0");
+      nextAction();
+    }
+  }
+}
+
+function addNote(good, text, pts){
+  const host = $("notes");
+  const empty = host.querySelector(".margin-empty");
+  if(empty) empty.remove();
+  const n = document.createElement("div");
+  n.className = "note" + (good ? " good" : "");
+  const lead = document.createElement("span");
+  lead.className = "lead";
+  lead.textContent = (good ? (lang===0?"richtig":"correct") : (lang===0?"aufgepasst":"careful")) +
+                     (pts ? " · " + pts : "");
+  n.appendChild(lead);
+  n.appendChild(document.createTextNode(text));
+  host.appendChild(n);
+  scrollIn(n);
+}
+
+function nextAction(){
+  const act = $("actions");
+  act.innerHTML = "";
+  const b = document.createElement("button");
+  b.className = "btn";
+  b.textContent = t("cont") + " →";
+  b.addEventListener("click", advance);
+  act.appendChild(b);
+  b.focus();
+}
+
+function advance(){
+  const c = CHATS[state.chat];
+  state.turn++;
+  if(state.turn < c.turns.length){ playTurn(); }
+  else { finishChat(); }
+}
+
+function finishChat(){
+  const i = state.chat, c = CHATS[i];
+  if(!state.results[i]) state.results[i] = { score: state.cur, missed: state.curMissed.slice() };
+  state.active = false;
+  $("doneTitle").textContent = c.name;
+  $("doneScore").textContent = state.results[i].score + " / " + epMax(i) + " " + t("epdone");
+  $("doneText").textContent = lang===0 ? c.done : c.doneEn;
+  const last = state.orderIdx >= state.order.length - 1;
+  $("doneBtn").textContent = (state.mode === "all")
+    ? (last ? (lang===0 ? "Ergebnis ansehen" : "See your result") : t("next"))
+    : t("tohub");
+  $("doneRetry").classList.toggle("hidden", state.mode === "all");
+  $("doneRetry").textContent = t("replayep");
+  updateChrome();
+  show("doneScreen");
+  $("doneBtn").focus();
+}
+
+function afterDone(){
+  if(state.mode === "all"){
+    state.orderIdx++;
+    if(state.orderIdx < state.order.length){ beginEpisode(state.order[state.orderIdx]); }
+    else { endGame(); }
+  } else {
+    showHub(true);
+  }
+}
+
+/* ---------- completion code ---------- */
+function fnv(str){
+  let h = 0x811c9dc5;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return h >>> 0;
+}
+function normName(n){ return String(n).trim().toLowerCase().replace(/\s+/g," "); }
+/* Code carries WHICH episodes were played (bitmask) and the total score, so a
+   student who was only assigned chats 2 and 4 still gets a verifiable code. */
+function makeCode(name, mask, score){
+  const mk = mask.toString(36).toUpperCase().padStart(2,"0");
+  const s = String(score).padStart(2,"0");
+  const chk = fnv(normName(name)+"|"+mk+"|"+s+"|"+MAX+"|schreibzurueck").toString(36).toUpperCase();
+  return "SLNG-" + mk + "-" + s + "-" + (chk+"XXXX").slice(0,4);
+}
+function verifyCode(name, code){
+  const m = String(code).trim().toUpperCase().match(/^SLNG-([A-Z0-9]{2})-(\d{2})-([A-Z0-9]{4})$/);
+  if(!m) return null;
+  const mask = parseInt(m[1],36), score = parseInt(m[2],10);
+  if(isNaN(mask) || mask <= 0 || mask >= (1<<CHATS.length)) return null;
+  if(makeCode(name, mask, score) !== "SLNG-"+m[1]+"-"+m[2]+"-"+m[3]) return null;
+  const eps = [];
+  let mx = 0;
+  for(let i=0;i<CHATS.length;i++){ if(mask & (1<<i)){ eps.push(i+1); mx += epMax(i); } }
+  if(score > mx) return null;
+  return { score:score, max:mx, episodes:eps, all:eps.length === CHATS.length };
+}
+
+/* ---------- end ---------- */
+function endGame(){
+  state.active = false;
+  const total = bankedScore(), max = bankedMax() || MAX;
+  const pct = Math.round(total / max * 100);
+  $("endScore").textContent = pct + " %";
+  $("endLine").textContent = (lang===0
+    ? total + " von " + max + " Punkten · " + state.name
+    : total + " of " + max + " points · " + state.name);
+  setTimeout(()=>{ $("endMeter").style.width = pct + "%"; }, 60);
+  const bi = pct>=95?0:pct>=80?1:pct>=60?2:3;
+  $("endBadge").textContent = T.badges[bi][lang];
+  $("endCode").textContent = makeCode(state.name, epMask(), total);
+
+  const bdn = $("breakdown");
+  bdn.innerHTML = "";
+  CHATS.forEach((c,i)=>{
+    const r = state.results[i];
+    const row = document.createElement("div");
+    row.className = "bd-row" + (r ? "" : " skipped");
+    const nm = document.createElement("span");
+    nm.className = "nm";
+    nm.textContent = c.name + " — " + (lang===0 ? c.topic : c.topicEn);
+    const sc = document.createElement("span");
+    sc.className = "sc";
+    sc.textContent = r ? (r.score + " / " + epMax(i)) : t("notplayed");
+    row.appendChild(nm); row.appendChild(sc);
+    bdn.appendChild(row);
+  });
+
+  const rev = $("review");
+  rev.innerHTML = "";
+  const missed = allMissed();
+  if(missed.length === 0){
+    const p = document.createElement("p");
+    p.style.color = "var(--ink-soft)";
+    p.textContent = t("reviewempty");
+    rev.appendChild(p);
+  } else {
+    missed.forEach(m=>{
+      const d = document.createElement("div");
+      d.className = "review-item";
+      const b = document.createElement("b");
+      b.textContent = m.chat;
+      d.appendChild(b);
+      d.appendChild(document.createTextNode(lang===0 ? m.de : m.en));
+      rev.appendChild(d);
+    });
+  }
+  show("endScreen");
+  updateChrome();
+  $("endScore").scrollIntoView({block:"nearest"});
+}
+
+/* ---------- glossary drawer ---------- */
+function openGloss(){
+  const host = $("drawerHost");
+  host.innerHTML = "";
+  const scrim = document.createElement("div");
+  scrim.className = "scrim";
+  scrim.addEventListener("click", closeGloss);
+  const d = document.createElement("div");
+  d.className = "drawer";
+  d.setAttribute("role","dialog");
+  d.setAttribute("aria-modal","true");
+  d.setAttribute("aria-label", t("glosstitle"));
+  const x = document.createElement("button");
+  x.className = "closeX"; x.innerHTML = "&times;";
+  x.setAttribute("aria-label","Schließen");
+  x.addEventListener("click", closeGloss);
+  d.appendChild(x);
+  const h = document.createElement("h2"); h.textContent = t("glosstitle"); d.appendChild(h);
+  const s = document.createElement("p"); s.className = "sub"; s.textContent = t("glosssub"); d.appendChild(s);
+
+  const keys = Object.keys(GLOSSARY).filter(k=>state.unlocked.has(k));
+  if(keys.length === 0){
+    const p = document.createElement("p");
+    p.className = "locked-note";
+    p.textContent = t("glossempty");
+    d.appendChild(p);
+  }
+  keys.forEach(k=>{
+    const g = GLOSSARY[k];
+    const it = document.createElement("div");
+    it.className = "gitem";
+    it.innerHTML = "<div class='k'>"+k+"</div><div class='f'>"+g.f+"</div><div class='e'>"+g.e+"</div>"+
+                   "<span class='reg reg-"+g.reg+"'>"+regLabel(g.reg)+"</span>";
+    d.appendChild(it);
+  });
+  host.appendChild(scrim);
+  host.appendChild(d);
+  x.focus();
+  document.addEventListener("keydown", escClose);
+}
+function escClose(e){ if(e.key === "Escape") closeGloss(); }
+function closeGloss(){
+  $("drawerHost").innerHTML = "";
+  document.removeEventListener("keydown", escClose);
+  $("glossBtn").focus();
+}
+
+/* ---------- misc ---------- */
+function announce(msg){ $("srLive").textContent = msg; }
+
+document.addEventListener("keydown", e=>{
+  if($("chatScreen").classList.contains("hidden")) return;
+  if(e.target.tagName === "INPUT") return;
+  if(["1","2","3"].includes(e.key)){
+    const opts = $("options").children;
+    const idx = parseInt(e.key,10)-1;
+    if(opts[idx] && !opts[idx].disabled){ opts[idx].click(); e.preventDefault(); }
+  }
+});
+
+$("nameIn").addEventListener("keydown", e=>{ if(e.key === "Enter"){ e.preventDefault(); playAll(); } });
+$("nameIn").addEventListener("input", ()=>{
+  const n = $("nameIn").value.trim();
+  if(n) $("nameIn").classList.remove("needed");
+  if(state.name && doneCount() > 0){ state.name = n || state.name; refreshHubCode(); }
+});
+$("introBtn").addEventListener("click", openChat);
+$("doneBtn").addEventListener("click", afterDone);
+$("doneRetry").addEventListener("click", ()=>{ clearTimers(); beginEpisode(state.chat); });
+$("playAllBtn").addEventListener("click", playAll);
+$("againBtn").addEventListener("click", ()=>showHub(true));
+$("restartBtn").addEventListener("click", ()=>showHub(false));
+$("glossBtn").addEventListener("click", openGloss);
+$("endGloss").addEventListener("click", openGloss);
+$("teachToggle").addEventListener("click", ()=>$("teachPanel").classList.toggle("hidden"));
+$("vBtn").addEventListener("click", ()=>{
+  const r = verifyCode($("vName").value, $("vCode").value);
+  const v = $("verdict");
+  if(r === null){ v.className = "verdict no"; v.textContent = "✗ " + t("vbad"); }
+  else {
+    v.className = "verdict ok";
+    v.textContent = "✓ " + t("vok") + r.score + " / " + r.max + " (" + Math.round(r.score/r.max*100) + " %)" +
+      t("vepisodes") + (r.all ? t("allbadge") : r.episodes.join(", "));
+  }
+});
+function wireCopy(btnId, srcId){
+ $(btnId).addEventListener("click", ()=>{
+  const code = $(srcId).textContent;
+  const done = ()=>{ $(btnId).textContent = t("copied"); setTimeout(()=>{ $(btnId).textContent = t("copy"); }, 1800); };
+  if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(code).then(done, fallbackCopy); }
+  else fallbackCopy();
+  function fallbackCopy(){
+    const ta = document.createElement("textarea");
+    ta.value = code; ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); done(); }catch(err){}
+    ta.remove();
+  }
+ });
+}
+wireCopy("copyBtn","endCode");
+wireCopy("hubCopyBtn","hubCode");
+$("langBtn").addEventListener("click", ()=>{
+  lang = lang === 0 ? 1 : 0;
+  applyLang();
+  if(!$("startScreen").classList.contains("hidden")) showHub(false);
+  if(!$("introScreen").classList.contains("hidden")) showIntro();
+  if(!$("chatScreen").classList.contains("hidden")){
+    $("headRole").textContent = lang===0 ? CHATS[state.chat].role : CHATS[state.chat].roleEn;
+    $("qPrompt").textContent = CHATS[state.chat].turns[state.turn].type==="short" ? t("shortprompt") : t("qprompt");
+  }
+  if(!$("doneScreen").classList.contains("hidden")) finishChat();
+  if(!$("endScreen").classList.contains("hidden")) endGame();
+});
+
+applyLang();
+showHub(false);
+
+/* expose for headless tests */
+if(typeof window !== "undefined"){ window.__GAME__ = {CHATS, GLOSSARY, makeCode, verifyCode, MAX, state, epMask, bankedScore, epMax}; }
+</script>
+</body>
+</html>

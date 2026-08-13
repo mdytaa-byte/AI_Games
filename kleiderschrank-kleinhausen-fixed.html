@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kleiderschrank Kleinhausen – Was ziehe ich an?</title>
+<style>
+/* ============================================================
+   KLEIDERSCHRANK KLEINHAUSEN
+   Design tokens: haberdashery / laundry-room palette.
+   soap = wall, tag = paper hangtag, dye = indigo action,
+   thread = stitch red, grass = correct, brass = score.
+   ============================================================ */
+:root{
+  --soap:#d7e0da;
+  --soap-deep:#c3d0c8;
+  --tag:#fffcf3;
+  --tag-edge:#e3d9c6;
+  --ink:#16213a;
+  --ink-soft:#4a5670;
+  --wood:#7a5233;
+  --wood-dark:#5c3d26;
+  --dye:#2e5e8c;
+  --dye-deep:#1e4364;
+  --thread:#b23a48;
+  --grass:#3f7a52;
+  --brass:#c48d2a;
+  --shadow:rgba(22,33,58,.16);
+
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,"Liberation Mono",monospace;
+
+  --fs:1rem;
+  --radius:6px;
+  --swing:1;
+}
+
+/* Text size settings */
+html[data-size="gross"]{--fs:1.16rem;}
+html[data-size="sehr-gross"]{--fs:1.34rem;}
+
+/* High contrast */
+html[data-contrast="hoch"]{
+  --soap:#ffffff;
+  --soap-deep:#ffffff;
+  --tag:#ffffff;
+  --tag-edge:#000000;
+  --ink:#000000;
+  --ink-soft:#000000;
+  --wood:#000000;
+  --wood-dark:#000000;
+  --dye:#00308f;
+  --dye-deep:#001c55;
+  --thread:#9b0000;
+  --grass:#00551f;
+  --brass:#6a4a00;
+  --shadow:rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--soap);
+  background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.35) 0 2px,transparent 2px 9px);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:var(--fs);
+  line-height:1.55;
+  -webkit-text-size-adjust:100%;
+}
+html[data-contrast="hoch"] body{background-image:none;}
+
+/* ---------- Skip link ---------- */
+.skip{
+  position:absolute;left:-9999px;top:0;z-index:200;
+  background:var(--ink);color:#fff;padding:.7em 1.1em;border-radius:0 0 var(--radius) 0;
+  font-weight:700;text-decoration:none;
+}
+.skip:focus{left:0;}
+
+/* ---------- Focus ---------- */
+:focus-visible{
+  outline:4px solid var(--brass);
+  outline-offset:3px;
+  border-radius:3px;
+}
+html[data-contrast="hoch"] :focus-visible{outline:5px solid #000;}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(.7rem,2.4vw,1.6rem) 3rem;}
+
+/* ---------- Header ---------- */
+.topbar{
+  background:var(--ink);
+  color:var(--tag);
+  border-bottom:5px solid var(--wood);
+}
+.topbar-in{
+  max-width:1180px;margin:0 auto;
+  padding:.7rem clamp(.7rem,2.4vw,1.6rem);
+  display:flex;flex-wrap:wrap;gap:.9rem 1.2rem;align-items:center;justify-content:space-between;
+}
+.brand{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap;}
+.brand h1{
+  font-family:var(--serif);
+  font-size:1.28em;font-weight:600;margin:0;letter-spacing:.01em;
+}
+.brand .sub{
+  font-family:var(--mono);
+  font-size:.68em;letter-spacing:.18em;text-transform:uppercase;color:#b9c6dd;
+}
+html[data-contrast="hoch"] .brand .sub{color:#fff;}
+
+/* ---------- Settings ---------- */
+.settings{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;}
+.set-btn{
+  font:inherit;font-size:.8em;
+  background:transparent;color:var(--tag);
+  border:2px solid #6c7b99;
+  border-radius:999px;
+  padding:.3em .85em;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.4em;
+}
+.set-btn:hover{border-color:var(--tag);}
+.set-btn[aria-pressed="true"]{background:var(--tag);color:var(--ink);border-color:var(--tag);font-weight:700;}
+.set-btn .dot{width:.55em;height:.55em;border-radius:50%;border:2px solid currentColor;}
+.set-btn[aria-pressed="true"] .dot{background:currentColor;}
+html[data-contrast="hoch"] .set-btn{border-color:#fff;}
+
+/* ---------- Screens ---------- */
+.screen{display:none;padding-top:1.6rem;}
+.screen.on{display:block;}
+h2{
+  font-family:var(--serif);
+  font-size:1.75em;line-height:1.2;margin:0 0 .35em;font-weight:600;
+}
+h2:focus{outline:none;}
+h3{font-family:var(--serif);font-size:1.2em;margin:1.4em 0 .5em;font-weight:600;}
+.eyebrow{
+  font-family:var(--mono);font-size:.72em;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink-soft);margin:0 0 .35em;
+}
+.lede{max-width:60ch;margin:0 0 1.2rem;}
+.en{color:var(--ink-soft);font-style:italic;}
+.en::before{content:"– ";}
+
+/* ---------- Buttons ---------- */
+.btn{
+  font:inherit;font-weight:700;
+  background:var(--dye);color:#fff;
+  border:3px solid var(--dye-deep);
+  border-radius:var(--radius);
+  padding:.6em 1.25em;cursor:pointer;
+  box-shadow:0 3px 0 var(--dye-deep);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn:hover{background:var(--dye-deep);}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--dye-deep);}
+.btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none;}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--ink);box-shadow:0 3px 0 var(--ink);}
+.btn-ghost:hover{background:var(--ink);color:var(--tag);}
+.btn-row{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.1rem;}
+
+/* ---------- Episode cards ---------- */
+.eps{
+  list-style:none;padding:0;margin:1.2rem 0 0;
+  display:grid;gap:1rem;
+  grid-template-columns:repeat(auto-fill,minmax(255px,1fr));
+}
+.ep-card{
+  position:relative;width:100%;text-align:left;
+  background:var(--tag);
+  border:2px solid var(--tag-edge);
+  border-left:10px solid var(--wood);
+  border-radius:var(--radius);
+  padding:1rem 1rem 1rem 1.1rem;
+  font:inherit;color:var(--ink);cursor:pointer;
+  box-shadow:0 3px 0 var(--shadow);
+}
+.ep-card:hover{border-left-color:var(--dye);}
+.ep-num{
+  font-family:var(--mono);font-size:.72em;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);
+  display:block;
+}
+.ep-title{font-family:var(--serif);font-size:1.22em;font-weight:600;display:block;margin:.1em 0 .25em;}
+.ep-meta{font-size:.85em;color:var(--ink-soft);margin:.5em 0 0;display:flex;gap:.9em;flex-wrap:wrap;}
+.stars{color:var(--brass);letter-spacing:.12em;font-family:var(--mono);}
+.ep-done{
+  display:inline-block;margin-top:.5em;
+  font-family:var(--mono);font-size:.75em;
+  background:var(--grass);color:#fff;border-radius:999px;padding:.15em .7em;
+}
+
+/* ---------- Play screen ---------- */
+.play-grid{
+  display:grid;gap:1.2rem;
+  grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);
+  align-items:start;
+}
+@media (max-width:820px){.play-grid{grid-template-columns:1fr;}}
+
+/* Occasion note: pinned paper */
+.note{
+  background:var(--tag);
+  border:2px solid var(--tag-edge);
+  border-radius:var(--radius);
+  padding:1rem 1.1rem;
+  box-shadow:0 4px 0 var(--shadow);
+  position:relative;
+  margin-bottom:1.1rem;
+}
+.note::after{
+  content:"";position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+  width:18px;height:18px;border-radius:50%;
+  background:var(--thread);border:3px solid var(--tag);
+}
+html[data-contrast="hoch"] .note::after{border-color:#000;}
+.note-head{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;align-items:baseline;}
+.note p{margin:.4em 0 0;}
+.szene{font-family:var(--serif);font-size:1.22em;line-height:1.4;margin:.2em 0 0;}
+.speak-btn{
+  font:inherit;font-size:.78em;
+  background:transparent;border:2px solid var(--ink);color:var(--ink);
+  border-radius:999px;padding:.2em .75em;cursor:pointer;white-space:nowrap;
+}
+.speak-btn:hover{background:var(--ink);color:var(--tag);}
+
+/* Progress pips */
+.pips{display:flex;gap:.35em;align-items:center;font-family:var(--mono);font-size:.75em;letter-spacing:.1em;}
+.pip{width:.85em;height:.85em;border-radius:50%;border:2px solid var(--ink);}
+.pip.done{background:var(--grass);border-color:var(--grass);}
+.pip.now{background:var(--brass);border-color:var(--brass);}
+
+/* ---------- Wardrobe ---------- */
+.schrank{
+  position:relative;
+  background:var(--soap-deep);
+  border:3px solid var(--wood-dark);
+  border-radius:var(--radius);
+  padding:.9rem;
+  overflow:hidden;
+}
+.rail{
+  height:10px;border-radius:5px;
+  background:linear-gradient(180deg,#c9a26a,var(--wood));
+  margin:0 .3rem 1rem;
+  box-shadow:0 2px 0 var(--wood-dark);
+}
+html[data-contrast="hoch"] .rail{background:#000;}
+.tags{
+  list-style:none;margin:0;padding:0;
+  display:grid;gap:.75rem;
+  grid-template-columns:repeat(auto-fill,minmax(122px,1fr));
+}
+.tag-btn{
+  width:100%;
+  background:var(--tag);
+  border:2px solid var(--tag-edge);
+  border-radius:var(--radius);
+  padding:.5rem .45rem .6rem;
+  font:inherit;color:var(--ink);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:.2rem;
+  box-shadow:0 3px 0 var(--shadow);
+  transform:rotate(0deg);
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.tag-btn:hover{transform:rotate(calc(-1.6deg * var(--swing)));border-color:var(--dye);}
+.tag-btn[aria-pressed="true"]{
+  border-color:var(--dye);border-width:4px;
+  background:#eef4fa;
+  box-shadow:0 3px 0 var(--dye-deep);
+  transform:translateY(-4px);
+}
+html[data-contrast="hoch"] .tag-btn[aria-pressed="true"]{background:#fff;border-color:#000;outline:3px solid #000;}
+.tag-btn .hook{width:22px;height:14px;margin-top:-.85rem;display:block;}
+.tag-btn .ic{width:100%;height:64px;display:block;}
+.tag-name{
+  font-family:var(--serif);font-size:.95em;line-height:1.25;text-align:center;
+  hyphens:auto;overflow-wrap:anywhere;
+}
+.tag-key{
+  font-family:var(--mono);font-size:.68em;letter-spacing:.1em;color:var(--ink-soft);
+  border:1px solid var(--ink-soft);border-radius:3px;padding:0 .35em;
+}
+.tag-en{font-size:.75em;color:var(--ink-soft);text-align:center;line-height:1.2;}
+.tag-btn.richtig{border-color:var(--grass);box-shadow:0 3px 0 var(--grass);}
+.tag-btn.falsch{border-color:var(--thread);box-shadow:0 3px 0 var(--thread);}
+.mark{font-family:var(--mono);font-weight:700;font-size:.8em;}
+.mark.ja{color:var(--grass);}
+.mark.nein{color:var(--thread);}
+
+/* Doors */
+.doors{position:absolute;inset:0;display:flex;pointer-events:none;z-index:5;}
+.door{
+  flex:1;background:linear-gradient(100deg,#8a6039,#6b4728 60%,#5c3d26);
+  border:3px solid var(--wood-dark);
+  transform-origin:left center;
+  transition:transform .85s cubic-bezier(.5,.05,.35,1);
+  display:flex;align-items:center;justify-content:center;
+}
+.door.r{transform-origin:right center;}
+.door::after{content:"";width:12px;height:34px;border-radius:6px;background:#e6c88a;box-shadow:inset 0 0 0 2px #a8823c;}
+.door.l::after{margin-right:-24px;}
+.door.r::after{margin-left:-24px;}
+.schrank.offen .door.l{transform:perspective(900px) rotateY(-108deg);}
+.schrank.offen .door.r{transform:perspective(900px) rotateY(108deg);}
+.schrank.sofort .door{transition:none;}
+
+/* ---------- Figure / outfit ---------- */
+.puppe-box{
+  background:var(--tag);
+  border:2px solid var(--tag-edge);
+  border-radius:var(--radius);
+  padding:.9rem;
+  box-shadow:0 3px 0 var(--shadow);
+  position:sticky;top:.7rem;
+}
+@media (max-width:820px){.puppe-box{position:static;}}
+.puppe{
+  position:relative;
+  width:100%;max-width:290px;margin:.4rem auto .6rem;
+  aspect-ratio:3/4;
+  background:repeating-linear-gradient(45deg,rgba(46,94,140,.05) 0 8px,transparent 8px 16px);
+  border-radius:var(--radius);
+}
+html[data-contrast="hoch"] .puppe{background:#fff;border:2px solid #000;}
+html[data-contrast="hoch"] .ic path{stroke:#000 !important;stroke-opacity:1 !important;stroke-width:2.4 !important;}
+.puppe .body{position:absolute;inset:0;width:100%;height:100%;z-index:2;}
+
+/* Outfit layers use the whole mannequin as their coordinate system.
+   This keeps multiple garments stacked on the body instead of shrinking
+   them side-by-side inside a generic slot. */
+.slot{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  pointer-events:none;
+}
+.wear-piece{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  line-height:0;
+  transform-origin:center center;
+}
+.wear-piece .ic{
+  width:100%;height:auto;display:block;
+  filter:drop-shadow(0 2px 2px var(--shadow));
+}
+.wear-piece.worn{animation:fliegen .45s cubic-bezier(.2,.8,.3,1.2);}
+
+/* Headwear */
+.wear-head{top:.5%;width:31%;z-index:8;}
+.wear-cap{top:1.5%;width:31%;}
+.wear-helmet{top:.2%;width:30%;}
+.wear-sunhat{top:0;width:36%;}
+
+/* Upper body. Inner garments sit close to the torso; outerwear is larger. */
+.wear-top{z-index:4;}
+.wear-top-basic{top:19.5%;width:49%;z-index:4;}
+.wear-sweater{top:18.5%;width:52%;z-index:5;}
+.wear-top-outer{top:17%;width:57%;z-index:6;}
+.wear-top-long{top:16%;width:60%;z-index:6;}
+.wear-dress{top:18%;width:59%;z-index:4;}
+.wear-swim{top:21%;width:45%;z-index:4;}
+
+/* Waist and legs */
+.wear-bottom{z-index:3;}
+.wear-bottom-long{top:46%;width:42%;}
+.wear-bottom-short{top:47%;width:43%;}
+.wear-skirt{top:46.5%;width:42%;}
+
+/* Shoes are rendered as a mirrored pair and aligned to the two feet. */
+.wear-foot{top:68%;width:50%;z-index:7;display:flex;justify-content:center;align-items:flex-start;}
+.wear-foot .shoe-half{display:block;width:50%;line-height:0;}
+.wear-foot .shoe-half:first-child{transform:scaleX(-1);}
+.wear-foot .ic{width:100%;height:auto;}
+
+/* Accessories get anatomy-specific positions instead of one generic box. */
+.wear-glasses{top:4.2%;width:24%;z-index:10;}
+.wear-goggles{top:3.5%;width:27%;z-index:10;}
+.wear-tie{top:25.5%;width:20%;z-index:10;}
+.wear-scarf{top:16.5%;width:34%;z-index:10;}
+.wear-gloves{top:27%;width:62%;z-index:9;}
+.wear-watch{top:35%;left:73%;width:13%;z-index:10;}
+.wear-backpack{top:26%;left:78%;width:31%;z-index:3;}
+.wear-umbrella{top:27%;left:86%;width:28%;z-index:9;}
+.wear-koffer{top:49%;left:83%;width:29%;z-index:9;}
+.wear-carry{top:35%;left:84%;width:25%;z-index:9;}
+
+@keyframes fliegen{
+  from{transform:translateX(-50%) translate(-18%,28%) scale(.45) rotate(-12deg);opacity:0;}
+  to{transform:translateX(-50%);opacity:1;}
+}
+.outfit-liste{list-style:none;margin:.3rem 0 0;padding:0;font-size:.9em;}
+.outfit-liste li{
+  display:flex;justify-content:space-between;gap:.6em;
+  padding:.28em 0;border-bottom:1px dashed var(--tag-edge);
+}
+.outfit-liste .leer{color:var(--ink-soft);font-style:italic;border:none;}
+.rm-btn{
+  font:inherit;font-size:.82em;background:transparent;border:2px solid var(--thread);color:var(--thread);
+  border-radius:999px;padding:0 .55em;cursor:pointer;line-height:1.5;
+}
+.rm-btn:hover{background:var(--thread);color:#fff;}
+.zaehler{
+  font-family:var(--mono);font-size:.8em;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-soft);margin:.2rem 0 .6rem;text-align:center;
+}
+.zaehler b{color:var(--ink);font-size:1.15em;}
+
+/* ---------- Feedback ---------- */
+.feedback{
+  margin-top:1.1rem;
+  border:3px solid var(--ink);
+  border-radius:var(--radius);
+  background:var(--tag);
+  padding:.9rem 1rem;
+}
+.feedback.gut{border-color:var(--grass);}
+.feedback.schlecht{border-color:var(--thread);}
+.feedback[hidden]{display:none;}
+.fb-title{font-family:var(--serif);font-size:1.15em;font-weight:600;margin:0 0 .3em;}
+.feedback ul{margin:.4em 0 0;padding-left:1.2em;}
+.warum{margin:.6em 0 0;}
+.warum b{font-family:var(--mono);font-size:.78em;letter-spacing:.12em;text-transform:uppercase;}
+
+.shake{animation:wackeln .4s;}
+@keyframes wackeln{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-7px);}
+  45%{transform:translateX(6px);}
+  70%{transform:translateX(-4px);}
+}
+.funkeln{animation:funkeln .7s;}
+@keyframes funkeln{
+  0%{box-shadow:0 0 0 0 rgba(63,122,82,.55);}
+  100%{box-shadow:0 0 0 26px rgba(63,122,82,0);}
+}
+
+/* ---------- Bonus question ---------- */
+.bonus{
+  margin-top:1.1rem;background:var(--tag);
+  border:3px dashed var(--brass);border-radius:var(--radius);padding:.9rem 1rem;
+}
+.bonus[hidden]{display:none;}
+.bonus-opts{list-style:none;margin:.6em 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.5rem;}
+.bonus-opts .btn{font-size:.95em;}
+
+/* ---------- Summary ---------- */
+.tabelle{width:100%;border-collapse:collapse;margin:1rem 0;background:var(--tag);}
+.tabelle caption{text-align:left;font-family:var(--mono);font-size:.75em;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-soft);padding-bottom:.4em;}
+.tabelle th,.tabelle td{border:2px solid var(--tag-edge);padding:.5em .7em;text-align:left;}
+.tabelle th{background:var(--soap-deep);font-family:var(--sans);}
+html[data-contrast="hoch"] .tabelle th{background:#fff;}
+.tabelle td.num{font-family:var(--mono);text-align:right;}
+
+.code-box{
+  background:var(--ink);color:var(--tag);
+  border-radius:var(--radius);padding:1rem 1.1rem;margin:1.1rem 0;
+}
+.code-box p{margin:.2em 0;}
+.code-val{
+  font-family:var(--mono);font-size:1.5em;letter-spacing:.14em;font-weight:700;
+  display:block;margin:.4em 0;overflow-wrap:anywhere;color:#ffd98a;
+}
+html[data-contrast="hoch"] .code-val{color:#fff;}
+.name-feld{margin:.8rem 0;}
+.name-feld label{display:block;font-weight:700;margin-bottom:.25em;}
+.name-feld input{
+  font:inherit;padding:.5em .7em;border:3px solid var(--ink);border-radius:var(--radius);
+  background:var(--tag);color:var(--ink);width:min(100%,340px);
+}
+
+details{background:var(--tag);border:2px solid var(--tag-edge);border-radius:var(--radius);padding:.7rem .9rem;margin:1rem 0;}
+summary{cursor:pointer;font-weight:700;}
+details p,details ul{margin:.6em 0;}
+kbd{
+  font-family:var(--mono);font-size:.85em;background:var(--soap-deep);
+  border:2px solid var(--ink-soft);border-radius:4px;padding:0 .35em;
+}
+
+/* ---------- Live region ---------- */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+.status-bar{
+  margin:1rem 0 0;padding:.6em .9em;
+  border-left:8px solid var(--dye);background:var(--tag);border-radius:0 var(--radius) var(--radius) 0;
+  min-height:1.5em;
+}
+.status-bar:empty{display:none;}
+
+footer{
+  border-top:3px solid var(--wood);margin-top:2.5rem;padding:1rem 0;
+  font-size:.85em;color:var(--ink-soft);
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+}
+html[data-motion="aus"] *{
+  animation-duration:.001ms !important;
+  animation-iteration-count:1 !important;
+  transition-duration:.001ms !important;
+}
+html[data-motion="aus"] .tag-btn:hover{transform:none;}
+
+@media print{
+  .settings,.btn,.doors{display:none !important;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+
+<a class="skip" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <h1>Kleiderschrank Kleinhausen</h1>
+      <span class="sub">Was ziehe ich an?</span>
+    </div>
+    <div class="settings" role="group" aria-label="Einstellungen / Settings">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true"><span class="dot" aria-hidden="true"></span>English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Vorlesen</button>
+      <button type="button" class="set-btn" id="s-motion" aria-pressed="true"><span class="dot" aria-hidden="true"></span>Animation</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="hauptinhalt">
+
+  <!-- ============ START ============ -->
+  <section class="screen on" id="screen-start" aria-labelledby="h-start">
+    <p class="eyebrow">Wortschatz-Spiel · Deutsch als Fremdsprache</p>
+    <h2 id="h-start" tabindex="-1">Willkommen im Kleiderschrank</h2>
+    <p class="lede">Du wohnst in Kleinhausen. Jeden Tag passiert etwas Neues – und jedes Mal fragst du dich: <em>Was ziehe ich an?</em> Lies die Situation, öffne den Schrank und wähle die passende Kleidung.
+      <span class="en gloss">You live in Kleinhausen. Read each situation, open the wardrobe and choose the right clothes.</span></p>
+
+    <h3>So spielst du</h3>
+    <ol class="lede">
+      <li>Lies die Situation auf dem Zettel. <span class="en gloss">Read the situation on the note.</span></li>
+      <li>Wähle so viele Kleidungsstücke, wie verlangt werden. <span class="en gloss">Choose as many garments as requested.</span></li>
+      <li>Klicke auf <strong>Anziehen</strong> und sieh dir die Erklärung an. <span class="en gloss">Click "Anziehen" and read the explanation.</span></li>
+    </ol>
+
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-folgen">Folgen auswählen</button>
+      <button type="button" class="btn btn-ghost" id="btn-alle">Alle Folgen am Stück spielen</button>
+    </div>
+
+    <details>
+      <summary>Tastatur und Barrierefreiheit <span class="en gloss">Keyboard &amp; accessibility</span></summary>
+      <ul>
+        <li><kbd>Tab</kbd> / <kbd>Umschalt</kbd>+<kbd>Tab</kbd> – zwischen allen Elementen wechseln.</li>
+        <li><kbd>Pfeiltasten</kbd> – im Kleiderschrank von Stück zu Stück gehen.</li>
+        <li><kbd>1</kbd>–<kbd>9</kbd> – Kleidungsstück direkt aus- oder abwählen.</li>
+        <li><kbd>Enter</kbd> – Auswahl bestätigen (wenn genug Stücke gewählt sind).</li>
+        <li>Alle Bilder sind reine Dekoration; jede Information steht auch als Text da. Farben und Muster stehen immer im Namen des Kleidungsstücks.</li>
+        <li>Mit <strong>Animation</strong> schaltest du alle Bewegungen ab. Mit <strong>Kontrast</strong> wechselst du in eine schwarz-weiße Ansicht. <strong>Schrift</strong> hat drei Größen.</li>
+        <li><strong>Vorlesen</strong> spricht die deutschen Wörter vor (falls dein Gerät eine deutsche Stimme hat).</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ============ EPISODE SELECT ============ -->
+  <section class="screen" id="screen-episodes" aria-labelledby="h-eps">
+    <p class="eyebrow">Sechs Folgen · Sechs Themen</p>
+    <h2 id="h-eps" tabindex="-1">Welche Folge möchtest du spielen?</h2>
+    <p class="lede">Die Folgen werden von oben nach unten schwerer. Du kannst jede Folge einzeln oder alle nacheinander spielen.
+      <span class="en gloss">Episodes get harder from top to bottom.</span></p>
+    <ul class="eps" id="ep-liste"></ul>
+    <div class="btn-row">
+      <button type="button" class="btn btn-ghost" id="btn-zurueck-start">Zurück zum Anfang</button>
+      <button type="button" class="btn" id="btn-alle-2">Alle Folgen am Stück spielen</button>
+      <button type="button" class="btn btn-ghost" id="btn-zum-ergebnis" hidden>Ergebnis und Code ansehen</button>
+    </div>
+  </section>
+
+  <!-- ============ PLAY ============ -->
+  <section class="screen" id="screen-play" aria-labelledby="h-play">
+    <p class="eyebrow" id="folge-label">Folge</p>
+    <h2 id="h-play" tabindex="-1">Situation</h2>
+
+    <div class="note">
+      <div class="note-head">
+        <p class="eyebrow" id="runde-label" style="margin:0">Runde</p>
+        <div class="pips" id="pips" aria-hidden="true"></div>
+      </div>
+      <p class="szene" id="szene-text" lang="de"></p>
+      <p class="en gloss" id="szene-en" lang="en"></p>
+      <p style="margin-top:.7em">
+        <button type="button" class="speak-btn" id="btn-sprich">Situation vorlesen</button>
+      </p>
+    </div>
+
+    <div class="play-grid">
+      <div>
+        <div class="schrank" id="schrank">
+          <div class="rail" aria-hidden="true"></div>
+          <ul class="tags" id="tag-liste" aria-describedby="auswahl-hilfe"></ul>
+          <div class="doors" id="doors" aria-hidden="true">
+            <div class="door l"></div>
+            <div class="door r"></div>
+          </div>
+        </div>
+        <p class="sr-only" id="auswahl-hilfe">Wähle Kleidungsstücke aus. Mit den Pfeiltasten bewegst du dich, mit Enter oder Leertaste wählst du aus.</p>
+
+        <div class="feedback" id="feedback" hidden tabindex="-1"></div>
+
+        <div class="bonus" id="bonus" hidden>
+          <p class="eyebrow" style="margin:0">Bonusfrage · 5 Punkte</p>
+          <p class="szene" id="bonus-frage" lang="de"></p>
+          <p class="en gloss" id="bonus-en" lang="en"></p>
+          <ul class="bonus-opts" id="bonus-opts"></ul>
+          <p id="bonus-fb" style="margin:.7em 0 0"></p>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn" id="btn-anziehen" disabled>Anziehen</button>
+          <button type="button" class="btn btn-ghost" id="btn-leeren">Auswahl löschen</button>
+          <button type="button" class="btn" id="btn-weiter" hidden>Weiter</button>
+          <button type="button" class="btn btn-ghost" id="btn-abbrechen">Folge verlassen</button>
+        </div>
+      </div>
+
+      <div class="puppe-box">
+        <h3 style="margin-top:0">Dein Outfit</h3>
+        <p class="zaehler" id="zaehler"></p>
+        <div class="puppe" id="puppe">
+          <svg class="body" viewBox="0 0 300 400" aria-hidden="true" focusable="false">
+            <g fill="none" stroke="var(--ink-soft)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="150" cy="52" r="30"/>
+              <path d="M150 82 v22"/>
+              <path d="M112 108 h76 l12 96 h-100 z"/>
+              <path d="M112 108 l-30 22 l-14 74"/>
+              <path d="M188 108 l30 22 l14 74"/>
+              <path d="M100 204 l6 116 M200 204 l-6 116"/>
+              <path d="M92 320 h30 M178 320 h30"/>
+            </g>
+          </svg>
+          <div class="slot slot-kopf" id="slot-kopf"></div>
+          <div class="slot slot-oben" id="slot-oben"></div>
+          <div class="slot slot-unten" id="slot-unten"></div>
+          <div class="slot slot-fuss" id="slot-fuss"></div>
+          <div class="slot slot-extra" id="slot-extra"></div>
+        </div>
+        <ul class="outfit-liste" id="outfit-liste"></ul>
+      </div>
+    </div>
+
+    <p class="status-bar" id="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <!-- ============ SUMMARY ============ -->
+  <section class="screen" id="screen-summary" aria-labelledby="h-sum">
+    <p class="eyebrow">Ergebnis</p>
+    <h2 id="h-sum" tabindex="-1">Gut angezogen!</h2>
+    <p class="lede" id="sum-text"></p>
+
+    <table class="tabelle" id="sum-tabelle">
+      <caption>Deine Punkte pro Folge</caption>
+      <thead><tr><th scope="col">Folge</th><th scope="col">Thema</th><th scope="col">Punkte</th><th scope="col">Prozent</th></tr></thead>
+      <tbody id="sum-body"></tbody>
+      <tfoot id="sum-foot"></tfoot>
+    </table>
+
+    <div class="name-feld">
+      <label for="name-in">Dein Name (für den Abgabecode) <span class="en gloss">Your name, for the submission code</span></label>
+      <input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname">
+    </div>
+
+    <div class="code-box">
+      <p><strong>Dein Abgabecode</strong> <span class="en gloss" style="color:#b9c6dd">Your submission code</span></p>
+      <code class="code-val" id="code-val" aria-live="polite">Bitte gib zuerst deinen Namen ein.</code>
+      <p style="font-size:.9em">Kopiere diesen Code in die Canvas-Aufgabe. Der Code gehört zu deinem Namen – ein anderer Name ergibt einen anderen Code.</p>
+      <p><button type="button" class="btn btn-ghost" id="btn-copy" style="color:#fff;border-color:#fff;box-shadow:0 3px 0 #fff">Code kopieren</button></p>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-nochmal">Weitere Folge spielen</button>
+      <button type="button" class="btn btn-ghost" id="btn-neustart">Alles zurücksetzen</button>
+    </div>
+
+    <details id="lehrer">
+      <summary>Für Lehrkräfte: Code prüfen <span class="en gloss">For teachers: verify a code</span></summary>
+      <p>Gib den Namen der Lernenden und den abgegebenen Code ein. Das Ergebnis zeigt Punktzahl und gespielte Folgen.</p>
+      <p class="name-feld"><label for="v-name">Name</label><input type="text" id="v-name" spellcheck="false"></p>
+      <p class="name-feld"><label for="v-code">Code</label><input type="text" id="v-code" spellcheck="false"></p>
+      <p><button type="button" class="btn" id="btn-verify">Prüfen</button></p>
+      <p id="v-out" role="status" aria-live="polite"></p>
+      <p style="font-size:.9em">Hinweis: Die Prüfsumme liegt im Quelltext dieser Datei. Sie verhindert erfundene Codes und vertauschte Namen, ist aber kein Schutz gegen Lernende, die den Quelltext lesen.</p>
+    </details>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <p>Kleiderschrank Kleinhausen · Wortschatz: Kleidung, Wetter, Farben, Jahreszeiten, Schule &amp; Beruf, Sport, Reisen. Eine Datei, keine Cookies, kein Speicher – dein Fortschritt gilt nur für diesen Besuch.</p>
+</footer>
+
+<!-- Muster für Kleidung (Streifen, Karo, Punkte) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="pt-streifen" width="12" height="12" patternUnits="userSpaceOnUse">
+      <rect width="6" height="12" fill="rgba(20,25,40,.30)"/>
+    </pattern>
+    <pattern id="pt-karo" width="16" height="16" patternUnits="userSpaceOnUse">
+      <rect width="16" height="5" fill="rgba(20,25,40,.26)"/>
+      <rect width="5" height="16" fill="rgba(20,25,40,.26)"/>
+    </pattern>
+    <pattern id="pt-punkte" width="14" height="14" patternUnits="userSpaceOnUse">
+      <circle cx="7" cy="7" r="3.4" fill="rgba(20,25,40,.32)"/>
+    </pattern>
+  </defs>
+</svg>
+
+<script>
+"use strict";
+/* ==========================================================
+   1. ICONS — silhouette paths (viewBox 0 0 100 100)
+   Every icon is decorative; the German name carries meaning.
+   ========================================================== */
+const ICONS = {
+  tshirt:{d:["M34 14 L16 24 L8 44 L22 52 L26 44 L26 88 L74 88 L74 44 L78 52 L92 44 L84 24 L66 14 Q50 30 34 14 Z"],
+    det:'<path d="M34 14 Q50 30 66 14"/>'},
+  hemd:{d:["M34 14 L16 24 L8 44 L22 52 L26 44 L26 88 L74 88 L74 44 L78 52 L92 44 L84 24 L66 14 L50 32 Z"],
+    det:'<path d="M34 14 L50 32 L66 14"/><path d="M50 32 V88"/>'},
+  pullover:{d:["M34 14 L12 26 L4 58 L18 64 L24 48 L24 88 L76 88 L76 48 L82 64 L96 58 L88 26 L66 14 Q50 30 34 14 Z"],
+    det:'<path d="M34 14 Q50 30 66 14"/><path d="M24 80 H76"/>'},
+  jacke:{d:["M34 14 L12 26 L4 58 L18 64 L24 48 L24 88 L76 88 L76 48 L82 64 L96 58 L88 26 L66 14 L50 30 Z"],
+    det:'<path d="M50 30 V88"/><path d="M34 14 L50 30 L66 14"/><path d="M32 66 H42 M58 66 H68"/>'},
+  regenjacke:{d:["M34 14 L12 26 L4 58 L18 64 L24 48 L24 88 L76 88 L76 48 L82 64 L96 58 L88 26 L66 14 L50 30 Z"],
+    det:'<path d="M34 14 Q50 -2 66 14"/><path d="M50 30 V88"/>'},
+  mantel:{d:["M34 12 L12 24 L4 58 L18 64 L24 48 L24 94 L76 94 L76 48 L82 64 L96 58 L88 24 L66 12 L50 36 Z"],
+    det:'<path d="M34 12 L50 36 L66 12"/><path d="M50 36 V94"/><path d="M56 52 h2 M56 66 h2"/>'},
+  anzug:{d:["M34 12 L14 24 L6 56 L20 62 L26 46 L26 90 L74 90 L74 46 L80 62 L94 56 L86 24 L66 12 L50 42 Z"],
+    det:'<path d="M34 12 L50 42 L66 12"/><path d="M42 18 L50 42 L58 18"/><path d="M50 42 V90"/>'},
+  kittel:{d:["M34 12 L14 24 L6 56 L20 62 L26 46 L26 94 L74 94 L74 46 L80 62 L94 56 L86 24 L66 12 L50 34 Z"],
+    det:'<path d="M34 12 L50 34 L66 12"/><path d="M50 34 V94"/><path d="M34 62 h12 M54 62 h12"/>'},
+  trikot:{d:["M34 14 L14 24 L6 46 L22 54 L26 46 L26 88 L74 88 L74 46 L78 54 L94 46 L86 24 L66 14 Q50 30 34 14 Z"],
+    det:'<path d="M42 48 v26 M42 48 h14 v26 M56 48 v26"/>'},
+  hose:{d:["M26 12 L74 12 L78 44 L72 92 L56 92 L50 52 L44 92 L28 92 L22 44 Z"],
+    det:'<path d="M22 22 H78"/>'},
+  jeans:{d:["M26 12 L74 12 L78 44 L72 92 L56 92 L50 52 L44 92 L28 92 L22 44 Z"],
+    det:'<path d="M22 22 H78"/><path d="M30 28 q6 8 12 4"/><path d="M70 28 q-6 8 -12 4"/>'},
+  shorts:{d:["M26 16 L74 16 L78 40 L72 68 L56 68 L50 46 L44 68 L28 68 L22 40 Z"],
+    det:'<path d="M22 26 H78"/>'},
+  sporthose:{d:["M26 16 L74 16 L78 40 L72 68 L56 68 L50 46 L44 68 L28 68 L22 40 Z"],
+    det:'<path d="M22 26 H78"/><path d="M28 28 L31 66 M72 28 L69 66"/>'},
+  lederhose:{d:["M26 22 L74 22 L78 44 L72 72 L56 72 L50 50 L44 72 L28 72 L22 44 Z"],
+    det:'<path d="M34 22 V6 H66 V22"/><path d="M34 12 L66 18 M66 12 L34 18"/>'},
+  rock:{d:["M32 18 L68 18 L82 84 L18 84 Z"],
+    det:'<path d="M32 28 H68"/>'},
+  kleid:{d:["M36 12 L26 20 L16 36 L26 42 L32 30 L20 88 L80 88 L68 30 L74 42 L84 36 L74 20 L64 12 Q50 26 36 12 Z"],
+    det:'<path d="M36 12 Q50 26 64 12"/><path d="M30 46 H70"/>'},
+  dirndl:{d:["M36 12 L26 20 L16 36 L26 42 L32 30 L20 88 L80 88 L68 30 L74 42 L84 36 L74 20 L64 12 Q50 26 36 12 Z"],
+    det:'<path d="M36 12 Q50 26 64 12"/><path d="M30 46 H70"/><path d="M38 46 L34 86 H66 L62 46"/>'},
+  krawatte:{d:["M42 10 L58 10 L62 24 L50 34 L38 24 Z","M50 34 L62 46 L54 84 L50 92 L46 84 L38 46 Z"],det:''},
+  schal:{d:["M16 20 Q50 44 84 20 L84 40 Q50 64 16 40 Z","M26 40 L22 88 L40 88 L42 46 Z"],
+    det:'<path d="M24 62 H40 M23 74 H41"/>'},
+  handschuhe:{d:["M14 34 C14 20 40 20 40 34 L40 80 L14 80 Z","M6 44 L14 40 L14 60 L6 58 Z","M56 34 C56 20 82 20 82 34 L82 80 L56 80 Z","M90 44 L82 40 L82 60 L90 58 Z"],
+    det:'<path d="M14 66 H40 M56 66 H82"/>'},
+  muetze:{d:["M16 60 Q16 22 50 22 Q84 22 84 60 Z","M10 60 H90 V78 H10 Z"],
+    det:'<circle cx="50" cy="14" r="8"/>'},
+  hut:{d:["M32 22 Q32 16 50 16 Q68 16 68 22 L70 60 L30 60 Z","M6 60 Q50 46 94 60 Q50 76 6 60 Z"],
+    det:'<path d="M31 52 H69"/>'},
+  sonnenhut:{d:["M34 26 Q34 18 50 18 Q66 18 66 26 L68 56 L32 56 Z","M2 58 Q50 40 98 58 Q50 80 2 58 Z"],
+    det:'<path d="M33 48 H67"/>'},
+  cap:{d:["M16 56 Q16 22 50 22 Q84 22 84 56 Z","M16 56 H84 V66 H16 Z","M84 56 Q98 58 98 66 L84 66 Z"],
+    det:'<path d="M50 22 V56"/>'},
+  helm:{d:["M14 62 Q14 18 50 18 Q86 18 86 62 Z","M14 62 H86 V72 H14 Z"],
+    det:'<path d="M50 18 V62"/><path d="M26 72 L34 90 M74 72 L66 90"/>'},
+  brille:{d:["M6 38 H44 V58 Q44 66 34 66 H16 Q6 66 6 58 Z","M56 38 H94 V58 Q94 66 84 66 H66 Q56 66 56 58 Z","M44 42 H56 V48 H44 Z"],
+    det:'<path d="M6 40 L0 34 M94 40 L100 34"/>'},
+  schutzbrille:{d:["M10 34 H90 Q96 34 96 44 V58 Q96 68 86 68 H14 Q4 68 4 58 V44 Q4 34 10 34 Z"],
+    det:'<path d="M4 44 H0 M96 44 H100"/><path d="M50 34 V68"/>'},
+  schuh:{d:["M8 58 L28 58 L44 66 L78 72 Q90 74 90 82 L90 88 L8 88 Z"],
+    det:'<path d="M8 80 H90"/>'},
+  stiefel:{d:["M30 8 L58 8 L56 60 L84 68 Q92 70 92 80 L92 88 L28 88 Z"],
+    det:'<path d="M28 78 H92"/>'},
+  gummistiefel:{d:["M30 8 L58 8 L56 60 L84 68 Q92 70 92 80 L92 88 L28 88 Z"],
+    det:'<path d="M28 78 H92"/><path d="M30 20 H57"/>'},
+  sneaker:{d:["M8 56 L28 56 L44 64 L78 70 Q90 72 90 80 L90 84 L8 84 Z","M4 84 H94 V92 H4 Z"],
+    det:'<path d="M22 58 L34 66 M28 54 L40 62"/>'},
+  sandale:{d:["M10 68 H86 Q94 68 94 76 Q94 82 86 82 H10 Z"],
+    det:'<path d="M22 68 L42 50 L62 68"/><path d="M50 58 H72"/>'},
+  badehose:{d:["M24 26 H76 L80 46 Q80 62 66 62 L58 62 L50 46 L42 62 L34 62 Q20 62 20 46 Z"],
+    det:'<path d="M21 34 H79"/>'},
+  badeanzug:{d:["M34 14 L28 30 Q20 48 30 64 L40 76 L60 76 L70 64 Q80 48 72 30 L66 14 Q50 26 34 14 Z"],
+    det:'<path d="M34 14 Q50 26 66 14"/><path d="M32 44 H68"/>'},
+  socken:{d:["M26 8 H48 V46 Q48 54 56 57 L76 63 Q86 66 86 76 Q86 86 74 86 H50 Q40 86 36 78 L24 54 Q20 46 26 40 Z"],
+    det:'<path d="M26 18 H48"/>'},
+  rucksack:{d:["M22 30 Q22 18 34 18 H66 Q78 18 78 30 V80 Q78 90 68 90 H32 Q22 90 22 80 Z"],
+    det:'<path d="M22 46 H78"/><path d="M40 18 Q40 6 50 6 Q60 6 60 18"/><path d="M44 60 H56 V72 H44 Z"/>'},
+  regenschirm:{d:["M4 54 Q4 12 50 12 Q96 12 96 54 Z"],
+    det:'<path d="M50 54 V78 Q50 92 36 92 Q26 92 26 82"/><path d="M4 54 Q19 42 27 54 Q42 42 50 54 Q58 42 73 54 Q81 42 96 54"/>'},
+  koffer:{d:["M12 32 Q12 26 18 26 H82 Q88 26 88 32 V84 Q88 90 82 90 H18 Q12 90 12 84 Z"],
+    det:'<path d="M38 26 V16 H62 V26"/><path d="M12 46 H88 M12 70 H88"/>'},
+  uhr:{d:["M42 6 H58 L60 26 H40 Z","M42 74 H58 L56 94 H44 Z"],
+    det:'<circle cx="50" cy="50" r="24"/><path d="M50 38 V50 L58 56"/>'}
+};
+
+function iconSVG(item, cls){
+  const ic = ICONS[item.icon] || ICONS.tshirt;
+  const col = item.color || "#8fa3bf";
+  let body = ic.d.map(d => '<path d="'+d+'" fill="'+col+'" stroke="var(--ink)" stroke-width="1.6" stroke-opacity=".45" stroke-linejoin="round"/>').join("");
+  let pat = "";
+  if(item.muster){
+    pat = ic.d.map(d => '<path d="'+d+'" fill="url(#pt-'+item.muster+')"/>').join("");
+  }
+  const det = ic.det ? '<g fill="none" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" opacity=".85">'+ic.det+'</g>' : "";
+  return '<svg class="ic '+(cls||"")+'" viewBox="0 0 100 100" aria-hidden="true" focusable="false">'+body+pat+det+'</svg>';
+}
+
+/* ==========================================================
+   2. KLEIDUNG — the vocabulary registry
+   de = article + noun (as a learner should memorise it)
+   ========================================================== */
+const F = { weiss:"#f6f4ee", schwarz:"#2b2f38", rot:"#b23a48", blau:"#2e5e8c",
+            hellblau:"#7fa8cc", gruen:"#3f7a52", gelb:"#d8b02c", braun:"#7a5233",
+            grau:"#8d94a3", beige:"#cbb894", rosa:"#cf8ba3", orange:"#cf7a35" };
+
+const K = {
+  /* --- Oberteile --- */
+  tshirt:      {de:"das T-Shirt", en:"T-shirt", icon:"tshirt", color:F.weiss, slot:"oben"},
+  tshirt_blau: {de:"das blaue T-Shirt", en:"the blue T-shirt", icon:"tshirt", color:F.blau, slot:"oben"},
+  hemd:        {de:"das Hemd", en:"shirt (button-up)", icon:"hemd", color:F.weiss, slot:"oben"},
+  hemd_rot:    {de:"das rote Hemd", en:"the red shirt", icon:"hemd", color:F.rot, slot:"oben"},
+  hemd_weiss:  {de:"das weiße Hemd", en:"the white shirt", icon:"hemd", color:F.weiss, slot:"oben"},
+  hemd_gruen:  {de:"das grüne Hemd", en:"the green shirt", icon:"hemd", color:F.gruen, slot:"oben"},
+  hemd_kariert:{de:"das karierte Hemd", en:"the checked shirt", icon:"hemd", color:F.rot, muster:"karo", slot:"oben"},
+  bluse:       {de:"die Bluse", en:"blouse", icon:"hemd", color:F.rosa, slot:"oben"},
+  pullover:    {de:"der Pullover", en:"sweater", icon:"pullover", color:F.beige, slot:"oben"},
+  pullover_gruen:{de:"der grüne Pullover", en:"the green sweater", icon:"pullover", color:F.gruen, slot:"oben"},
+  pullover_gestreift:{de:"der gestreifte Pullover", en:"the striped sweater", icon:"pullover", color:F.hellblau, muster:"streifen", slot:"oben"},
+  jacke:       {de:"die Jacke", en:"jacket", icon:"jacke", color:F.gruen, slot:"oben"},
+  regenjacke:  {de:"die Regenjacke", en:"rain jacket", icon:"regenjacke", color:F.gelb, slot:"oben"},
+  mantel:      {de:"der Wintermantel", en:"winter coat", icon:"mantel", color:F.braun, slot:"oben"},
+  anzug:       {de:"der Anzug", en:"suit", icon:"anzug", color:F.schwarz, slot:"oben"},
+  kittel:      {de:"der Laborkittel", en:"lab coat", icon:"kittel", color:F.weiss, slot:"oben"},
+  kochjacke:   {de:"die Kochjacke", en:"chef's jacket", icon:"kittel", color:F.weiss, slot:"oben"},
+  trikot:      {de:"das Trikot", en:"sports jersey", icon:"trikot", color:F.rot, slot:"oben"},
+  skijacke:    {de:"die Skijacke", en:"ski jacket", icon:"jacke", color:F.orange, slot:"oben"},
+
+  /* --- Unterteile --- */
+  hose:        {de:"die Hose", en:"trousers", icon:"hose", color:F.grau, slot:"unten"},
+  hose_blau:   {de:"die blaue Hose", en:"the blue trousers", icon:"hose", color:F.blau, slot:"unten"},
+  hose_schwarz:{de:"die schwarze Hose", en:"the black trousers", icon:"hose", color:F.schwarz, slot:"unten"},
+  jeans:       {de:"die Jeans", en:"jeans", icon:"jeans", color:F.hellblau, slot:"unten"},
+  shorts:      {de:"die Shorts", en:"shorts", icon:"shorts", color:F.beige, slot:"unten"},
+  sporthose:   {de:"die Sporthose", en:"sports shorts", icon:"sporthose", color:F.schwarz, slot:"unten"},
+  jogginghose: {de:"die Jogginghose", en:"sweatpants", icon:"sporthose", color:F.grau, slot:"unten"},
+  lederhose:   {de:"die Lederhose", en:"leather trousers (traditional)", icon:"lederhose", color:F.braun, slot:"unten"},
+  rock:        {de:"der Rock", en:"skirt", icon:"rock", color:F.blau, slot:"unten"},
+  skihose:     {de:"die Skihose", en:"ski trousers", icon:"hose", color:F.schwarz, slot:"unten"},
+
+  /* --- Kleider --- */
+  kleid:       {de:"das Kleid", en:"dress", icon:"kleid", color:F.rot, slot:"oben"},
+  kleid_gelb:  {de:"das gelbe Kleid", en:"the yellow dress", icon:"kleid", color:F.gelb, slot:"oben"},
+  kleid_gepunktet:{de:"das gepunktete Kleid", en:"the polka-dot dress", icon:"kleid", color:F.hellblau, muster:"punkte", slot:"oben"},
+  dirndl:      {de:"das Dirndl", en:"dirndl dress", icon:"dirndl", color:F.gruen, slot:"oben"},
+
+  /* --- Kopf --- */
+  muetze:      {de:"die Mütze", en:"woolly hat", icon:"muetze", color:F.rot, slot:"kopf"},
+  hut:         {de:"der Hut", en:"hat", icon:"hut", color:F.braun, slot:"kopf"},
+  trachtenhut: {de:"der Trachtenhut", en:"traditional felt hat", icon:"hut", color:F.gruen, slot:"kopf"},
+  sonnenhut:   {de:"der Sonnenhut", en:"sun hat", icon:"sonnenhut", color:F.beige, slot:"kopf"},
+  cap:         {de:"die Kappe", en:"cap", icon:"cap", color:F.blau, slot:"kopf"},
+  helm:        {de:"der Fahrradhelm", en:"bicycle helmet", icon:"helm", color:F.weiss, slot:"kopf"},
+  skihelm:     {de:"der Skihelm", en:"ski helmet", icon:"helm", color:F.schwarz, slot:"kopf"},
+  haarnetz:    {de:"die Arbeitsmütze", en:"work cap (kitchen)", icon:"muetze", color:F.weiss, slot:"kopf"},
+
+  /* --- Schuhe --- */
+  schuhe:      {de:"die Lederschuhe", en:"leather shoes", icon:"schuh", color:F.schwarz, slot:"fuss"},
+  schuhe_weiss:{de:"die weißen Schuhe", en:"the white shoes", icon:"schuh", color:F.weiss, slot:"fuss"},
+  schuhe_schwarz:{de:"die schwarzen Schuhe", en:"the black shoes", icon:"schuh", color:F.schwarz, slot:"fuss"},
+  stiefel:     {de:"die Stiefel", en:"boots", icon:"stiefel", color:F.schwarz, slot:"fuss"},
+  stiefel_braun:{de:"die braunen Stiefel", en:"the brown boots", icon:"stiefel", color:F.braun, slot:"fuss"},
+  gummistiefel:{de:"die Gummistiefel", en:"rubber boots", icon:"gummistiefel", color:F.gelb, slot:"fuss"},
+  wanderschuhe:{de:"die Wanderschuhe", en:"hiking boots", icon:"stiefel", color:F.braun, slot:"fuss"},
+  sneaker:     {de:"die Turnschuhe", en:"trainers / sneakers", icon:"sneaker", color:F.weiss, slot:"fuss"},
+  sportschuhe: {de:"die Sportschuhe", en:"sports shoes", icon:"sneaker", color:F.rot, slot:"fuss"},
+  sandalen:    {de:"die Sandalen", en:"sandals", icon:"sandale", color:F.braun, slot:"fuss"},
+  badeschuhe:  {de:"die Badeschuhe", en:"pool sandals", icon:"sandale", color:F.hellblau, slot:"fuss"},
+  socken:      {de:"die Socken", en:"socks", icon:"socken", color:F.grau, slot:"fuss"},
+
+  /* --- Extras --- */
+  krawatte:    {de:"die Krawatte", en:"tie", icon:"krawatte", color:F.rot, slot:"extra"},
+  schal:       {de:"der Schal", en:"scarf", icon:"schal", color:F.rot, slot:"extra"},
+  handschuhe:  {de:"die Handschuhe", en:"gloves", icon:"handschuhe", color:F.schwarz, slot:"extra"},
+  sonnenbrille:{de:"die Sonnenbrille", en:"sunglasses", icon:"brille", color:F.schwarz, slot:"extra"},
+  schutzbrille:{de:"die Schutzbrille", en:"safety goggles", icon:"schutzbrille", color:F.hellblau, slot:"extra"},
+  schwimmbrille:{de:"die Schwimmbrille", en:"swimming goggles", icon:"schutzbrille", color:F.blau, slot:"extra"},
+  skibrille:   {de:"die Skibrille", en:"ski goggles", icon:"schutzbrille", color:F.orange, slot:"extra"},
+  rucksack:    {de:"der Rucksack", en:"backpack", icon:"rucksack", color:F.gruen, slot:"extra"},
+  regenschirm: {de:"der Regenschirm", en:"umbrella", icon:"regenschirm", color:F.blau, slot:"extra"},
+  koffer:      {de:"der Koffer", en:"suitcase", icon:"koffer", color:F.grau, slot:"extra"},
+  uhr:         {de:"die Armbanduhr", en:"wristwatch", icon:"uhr", color:F.braun, slot:"extra"},
+  badehose:    {de:"die Badehose", en:"swimming trunks", icon:"badehose", color:F.blau, slot:"unten"},
+  badeanzug:   {de:"der Badeanzug", en:"swimsuit", icon:"badeanzug", color:F.rot, slot:"oben"}
+};
+
+/* Reserve-Wortschatz: bluse, hose, jogginghose, dirndl, socken, regenschirm,
+   uhr sind angelegt, aber noch in keiner Runde – frei für neue Situationen. */
+
+/* ==========================================================
+   3. FOLGEN — six episodes, rising difficulty
+   ========================================================== */
+const FOLGEN = [
+{
+  nr:1, thema:"Kleidung und Wetter", en:"Clothes and weather", stufe:1,
+  intro:"Wie ist das Wetter heute in Kleinhausen?",
+  introEn:"What is the weather like in Kleinhausen today?",
+  runden:[
+    { szene:"Es regnet. Du gehst zum Bäcker in der Hauptstraße.",
+      en:"It is raining. You are walking to the bakery on the main street.",
+      opt:["regenjacke","gummistiefel","badehose","sonnenbrille","shorts"],
+      loesung:["regenjacke","gummistiefel"],
+      tipp:"Denk an Wasser: Was hält dich trocken?",
+      warum:"Bei Regen brauchst du eine Regenjacke und Gummistiefel. So bleiben deine Kleidung und deine Füße trocken." },
+    { szene:"Es schneit. Du gehst mit dem Hund in den Stadtpark.",
+      en:"It is snowing. You are taking the dog to the town park.",
+      opt:["mantel","muetze","sandalen","tshirt","shorts","sonnenhut"],
+      loesung:["mantel","muetze"],
+      tipp:"Bei Schnee ist es sehr kalt. Der Kopf friert zuerst.",
+      warum:"Wenn es schneit, ziehst du einen Wintermantel und eine Mütze an. Beide halten warm." },
+    { szene:"Die Sonne scheint. Es sind 30 Grad. Du gehst ins Freibad.",
+      en:"The sun is shining. It is 30 degrees. You are going to the open-air pool.",
+      opt:["badehose","sonnenbrille","mantel","schal","stiefel","pullover"],
+      loesung:["badehose","sonnenbrille"],
+      tipp:"Im Schwimmbad schwimmt man – und die Sonne ist hell.",
+      warum:"Im Freibad trägst du eine Badehose. Die Sonnenbrille schützt deine Augen vor der Sonne." },
+    { szene:"Es ist windig und kühl, nur 12 Grad. Du fährst mit dem Fahrrad zur Schule.",
+      en:"It is windy and cool, only 12 degrees. You are cycling to school.",
+      opt:["pullover","jacke","jeans","helm","shorts","sandalen","badeanzug"],
+      loesung:["pullover","jacke","jeans","helm"],
+      tipp:"Zwölf Grad ist kühl, aber kein Winter. Und eins gehört immer aufs Fahrrad.",
+      warum:"Bei 12 Grad und Wind trägst du einen Pullover, eine Jacke und eine lange Hose. Auf dem Fahrrad gehört außerdem ein Helm auf den Kopf." }
+  ]
+},
+{
+  nr:2, thema:"Farben und Muster", en:"Colours and patterns", stufe:2,
+  intro:"Heute geht es um Farben: rot, blau, gelb, grün, weiß, schwarz, braun – und um Muster: gestreift, kariert, gepunktet.",
+  introEn:"Today is about colours and patterns. Read the colour word carefully.",
+  runden:[
+    { szene:"Du möchtest ein rotes Hemd und eine blaue Hose tragen.",
+      en:"You want to wear a red shirt and blue trousers.",
+      opt:["hemd_rot","hose_blau","hemd_gruen","hose_schwarz","kleid_gelb","tshirt_blau"],
+      loesung:["hemd_rot","hose_blau"],
+      tipp:"Achte genau auf das Farbwort vor dem Kleidungsstück.",
+      warum:"„Rot“ und „blau“ stehen direkt vor dem Kleidungsstück: das rote Hemd, die blaue Hose." },
+    { szene:"Zieh den gestreiften Pullover und die schwarzen Schuhe an.",
+      en:"Put on the striped sweater and the black shoes.",
+      opt:["pullover_gestreift","schuhe_schwarz","pullover_gruen","schuhe_weiss","hemd_kariert","stiefel_braun"],
+      loesung:["pullover_gestreift","schuhe_schwarz"],
+      tipp:"gestreift = mit Linien. Nicht kariert, nicht gepunktet.",
+      warum:"„Gestreift“ heißt: mit Streifen (Linien). „Kariert“ heißt: mit Quadraten. „Gepunktet“ heißt: mit Punkten." },
+    { szene:"Zum Geburtstag trägst du das gepunktete Kleid und die weißen Schuhe.",
+      en:"For the birthday party you wear the polka-dot dress and the white shoes.",
+      opt:["kleid_gepunktet","schuhe_weiss","kleid_gelb","schuhe_schwarz","rock","pullover_gestreift"],
+      loesung:["kleid_gepunktet","schuhe_weiss"],
+      tipp:"Punkte sind kleine Kreise.",
+      warum:"Das gepunktete Kleid hat Punkte. Die weißen Schuhe sind weiß – nicht schwarz." },
+    { szene:"Dein Lieblingsoutfit: das karierte Hemd, die schwarze Hose und die braunen Stiefel.",
+      en:"Your favourite outfit: the checked shirt, the black trousers and the brown boots.",
+      opt:["hemd_kariert","hose_schwarz","stiefel_braun","hemd_rot","hose_blau","schuhe_weiss","pullover_gestreift"],
+      loesung:["hemd_kariert","hose_schwarz","stiefel_braun"],
+      tipp:"Drei Stücke, drei Farb- oder Musterwörter.",
+      warum:"Kariert = Quadrate, schwarz = die dunkelste Farbe, braun = die Farbe von Holz und Erde." }
+  ]
+},
+{
+  nr:3, thema:"Jahreszeiten und Feste", en:"Seasons and festivals", stufe:3,
+  intro:"Frühling, Sommer, Herbst, Winter – und die Feste in Kleinhausen.",
+  introEn:"Spring, summer, autumn, winter, and the festivals of Kleinhausen.",
+  runden:[
+    { szene:"Frühling. Es ist Ostern und du suchst Ostereier im Garten. 15 Grad.",
+      en:"Spring. It is Easter and you are hunting for eggs in the garden. 15 degrees.",
+      opt:["jacke","jeans","sneaker","mantel","badehose","sandalen","schal"],
+      loesung:["jacke","jeans","sneaker"],
+      tipp:"Im Frühling ist es mild: nicht heiß, nicht kalt.",
+      warum:"Bei 15 Grad reicht eine leichte Jacke. Dazu passen eine Jeans und Turnschuhe für den Garten." },
+    { szene:"Sommer. Das Stadtfest in Kleinhausen. Es ist heiß und die Sonne brennt.",
+      en:"Summer. The town festival in Kleinhausen. It is hot and the sun is strong.",
+      opt:["tshirt","shorts","sonnenhut","sandalen","mantel","handschuhe","stiefel"],
+      loesung:["tshirt","shorts","sonnenhut"],
+      tipp:"Drei Stücke gegen Hitze und Sonne.",
+      warum:"Im Sommer trägst du kurze Sachen: ein T-Shirt und Shorts. Der Sonnenhut schützt Kopf und Gesicht." },
+    { szene:"Herbst. Du fährst zum Oktoberfest und möchtest traditionell aussehen.",
+      en:"Autumn. You are going to the Oktoberfest and want to look traditional.",
+      opt:["lederhose","hemd_kariert","trachtenhut","trikot","sporthose","badeanzug","cap"],
+      loesung:["lederhose","hemd_kariert","trachtenhut"],
+      tipp:"Tracht in Bayern: Leder, Karo, Filz.",
+      warum:"Zur bayerischen Tracht gehören die Lederhose, ein kariertes Hemd und ein Trachtenhut. Frauen tragen oft ein Dirndl." },
+    { szene:"Winter. Der Weihnachtsmarkt öffnet. Es ist minus 3 Grad und es schneit.",
+      en:"Winter. The Christmas market opens. It is minus 3 degrees and snowing.",
+      opt:["mantel","schal","handschuhe","muetze","shorts","sandalen","sonnenbrille","tshirt"],
+      loesung:["mantel","schal","handschuhe","muetze"],
+      tipp:"Vier Stücke: Körper, Hals, Hände, Kopf.",
+      warum:"Bei minus 3 Grad brauchst du alles Warme: Mantel für den Körper, Schal für den Hals, Handschuhe für die Hände, Mütze für den Kopf." }
+  ]
+},
+{
+  nr:4, thema:"Schule und Beruf", en:"School and work", stufe:4,
+  intro:"In der Schule, im Labor, im Büro und in der Backstube gelten andere Regeln.",
+  introEn:"School, laboratory, office and bakery each have their own rules.",
+  runden:[
+    { szene:"Du hast ein Vorstellungsgespräch bei der Sparkasse Kleinhausen.",
+      en:"You have a job interview at the Kleinhausen savings bank.",
+      opt:["anzug","krawatte","schuhe","trikot","shorts","sneaker","cap","badehose"],
+      loesung:["anzug","krawatte","schuhe"],
+      tipp:"Formell heißt: elegant und dunkel.",
+      warum:"Für ein Vorstellungsgespräch zieht man sich formell an: Anzug, Krawatte und Lederschuhe. Sportkleidung wirkt unhöflich." },
+    { szene:"Chemieunterricht. Ihr arbeitet heute mit Säuren im Labor.",
+      en:"Chemistry class. Today you are working with acids in the lab.",
+      opt:["kittel","schutzbrille","sandalen","shorts","sonnenbrille","tshirt","badeanzug"],
+      loesung:["kittel","schutzbrille"],
+      tipp:"Sicherheit zuerst: Augen und Kleidung schützen.",
+      warum:"Im Labor schützt der Kittel deine Kleidung und die Schutzbrille deine Augen. Eine Sonnenbrille schützt nicht vor Chemikalien." },
+    { szene:"Dein erster Schultag am Gymnasium Kleinhausen. Du willst bequem und ordentlich aussehen.",
+      en:"Your first day at the Kleinhausen grammar school. You want to look tidy but comfortable.",
+      opt:["jeans","hemd","sneaker","rucksack","badehose","skijacke","lederhose","kittel"],
+      loesung:["jeans","hemd","sneaker","rucksack"],
+      tipp:"Vier Stücke – vergiss die Schulsachen nicht.",
+      warum:"Zum Schultag passen Jeans, ein Hemd und Turnschuhe. Der Rucksack trägt Bücher und Hefte." },
+    { szene:"Praktikum in der Bäckerei Fröhlich. Du stehst um vier Uhr in der Backstube.",
+      en:"Internship at the Fröhlich bakery. You start at four in the morning in the bakehouse.",
+      opt:["kochjacke","haarnetz","schuhe","krawatte","sandalen","sonnenbrille","rock","trikot"],
+      loesung:["kochjacke","haarnetz","schuhe"],
+      tipp:"In der Küche sind Haare und offene Schuhe verboten.",
+      warum:"In der Backstube trägst du eine weiße Kochjacke, eine Arbeitsmütze für die Haare und feste, geschlossene Schuhe." }
+  ],
+  bonus:[
+    { frage:"Ich ziehe ___ Krawatte an.", en:"Which article fits?",
+      opt:["den","die","das"], richtig:1,
+      warum:"„Die Krawatte“ ist feminin. Im Akkusativ bleibt der Artikel „die“." },
+    { frage:"Was trägt man NICHT im Labor?", en:"What do you NOT wear in a laboratory?",
+      opt:["den Kittel","die Schutzbrille","die Sandalen"], richtig:2,
+      warum:"Offene Schuhe wie Sandalen sind im Labor verboten – Flüssigkeit kann auf die Füße tropfen." }
+  ]
+},
+{
+  nr:5, thema:"Sport und Freizeit", en:"Sport and free time", stufe:5,
+  intro:"Der Sportverein Kleinhausen hat für jede Jahreszeit etwas.",
+  introEn:"The Kleinhausen sports club has something for every season.",
+  runden:[
+    { szene:"Fußballtraining beim SV Kleinhausen. Der Platz ist trocken.",
+      en:"Football training with SV Kleinhausen. The pitch is dry.",
+      opt:["trikot","sporthose","sportschuhe","anzug","mantel","sandalen","krawatte","kleid"],
+      loesung:["trikot","sporthose","sportschuhe"],
+      tipp:"Trikot, Hose, Schuhe – die Grundausstattung.",
+      warum:"Zum Fußball gehören ein Trikot, eine Sporthose und Sportschuhe. Alles muss leicht sein und darf nicht stören." },
+    { szene:"Schwimmen im Hallenbad. Nach dem Schwimmen gehst du barfuß nicht durch die Halle.",
+      en:"Swimming at the indoor pool. You do not walk barefoot through the hall afterwards.",
+      opt:["badeanzug","schwimmbrille","badeschuhe","mantel","jeans","stiefel","hut","schal"],
+      loesung:["badeanzug","schwimmbrille","badeschuhe"],
+      tipp:"Drei Stücke: schwimmen, sehen, laufen.",
+      warum:"Im Hallenbad trägst du einen Badeanzug, eine Schwimmbrille für die Augen und Badeschuhe für den nassen Boden." },
+    { szene:"Wandern auf den Kleinhausener Berg. Der Weg ist steil und die Sonne scheint.",
+      en:"Hiking up the Kleinhausen mountain. The path is steep and the sun is out.",
+      opt:["wanderschuhe","rucksack","cap","jacke","sandalen","anzug","kleid","krawatte","badehose"],
+      loesung:["wanderschuhe","rucksack","cap","jacke"],
+      tipp:"Vier Stücke: Füße, Gepäck, Kopf, Wetter am Gipfel.",
+      warum:"Beim Wandern brauchst du feste Wanderschuhe, einen Rucksack für Wasser, eine Kappe gegen die Sonne und eine Jacke, denn oben ist es kühler." },
+    { szene:"Skifahren in Österreich. Es hat frischen Schnee und minus 8 Grad.",
+      en:"Skiing in Austria. Fresh snow and minus 8 degrees.",
+      opt:["skijacke","skihose","skibrille","skihelm","shorts","sandalen","sonnenhut","tshirt","badeanzug"],
+      loesung:["skijacke","skihose","skibrille","skihelm"],
+      tipp:"Vier Stücke, alle fangen mit „Ski“ an – bis auf eines.",
+      warum:"Zum Skifahren gehören Skijacke, Skihose, Skibrille gegen Schnee und Sonne und ein Helm für die Sicherheit." }
+  ],
+  bonus:[
+    { frage:"Beim Wandern trage ich ___ Rucksack.", en:"Which article fits?",
+      opt:["einen","eine","ein"], richtig:0,
+      warum:"„Der Rucksack“ ist maskulin, deshalb heißt es im Akkusativ „einen Rucksack“." },
+    { frage:"Was gehört NICHT zum Skifahren?", en:"What does not belong to skiing?",
+      opt:["der Helm","die Skibrille","der Sonnenhut"], richtig:2,
+      warum:"Ein Sonnenhut hilft am Strand, aber nicht im Schnee. Auf der Piste brauchst du Helm und Skibrille." }
+  ]
+},
+{
+  nr:6, thema:"Reisen und Urlaub", en:"Travel and holidays", stufe:6,
+  intro:"Der Koffer steht offen. Vier Reisen, vier ganz verschiedene Ziele. Diese Folge ist die schwerste: mehr Auswahl, weniger Hilfe.",
+  introEn:"Four trips, four very different destinations. Hardest episode: more options, fewer hints.",
+  runden:[
+    { szene:"Flug nach Mallorca im Juli. Du verbringst die Tage am Strand.",
+      en:"",
+      opt:["badeanzug","sonnenhut","sonnenbrille","sandalen","mantel","handschuhe","stiefel","skijacke","schal"],
+      loesung:["badeanzug","sonnenhut","sonnenbrille","sandalen"],
+      tipp:"Sonne, Sand, Wasser.",
+      warum:"Für den Strand im Juli packst du Badeanzug, Sonnenhut, Sonnenbrille und Sandalen. Warme Winterkleidung bleibt zu Hause." },
+    { szene:"Städtereise nach Berlin im November. Du läufst den ganzen Tag durch die Stadt.",
+      en:"",
+      opt:["mantel","schal","jeans","sneaker","badehose","sandalen","sonnenhut","lederhose","trikot"],
+      loesung:["mantel","schal","jeans","sneaker"],
+      tipp:"Kalt, aber du gehst viel zu Fuß.",
+      warum:"Im November in Berlin brauchst du einen Mantel und einen Schal gegen die Kälte, eine Jeans und bequeme Turnschuhe für lange Wege." },
+    { szene:"Zelten am Kleinhausener See. Am Abend wird es kühl und es kann regnen.",
+      en:"",
+      opt:["regenjacke","pullover","wanderschuhe","rucksack","anzug","krawatte","kleid","sandalen","sonnenhut"],
+      loesung:["regenjacke","pullover","wanderschuhe","rucksack"],
+      tipp:"Regen, Kälte am Abend, unebener Boden, Gepäck.",
+      warum:"Beim Zelten hilft eine Regenjacke gegen Regen, ein Pullover gegen die Kälte am Abend, feste Wanderschuhe für den Boden und ein Rucksack für die Ausrüstung." },
+    { szene:"Geschäftsreise nach Zürich. Am Abend gibt es ein Essen mit wichtigen Kunden.",
+      en:"",
+      opt:["anzug","hemd_weiss","krawatte","schuhe","koffer","shorts","trikot","gummistiefel","cap"],
+      loesung:["anzug","hemd_weiss","krawatte","schuhe"],
+      tipp:"Elegant von oben bis unten – vier Kleidungsstücke, kein Gepäck.",
+      warum:"Zum Geschäftsessen trägst du einen Anzug, ein weißes Hemd, eine Krawatte und Lederschuhe. Der Koffer ist Gepäck, kein Kleidungsstück." }
+  ],
+  bonus:[
+    { frage:"Ich packe ___ Koffer für die Reise.", en:"Which article fits?",
+      opt:["den","dem","der"], richtig:0,
+      warum:"„Der Koffer“ ist maskulin. Nach „packen“ steht der Akkusativ: den Koffer." },
+    { frage:"Wohin fährst du im Winter mit Skijacke und Helm?", en:"Where do you go?",
+      opt:["ans Meer","in die Berge","in die Wüste"], richtig:1,
+      warum:"Skikleidung braucht Schnee – und Schnee liegt im Winter in den Bergen." },
+    { frage:"„Es ist kalt.“ Was ziehst du an?", en:"What do you put on?",
+      opt:["die Badehose","den Mantel","die Sandalen"], richtig:1,
+      warum:"Bei Kälte hilft ein Mantel. Badehose und Sandalen gehören zum Sommer." }
+  ]
+}
+];
+
+/* ==========================================================
+   4. ZUSTAND
+   ========================================================== */
+const S = {
+  englisch:true, audio:false, motion:true, kontrast:false, size:0,
+  modus:"einzeln",          // "einzeln" | "alle"
+  folgeIdx:0, rundeIdx:0,
+  auswahl:[], versuch:0, geloest:false,
+  rundenPunkte:0, folgePunkte:0, folgeMax:0,
+  bonusIdx:0, bonusOffen:false,
+  ergebnisse:{},            // folgeNr -> {punkte, max, thema}
+  fokusIdx:0
+};
+const MAX_VERSUCHE = 3;
+const PUNKTE = [10,6,3];
+
+/* ==========================================================
+   5. HILFSFUNKTIONEN
+   ========================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function sagen(text){
+  $("status").textContent = text;
+}
+function sprich(text){
+  if(!S.audio || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "de-DE"; u.rate = .88;
+    const v = window.speechSynthesis.getVoices().find(x=>/^de/i.test(x.lang));
+    if(v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  }catch(e){/* Sprachausgabe nicht verfügbar */}
+}
+function zeigeScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+  const h = document.querySelector("#"+id+" h2");
+  if(h) h.focus();
+  window.scrollTo({top:0,behavior:S.motion?"smooth":"auto"});
+}
+function glossUpdate(){
+  document.querySelectorAll(".gloss").forEach(el=>{ el.hidden = !S.englisch; });
+  /* Vorlesbare Namen mitziehen, sonst nennt der Screenreader eine alte Sprache */
+  document.querySelectorAll(".tag-btn").forEach((b,i)=>{
+    const item = K[b.dataset.id]; if(!item) return;
+    const fertig = b.classList.contains("richtig") || b.classList.contains("falsch");
+    const zusatz = fertig ? (b.classList.contains("richtig") ? ", richtig" : ", passt nicht") : ", Taste "+(i+1);
+    b.setAttribute("aria-label", item.de + (S.englisch ? ", "+item.en : "") + zusatz);
+  });
+}
+const HOOK = '<svg class="hook" viewBox="0 0 40 24" aria-hidden="true" focusable="false"><path d="M20 22 V12 Q20 4 12 4 Q6 4 6 9" fill="none" stroke="var(--wood-dark)" stroke-width="3" stroke-linecap="round"/></svg>';
+
+/* ==========================================================
+   6. EINSTELLUNGEN
+   ========================================================== */
+function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true":"false"); }
+
+$("s-en").addEventListener("click", ()=>{
+  S.englisch = !S.englisch; setToggle($("s-en"), S.englisch); glossUpdate();
+  sagen(S.englisch ? "Englische Hilfe ist an." : "Englische Hilfe ist aus.");
+});
+$("s-audio").addEventListener("click", ()=>{
+  S.audio = !S.audio; setToggle($("s-audio"), S.audio);
+  if(S.audio){ sprich("Vorlesen ist an."); sagen("Vorlesen ist an. Deutsche Wörter werden gesprochen."); }
+  else { if("speechSynthesis" in window) window.speechSynthesis.cancel(); sagen("Vorlesen ist aus."); }
+});
+$("s-motion").addEventListener("click", ()=>{
+  S.motion = !S.motion; setToggle($("s-motion"), S.motion);
+  document.documentElement.setAttribute("data-motion", S.motion ? "an":"aus");
+  document.documentElement.style.setProperty("--swing", S.motion ? "1":"0");
+  sagen(S.motion ? "Animationen sind an." : "Animationen sind aus.");
+});
+$("s-contrast").addEventListener("click", ()=>{
+  S.kontrast = !S.kontrast; setToggle($("s-contrast"), S.kontrast);
+  document.documentElement.setAttribute("data-contrast", S.kontrast ? "hoch":"normal");
+  sagen(S.kontrast ? "Hoher Kontrast ist an." : "Normale Farben.");
+});
+$("s-size").addEventListener("click", ()=>{
+  S.size = (S.size+1)%3;
+  const namen = ["normal","gross","sehr-gross"], labels=["A","A+","A++"];
+  document.documentElement.setAttribute("data-size", namen[S.size]);
+  $("s-size").textContent = "Schrift: "+labels[S.size];
+  sagen("Schriftgröße: "+["normal","groß","sehr groß"][S.size]+".");
+});
+
+/* Respect the OS setting on first load */
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  S.motion = false; setToggle($("s-motion"), false);
+  document.documentElement.setAttribute("data-motion","aus");
+  document.documentElement.style.setProperty("--swing","0");
+}
+
+/* ==========================================================
+   7. FOLGENAUSWAHL
+   ========================================================== */
+function baueFolgenliste(){
+  const ul = $("ep-liste"); ul.innerHTML = "";
+  FOLGEN.forEach((f,i)=>{
+    const li = document.createElement("li");
+    const erg = S.ergebnisse[f.nr];
+    const sterne = "★".repeat(f.stufe) + "☆".repeat(6-f.stufe);
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "ep-card";
+    b.innerHTML =
+      '<span class="ep-num">Folge '+f.nr+'</span>'+
+      '<span class="ep-title">'+esc(f.thema)+'</span>'+
+      '<span class="en gloss">'+esc(f.en)+'</span>'+
+      '<span class="ep-meta"><span class="stars" aria-hidden="true">'+sterne+'</span>'+
+      '<span>Schwierigkeit '+f.stufe+' von 6</span>'+
+      '<span>'+f.runden.length+' Runden</span></span>'+
+      (erg ? '<span class="ep-done">Gespielt: '+erg.punkte+' von '+erg.max+' Punkten</span>' : "");
+    b.addEventListener("click", ()=>{ S.modus="einzeln"; starteFolge(i); });
+    li.appendChild(b); ul.appendChild(li);
+  });
+  $("btn-zum-ergebnis").hidden = Object.keys(S.ergebnisse).length === 0;
+  glossUpdate();
+}
+
+/* ==========================================================
+   8. SPIELABLAUF
+   ========================================================== */
+function starteFolge(idx){
+  S.folgeIdx = idx; S.rundeIdx = 0; S.folgePunkte = 0; S.bonusIdx = 0;
+  const f = FOLGEN[idx];
+  S.folgeMax = f.runden.length*10 + (f.bonus ? f.bonus.length*5 : 0);
+  zeigeScreen("screen-play");
+  ladeRunde();
+  sagen("Folge "+f.nr+": "+f.thema+". "+f.intro);
+  sprich(f.intro);
+}
+
+function ladeRunde(){
+  const f = FOLGEN[S.folgeIdx];
+  const r = f.runden[S.rundeIdx];
+  S.auswahl = []; S.versuch = 0; S.geloest = false; S.bonusOffen = false; S.fokusIdx = 0;
+
+  $("folge-label").textContent = "Folge "+f.nr+" · "+f.thema;
+  $("h-play").textContent = "Runde "+(S.rundeIdx+1)+" von "+f.runden.length;
+  $("runde-label").textContent = "Situation "+(S.rundeIdx+1);
+  $("szene-text").textContent = r.szene;
+  const en = $("szene-en");
+  en.textContent = r.en || "";
+  en.classList.toggle("gloss", !!r.en);
+  en.hidden = !r.en || !S.englisch;
+
+  /* Pips */
+  const pips = $("pips"); pips.innerHTML = "";
+  f.runden.forEach((_,i)=>{
+    const d = document.createElement("span");
+    d.className = "pip" + (i < S.rundeIdx ? " done" : i === S.rundeIdx ? " now" : "");
+    pips.appendChild(d);
+  });
+
+  /* Kleiderschrank */
+  const ul = $("tag-liste"); ul.innerHTML = "";
+  r.opt.forEach((id,i)=>{
+    const item = K[id];
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "tag-btn"; b.dataset.id = id; b.dataset.i = i;
+    b.setAttribute("aria-pressed","false");
+    b.innerHTML = HOOK + iconSVG(item) +
+      '<span class="tag-name" lang="de">'+esc(item.de)+'</span>' +
+      '<span class="tag-en gloss" lang="en">'+esc(item.en)+'</span>' +
+      '<span class="tag-key" aria-hidden="true">'+(i+1)+'</span>';
+    b.setAttribute("aria-label", item.de + (S.englisch ? ", "+item.en : "") + ", Taste "+(i+1));
+    b.addEventListener("click", ()=>waehle(id));
+    b.addEventListener("focus", ()=>{ S.fokusIdx = i; sprich(item.de); });
+    b.addEventListener("mouseenter", ()=>sprich(item.de));
+    li.appendChild(b); ul.appendChild(li);
+  });
+
+  /* Türen */
+  const schrank = $("schrank");
+  schrank.classList.add("sofort"); schrank.classList.remove("offen");
+  void schrank.offsetWidth;
+  schrank.classList.remove("sofort");
+  setTimeout(()=>schrank.classList.add("offen"), S.motion ? 60 : 0);
+
+  $("feedback").hidden = true;
+  $("bonus").hidden = true;
+  $("btn-weiter").hidden = true;
+  $("btn-anziehen").hidden = false;
+  $("btn-leeren").hidden = false;
+  zeichneOutfit();
+  glossUpdate();
+  sagen("Situation: "+r.szene+" Wähle "+r.loesung.length+" Kleidungsstücke.");
+}
+
+function waehle(id){
+  if(S.geloest) return;
+  const r = FOLGEN[S.folgeIdx].runden[S.rundeIdx];
+  const pos = S.auswahl.indexOf(id);
+  if(pos >= 0){
+    S.auswahl.splice(pos,1);
+    sagen(K[id].de + " wurde abgelegt. " + restText());
+  }else{
+    if(S.auswahl.length >= r.loesung.length){
+      sagen("Du hast schon "+r.loesung.length+" Stücke gewählt. Lege zuerst etwas ab.");
+      const b = document.querySelector('.tag-btn[data-id="'+id+'"]');
+      if(b && S.motion){ b.classList.add("shake"); setTimeout(()=>b.classList.remove("shake"),420); }
+      return;
+    }
+    S.auswahl.push(id);
+    sprich(K[id].de);
+    sagen(K[id].de + " angezogen. " + restText());
+  }
+  zeichneOutfit();
+}
+function restText(){
+  const r = FOLGEN[S.folgeIdx].runden[S.rundeIdx];
+  const rest = r.loesung.length - S.auswahl.length;
+  return rest > 0 ? ("Noch "+rest+" Stück"+(rest===1?"":"e")+" wählen.") : "Du kannst jetzt auf Anziehen klicken.";
+}
+
+function outfitKlassen(id, item){
+  const icon = item.icon;
+  if(item.slot === "kopf"){
+    if(icon === "helm") return "wear-piece wear-head wear-helmet worn";
+    if(icon === "cap") return "wear-piece wear-head wear-cap worn";
+    if(icon === "sonnenhut") return "wear-piece wear-head wear-sunhat worn";
+    return "wear-piece wear-head worn";
+  }
+  if(item.slot === "oben"){
+    if(icon === "mantel") return "wear-piece wear-top wear-top-long worn";
+    if(["jacke","regenjacke","anzug","kittel"].includes(icon)) return "wear-piece wear-top wear-top-outer worn";
+    if(["kleid","dirndl"].includes(icon)) return "wear-piece wear-top wear-dress worn";
+    if(icon === "badeanzug") return "wear-piece wear-top wear-swim worn";
+    if(icon === "pullover") return "wear-piece wear-top wear-sweater worn";
+    return "wear-piece wear-top wear-top-basic worn";
+  }
+  if(item.slot === "unten"){
+    if(icon === "rock") return "wear-piece wear-bottom wear-skirt worn";
+    if(["shorts","sporthose","lederhose","badehose"].includes(icon)) return "wear-piece wear-bottom wear-bottom-short worn";
+    return "wear-piece wear-bottom wear-bottom-long worn";
+  }
+  if(item.slot === "fuss") return "wear-piece wear-foot worn";
+
+  if(icon === "brille") return "wear-piece wear-glasses worn";
+  if(icon === "schutzbrille") return "wear-piece wear-goggles worn";
+  if(icon === "krawatte") return "wear-piece wear-tie worn";
+  if(icon === "schal") return "wear-piece wear-scarf worn";
+  if(icon === "handschuhe") return "wear-piece wear-gloves worn";
+  if(icon === "uhr") return "wear-piece wear-watch worn";
+  if(icon === "rucksack") return "wear-piece wear-backpack worn";
+  if(icon === "regenschirm") return "wear-piece wear-umbrella worn";
+  if(icon === "koffer") return "wear-piece wear-koffer worn";
+  return "wear-piece wear-carry worn";
+}
+
+function zeichneOutfit(){
+  const r = FOLGEN[S.folgeIdx].runden[S.rundeIdx];
+  ["kopf","oben","unten","fuss","extra"].forEach(s=>{ $("slot-"+s).innerHTML = ""; });
+  S.auswahl.forEach(id=>{
+    const item = K[id];
+    const slot = $("slot-"+(item.slot||"extra"));
+    const wrap = document.createElement("span");
+    wrap.className = outfitKlassen(id, item);
+
+    /* Footwear icons describe one shoe/boot, so show a real pair on the mannequin. */
+    if(item.slot === "fuss"){
+      wrap.innerHTML = '<span class="shoe-half">'+iconSVG(item)+'</span>'+
+                       '<span class="shoe-half">'+iconSVG(item)+'</span>';
+    }else{
+      wrap.innerHTML = iconSVG(item);
+    }
+    slot.appendChild(wrap);
+  });
+
+  const liste = $("outfit-liste"); liste.innerHTML = "";
+  if(S.auswahl.length === 0){
+    const li = document.createElement("li");
+    li.className = "leer"; li.textContent = "Noch nichts gewählt.";
+    liste.appendChild(li);
+  }else{
+    S.auswahl.forEach(id=>{
+      const li = document.createElement("li");
+      const t = document.createElement("span");
+      t.lang = "de"; t.textContent = K[id].de;
+      li.appendChild(t);
+      if(!S.geloest){
+        const rm = document.createElement("button");
+        rm.type = "button"; rm.className = "rm-btn";
+        rm.textContent = "ablegen";
+        rm.setAttribute("aria-label", K[id].de + " wieder ablegen");
+        rm.addEventListener("click", ()=>{ waehle(id); $("btn-anziehen").focus(); });
+        li.appendChild(rm);
+      }
+      liste.appendChild(li);
+    });
+  }
+
+  $("zaehler").innerHTML = "Gewählt: <b>"+S.auswahl.length+"</b> von <b>"+r.loesung.length+"</b>";
+  $("btn-anziehen").disabled = S.auswahl.length !== r.loesung.length || S.geloest;
+  document.querySelectorAll(".tag-btn").forEach(b=>{
+    b.setAttribute("aria-pressed", S.auswahl.includes(b.dataset.id) ? "true":"false");
+  });
+}
+
+/* --- Auswertung --- */
+$("btn-anziehen").addEventListener("click", pruefen);
+$("btn-leeren").addEventListener("click", ()=>{
+  if(S.geloest) return;
+  S.auswahl = []; zeichneOutfit(); sagen("Auswahl gelöscht. Fang neu an.");
+});
+
+function pruefen(){
+  const f = FOLGEN[S.folgeIdx];
+  const r = f.runden[S.rundeIdx];
+  const richtig = S.auswahl.filter(id=>r.loesung.includes(id));
+  const falsch  = S.auswahl.filter(id=>!r.loesung.includes(id));
+  const alles = falsch.length === 0 && richtig.length === r.loesung.length;
+  S.versuch++;
+
+  const fb = $("feedback");
+  fb.hidden = false;
+  fb.className = "feedback " + (alles ? "gut" : "schlecht");
+
+  if(alles){
+    S.geloest = true;
+    const p = PUNKTE[Math.min(S.versuch-1, PUNKTE.length-1)];
+    S.folgePunkte += p;
+    fb.innerHTML =
+      '<p class="fb-title">Perfekt angezogen! <span aria-hidden="true">✓</span></p>'+
+      '<p>Du bekommst <strong>'+p+' Punkte</strong>'+(S.versuch>1?' (Versuch '+S.versuch+')':'')+'.</p>'+
+      '<p class="warum"><b>Warum?</b><br><span lang="de">'+esc(r.warum)+'</span></p>';
+    markiere(r);
+    if(S.motion) $("puppe").classList.add("funkeln");
+    setTimeout(()=>$("puppe").classList.remove("funkeln"), 750);
+    $("btn-anziehen").hidden = true; $("btn-leeren").hidden = true;
+    sagen("Richtig! "+p+" Punkte. "+r.warum);
+    sprich("Sehr gut! "+r.warum);
+    nachRunde();
+  }else if(S.versuch < MAX_VERSUCHE){
+    const rest = MAX_VERSUCHE - S.versuch;
+    fb.innerHTML =
+      '<p class="fb-title">Noch nicht ganz.</p>'+
+      '<p>Richtig: <strong>'+richtig.length+' von '+r.loesung.length+'</strong>. '+
+      (falsch.length ? 'Diese Stücke passen nicht: <strong lang="de">'+falsch.map(id=>esc(K[id].de)).join(", ")+'</strong>.' : '')+'</p>'+
+      '<p class="warum"><b>Tipp</b><br><span lang="de">'+esc(r.tipp)+'</span></p>'+
+      '<p>Du hast noch '+rest+' Versuch'+(rest===1?"":"e")+'.</p>';
+    falsch.forEach(id=>{
+      const b = document.querySelector('.tag-btn[data-id="'+id+'"]');
+      if(b){ b.classList.add("falsch"); if(S.motion){ b.classList.add("shake"); setTimeout(()=>b.classList.remove("shake"),420);} }
+    });
+    S.auswahl = S.auswahl.filter(id=>r.loesung.includes(id));
+    zeichneOutfit();
+    sagen("Noch nicht ganz. "+r.tipp+" Falsche Stücke wurden abgelegt. Noch "+rest+" Versuche.");
+  }else{
+    S.geloest = true;
+    fb.innerHTML =
+      '<p class="fb-title">Kein Problem – hier ist die Lösung.</p>'+
+      '<p>Richtig wäre: <strong lang="de">'+r.loesung.map(id=>esc(K[id].de)).join(", ")+'</strong>.</p>'+
+      '<p class="warum"><b>Warum?</b><br><span lang="de">'+esc(r.warum)+'</span></p>'+
+      '<p>0 Punkte für diese Runde. Merk dir die Wörter – sie kommen wieder.</p>';
+    S.auswahl = r.loesung.slice();
+    zeichneOutfit();
+    markiere(r);
+    $("btn-anziehen").hidden = true; $("btn-leeren").hidden = true;
+    sagen("Die Lösung: "+r.loesung.map(id=>K[id].de).join(", ")+". "+r.warum);
+    nachRunde();
+  }
+  fb.focus();
+}
+
+function markiere(r){
+  document.querySelectorAll(".tag-btn").forEach(b=>{
+    b.classList.remove("falsch");
+    const ja = r.loesung.includes(b.dataset.id);
+    b.classList.add(ja ? "richtig" : "falsch");
+    b.setAttribute("aria-disabled","true");
+    const item = K[b.dataset.id];
+    b.setAttribute("aria-label", item.de + (S.englisch ? ", "+item.en : "") + (ja ? ", richtig" : ", passt nicht"));
+    const m = document.createElement("span");
+    m.className = "mark " + (ja ? "ja":"nein");
+    m.textContent = ja ? "✓ richtig" : "✗ passt nicht";
+    b.appendChild(m);
+  });
+}
+
+function nachRunde(){
+  const f = FOLGEN[S.folgeIdx];
+  const letzteRunde = S.rundeIdx >= f.runden.length - 1;
+  const hatBonus = f.bonus && S.bonusIdx < f.bonus.length;
+  if(hatBonus && (letzteRunde || S.rundeIdx % 2 === 1)){
+    zeigeBonus();
+  }else{
+    $("btn-weiter").hidden = false;
+    $("btn-weiter").textContent = letzteRunde ? "Folge abschließen" : "Nächste Situation";
+    $("btn-weiter").focus();
+  }
+}
+
+/* --- Bonusfrage --- */
+function zeigeBonus(){
+  const f = FOLGEN[S.folgeIdx];
+  const b = f.bonus[S.bonusIdx];
+  S.bonusOffen = true;
+  $("bonus").hidden = false;
+  $("bonus-frage").textContent = b.frage;
+  const en = $("bonus-en");
+  en.textContent = b.en || ""; en.classList.toggle("gloss", !!b.en); en.hidden = !S.englisch || !b.en;
+  $("bonus-fb").textContent = "";
+  const ul = $("bonus-opts"); ul.innerHTML = "";
+  b.opt.forEach((o,i)=>{
+    const li = document.createElement("li");
+    const bt = document.createElement("button");
+    bt.type="button"; bt.className="btn"; bt.lang="de"; bt.textContent=o;
+    bt.addEventListener("click", ()=>bonusAntwort(i, bt));
+    li.appendChild(bt); ul.appendChild(li);
+  });
+  sagen("Bonusfrage: "+b.frage);
+  sprich(b.frage);
+  ul.querySelector("button").focus();
+}
+function bonusAntwort(i, btn){
+  if(!S.bonusOffen) return;
+  S.bonusOffen = false;
+  const f = FOLGEN[S.folgeIdx];
+  const b = f.bonus[S.bonusIdx];
+  const ok = i === b.richtig;
+  if(ok) S.folgePunkte += 5;
+  $("bonus-opts").querySelectorAll("button").forEach(x=>x.disabled = true);
+  btn.style.background = ok ? "var(--grass)" : "var(--thread)";
+  btn.style.borderColor = ok ? "var(--grass)" : "var(--thread)";
+  $("bonus-fb").innerHTML = (ok
+    ? '<strong>Richtig! +5 Punkte.</strong> '
+    : '<strong>Leider falsch.</strong> Richtig ist: <strong lang="de">'+esc(b.opt[b.richtig])+'</strong>. ')
+    + '<span lang="de">'+esc(b.warum)+'</span>';
+  sagen((ok?"Richtig, fünf Punkte. ":"Falsch. Richtig ist "+b.opt[b.richtig]+". ")+b.warum);
+  S.bonusIdx++;
+  const letzteRunde = S.rundeIdx >= f.runden.length - 1;
+  $("btn-weiter").hidden = false;
+  $("btn-weiter").textContent = letzteRunde ? "Folge abschließen" : "Nächste Situation";
+  $("btn-weiter").focus();
+}
+
+/* --- Weiter --- */
+$("btn-weiter").addEventListener("click", ()=>{
+  const f = FOLGEN[S.folgeIdx];
+  if(S.rundeIdx < f.runden.length - 1){
+    S.rundeIdx++;
+    ladeRunde();
+    $("h-play").focus();
+  }else{
+    /* offene Bonusfragen am Ende noch stellen */
+    if(f.bonus && S.bonusIdx < f.bonus.length){ zeigeBonus(); return; }
+    folgeFertig();
+  }
+});
+$("btn-abbrechen").addEventListener("click", ()=>{
+  baueFolgenliste(); zeigeScreen("screen-episodes");
+  sagen("Folge verlassen. Die Punkte dieser Folge wurden nicht gespeichert.");
+});
+
+function folgeFertig(){
+  const f = FOLGEN[S.folgeIdx];
+  const alt = S.ergebnisse[f.nr];
+  if(!alt || alt.punkte < S.folgePunkte){
+    S.ergebnisse[f.nr] = {punkte:S.folgePunkte, max:S.folgeMax, thema:f.thema};
+  }
+  if(S.modus === "alle" && S.folgeIdx < FOLGEN.length - 1){
+    const naechste = S.folgeIdx + 1;
+    sagen("Folge "+f.nr+" geschafft: "+S.folgePunkte+" von "+S.folgeMax+" Punkten. Weiter mit Folge "+(naechste+1)+".");
+    starteFolge(naechste);
+  }else{
+    zeigeErgebnis();
+  }
+}
+
+/* ==========================================================
+   9. ERGEBNIS UND ABGABECODE
+   ========================================================== */
+function zeigeErgebnis(){
+  const eintraege = Object.keys(S.ergebnisse).map(Number).sort((a,b)=>a-b);
+  let ges = 0, max = 0;
+  const body = $("sum-body"); body.innerHTML = "";
+  eintraege.forEach(nr=>{
+    const e = S.ergebnisse[nr];
+    ges += e.punkte; max += e.max;
+    const pct = Math.round(e.punkte/e.max*100);
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<th scope="row">'+nr+'</th><td>'+esc(e.thema)+'</td>'+
+      '<td class="num">'+e.punkte+' / '+e.max+'</td><td class="num">'+pct+' %</td>';
+    body.appendChild(tr);
+  });
+  const pct = max ? Math.round(ges/max*100) : 0;
+  $("sum-foot").innerHTML = '<tr><th scope="row" colspan="2">Gesamt</th>'+
+    '<td class="num"><strong>'+ges+' / '+max+'</strong></td><td class="num"><strong>'+pct+' %</strong></td></tr>';
+
+  let lob;
+  if(pct >= 90) lob = "Ausgezeichnet. Du weißt genau, was man wann anzieht.";
+  else if(pct >= 75) lob = "Sehr gut. Ein paar Wörter kannst du noch üben.";
+  else if(pct >= 50) lob = "Gut gemacht. Spiel die schweren Folgen noch einmal – Punkte werden verbessert, nicht addiert.";
+  else lob = "Ein guter Anfang. Lies die Erklärungen und versuche die Folgen noch einmal.";
+  $("sum-text").innerHTML = 'Du hast <strong>'+eintraege.length+' von '+FOLGEN.length+' Folgen</strong> gespielt. '+esc(lob);
+
+  $("h-sum").textContent = pct >= 75 ? "Gut angezogen!" : "Geschafft!";
+  codeAktualisieren();
+  zeigeScreen("screen-summary");
+  sagen("Ergebnis: "+ges+" von "+max+" Punkten, "+pct+" Prozent. "+lob);
+}
+
+/* Prüfsumme: FNV-1a mit Salt. */
+function hash32(str){
+  let h = 0x811c9dc5;
+  for(let i=0;i<str.length;i++){
+    h ^= str.charCodeAt(i);
+    h = (h + ((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24))) >>> 0;
+  }
+  return h >>> 0;
+}
+const SALT = "kleinhausen-kleiderschrank-v1";
+
+function baueCode(name){
+  const eintraege = Object.keys(S.ergebnisse).map(Number).sort((a,b)=>a-b);
+  if(!eintraege.length) return null;
+  let ges = 0, max = 0;
+  eintraege.forEach(nr=>{ ges += S.ergebnisse[nr].punkte; max += S.ergebnisse[nr].max; });
+  const pct = max ? Math.round(ges/max*100) : 0;
+  const norm = name.trim().toLowerCase().replace(/\s+/g," ");
+  const roh = norm+"|"+eintraege.join("")+"|"+ges+"|"+max;
+  const pruef = hash32(roh+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return { code:"KH-"+eintraege.join("")+"-"+ges+"-"+pct+"-"+pruef, ges, max, pct, folgen:eintraege };
+}
+function codeAktualisieren(){
+  const name = $("name-in").value;
+  const el = $("code-val");
+  if(!name.trim()){ el.textContent = "Bitte gib zuerst deinen Namen ein."; return; }
+  const c = baueCode(name);
+  el.textContent = c ? c.code : "Spiele zuerst eine Folge.";
+}
+$("name-in").addEventListener("input", codeAktualisieren);
+$("btn-copy").addEventListener("click", async ()=>{
+  const t = $("code-val").textContent;
+  if(!/^KH-/.test(t)){ sagen("Es gibt noch keinen Code. Gib zuerst deinen Namen ein."); return; }
+  try{
+    await navigator.clipboard.writeText(t);
+    $("btn-copy").textContent = "Code kopiert";
+    setTimeout(()=>{ $("btn-copy").textContent = "Code kopieren"; }, 2200);
+  }catch(e){
+    const r = document.createRange(); r.selectNodeContents($("code-val"));
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    $("btn-copy").textContent = "Markiert – bitte mit Strg+C kopieren";
+  }
+});
+
+/* Lehrkraft-Prüfung */
+$("btn-verify").addEventListener("click", ()=>{
+  const name = $("v-name").value.trim();
+  const code = $("v-code").value.trim().toUpperCase();
+  const out = $("v-out");
+  const m = /^KH-(\d+)-(\d+)-(\d+)-([0-9A-Z]{7})$/.exec(code);
+  if(!name || !m){ out.textContent = "Bitte Name und einen vollständigen Code im Format KH-…-…-…-… eingeben."; return; }
+  const [, folgen, ges, pct, pruef] = m;
+  const norm = name.toLowerCase().replace(/\s+/g," ");
+  /* Maximum aus den angegebenen Folgennummern neu berechnen */
+  let max = 0, ok = true;
+  folgen.split("").forEach(ch=>{
+    const f = FOLGEN.find(x=>x.nr === Number(ch));
+    if(!f){ ok = false; return; }
+    max += f.runden.length*10 + (f.bonus ? f.bonus.length*5 : 0);
+  });
+  if(!ok){ out.textContent = "Ungültig: unbekannte Folgennummer im Code."; return; }
+  const soll = hash32(norm+"|"+folgen+"|"+ges+"|"+max+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  const echtPct = max ? Math.round(Number(ges)/max*100) : 0;
+  out.textContent = (soll === pruef)
+    ? "Gültig. "+name+" hat die Folgen "+folgen.split("").join(", ")+" gespielt: "+ges+" von "+max+" Punkten ("+echtPct+" %)."
+    : "Ungültig. Code und Name passen nicht zusammen, oder der Code wurde verändert.";
+});
+
+/* ==========================================================
+   10. NAVIGATION
+   ========================================================== */
+$("btn-folgen").addEventListener("click", ()=>{ baueFolgenliste(); zeigeScreen("screen-episodes"); });
+$("btn-zurueck-start").addEventListener("click", ()=>zeigeScreen("screen-start"));
+$("btn-nochmal").addEventListener("click", ()=>{ baueFolgenliste(); zeigeScreen("screen-episodes"); });
+$("btn-zum-ergebnis").addEventListener("click", zeigeErgebnis);
+$("btn-neustart").addEventListener("click", ()=>{
+  S.ergebnisse = {}; $("name-in").value = ""; codeAktualisieren();
+  baueFolgenliste(); zeigeScreen("screen-start");
+  sagen("Alles zurückgesetzt. Du kannst neu anfangen.");
+});
+function alleSpielen(){ S.modus = "alle"; S.ergebnisse = {}; starteFolge(0); }
+$("btn-alle").addEventListener("click", alleSpielen);
+$("btn-alle-2").addEventListener("click", alleSpielen);
+$("btn-sprich").addEventListener("click", ()=>{
+  const t = $("szene-text").textContent;
+  if("speechSynthesis" in window){
+    if(!S.audio){ S.audio = true; setToggle($("s-audio"), true); }
+    sprich(t);
+  }else{
+    sagen("Dieses Gerät kann keine Sprache ausgeben.");
+  }
+});
+
+/* ==========================================================
+   11. TASTATUR
+   ========================================================== */
+document.addEventListener("keydown", e=>{
+  if(!$("screen-play").classList.contains("on")) return;
+  const tag = (e.target.tagName||"").toLowerCase();
+  if(tag === "input" || tag === "textarea") return;
+
+  /* Zahlen 1-9 */
+  if(/^[1-9]$/.test(e.key) && !S.geloest){
+    const btns = [...document.querySelectorAll(".tag-btn")];
+    const b = btns[Number(e.key)-1];
+    if(b){ e.preventDefault(); waehle(b.dataset.id); b.focus(); }
+    return;
+  }
+  /* Enter zum Bestätigen */
+  if(e.key === "Enter" && !e.target.closest("button") && !$("btn-anziehen").disabled){
+    e.preventDefault(); pruefen(); return;
+  }
+  /* Pfeiltasten im Schrank */
+  if(["ArrowRight","ArrowLeft","ArrowDown","ArrowUp"].includes(e.key) && e.target.classList.contains("tag-btn")){
+    const btns = [...document.querySelectorAll(".tag-btn")];
+    const i = btns.indexOf(e.target);
+    if(i < 0) return;
+    e.preventDefault();
+    const proReihe = Math.max(1, Math.round($("tag-liste").clientWidth / (btns[0].offsetWidth + 12)));
+    let n = i;
+    if(e.key === "ArrowRight") n = (i+1) % btns.length;
+    if(e.key === "ArrowLeft")  n = (i-1+btns.length) % btns.length;
+    if(e.key === "ArrowDown")  n = Math.min(btns.length-1, i+proReihe);
+    if(e.key === "ArrowUp")    n = Math.max(0, i-proReihe);
+    btns[n].focus();
+  }
+});
+
+/* ==========================================================
+   12. START
+   ========================================================== */
+glossUpdate();
+baueFolgenliste();
+if("speechSynthesis" in window){ window.speechSynthesis.onvoiceschanged = ()=>{}; }
+</script>
+</body>
+</html>

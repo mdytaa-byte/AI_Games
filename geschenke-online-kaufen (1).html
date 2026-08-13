@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaufhaus Fröhlich – Geschenke online kaufen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gelb:#FFCE00;
+  --gelb-tief:#E5B300;
+  --tinte:#15171C;
+  --papier:#E7EAEE;
+  --karte:#FFFFFF;
+  --kraft:#DCC9A8;
+  --rot:#D0342C;
+  --gruen:#1C7A4D;
+  --blau:#20458C;
+  --grau:#5F6673;
+  --linie:#CFD5DC;
+  --display:'Archivo Black','Arial Black','Helvetica Neue',sans-serif;
+  --body:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --mono:'Space Mono','Courier New',monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--body);
+  background:var(--papier);
+  color:var(--tinte);
+  font-size:16px;
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+.en{display:none;font-family:var(--body);font-weight:400;font-style:italic;color:var(--grau);font-size:.78em;line-height:1.3;letter-spacing:0}
+body.zeige-en .en{display:block}
+button{font-family:inherit;font-size:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--blau);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Kopfzeile ---------- */
+header.shop{
+  position:sticky;top:0;z-index:40;
+  background:var(--gelb);
+  border-bottom:4px solid var(--tinte);
+}
+.kopf{
+  max-width:1180px;margin:0 auto;padding:10px 16px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--tinte);background:none;border:0;padding:0}
+.logo-mark{
+  width:38px;height:34px;background:var(--tinte);border-radius:3px;
+  display:grid;place-items:center;color:var(--gelb);font-family:var(--display);font-size:15px;
+  flex:none;
+}
+.logo-text{font-family:var(--display);font-size:19px;letter-spacing:-.02em;line-height:1}
+.logo-text small{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;font-weight:700;margin-top:3px}
+.kopf-suche{flex:1 1 220px;min-width:160px;position:relative}
+.kopf-suche input{
+  width:100%;padding:10px 12px 10px 34px;border:2px solid var(--tinte);border-radius:3px;
+  font-family:var(--body);font-size:15px;background:#fff;
+}
+.kopf-suche .lupe{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none;opacity:.6}
+.kopf-werkzeuge{display:flex;gap:8px;align-items:center}
+.wz{
+  background:transparent;border:2px solid var(--tinte);border-radius:3px;
+  padding:8px 10px;font-weight:700;font-size:13px;white-space:nowrap;
+  transition:background .15s ease,transform .1s ease;
+}
+.wz:hover{background:rgba(0,0,0,.08)}
+.wz:active{transform:translateY(1px)}
+.wz[aria-pressed="true"]{background:var(--tinte);color:var(--gelb)}
+
+/* Paket-Warenkorb (Signature) */
+.paket{
+  position:relative;background:var(--tinte);color:var(--gelb);border:2px solid var(--tinte);
+  border-radius:3px;padding:8px 12px 8px 40px;font-weight:700;font-size:13px;white-space:nowrap;
+}
+.paket:hover{background:#000}
+.paket .kiste{
+  position:absolute;left:9px;top:50%;transform:translateY(-50%);
+  width:22px;height:18px;background:var(--gelb);border-radius:2px;
+}
+.paket .kiste::before{
+  content:"";position:absolute;left:0;right:0;top:6px;height:3px;background:var(--tinte);opacity:.55;
+}
+.paket .kiste::after{
+  content:"";position:absolute;left:8px;top:0;bottom:0;width:5px;background:var(--tinte);opacity:.35;
+}
+.paket.wackelt .kiste{animation:wackeln .5s ease}
+@keyframes wackeln{
+  0%,100%{transform:translateY(-50%) rotate(0)}
+  25%{transform:translateY(-50%) rotate(-9deg) scale(1.15)}
+  60%{transform:translateY(-50%) rotate(7deg) scale(1.1)}
+}
+.paket .zahl{
+  display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;margin-left:6px;
+  background:var(--rot);color:#fff;border-radius:10px;font-family:var(--mono);font-size:12px;font-weight:700;
+}
+.paket .zahl.pop{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.5)}100%{transform:scale(1)}}
+
+/* ---------- Abteilungs-Navigation ---------- */
+nav.abteilungen{background:var(--tinte);border-bottom:3px solid var(--gelb-tief)}
+.abt-liste{
+  max-width:1180px;margin:0 auto;padding:8px 16px;
+  display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;
+}
+.abt{
+  background:transparent;border:2px solid transparent;color:#fff;
+  padding:7px 13px;border-radius:20px;font-size:13.5px;font-weight:600;white-space:nowrap;
+  display:flex;align-items:center;gap:6px;transition:background .15s ease;
+}
+.abt:hover{background:rgba(255,255,255,.14)}
+.abt[aria-current="true"]{background:var(--gelb);color:var(--tinte);font-weight:700}
+.abt .en{color:rgba(255,255,255,.75)}
+.abt[aria-current="true"] .en{color:rgba(0,0,0,.6)}
+
+/* ---------- Layout ---------- */
+main{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+.spalten{display:grid;grid-template-columns:290px 1fr;gap:22px;align-items:start}
+@media (max-width:860px){.spalten{grid-template-columns:1fr}}
+
+/* ---------- Wunschzettel ---------- */
+.zettel{
+  background:#FFFDF4;border:2px solid var(--tinte);border-radius:2px;
+  position:sticky;top:126px;
+  box-shadow:5px 5px 0 rgba(21,23,28,.16);
+}
+@media (max-width:860px){.zettel{position:static}}
+.zettel::before{
+  content:"";display:block;height:9px;
+  background:radial-gradient(circle at 5px -2px, transparent 5px, var(--tinte) 5.5px, var(--tinte) 6px, transparent 6.5px) 0 0/12px 9px repeat-x;
+}
+.zettel-kopf{padding:4px 16px 12px;border-bottom:2px dashed var(--linie)}
+.zettel-kopf h2{font-family:var(--display);font-size:17px;margin:0;letter-spacing:-.01em}
+.zettel-kopf p{margin:5px 0 0;font-family:var(--mono);font-size:11px;color:var(--grau);letter-spacing:.03em}
+.person{padding:12px 16px;border-bottom:1px dashed var(--linie);display:flex;gap:11px}
+.person:last-child{border-bottom:0}
+.person .gesicht{font-size:26px;line-height:1.1;flex:none;filter:saturate(.9)}
+.person .name{font-weight:700;font-size:14.5px}
+.person .rolle{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--grau)}
+.person .wunsch{font-size:13.5px;margin-top:4px;line-height:1.45}
+.zettel-fuss{padding:12px 16px;background:var(--gelb);border-top:2px solid var(--tinte);font-size:13px;font-weight:600}
+.zettel-fuss .betrag{font-family:var(--mono);font-weight:700}
+.zettel-schalter{display:none}
+@media (max-width:860px){
+  .zettel-schalter{display:block;width:100%;margin-bottom:14px;background:var(--tinte);color:var(--gelb);border:0;padding:12px;border-radius:3px;font-weight:700}
+  .zettel.zu{display:none}
+}
+
+/* ---------- Produkte ---------- */
+.abt-titel{display:flex;align-items:baseline;gap:12px;margin:0 0 4px;font-family:var(--display);font-size:26px;letter-spacing:-.02em}
+.abt-titel .nr{font-family:var(--mono);font-size:12px;color:var(--grau);letter-spacing:.1em}
+.abt-unter{margin:0 0 18px;color:var(--grau);font-size:14px}
+.raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));gap:14px}
+.ware{
+  background:var(--karte);border:2px solid var(--tinte);border-radius:3px;
+  display:flex;flex-direction:column;overflow:hidden;
+  animation:auftauchen .32s ease backwards;
+}
+@keyframes auftauchen{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.ware .bild{
+  height:104px;display:grid;place-items:center;font-size:44px;
+  background:linear-gradient(160deg,#F4F1E8 0%,#E4DDCB 100%);
+  border-bottom:2px solid var(--tinte);position:relative;
+}
+.ware .bild .artnr{
+  position:absolute;left:6px;top:6px;font-family:var(--mono);font-size:9px;color:#8B8474;letter-spacing:.08em;
+}
+.ware .ikon{transition:transform .25s ease}
+.ware:hover .ikon{transform:scale(1.12) rotate(-4deg)}
+.ware .inhalt{padding:11px 12px;flex:1;display:flex;flex-direction:column}
+.ware h3{margin:0;font-size:14.5px;line-height:1.3;font-weight:700}
+.ware .info{margin:5px 0 0;font-size:12.5px;color:var(--grau);flex:1}
+.ware .preisreihe{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
+.preis{font-family:var(--mono);font-weight:700;font-size:15px}
+.kaufen{
+  background:var(--gelb);border:2px solid var(--tinte);border-radius:3px;
+  padding:7px 11px;font-weight:700;font-size:12.5px;transition:transform .1s ease,background .15s ease;
+}
+.kaufen:hover{background:var(--gelb-tief)}
+.kaufen:active{transform:translateY(2px)}
+.kaufen.drin{background:var(--gruen);color:#fff}
+.flieger{position:fixed;z-index:200;font-size:40px;pointer-events:none;transition:all .62s cubic-bezier(.5,-0.3,.7,1)}
+
+/* ---------- Schublade Warenkorb ---------- */
+.schatten{position:fixed;inset:0;background:rgba(21,23,28,.55);z-index:60;opacity:0;pointer-events:none;transition:opacity .25s ease}
+.schatten.auf{opacity:1;pointer-events:auto}
+.schublade{
+  position:fixed;top:0;right:0;bottom:0;width:min(410px,100%);z-index:70;
+  background:var(--papier);border-left:4px solid var(--tinte);
+  transform:translateX(102%);transition:transform .3s cubic-bezier(.3,.8,.3,1);
+  display:flex;flex-direction:column;
+}
+.schublade.auf{transform:none}
+.schublade-kopf{background:var(--tinte);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center}
+.schublade-kopf h2{margin:0;font-family:var(--display);font-size:19px}
+.zu-x{background:none;border:2px solid #fff;color:#fff;border-radius:3px;width:34px;height:34px;font-size:16px;line-height:1}
+.korb-liste{flex:1;overflow-y:auto;padding:14px}
+.korb-zeile{display:flex;gap:11px;align-items:center;background:#fff;border:2px solid var(--tinte);border-radius:3px;padding:9px;margin-bottom:9px}
+.korb-zeile .ikon{font-size:26px;flex:none}
+.korb-zeile .kn{font-weight:700;font-size:13.5px;line-height:1.25}
+.korb-zeile .kp{font-family:var(--mono);font-size:12.5px;color:var(--grau)}
+.raus{margin-left:auto;background:none;border:0;color:var(--rot);font-weight:700;font-size:12px;text-decoration:underline;padding:4px}
+.leer{text-align:center;padding:40px 16px;color:var(--grau)}
+.leer .kiste-gross{font-size:44px;display:block;margin-bottom:10px}
+.schublade-fuss{border-top:3px solid var(--tinte);background:#fff;padding:14px}
+.gutschein{display:flex;gap:7px;margin-bottom:12px}
+.gutschein input{flex:1;padding:9px;border:2px solid var(--tinte);border-radius:3px;font-family:var(--mono);font-size:13px;text-transform:uppercase}
+.gutschein button{background:var(--tinte);color:#fff;border:2px solid var(--tinte);border-radius:3px;padding:0 13px;font-weight:700;font-size:13px}
+.summe{display:flex;justify-content:space-between;font-size:13.5px;padding:3px 0}
+.summe.gesamt{border-top:2px solid var(--tinte);margin-top:7px;padding-top:9px;font-family:var(--display);font-size:17px}
+.summe span:last-child{font-family:var(--mono);font-weight:700}
+.summe.rabatt{color:var(--gruen);font-weight:600}
+.gross{
+  width:100%;margin-top:12px;background:var(--gelb);border:3px solid var(--tinte);border-radius:3px;
+  padding:13px;font-family:var(--display);font-size:16px;letter-spacing:-.01em;
+  box-shadow:4px 4px 0 var(--tinte);transition:transform .1s ease,box-shadow .1s ease;
+}
+.gross:hover{background:var(--gelb-tief)}
+.gross:active{transform:translate(4px,4px);box-shadow:0 0 0 var(--tinte)}
+.gross[disabled]{background:var(--linie);box-shadow:none;cursor:not-allowed;color:var(--grau);border-color:var(--grau)}
+.warnung{background:#FDECEA;border:2px solid var(--rot);color:#8A1F19;padding:9px 11px;border-radius:3px;font-size:13px;margin-top:10px}
+
+/* ---------- Bildschirme ---------- */
+.bildschirm{display:none}
+.bildschirm.aktiv{display:block;animation:auftauchen .3s ease}
+
+/* Startseite */
+.start{max-width:760px;margin:0 auto}
+.start-karte{background:var(--karte);border:3px solid var(--tinte);border-radius:3px;box-shadow:8px 8px 0 rgba(21,23,28,.18);overflow:hidden}
+.start-band{background:var(--gelb);border-bottom:3px solid var(--tinte);padding:26px 26px 22px}
+.start-band h1{margin:0;font-family:var(--display);font-size:clamp(27px,5.4vw,42px);line-height:1.02;letter-spacing:-.03em}
+.start-band p{margin:9px 0 0;font-family:var(--mono);font-size:12px;letter-spacing:.11em;text-transform:uppercase;font-weight:700}
+.start-koerper{padding:24px 26px 26px}
+.start-koerper h2{font-family:var(--display);font-size:18px;margin:0 0 12px}
+ol.regeln{margin:0;padding-left:0;list-style:none;counter-reset:r}
+ol.regeln li{counter-increment:r;position:relative;padding:0 0 14px 44px;font-size:15px}
+ol.regeln li::before{
+  content:counter(r);position:absolute;left:0;top:0;
+  width:29px;height:29px;background:var(--tinte);color:var(--gelb);
+  display:grid;place-items:center;border-radius:50%;font-family:var(--mono);font-weight:700;font-size:13px;
+}
+.werbung{
+  margin:18px 0 0;background:#FFF8DB;border:2px dashed var(--tinte);padding:13px 15px;border-radius:3px;font-size:14px;
+}
+.werbung code{font-family:var(--mono);font-weight:700;background:var(--tinte);color:var(--gelb);padding:2px 7px;border-radius:2px;letter-spacing:.06em}
+
+/* Kasse */
+.kasse{max-width:720px;margin:0 auto}
+.schritte{display:flex;gap:6px;margin-bottom:22px}
+.schritt{flex:1;text-align:center}
+.schritt .kugel{
+  width:33px;height:33px;margin:0 auto 6px;border-radius:50%;
+  background:#fff;border:2px solid var(--tinte);display:grid;place-items:center;
+  font-family:var(--mono);font-weight:700;font-size:13px;transition:background .3s ease,color .3s ease;
+}
+.schritt.jetzt .kugel{background:var(--gelb)}
+.schritt.fertig .kugel{background:var(--tinte);color:var(--gelb)}
+.schritt .bez{font-size:11.5px;font-weight:600;line-height:1.2}
+.schritt .en{font-size:10px}
+.tafel{background:var(--karte);border:3px solid var(--tinte);border-radius:3px;padding:22px}
+.tafel h2{margin:0 0 4px;font-family:var(--display);font-size:22px;letter-spacing:-.02em}
+.tafel .hinweis{margin:0 0 18px;color:var(--grau);font-size:13.5px}
+.feld{margin-bottom:14px}
+.feld label{display:block;font-weight:700;font-size:13.5px;margin-bottom:5px}
+.feld input[type=text],.feld input[type=email],.feld select{
+  width:100%;padding:10px 11px;border:2px solid var(--tinte);border-radius:3px;font-family:var(--body);font-size:15px;background:#fff;
+}
+.feld input.falsch{border-color:var(--rot);background:#FFF6F5}
+.fehler{color:var(--rot);font-size:12.5px;font-weight:600;margin-top:5px;display:none}
+.fehler.zeigen{display:block}
+.reihe{display:grid;grid-template-columns:130px 1fr;gap:12px}
+@media (max-width:520px){.reihe{grid-template-columns:1fr}}
+.wahl{display:block;border:2px solid var(--tinte);border-radius:3px;padding:12px;margin-bottom:9px;cursor:pointer;background:#fff;transition:background .15s ease}
+.wahl:hover{background:#FFFBE9}
+.wahl input{margin-right:9px}
+.wahl.gewaehlt{background:var(--gelb);box-shadow:inset 0 0 0 2px var(--tinte)}
+.wahl .wt{font-weight:700;font-size:14.5px}
+.wahl .wi{font-size:12.5px;color:var(--grau);margin-left:26px}
+.wahl.gewaehlt .wi{color:#5A4A00}
+.knopfreihe{display:flex;gap:10px;margin-top:20px}
+.zurueck{background:#fff;border:2px solid var(--tinte);border-radius:3px;padding:12px 18px;font-weight:700}
+.weiter{flex:1;background:var(--gelb);border:3px solid var(--tinte);border-radius:3px;padding:12px;font-family:var(--display);font-size:15px;box-shadow:4px 4px 0 var(--tinte)}
+.weiter:active{transform:translate(4px,4px);box-shadow:none}
+.weiter[disabled]{background:var(--linie);color:var(--grau);border-color:var(--grau);box-shadow:none;cursor:not-allowed}
+.pruef-block{border:2px solid var(--linie);border-radius:3px;padding:13px;margin-bottom:12px;font-size:14px}
+.pruef-block h3{margin:0 0 7px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--grau)}
+.pruef-block .aendern{float:right;font-size:12px;background:none;border:0;color:var(--blau);text-decoration:underline;font-weight:700}
+
+/* Lieferung / Ladebalken */
+.lieferung{max-width:620px;margin:40px auto;text-align:center}
+.strasse{position:relative;height:96px;margin:26px 0;border-bottom:5px dashed var(--tinte);overflow:hidden}
+.van{position:absolute;bottom:6px;left:-140px;width:120px;height:58px;animation:fahren 2.6s linear forwards}
+@keyframes fahren{from{left:-140px}to{left:105%}}
+.van .kasten{position:absolute;left:0;bottom:11px;width:78px;height:44px;background:var(--gelb);border:3px solid var(--tinte);border-radius:3px}
+.van .kabine{position:absolute;left:74px;bottom:11px;width:38px;height:32px;background:var(--gelb);border:3px solid var(--tinte);border-radius:3px 8px 3px 3px}
+.van .fenster{position:absolute;left:82px;bottom:26px;width:20px;height:13px;background:#BFD6E8;border:2px solid var(--tinte)}
+.van .rad{position:absolute;bottom:0;width:22px;height:22px;background:var(--tinte);border-radius:50%;animation:rollen .5s linear infinite}
+.van .rad::after{content:"";position:absolute;inset:7px;background:var(--papier);border-radius:50%}
+.van .r1{left:14px}.van .r2{left:76px}
+@keyframes rollen{to{transform:rotate(360deg)}}
+.balken{height:16px;background:#fff;border:3px solid var(--tinte);border-radius:3px;overflow:hidden}
+.balken i{display:block;height:100%;width:0;background:var(--gelb);animation:fuellen 2.4s ease forwards}
+@keyframes fuellen{to{width:100%}}
+.lade-text{font-family:var(--mono);font-size:13px;margin-top:12px;letter-spacing:.05em}
+
+/* Paketschein + Ergebnis */
+.ergebnis{max-width:760px;margin:0 auto}
+.schein{
+  background:#fff;border:3px solid var(--tinte);border-radius:3px;padding:20px;margin-bottom:22px;
+  font-family:var(--mono);font-size:13px;box-shadow:8px 8px 0 rgba(21,23,28,.18);
+}
+.schein-kopf{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid var(--tinte);padding-bottom:11px;margin-bottom:13px;gap:12px}
+.schein-kopf .marke{font-family:var(--display);font-size:16px}
+.schein-kopf .prio{background:var(--gelb);border:2px solid var(--tinte);padding:3px 9px;font-weight:700;font-size:11px;letter-spacing:.1em;white-space:nowrap}
+.schein .zeile{margin:3px 0}
+.schein .etikett{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--grau);margin-top:11px}
+.barcode{
+  height:52px;margin-top:15px;
+  background:repeating-linear-gradient(90deg,var(--tinte) 0 2px,#fff 2px 4px,var(--tinte) 4px 7px,#fff 7px 9px,var(--tinte) 9px 10px,#fff 10px 14px);
+}
+.barcode-nr{text-align:center;letter-spacing:.32em;font-size:11px;margin-top:5px}
+.punkte{background:var(--tinte);color:#fff;border-radius:3px;padding:20px;text-align:center;margin-bottom:20px}
+.punkte .zahl-gross{font-family:var(--display);font-size:48px;line-height:1;color:var(--gelb)}
+.punkte .von{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:6px;opacity:.8}
+.punkte .spruch{margin-top:11px;font-size:15px}
+.karte-code{background:var(--gelb);border:3px solid var(--tinte);border-radius:3px;padding:15px;text-align:center;margin-bottom:22px}
+.karte-code .ct{font-size:12.5px;font-weight:700}
+.karte-code .cc{font-family:var(--mono);font-size:23px;font-weight:700;letter-spacing:.16em;margin-top:6px;word-break:break-all}
+.reaktion{display:flex;gap:13px;background:#fff;border:2px solid var(--tinte);border-radius:3px;padding:13px;margin-bottom:10px;align-items:flex-start}
+.reaktion.nein{background:#FBF3F2}
+.reaktion .gesicht{font-size:30px;flex:none}
+.reaktion .rn{font-weight:700;font-size:14.5px}
+.reaktion .rt{font-size:13.5px;margin-top:3px}
+.reaktion .haken{margin-left:auto;font-size:19px;flex:none}
+.extras{background:#FFF8DB;border:2px dashed var(--tinte);padding:13px;border-radius:3px;font-size:13.5px;margin-bottom:10px}
+
+/* Vokabelhilfe */
+.vok{position:fixed;left:0;right:0;bottom:0;z-index:80;background:#fff;border-top:4px solid var(--tinte);max-height:64vh;overflow-y:auto;transform:translateY(102%);transition:transform .3s cubic-bezier(.3,.8,.3,1)}
+.vok.auf{transform:none}
+.vok-inner{max-width:900px;margin:0 auto;padding:16px}
+.vok h2{font-family:var(--display);font-size:18px;margin:0 0 10px;display:flex;justify-content:space-between;align-items:center}
+table.vokabeln{width:100%;border-collapse:collapse;font-size:14px}
+table.vokabeln th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--grau);padding:5px 8px;border-bottom:2px solid var(--tinte)}
+table.vokabeln td{padding:6px 8px;border-bottom:1px solid var(--linie)}
+table.vokabeln td:first-child{font-weight:700;white-space:nowrap}
+table.vokabeln td:last-child{color:var(--grau);font-style:italic}
+
+footer.fuss{max-width:1180px;margin:0 auto;padding:0 16px 40px;font-size:12px;color:var(--grau)}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+
+<header class="shop">
+  <div class="kopf">
+    <button class="logo" id="logoKnopf" aria-label="Zur Startseite">
+      <span class="logo-mark" aria-hidden="true">KF</span>
+      <span class="logo-text">Kaufhaus Fröhlich<small>ONLINE · VERSAND SEIT 1954</small></span>
+    </button>
+
+    <div class="kopf-suche">
+      <span class="lupe" aria-hidden="true">🔍</span>
+      <label class="sr" for="suche">Produkte suchen</label>
+      <input id="suche" type="text" placeholder="Suchen … z. B. „Buch“" autocomplete="off">
+    </div>
+
+    <div class="kopf-werkzeuge">
+      <button class="wz" id="enKnopf" aria-pressed="false">EN</button>
+      <button class="wz" id="vokKnopf" aria-expanded="false">Vokabeln</button>
+      <button class="paket" id="korbKnopf" aria-expanded="false">
+        <span class="kiste" aria-hidden="true"></span>
+        Warenkorb<span class="zahl" id="korbZahl">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<nav class="abteilungen" id="navAbt" aria-label="Abteilungen">
+  <div class="abt-liste" id="abtListe"></div>
+</nav>
+
+<main>
+  <!-- ===== Startbildschirm ===== -->
+  <section class="bildschirm aktiv start" id="bsStart" aria-labelledby="startTitel">
+    <div class="start-karte">
+      <div class="start-band">
+        <h1 id="startTitel">Geschenke online kaufen<span class="en" lang="en">Buying presents online</span></h1>
+        <p>Ein Einkaufsspiel · Deutsch A2–B1</p>
+      </div>
+      <div class="start-koerper">
+        <h2>So spielst du<span class="en" lang="en">How to play</span></h2>
+        <ol class="regeln">
+          <li>Lies den Wunschzettel. Jede Person in der Familie hat einen Wunsch.
+            <span class="en" lang="en">Read the wish list. Everyone in the family wants one thing.</span></li>
+          <li>Geh in die Abteilungen und finde das richtige Geschenk. Achtung: Es gibt viele ähnliche Sachen!
+            <span class="en" lang="en">Go into the departments and find the right present. Careful — many items look similar.</span></li>
+          <li>Leg die Geschenke in den Warenkorb. Dein Budget: <strong>160,00 €</strong>.
+            <span class="en" lang="en">Put the presents in your cart. Your budget is €160.00.</span></li>
+          <li>Geh zur Kasse: Adresse, Versand und Zahlung. Dann bestelle.
+            <span class="en" lang="en">Go to the checkout: address, shipping and payment. Then place the order.</span></li>
+          <li>Am Ende siehst du, wer sich freut – und du bekommst deine Bestellnummer.
+            <span class="en" lang="en">At the end you see who is happy — and you get your order number.</span></li>
+        </ol>
+        <p class="werbung">🎁 <strong>Aktion diese Woche:</strong> Mit dem Gutscheincode <code>FAMILIE10</code> bekommst du 10 % Rabatt an der Kasse.
+          <span class="en" lang="en">This week's offer: the voucher code FAMILIE10 gives you 10% off at the checkout.</span></p>
+        <p style="margin-top:14px;font-size:13.5px;color:var(--grau)">Tipp: Der Knopf <strong>EN</strong> oben zeigt englische Hilfe. Der Knopf <strong>Vokabeln</strong> öffnet eine Wortliste.
+          <span class="en" lang="en">Tip: the EN button shows English help. The Vokabeln button opens a word list.</span></p>
+        <button class="gross" id="startKnopf" style="margin-top:20px">Einkauf starten<span class="en" lang="en">Start shopping</span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Shop ===== -->
+  <section class="bildschirm" id="bsShop" aria-labelledby="abtTitel">
+    <div class="spalten">
+      <div>
+        <button class="zettel-schalter" id="zettelSchalter" aria-expanded="false">Wunschzettel zeigen / verstecken</button>
+        <aside class="zettel zu" id="zettel" aria-label="Wunschzettel der Familie">
+          <div class="zettel-kopf">
+            <h2>Wunschzettel<span class="en" lang="en">Wish list</span></h2>
+            <p id="zettelDatum">FAMILIE FRÖHLICH · 7 PERSONEN</p>
+          </div>
+          <div id="personenListe"></div>
+          <div class="zettel-fuss">
+            Budget: <span class="betrag">160,00 €</span> ·
+            Ausgegeben: <span class="betrag" id="ausgegeben">0,00 €</span>
+            <span class="en" lang="en">Budget / spent so far</span>
+          </div>
+        </aside>
+      </div>
+
+      <div>
+        <h2 class="abt-titel" id="abtTitel"><span id="abtName">Bücher</span> <span class="nr" id="abtNr">ABT. 01</span></h2>
+        <p class="abt-unter" id="abtUnter"></p>
+        <div class="raster" id="raster"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Kasse ===== -->
+  <section class="bildschirm kasse" id="bsKasse" aria-labelledby="kasseTitel">
+    <div class="schritte" id="schritte">
+      <div class="schritt" data-s="1"><div class="kugel">1</div><div class="bez">Adresse<span class="en" lang="en">Address</span></div></div>
+      <div class="schritt" data-s="2"><div class="kugel">2</div><div class="bez">Versand<span class="en" lang="en">Shipping</span></div></div>
+      <div class="schritt" data-s="3"><div class="kugel">3</div><div class="bez">Zahlung<span class="en" lang="en">Payment</span></div></div>
+      <div class="schritt" data-s="4"><div class="kugel">4</div><div class="bez">Prüfen<span class="en" lang="en">Review</span></div></div>
+    </div>
+    <div class="tafel" id="kasseTafel" aria-live="polite"></div>
+  </section>
+
+  <!-- ===== Lieferung ===== -->
+  <section class="bildschirm lieferung" id="bsLiefer" aria-labelledby="lieferTitel">
+    <h2 id="lieferTitel" style="font-family:var(--display);font-size:24px">Deine Bestellung wird gesendet …<span class="en" lang="en">Your order is being sent …</span></h2>
+    <div class="strasse" aria-hidden="true">
+      <div class="van">
+        <div class="kasten"></div><div class="kabine"></div><div class="fenster"></div>
+        <div class="rad r1"></div><div class="rad r2"></div>
+      </div>
+    </div>
+    <div class="balken"><i></i></div>
+    <p class="lade-text" id="ladeText">PAKET WIRD GEPACKT …</p>
+  </section>
+
+  <!-- ===== Ergebnis ===== -->
+  <section class="bildschirm ergebnis" id="bsEnde" aria-labelledby="endeTitel"></section>
+</main>
+
+<footer class="fuss">
+  <p>Kaufhaus Fröhlich ist ein erfundener Laden für den Deutschunterricht. Alle Preise sind Fantasie.
+    <span class="en" lang="en">Kaufhaus Fröhlich is a made-up shop for German class. All prices are fictional.</span></p>
+</footer>
+
+<!-- ===== Warenkorb-Schublade ===== -->
+<div class="schatten" id="schatten"></div>
+<aside class="schublade" id="schublade" aria-label="Warenkorb" aria-hidden="true">
+  <div class="schublade-kopf">
+    <h2>Warenkorb<span class="en" lang="en">Shopping cart</span></h2>
+    <button class="zu-x" id="korbZu" aria-label="Warenkorb schließen">✕</button>
+  </div>
+  <div class="korb-liste" id="korbListe"></div>
+  <div class="schublade-fuss">
+    <div class="gutschein">
+      <label class="sr" for="gutscheinFeld">Gutscheincode</label>
+      <input id="gutscheinFeld" type="text" placeholder="Gutscheincode" autocomplete="off">
+      <button id="gutscheinKnopf">Einlösen</button>
+    </div>
+    <div id="gutscheinMeldung" style="font-size:12.5px;margin-bottom:10px"></div>
+    <div class="summe"><span>Zwischensumme<span class="en" lang="en">Subtotal</span></span><span id="zwischensumme">0,00 €</span></div>
+    <div class="summe rabatt" id="rabattZeile" hidden><span>Rabatt (10 %)</span><span id="rabattBetrag">0,00 €</span></div>
+    <div class="summe gesamt"><span>Gesamt</span><span id="gesamtsumme">0,00 €</span></div>
+    <button class="gross" id="zurKasse">Zur Kasse<span class="en" lang="en">Go to checkout</span></button>
+    <div class="warnung" id="budgetWarnung" hidden></div>
+  </div>
+</aside>
+
+<!-- ===== Vokabelhilfe ===== -->
+<div class="vok" id="vok" aria-hidden="true">
+  <div class="vok-inner">
+    <h2>Vokabeln zum Einkaufen <button class="wz" id="vokZu">Schließen</button></h2>
+    <table class="vokabeln">
+      <thead><tr><th>Deutsch</th><th>English</th></tr></thead>
+      <tbody id="vokKoerper"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="sr" id="ansage" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ Daten ============ */
+var BUDGET = 160;
+
+var ABTEILUNGEN = [
+  {id:'buecher',   name:'Bücher',    en:'Books',        ikon:'📚', unter:'Romane, Kochbücher und mehr. Alle Bücher auf Deutsch.'},
+  {id:'garten',    name:'Garten',    en:'Garden',       ikon:'🌱', unter:'Alles für den Balkon und den Garten hinter dem Haus.'},
+  {id:'kueche',    name:'Küche',     en:'Kitchen',      ikon:'🍳', unter:'Töpfe, Messer und Maschinen für gutes Essen.'},
+  {id:'sport',     name:'Sport',     en:'Sport',        ikon:'⚽', unter:'Laufen, Radfahren, Fußball – für draußen und drinnen.'},
+  {id:'musik',     name:'Musik',     en:'Music',        ikon:'🎸', unter:'Instrumente und Zubehör für kleine und große Musiker.'},
+  {id:'elektro',   name:'Elektronik',en:'Electronics',  ikon:'🔌', unter:'Strom, Kabel und Technik für jeden Tag.'},
+  {id:'haustier',  name:'Haustier',  en:'Pets',         ikon:'🐾', unter:'Für Hunde, Katzen und andere Familienmitglieder.'}
+];
+
+var PRODUKTE = [
+  // Bücher
+  {id:'krimi',   a:'buecher', ikon:'📕', n:'Krimi „Mord im Schwarzwald“', en:'Crime novel "Murder in the Black Forest"', p:12.99, t:'320 Seiten. Spannend bis zur letzten Seite.'},
+  {id:'kochbuch',a:'buecher', ikon:'📗', n:'Kochbuch „Suppen für alle“',  en:'Cookbook "Soups for everyone"',            p:18.90, t:'60 Rezepte für den Winter.'},
+  {id:'kinderbuch',a:'buecher',ikon:'📘',n:'Kinderbuch „Der kleine Drache“',en:'Children\'s book "The little dragon"',   p:9.99,  t:'Mit großen Bildern. Ab 5 Jahren.'},
+  {id:'reise',   a:'buecher', ikon:'📙', n:'Reiseführer Italien',          en:'Travel guide to Italy',                    p:15.50, t:'Karten, Städte und die besten Restaurants.'},
+  {id:'woerter', a:'buecher', ikon:'📖', n:'Wörterbuch Deutsch–Englisch',  en:'German–English dictionary',                p:22.00, t:'80.000 Wörter. Sehr praktisch.'},
+  // Garten
+  {id:'giesskanne',a:'garten',ikon:'🪣', n:'Gießkanne, 5 Liter',           en:'Watering can, 5 litres',                   p:14.50, t:'Aus Metall, grün lackiert. Sehr stabil.'},
+  {id:'schere',  a:'garten',  ikon:'✂️', n:'Gartenschere',                 en:'Garden shears',                            p:19.99, t:'Scharf und leicht. Für Rosen und Büsche.'},
+  {id:'topf',    a:'garten',  ikon:'🪴', n:'Blumentopf aus Ton',           en:'Clay flower pot',                          p:8.99,  t:'Klassisch, 20 cm breit.'},
+  {id:'samen',   a:'garten',  ikon:'🌻', n:'Blumensamen, 10 Tüten',        en:'Flower seeds, 10 packets',                 p:6.50,  t:'Sonnenblumen, Tulpen und mehr.'},
+  {id:'gartenhandschuh',a:'garten',ikon:'🧤',n:'Gartenhandschuhe',         en:'Gardening gloves',                         p:11.90, t:'Größe L. Waschbar.'},
+  // Küche
+  {id:'messerset',a:'kueche', ikon:'🔪', n:'Messerset, 5 Messer',          en:'Knife set, 5 knives',                      p:29.99, t:'Sehr scharf. Mit Holzblock.'},
+  {id:'pfanne',  a:'kueche',  ikon:'🍳', n:'Bratpfanne, 28 cm',            en:'Frying pan, 28 cm',                        p:24.50, t:'Nichts klebt fest. Auch für den Backofen.'},
+  {id:'kaffee',  a:'kueche',  ikon:'☕', n:'Kaffeemaschine',               en:'Coffee machine',                           p:49.00, t:'12 Tassen in vier Minuten.'},
+  {id:'brett',   a:'kueche',  ikon:'🪵', n:'Schneidebrett aus Holz',       en:'Wooden cutting board',                     p:16.90, t:'Groß genug für ein ganzes Brot.'},
+  {id:'waage',   a:'kueche',  ikon:'⚖️', n:'Küchenwaage',                  en:'Kitchen scales',                           p:21.99, t:'Digital, bis 5 Kilo.'},
+  // Sport
+  {id:'laufschuhe',a:'sport', ikon:'👟', n:'Laufschuhe',                   en:'Running shoes',                            p:44.95, t:'Leicht und weich. Größe 38.'},
+  {id:'fussball',a:'sport',   ikon:'⚽', n:'Fußball',                      en:'Football',                                 p:17.99, t:'Größe 5, für den Sportplatz.'},
+  {id:'yoga',    a:'sport',   ikon:'🧘', n:'Yogamatte',                    en:'Yoga mat',                                 p:26.00, t:'Rutschfest, mit Tasche.'},
+  {id:'flasche', a:'sport',   ikon:'🥤', n:'Trinkflasche, 1 Liter',        en:'Water bottle, 1 litre',                    p:12.50, t:'Hält Getränke 12 Stunden kalt.'},
+  {id:'helm',    a:'sport',   ikon:'🪖', n:'Fahrradhelm',                  en:'Bicycle helmet',                           p:39.99, t:'Mit Licht hinten.'},
+  // Musik
+  {id:'saiten',  a:'musik',   ikon:'🎸', n:'Gitarrensaiten, 6 Stück',      en:'Guitar strings, set of 6',                 p:9.99,  t:'Für Akustikgitarre. Klingen hell und warm.'},
+  {id:'staender',a:'musik',   ikon:'🎼', n:'Notenständer',                 en:'Music stand',                              p:23.50, t:'Schwarz, klappbar, mit Tasche.'},
+  {id:'mundharmonika',a:'musik',ikon:'🎵',n:'Mundharmonika',               en:'Harmonica',                                p:15.00, t:'In C-Dur. Auch für Anfänger.'},
+  {id:'ukulele', a:'musik',   ikon:'🪕', n:'Ukulele',                      en:'Ukulele',                                  p:42.00, t:'Mit Stimmgerät und Heft.'},
+  {id:'metronom',a:'musik',   ikon:'⏱️', n:'Metronom',                     en:'Metronome',                                p:18.99, t:'Digital, sehr laut.'},
+  // Elektronik
+  {id:'powerbank',a:'elektro',ikon:'🔋', n:'Powerbank, 20.000 mAh',        en:'Power bank, 20,000 mAh',                   p:24.99, t:'Lädt ein Handy viermal. Passt in die Tasche.'},
+  {id:'kopfhoerer',a:'elektro',ikon:'🎧',n:'Kopfhörer',                    en:'Headphones',                               p:34.90, t:'Ohne Kabel, 30 Stunden Musik.'},
+  {id:'ladekabel',a:'elektro',ikon:'🔌', n:'Ladekabel, 2 Meter',           en:'Charging cable, 2 metres',                 p:8.99,  t:'Lang genug für das Sofa.'},
+  {id:'tastatur',a:'elektro', ikon:'⌨️', n:'Tastatur',                     en:'Keyboard',                                 p:27.50, t:'Mit deutschem Layout (ä, ö, ü, ß).'},
+  {id:'lampe',   a:'elektro', ikon:'💡', n:'Schreibtischlampe',            en:'Desk lamp',                                p:19.90, t:'Warmes Licht, drei Stufen.'},
+  // Haustier
+  {id:'hundeball',a:'haustier',ikon:'🎾',n:'Hundeball, extra robust',      en:'Dog ball, extra tough',                    p:6.49,  t:'Aus hartem Gummi. Für starke Zähne.'},
+  {id:'leine',   a:'haustier',ikon:'🦮', n:'Hundeleine, 3 Meter',          en:'Dog lead, 3 metres',                       p:13.90, t:'Rot, mit Reflektor.'},
+  {id:'katzending',a:'haustier',ikon:'🐈',n:'Katzenspielzeug',             en:'Cat toy',                                  p:7.99,  t:'Maus aus Stoff, mit Glocke.'},
+  {id:'napf',    a:'haustier',ikon:'🥣', n:'Fressnapf',                    en:'Pet food bowl',                            p:11.50, t:'Aus Keramik, rutscht nicht weg.'},
+  {id:'decke',   a:'haustier',ikon:'🛏️',n:'Hundedecke',                   en:'Dog blanket',                              p:24.00, t:'Weich und warm, waschbar.'}
+];
+
+var PERSONEN = [
+  {id:'oma', name:'Oma Ursula', rolle:'GROSSMUTTER', gesicht:'👵', will:'krimi',
+   wunsch:'Sie liest jeden Abend im Bett. Am liebsten mag sie Geschichten mit einem Mörder und einem Kommissar.',
+   wunschEn:'She reads in bed every evening. She likes stories with a murderer and a detective.',
+   ja:'Oma Ursula liest sofort die erste Seite. „Danke, mein Schatz – heute schlafe ich spät!“',
+   nein:'Oma Ursula sucht in der Tüte nach einem Buch. Sie wollte einen spannenden Krimi.'},
+  {id:'opa', name:'Opa Werner', rolle:'GROSSVATER', gesicht:'👴', will:'giesskanne',
+   wunsch:'Er arbeitet den ganzen Tag im Garten. Sein altes Gefäß für Wasser hat ein Loch.',
+   wunschEn:'He works in the garden all day. His old container for water has a hole in it.',
+   ja:'Opa Werner geht sofort zu den Rosen. Endlich kein nasser Schuh mehr!',
+   nein:'Opa Werner steht mit einem Eimer im Garten. Er wollte etwas zum Wassergeben.'},
+  {id:'papa', name:'Papa Stefan', rolle:'VATER', gesicht:'👨', will:'messerset',
+   wunsch:'Er kocht am Wochenende für die ganze Familie. Aber seine Klingen sind stumpf – die Tomaten werden nur platt.',
+   wunschEn:'He cooks for the whole family at the weekend. But his blades are blunt — the tomatoes just get squashed.',
+   ja:'Papa Stefan schneidet eine Tomate in zehn dünne Scheiben und ist sehr stolz.',
+   nein:'Papa Stefan drückt weiter auf die Tomate. Er brauchte etwas Scharfes zum Schneiden.'},
+  {id:'mama', name:'Mama Birgit', rolle:'MUTTER', gesicht:'👩', will:'laufschuhe',
+   wunsch:'Sie läuft jeden Morgen fünf Kilometer, auch bei Regen. Ihre alten Schuhe haben zwei Löcher.',
+   wunschEn:'She runs five kilometres every morning, even in the rain. Her old shoes have two holes.',
+   ja:'Mama Birgit läuft am nächsten Morgen sechs Kilometer statt fünf.',
+   nein:'Mama Birgit klebt ihre alten Schuhe wieder zusammen. Sie wollte neue Schuhe zum Laufen.'},
+  {id:'jonas', name:'Jonas', rolle:'BRUDER, 17', gesicht:'🧑', will:'saiten',
+   wunsch:'Er spielt Gitarre in einer Band. Die dünnen Drähte auf seinem Instrument sind alt und klingen falsch.',
+   wunschEn:'He plays guitar in a band. The thin wires on his instrument are old and sound wrong.',
+   ja:'Jonas spielt drei Stunden lang. Die Nachbarn sind mittel begeistert.',
+   nein:'Jonas stimmt seine Gitarre zum zehnten Mal. Er brauchte neue Saiten.'},
+  {id:'lena', name:'Lena', rolle:'SCHWESTER, 12', gesicht:'👧', will:'powerbank',
+   wunsch:'Sie fotografiert alles mit dem Handy. Am Nachmittag ist der Akku immer leer – und sie ist nie zu Hause.',
+   wunschEn:'She photographs everything with her phone. By the afternoon the battery is always empty — and she is never at home.',
+   ja:'Lena macht 200 Fotos vom Hund. Ihr Handy hat abends noch 80 Prozent.',
+   nein:'Lena sucht wieder eine Steckdose im Café. Sie brauchte Strom für unterwegs.'},
+  {id:'bello', name:'Bello', rolle:'HUND, 4', gesicht:'🐕', will:'hundeball',
+   wunsch:'Er läuft jeden Tag im Park. Sein kleiner gelber Ball ist nur noch ein halber Ball.',
+   wunschEn:'He runs in the park every day. His small yellow ball is only half a ball now.',
+   ja:'Bello bringt den Ball 47-mal zurück. Danach schläft die ganze Familie gut.',
+   nein:'Bello legt den halben Ball auf deinen Fuß und schaut dich lange an.'}
+];
+
+var VOKABELN = [
+  ['der Warenkorb','the shopping cart'],['die Kasse','the checkout / till'],
+  ['die Abteilung','the department'],['das Geschenk','the present'],
+  ['der Wunschzettel','the wish list'],['in den Warenkorb legen','to add to the cart'],
+  ['bestellen','to order'],['die Bestellung','the order'],
+  ['die Lieferadresse','the delivery address'],['die Postleitzahl (PLZ)','the postcode'],
+  ['die Straße / die Hausnummer','the street / house number'],['der Ort','the town'],
+  ['der Versand','the shipping'],['die Versandkosten','the shipping costs'],
+  ['kostenlos','free of charge'],['der Werktag','the working day'],
+  ['die Zahlung / bezahlen','the payment / to pay'],['die Rechnung','the invoice'],
+  ['die Lastschrift','the direct debit'],['die Kreditkarte','the credit card'],
+  ['der Gutschein / der Rabatt','the voucher / the discount'],['die Zwischensumme','the subtotal'],
+  ['insgesamt / gesamt','in total'],['günstig / teuer','cheap / expensive'],
+  ['verpacken','to wrap / to pack'],['die Filiale','the branch / store'],
+  ['entfernen','to remove'],['weiter / zurück','next / back']
+];
+
+var CODES = ['ZR7','KM4','TB9','HV2','LN6','QD3','WS8','GX5'];
+
+/* ============ Zustand ============ */
+var zustand = {
+  abteilung:'buecher',
+  korb:[],
+  rabatt:false,
+  suchbegriff:'',
+  schritt:1,
+  daten:{vorname:'',nachname:'',strasse:'',plz:'',ort:'',email:'',
+         versand:'standard', verpacken:false, zahlung:'rechnung',
+         iban:'', karte:'', gueltig:'', pruef:''}
+};
+
+var VERSAND = {
+  standard:{n:'Standardversand', i:'3–5 Werktage', p:0},
+  express: {n:'Expressversand',  i:'1–2 Werktage', p:4.99},
+  abholung:{n:'Abholung in der Filiale', i:'Ab morgen, 9–20 Uhr', p:0}
+};
+var VERPACKEN_PREIS = 2.50;
+
+/* ============ Hilfsfunktionen ============ */
+function $(s){ return document.querySelector(s); }
+function euro(n){ return n.toFixed(2).replace('.',',') + ' €'; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function en(t){ return '<span class="en" lang="en">'+esc(t)+'</span>'; }
+function produkt(id){ for(var i=0;i<PRODUKTE.length;i++){ if(PRODUKTE[i].id===id) return PRODUKTE[i]; } return null; }
+function abteilung(id){ for(var i=0;i<ABTEILUNGEN.length;i++){ if(ABTEILUNGEN[i].id===id) return ABTEILUNGEN[i]; } return ABTEILUNGEN[0]; }
+function sanft(){ return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+function sagen(t){ $('#ansage').textContent = t; }
+
+function zwischensumme(){
+  var s=0; for(var i=0;i<zustand.korb.length;i++){ var p=produkt(zustand.korb[i]); if(p) s+=p.p; }
+  return s;
+}
+function versandkosten(){ return VERSAND[zustand.daten.versand].p; }
+function verpackung(){ return zustand.daten.verpacken ? VERPACKEN_PREIS : 0; }
+function rabattbetrag(){ return zustand.rabatt ? zwischensumme()*0.10 : 0; }
+function gesamt(){ return zwischensumme() - rabattbetrag() + versandkosten() + verpackung(); }
+
+/* ============ Bildschirme ============ */
+function zeigeBildschirm(id){
+  var alle = document.querySelectorAll('.bildschirm');
+  for(var i=0;i<alle.length;i++){ alle[i].classList.remove('aktiv'); }
+  $('#'+id).classList.add('aktiv');
+  $('#navAbt').style.display = (id==='bsShop') ? '' : 'none';
+  window.scrollTo(0,0);
+}
+
+/* ============ Navigation aufbauen ============ */
+function bauNav(){
+  var h='';
+  for(var i=0;i<ABTEILUNGEN.length;i++){
+    var a=ABTEILUNGEN[i];
+    h += '<button class="abt" data-abt="'+a.id+'" aria-current="'+(a.id===zustand.abteilung)+'">'+
+         '<span aria-hidden="true">'+a.ikon+'</span><span>'+esc(a.name)+en(a.en)+'</span></button>';
+  }
+  $('#abtListe').innerHTML = h;
+}
+
+function bauPersonen(){
+  var h='';
+  for(var i=0;i<PERSONEN.length;i++){
+    var p=PERSONEN[i];
+    h += '<div class="person"><div class="gesicht" aria-hidden="true">'+p.gesicht+'</div><div>'+
+         '<div class="name">'+esc(p.name)+'</div><div class="rolle">'+esc(p.rolle)+'</div>'+
+         '<div class="wunsch">'+esc(p.wunsch)+en(p.wunschEn)+'</div></div></div>';
+  }
+  $('#personenListe').innerHTML = h;
+}
+
+function bauVokabeln(){
+  var h='';
+  for(var i=0;i<VOKABELN.length;i++){
+    h += '<tr><td>'+esc(VOKABELN[i][0])+'</td><td>'+esc(VOKABELN[i][1])+'</td></tr>';
+  }
+  $('#vokKoerper').innerHTML = h;
+}
+
+/* ============ Produktraster ============ */
+function bauRaster(){
+  var liste, titel, nr, unter;
+  if(zustand.suchbegriff){
+    var s = zustand.suchbegriff.toLowerCase();
+    liste = PRODUKTE.filter(function(p){
+      return p.n.toLowerCase().indexOf(s)>-1 || p.t.toLowerCase().indexOf(s)>-1 || p.en.toLowerCase().indexOf(s)>-1;
+    });
+    titel = 'Suche: „'+zustand.suchbegriff+'“';
+    nr = liste.length + ' TREFFER';
+    unter = liste.length ? 'Diese Artikel passen zu deiner Suche.' : 'Nichts gefunden. Versuch ein anderes Wort – oder klick oben auf eine Abteilung.';
+  } else {
+    var a = abteilung(zustand.abteilung);
+    liste = PRODUKTE.filter(function(p){ return p.a===zustand.abteilung; });
+    titel = a.name;
+    var idx = ABTEILUNGEN.indexOf(a)+1;
+    nr = 'ABT. ' + (idx<10?'0':'') + idx;
+    unter = a.unter;
+  }
+  $('#abtName').textContent = titel;
+  $('#abtNr').textContent = nr;
+  $('#abtUnter').textContent = unter;
+
+  var h='';
+  for(var i=0;i<liste.length;i++){
+    var p=liste[i], drin = zustand.korb.indexOf(p.id)>-1;
+    h += '<article class="ware" style="animation-delay:'+(i*35)+'ms">'+
+         '<div class="bild"><span class="artnr">ART. '+esc(p.id.substring(0,3).toUpperCase())+'-'+(100+i)+'</span>'+
+         '<span class="ikon" id="ikon-'+esc(p.id)+'" aria-hidden="true">'+p.ikon+'</span></div>'+
+         '<div class="inhalt"><h3>'+esc(p.n)+en(p.en)+'</h3><p class="info">'+esc(p.t)+'</p>'+
+         '<div class="preisreihe"><span class="preis">'+euro(p.p)+'</span>'+
+         '<button class="kaufen'+(drin?' drin':'')+'" data-kauf="'+esc(p.id)+'">'+
+         (drin?'✓ Im Korb':'In den Warenkorb')+'</button></div></div></article>';
+  }
+  $('#raster').innerHTML = h;
+}
+
+/* ============ Warenkorb ============ */
+function inKorb(id, knopf){
+  if(zustand.korb.indexOf(id)>-1){ oeffneKorb(); return; }
+  zustand.korb.push(id);
+  var p = produkt(id);
+  sagen(p.n + ' ist jetzt im Warenkorb.');
+  if(!sanft() && knopf){ flug(id); }
+  var kiste = $('#korbKnopf');
+  kiste.classList.remove('wackelt'); void kiste.offsetWidth; kiste.classList.add('wackelt');
+  var zahl = $('#korbZahl');
+  zahl.classList.remove('pop'); void zahl.offsetWidth; zahl.classList.add('pop');
+  aktualisiere();
+}
+
+function flug(id){
+  var quelle = document.getElementById('ikon-'+id);
+  var ziel = $('#korbKnopf');
+  if(!quelle || !ziel) return;
+  var a = quelle.getBoundingClientRect(), b = ziel.getBoundingClientRect();
+  var f = document.createElement('div');
+  f.className = 'flieger';
+  f.textContent = quelle.textContent;
+  f.style.left = a.left+'px'; f.style.top = a.top+'px';
+  document.body.appendChild(f);
+  requestAnimationFrame(function(){
+    f.style.left = (b.left+10)+'px';
+    f.style.top  = (b.top+6)+'px';
+    f.style.fontSize = '10px';
+    f.style.opacity = '0.2';
+    f.style.transform = 'rotate(300deg)';
+  });
+  setTimeout(function(){ if(f.parentNode) f.parentNode.removeChild(f); }, 700);
+}
+
+function ausKorb(id){
+  var i = zustand.korb.indexOf(id);
+  if(i>-1){ zustand.korb.splice(i,1); sagen('Artikel entfernt.'); }
+  aktualisiere();
+}
+
+function bauKorb(){
+  var l = $('#korbListe');
+  if(!zustand.korb.length){
+    l.innerHTML = '<div class="leer"><span class="kiste-gross" aria-hidden="true">📦</span>'+
+      '<p><strong>Dein Warenkorb ist leer.</strong>'+en('Your cart is empty.')+'</p>'+
+      '<p style="font-size:13.5px">Geh in eine Abteilung und leg ein Geschenk hinein.'+en('Go to a department and put a present in it.')+'</p></div>';
+  } else {
+    var h='';
+    for(var i=0;i<zustand.korb.length;i++){
+      var p=produkt(zustand.korb[i]);
+      h += '<div class="korb-zeile"><span class="ikon" aria-hidden="true">'+p.ikon+'</span>'+
+           '<span><span class="kn">'+esc(p.n)+'</span><br><span class="kp">'+euro(p.p)+'</span></span>'+
+           '<button class="raus" data-raus="'+esc(p.id)+'">entfernen</button></div>';
+    }
+    l.innerHTML = h;
+  }
+}
+
+function aktualisiere(){
+  $('#korbZahl').textContent = zustand.korb.length;
+  $('#zwischensumme').textContent = euro(zwischensumme());
+  $('#gesamtsumme').textContent = euro(gesamt());
+  $('#ausgegeben').textContent = euro(zwischensumme());
+  $('#rabattZeile').hidden = !zustand.rabatt;
+  $('#rabattBetrag').textContent = '− ' + euro(rabattbetrag());
+  var w = $('#budgetWarnung'), k = $('#zurKasse');
+  if(gesamt() > BUDGET){
+    w.hidden = false;
+    w.innerHTML = 'Zu teuer! Dein Budget ist 160,00 €. Nimm etwas aus dem Warenkorb.'+en('Too expensive. Your budget is €160.00 — take something out of the cart.');
+    k.disabled = true;
+  } else if(!zustand.korb.length){
+    w.hidden = true; k.disabled = true;
+  } else {
+    w.hidden = true; k.disabled = false;
+  }
+  bauKorb();
+  knopfZustand();
+}
+
+function knopfZustand(){
+  var k = document.querySelectorAll('.kaufen');
+  for(var i=0;i<k.length;i++){
+    var drin = zustand.korb.indexOf(k[i].getAttribute('data-kauf'))>-1;
+    k[i].classList.toggle('drin', drin);
+    k[i].textContent = drin ? '✓ Im Korb' : 'In den Warenkorb';
+  }
+}
+
+function oeffneKorb(){
+  $('#schublade').classList.add('auf');
+  $('#schatten').classList.add('auf');
+  $('#schublade').setAttribute('aria-hidden','false');
+  $('#korbKnopf').setAttribute('aria-expanded','true');
+  $('#korbZu').focus();
+}
+function schliesseKorb(){
+  $('#schublade').classList.remove('auf');
+  $('#schatten').classList.remove('auf');
+  $('#schublade').setAttribute('aria-hidden','true');
+  $('#korbKnopf').setAttribute('aria-expanded','false');
+}
+
+/* ============ Kasse ============ */
+function zeigeSchritt(){
+  var s = zustand.schritt;
+  var k = document.querySelectorAll('.schritt');
+  for(var i=0;i<k.length;i++){
+    var n = parseInt(k[i].getAttribute('data-s'),10);
+    k[i].classList.toggle('jetzt', n===s);
+    k[i].classList.toggle('fertig', n<s);
+  }
+  var t = $('#kasseTafel');
+  if(s===1) t.innerHTML = formAdresse();
+  else if(s===2) t.innerHTML = formVersand();
+  else if(s===3) t.innerHTML = formZahlung();
+  else t.innerHTML = formPruefen();
+  window.scrollTo(0,0);
+  var erst = t.querySelector('input, select, button');
+  if(erst && s<4) { /* Fokus nicht erzwingen, damit Tastatur auf dem Handy nicht aufspringt */ }
+}
+
+function feld(id, beschriftung, engl, wert, platzhalter){
+  return '<div class="feld"><label for="'+id+'">'+esc(beschriftung)+en(engl)+'</label>'+
+         '<input type="text" id="'+id+'" value="'+esc(wert||'')+'" placeholder="'+esc(platzhalter||'')+'" autocomplete="off">'+
+         '<div class="fehler" id="f-'+id+'"></div></div>';
+}
+
+function formAdresse(){
+  var d = zustand.daten;
+  return '<h2 id="kasseTitel">Lieferadresse'+en('Delivery address')+'</h2>'+
+    '<p class="hinweis">Wohin sollen die Geschenke gehen? Schreib eine deutsche Adresse.'+en('Where should the presents go? Write a German address.')+'</p>'+
+    '<div class="reihe" style="grid-template-columns:1fr 1fr">'+
+      feld('f_vorname','Vorname','First name',d.vorname,'Anna')+
+      feld('f_nachname','Nachname','Surname',d.nachname,'Fröhlich')+
+    '</div>'+
+    feld('f_strasse','Straße und Hausnummer','Street and house number',d.strasse,'Lindenweg 14')+
+    '<div class="reihe">'+
+      feld('f_plz','PLZ','Postcode',d.plz,'80331')+
+      feld('f_ort','Ort','Town / city',d.ort,'München')+
+    '</div>'+
+    feld('f_email','E-Mail','Email',d.email,'anna@beispiel.de')+
+    '<div class="knopfreihe"><button class="zurueck" data-nav="shop">Weiter einkaufen'+en('Keep shopping')+'</button>'+
+    '<button class="weiter" data-weiter="1">Weiter zum Versand'+en('Next: shipping')+'</button></div>';
+}
+
+function formVersand(){
+  var d = zustand.daten, h='';
+  var keys = ['standard','express','abholung'];
+  for(var i=0;i<keys.length;i++){
+    var v = VERSAND[keys[i]], gew = d.versand===keys[i];
+    h += '<label class="wahl'+(gew?' gewaehlt':'')+'"><input type="radio" name="versand" value="'+keys[i]+'"'+(gew?' checked':'')+'>'+
+         '<span class="wt">'+esc(v.n)+' – '+(v.p?euro(v.p):'kostenlos')+'</span>'+
+         '<span class="wi" style="display:block">'+esc(v.i)+'</span></label>';
+  }
+  return '<h2>Versandart'+en('Shipping method')+'</h2>'+
+    '<p class="hinweis">Wie schnell brauchst du die Geschenke?'+en('How quickly do you need the presents?')+'</p>'+ h +
+    '<label class="wahl'+(d.verpacken?' gewaehlt':'')+'" style="margin-top:16px"><input type="checkbox" id="f_verpacken"'+(d.verpacken?' checked':'')+'>'+
+    '<span class="wt">Als Geschenk verpacken – 2,50 €</span>'+
+    '<span class="wi" style="display:block">Goldpapier und eine Schleife für jedes Geschenk.'+en('Gold paper and a ribbon for each present.')+'</span></label>'+
+    '<div class="knopfreihe"><button class="zurueck" data-schritt="1">Zurück'+en('Back')+'</button>'+
+    '<button class="weiter" data-weiter="2">Weiter zur Zahlung'+en('Next: payment')+'</button></div>';
+}
+
+function formZahlung(){
+  var d = zustand.daten, h='';
+  var arten = [
+    ['rechnung','Rechnung','Du bezahlst später, in 14 Tagen.'],
+    ['lastschrift','Lastschrift','Wir holen das Geld von deinem Konto.'],
+    ['kreditkarte','Kreditkarte','Visa oder Mastercard.']
+  ];
+  for(var i=0;i<arten.length;i++){
+    var gew = d.zahlung===arten[i][0];
+    h += '<label class="wahl'+(gew?' gewaehlt':'')+'"><input type="radio" name="zahlung" value="'+arten[i][0]+'"'+(gew?' checked':'')+'>'+
+         '<span class="wt">'+esc(arten[i][1])+'</span>'+
+         '<span class="wi" style="display:block">'+esc(arten[i][2])+'</span></label>';
+  }
+  var extra='';
+  if(d.zahlung==='lastschrift'){
+    extra = '<div style="margin-top:16px">'+feld('f_iban','IBAN','IBAN',d.iban,'DE12 3456 7890 1234 5678 90')+'</div>';
+  } else if(d.zahlung==='kreditkarte'){
+    extra = '<div style="margin-top:16px">'+feld('f_karte','Kartennummer','Card number',d.karte,'1234 5678 9012 3456')+
+      '<div class="reihe">'+feld('f_gueltig','Gültig bis','Expiry date',d.gueltig,'09/29')+
+      feld('f_pruef','Prüfnummer','Security code',d.pruef,'123')+'</div></div>';
+  }
+  return '<h2>Zahlungsart'+en('Payment method')+'</h2>'+
+    '<p class="hinweis">Wie möchtest du bezahlen?'+en('How would you like to pay?')+'</p>'+ h + extra +
+    '<div class="knopfreihe"><button class="zurueck" data-schritt="2">Zurück'+en('Back')+'</button>'+
+    '<button class="weiter" data-weiter="3">Weiter zur Übersicht'+en('Next: review')+'</button></div>';
+}
+
+function formPruefen(){
+  var d = zustand.daten, waren='';
+  for(var i=0;i<zustand.korb.length;i++){
+    var p = produkt(zustand.korb[i]);
+    waren += '<div style="display:flex;justify-content:space-between;gap:10px;padding:2px 0">'+
+             '<span>'+p.ikon+' '+esc(p.n)+'</span><span style="font-family:var(--mono)">'+euro(p.p)+'</span></div>';
+  }
+  var zahlText = d.zahlung==='rechnung' ? 'Rechnung' : (d.zahlung==='lastschrift' ? 'Lastschrift · '+esc(d.iban) : 'Kreditkarte · **** '+esc(d.karte.replace(/\s/g,'').slice(-4)));
+  return '<h2>Prüfen und bestellen'+en('Review and order')+'</h2>'+
+    '<p class="hinweis">Ist alles richtig? Dann bestell jetzt.'+en('Is everything correct? Then place your order.')+'</p>'+
+    '<div class="pruef-block"><button class="aendern" data-schritt="1">ändern</button><h3>Lieferadresse</h3>'+
+      esc(d.vorname)+' '+esc(d.nachname)+'<br>'+esc(d.strasse)+'<br>'+esc(d.plz)+' '+esc(d.ort)+'<br>'+esc(d.email)+'</div>'+
+    '<div class="pruef-block"><button class="aendern" data-schritt="2">ändern</button><h3>Versand</h3>'+
+      esc(VERSAND[d.versand].n)+' · '+esc(VERSAND[d.versand].i)+(d.verpacken?'<br>Als Geschenk verpackt':'')+'</div>'+
+    '<div class="pruef-block"><button class="aendern" data-schritt="3">ändern</button><h3>Zahlung</h3>'+zahlText+'</div>'+
+    '<div class="pruef-block"><h3>'+zustand.korb.length+' Artikel</h3>'+waren+
+      '<div style="border-top:1px solid var(--linie);margin-top:9px;padding-top:9px">'+
+      '<div class="summe"><span>Zwischensumme</span><span>'+euro(zwischensumme())+'</span></div>'+
+      (zustand.rabatt?'<div class="summe rabatt"><span>Rabatt (10 %)</span><span>− '+euro(rabattbetrag())+'</span></div>':'')+
+      '<div class="summe"><span>Versandkosten</span><span>'+(versandkosten()?euro(versandkosten()):'kostenlos')+'</span></div>'+
+      (d.verpacken?'<div class="summe"><span>Geschenkverpackung</span><span>'+euro(VERPACKEN_PREIS)+'</span></div>':'')+
+      '<div class="summe gesamt"><span>Gesamt</span><span>'+euro(gesamt())+'</span></div></div></div>'+
+    (gesamt() > BUDGET ? '<div class="warnung">Mit Versand und Verpackung bist du über dem Budget von 160,00 €. Wähle einen günstigeren Versand oder nimm etwas aus dem Warenkorb.'+en('With shipping and wrapping you are over the €160.00 budget. Choose cheaper shipping or take something out of the cart.')+'</div>' : '')+
+    '<div class="knopfreihe"><button class="zurueck" data-schritt="3">Zurück'+en('Back')+'</button>'+
+    '<button class="weiter" id="bestellenKnopf"'+(gesamt() > BUDGET ? ' disabled' : '')+'>Jetzt kaufen'+en('Buy now')+'</button></div>';
+}
+
+function fehlerZeigen(id, text){
+  var f = document.getElementById('f-'+id), e = document.getElementById(id);
+  if(f){ f.textContent = text; f.classList.add('zeigen'); }
+  if(e){ e.classList.add('falsch'); }
+}
+function fehlerWeg(){
+  var f = document.querySelectorAll('.fehler');
+  for(var i=0;i<f.length;i++){ f[i].classList.remove('zeigen'); }
+  var e = document.querySelectorAll('input.falsch');
+  for(var j=0;j<e.length;j++){ e[j].classList.remove('falsch'); }
+}
+
+function lies(id){ var e=document.getElementById(id); return e ? e.value.trim() : ''; }
+
+function pruefeAdresse(){
+  fehlerWeg();
+  var d = zustand.daten, ok = true, erst = null;
+  d.vorname = lies('f_vorname'); d.nachname = lies('f_nachname');
+  d.strasse = lies('f_strasse'); d.plz = lies('f_plz');
+  d.ort = lies('f_ort'); d.email = lies('f_email');
+
+  if(d.vorname.length < 2){ fehlerZeigen('f_vorname','Bitte schreib deinen Vornamen.'); ok=false; erst=erst||'f_vorname'; }
+  if(d.nachname.length < 2){ fehlerZeigen('f_nachname','Bitte schreib deinen Nachnamen.'); ok=false; erst=erst||'f_nachname'; }
+  if(!/\d/.test(d.strasse) || d.strasse.length < 5){
+    fehlerZeigen('f_strasse','Bitte schreib die Straße und die Hausnummer, z. B. „Lindenweg 14“.'); ok=false; erst=erst||'f_strasse';
+  }
+  if(!/^\d{5}$/.test(d.plz)){
+    fehlerZeigen('f_plz','Eine deutsche Postleitzahl hat genau 5 Ziffern.'); ok=false; erst=erst||'f_plz';
+  }
+  if(d.ort.length < 2){ fehlerZeigen('f_ort','Bitte schreib den Ort, z. B. „Hamburg“.'); ok=false; erst=erst||'f_ort'; }
+  if(d.email.indexOf('@') < 1 || d.email.indexOf('.') < 0){
+    fehlerZeigen('f_email','Diese E-Mail-Adresse gibt es nicht. Sie braucht ein @ und einen Punkt.'); ok=false; erst=erst||'f_email';
+  }
+  if(!ok && erst){ document.getElementById(erst).focus(); sagen('Bitte korrigiere die roten Felder.'); }
+  return ok;
+}
+
+function pruefeZahlung(){
+  fehlerWeg();
+  var d = zustand.daten, ok = true;
+  if(d.zahlung==='lastschrift'){
+    d.iban = lies('f_iban');
+    var ib = d.iban.replace(/\s/g,'').toUpperCase();
+    if(!/^DE\d{20}$/.test(ib)){
+      fehlerZeigen('f_iban','Eine deutsche IBAN beginnt mit DE und hat 22 Zeichen.'); ok=false;
+      document.getElementById('f_iban').focus();
+    }
+  } else if(d.zahlung==='kreditkarte'){
+    d.karte = lies('f_karte'); d.gueltig = lies('f_gueltig'); d.pruef = lies('f_pruef');
+    if(!/^\d{16}$/.test(d.karte.replace(/\s/g,''))){
+      fehlerZeigen('f_karte','Die Kartennummer hat 16 Ziffern.'); ok=false;
+    }
+    if(!/^\d{2}\/\d{2}$/.test(d.gueltig)){
+      fehlerZeigen('f_gueltig','Bitte schreib Monat und Jahr, z. B. 09/29.'); ok=false;
+    }
+    if(!/^\d{3}$/.test(d.pruef)){
+      fehlerZeigen('f_pruef','Die Prüfnummer hat 3 Ziffern.'); ok=false;
+    }
+    if(!ok){ sagen('Bitte korrigiere die roten Felder.'); }
+  }
+  return ok;
+}
+
+/* ============ Bestellung / Ergebnis ============ */
+function bestellen(){
+  zeigeBildschirm('bsLiefer');
+  var texte = ['PAKET WIRD GEPACKT …','GESCHENKPAPIER WIRD GEFALTET …','ADRESSE WIRD GEDRUCKT …','DAS PAKET IST UNTERWEGS …'];
+  var i = 0;
+  var timer = setInterval(function(){
+    i++;
+    if(i < texte.length){ $('#ladeText').textContent = texte[i]; }
+  }, 620);
+  setTimeout(function(){ clearInterval(timer); zeigeErgebnis(); }, sanft() ? 400 : 2600);
+}
+
+function zeigeErgebnis(){
+  var d = zustand.daten, treffer = 0, reaktionen = '';
+  for(var i=0;i<PERSONEN.length;i++){
+    var p = PERSONEN[i], hat = zustand.korb.indexOf(p.will)>-1;
+    if(hat) treffer++;
+    reaktionen += '<div class="reaktion'+(hat?'':' nein')+'">'+
+      '<span class="gesicht" aria-hidden="true">'+p.gesicht+'</span><div><div class="rn">'+esc(p.name)+'</div>'+
+      '<div class="rt">'+esc(hat?p.ja:p.nein)+'</div></div>'+
+      '<span class="haken" aria-hidden="true">'+(hat?'✅':'❌')+'</span>'+
+      '<span class="sr">'+(hat?'Richtig':'Falsch oder fehlt')+'</span></div>';
+  }
+  var gewollt = PERSONEN.map(function(p){ return p.will; });
+  var extra = zustand.korb.filter(function(id){ return gewollt.indexOf(id)<0; });
+  var extraText = '';
+  if(extra.length){
+    var namen = extra.map(function(id){ return produkt(id).n; }).join(', ');
+    extraText = '<div class="extras">🛍️ <strong>Extra gekauft:</strong> '+esc(namen)+'. Das wollte niemand – vielleicht ist es ein Geschenk für dich?'+
+      en('Bought extra: nobody asked for this — maybe it is a present for you?')+'</div>';
+  }
+  var sprueche = [
+    'Oje. Die Familie ist höflich, aber traurig. Versuch es noch einmal!',
+    'Ein Treffer. Lies den Wunschzettel noch einmal genau.',
+    'Zwei Treffer. Da geht mehr!',
+    'Drei Treffer. Die Hälfte fehlt noch.',
+    'Vier Treffer. Nicht schlecht!',
+    'Fünf Treffer. Fast perfekt.',
+    'Sechs Treffer. Nur eine Person wartet noch.',
+    'Perfekt! Sieben von sieben. Du bist der Held der Familie Fröhlich.'
+  ];
+  var code = 'KF-' + treffer + '-' + CODES[treffer];
+  var nr = 'DE' + (48200000 + treffer*137 + zustand.korb.length*11) + 'X';
+
+  $('#bsEnde').innerHTML =
+    '<h1 id="endeTitel" style="font-family:var(--display);font-size:clamp(24px,5vw,34px);margin:0 0 6px;letter-spacing:-.02em">Bestellung abgeschickt!'+en('Order sent!')+'</h1>'+
+    '<p style="margin:0 0 22px;color:var(--grau)">Eine Bestätigung geht an '+esc(d.email)+'.</p>'+
+    '<div class="schein">'+
+      '<div class="schein-kopf"><div class="marke">KAUFHAUS FRÖHLICH</div>'+
+      '<div class="prio">'+esc(VERSAND[d.versand].n.toUpperCase())+'</div></div>'+
+      '<div class="etikett">Absender</div>'+
+      '<div class="zeile">Kaufhaus Fröhlich · Packstraße 3 · 04109 Leipzig</div>'+
+      '<div class="etikett">Empfänger</div>'+
+      '<div class="zeile"><strong>'+esc(d.vorname)+' '+esc(d.nachname)+'</strong></div>'+
+      '<div class="zeile">'+esc(d.strasse)+'</div>'+
+      '<div class="zeile">'+esc(d.plz)+' '+esc(d.ort.toUpperCase())+'</div>'+
+      '<div class="etikett">Inhalt / Wert</div>'+
+      '<div class="zeile">'+zustand.korb.length+' Artikel · '+euro(gesamt())+' · '+(d.verpacken?'als Geschenk verpackt':'ohne Verpackung')+'</div>'+
+      '<div class="barcode" aria-hidden="true"></div>'+
+      '<div class="barcode-nr">'+nr+'</div>'+
+    '</div>'+
+    '<div class="punkte"><div class="zahl-gross">'+treffer+'</div>'+
+      '<div class="von">von 7 Wünschen richtig</div>'+
+      '<div class="spruch">'+esc(sprueche[treffer])+'</div></div>'+
+    reaktionen + extraText +
+    '<div class="karte-code" style="margin-top:20px"><div class="ct">Deine Bestellnummer für den Kurs:'+en('Your order number for the course:')+'</div>'+
+      '<div class="cc">'+code+'</div></div>'+
+    '<div class="knopfreihe"><button class="zurueck" id="nochmal">Noch einmal einkaufen'+en('Shop again')+'</button></div>';
+  zeigeBildschirm('bsEnde');
+  sagen('Bestellung fertig. '+treffer+' von 7 Wünschen richtig.');
+}
+
+function neustart(){
+  zustand.korb = []; zustand.rabatt = false; zustand.schritt = 1;
+  zustand.abteilung = 'buecher'; zustand.suchbegriff = '';
+  zustand.daten = {vorname:'',nachname:'',strasse:'',plz:'',ort:'',email:'',
+    versand:'standard', verpacken:false, zahlung:'rechnung', iban:'', karte:'', gueltig:'', pruef:''};
+  $('#suche').value = '';
+  $('#gutscheinFeld').value = '';
+  $('#gutscheinMeldung').textContent = '';
+  bauNav(); aktualisiere();
+  zeigeBildschirm('bsStart');
+}
+
+/* ============ Ereignisse ============ */
+document.addEventListener('click', function(ev){
+  var t = ev.target.closest ? ev.target.closest('button') : null;
+  if(!t) return;
+
+  if(t.id==='startKnopf'){ zeigeBildschirm('bsShop'); return; }
+  if(t.id==='logoKnopf'){ zustand.suchbegriff=''; $('#suche').value=''; bauRaster(); zeigeBildschirm('bsShop'); return; }
+  if(t.id==='korbKnopf'){ oeffneKorb(); return; }
+  if(t.id==='korbZu'){ schliesseKorb(); $('#korbKnopf').focus(); return; }
+  if(t.id==='zurKasse'){ schliesseKorb(); zustand.schritt=1; zeigeBildschirm('bsKasse'); zeigeSchritt(); return; }
+  if(t.id==='nochmal'){ neustart(); return; }
+
+  if(t.id==='enKnopf'){
+    var an = document.body.classList.toggle('zeige-en');
+    t.setAttribute('aria-pressed', an ? 'true':'false');
+    t.textContent = an ? 'EN aus' : 'EN';
+    return;
+  }
+  if(t.id==='vokKnopf' || t.id==='vokZu'){
+    var v = $('#vok'), auf = v.classList.toggle('auf');
+    v.setAttribute('aria-hidden', auf ? 'false':'true');
+    $('#vokKnopf').setAttribute('aria-expanded', auf ? 'true':'false');
+    if(!auf) $('#vokKnopf').focus();
+    return;
+  }
+  if(t.id==='zettelSchalter'){
+    var z = $('#zettel'), offen = !z.classList.toggle('zu');
+    t.setAttribute('aria-expanded', offen ? 'true':'false');
+    return;
+  }
+  if(t.id==='gutscheinKnopf'){
+    var code = $('#gutscheinFeld').value.trim().toUpperCase();
+    var m = $('#gutscheinMeldung');
+    if(code==='FAMILIE10'){
+      zustand.rabatt = true;
+      m.style.color = 'var(--gruen)';
+      m.innerHTML = '✔ Gutschein angenommen: 10 % Rabatt.'+en('Voucher accepted: 10% off.');
+      sagen('Gutschein angenommen.');
+    } else if(code===''){
+      m.style.color = 'var(--grau)'; m.textContent = 'Bitte schreib einen Code in das Feld.';
+    } else {
+      m.style.color = 'var(--rot)';
+      m.innerHTML = '✘ Diesen Gutschein-Code gibt es nicht.'+en('This voucher code does not exist.');
+    }
+    aktualisiere();
+    return;
+  }
+
+  if(t.hasAttribute('data-abt')){
+    zustand.abteilung = t.getAttribute('data-abt');
+    zustand.suchbegriff = ''; $('#suche').value = '';
+    bauNav(); bauRaster();
+    zeigeBildschirm('bsShop');
+    return;
+  }
+  if(t.hasAttribute('data-kauf')){ inKorb(t.getAttribute('data-kauf'), t); return; }
+  if(t.hasAttribute('data-raus')){ ausKorb(t.getAttribute('data-raus')); return; }
+  if(t.hasAttribute('data-nav') && t.getAttribute('data-nav')==='shop'){ zeigeBildschirm('bsShop'); return; }
+  if(t.hasAttribute('data-schritt')){ zustand.schritt = parseInt(t.getAttribute('data-schritt'),10); zeigeSchritt(); return; }
+
+  if(t.hasAttribute('data-weiter')){
+    var von = parseInt(t.getAttribute('data-weiter'),10);
+    if(von===1){ if(!pruefeAdresse()) return; zustand.schritt = 2; }
+    else if(von===2){ zustand.schritt = 3; }
+    else if(von===3){ if(!pruefeZahlung()) return; zustand.schritt = 4; }
+    zeigeSchritt();
+    return;
+  }
+  if(t.id==='bestellenKnopf'){ bestellen(); return; }
+});
+
+document.addEventListener('change', function(ev){
+  var e = ev.target;
+  if(e.name==='versand'){ zustand.daten.versand = e.value; zeigeSchritt(); aktualisiere(); }
+  if(e.name==='zahlung'){ zustand.daten.zahlung = e.value; zeigeSchritt(); }
+  if(e.id==='f_verpacken'){ zustand.daten.verpacken = e.checked; zeigeSchritt(); aktualisiere(); }
+});
+
+document.addEventListener('input', function(ev){
+  var e = ev.target;
+  if(e && e.id && e.id.indexOf('f_')===0 && e.type==='text'){
+    var schluessel = e.id.substring(2);
+    if(Object.prototype.hasOwnProperty.call(zustand.daten, schluessel)){
+      zustand.daten[schluessel] = e.value;
+    }
+  }
+});
+
+$('#suche').addEventListener('input', function(){
+  zustand.suchbegriff = this.value.trim();
+  bauRaster();
+  if(!$('#bsShop').classList.contains('aktiv')) zeigeBildschirm('bsShop');
+});
+
+$('#schatten').addEventListener('click', schliesseKorb);
+$('#gutscheinFeld').addEventListener('keydown', function(e){ if(e.key==='Enter'){ $('#gutscheinKnopf').click(); } });
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape'){
+    if($('#schublade').classList.contains('auf')) schliesseKorb();
+    if($('#vok').classList.contains('auf')) $('#vokZu').click();
+  }
+});
+
+/* ============ Start ============ */
+bauNav(); bauPersonen(); bauVokabeln(); aktualisiere();
+$('#navAbt').style.display = 'none';
+
+})();
+</script>
+</body>
+</html>

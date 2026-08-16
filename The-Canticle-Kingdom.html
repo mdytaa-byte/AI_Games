@@ -322,8 +322,8 @@
 
   const QUEST_TEXT = {
     wake: "Eat breakfast, then report to Uncle Brutus at the forge.",
-    forge: "Brutus is looking for Brigitta. Search the shop while he is gone.",
-    hidden: "A hidden room... study the glowing orb and the strange score.",
+    forge: "You're late. Talk to Uncle Brutus at the smithy.",
+    hidden: "Brutus has gone looking for Brigitta. Search the shop while the fire still burns.",
     sword: "Forge a sword from scrap metal before Brutus returns.",
     ribbon: "Brigitta is missing. Search the village and the path to the woods.",
     woods: "Follow the azure ribbon into the Dunkel Woods.",
@@ -1106,9 +1106,12 @@ HHHHHHHHHHHHHHHH
       g.drawImage(sprites.musicbox, 198, 92);
     } else if (kind === "castle") {
       g.fillStyle = "#1a3060"; g.fillRect(0, 0, 420, 180);
-      g.fillStyle = "#e8eef6"; g.fillRect(150, 20, 120, 90);
-      g.fillStyle = "#3a5088"; g.fillRect(140, 10, 140, 20);
-      g.fillStyle = "#c9a24a"; g.fillRect(200, 4, 8, 18);
+      g.fillStyle = "#0e1a38"; g.fillRect(0, 130, 420, 50);
+      g.fillStyle = "#e8eef6"; g.fillRect(150, 40, 36, 90); g.fillRect(234, 40, 36, 90); g.fillRect(180, 55, 60, 75);
+      g.fillStyle = "#3a5088"; g.fillRect(142, 28, 52, 16); g.fillRect(226, 28, 52, 16); g.fillRect(174, 42, 72, 16);
+      g.fillStyle = "#c9a24a"; g.fillRect(206, 10, 6, 22);
+      g.fillStyle = "#9ad4ff"; g.fillRect(160, 70, 8, 10); g.fillRect(252, 70, 8, 10); g.fillRect(198, 80, 8, 10);
+    } else if (kind === "end") {
     } else if (kind === "end") {
       g.fillStyle = "#1a3060"; g.fillRect(0, 0, 420, 180);
       g.fillStyle = "#e8eef6"; g.fillRect(160, 18, 100, 80);
@@ -1595,28 +1598,64 @@ HHHHHHHHHHHHHHHH
   function battleLog(t) { battle.log = t; announce(t); }
   function living(side) { return side.filter((x) => x.hp > 0); }
 
-  function renderBattle() {
+  function drawFoe(g, e, x, y) {
+    g.fillStyle = e.tint;
+    if (e.id === "snake" || e.name.includes("Serpent")) {
+      g.fillRect(x + 18, y, 20, 86);
+      g.fillRect(x + 6, y + 8, 44, 28);
+      g.fillStyle = "#1a2018"; g.fillRect(x + 14, y + 16, 6, 6); g.fillRect(x + 36, y + 16, 6, 6);
+    } else if (e.id === "wolf") {
+      g.fillRect(x + 8, y + 28, 56, 40);
+      g.fillRect(x + 36, y + 8, 28, 28);
+      g.fillStyle = "#1a1020"; g.fillRect(x + 44, y + 16, 5, 5);
+    } else if (e.id === "many") {
+      g.fillStyle = "#140818"; g.fillRect(x + 10, y, 48, 90);
+      g.fillStyle = "#6a2060"; g.fillRect(x + 18, y + 18, 32, 24);
+    } else if (e.id === "croc") {
+      g.fillRect(x + 8, y + 20, 52, 60);
+      g.fillRect(x + 20, y, 40, 28);
+      g.fillStyle = "#1a2018"; g.fillRect(x + 28, y + 10, 18, 6);
+    } else if (e.id === "eagle") {
+      g.fillRect(x + 20, y + 24, 28, 50);
+      g.fillRect(x, y + 30, 68, 12);
+      g.fillRect(x + 24, y, 20, 24);
+    } else if (e.id === "panther") {
+      g.fillRect(x + 6, y + 30, 58, 36);
+      g.fillRect(x + 40, y + 10, 24, 28);
+    } else {
+      g.fillRect(x + 12, y + 8, 44, 70);
+      g.fillStyle = "#1a1020"; g.fillRect(x + 20, y + 22, 6, 6); g.fillRect(x + 40, y + 22, 6, 6);
+    }
+  }
+
+  function drawBattleCanvas() {
+    if (!battle) return;
     const g = bctx;
     g.fillStyle = "#152044"; g.fillRect(0, 0, 960, 372);
     g.fillStyle = "#0e1830"; g.fillRect(0, 260, 960, 112);
-    if (state.map === "woods" || state.map === "clearing" || state.map === "garden") {
+    if (state.map === "woods" || state.map === "clearing" || state.map === "garden" || state.map === "woods_edge") {
       g.fillStyle = "#1a3a28"; g.fillRect(0, 0, 960, 260);
     }
     if (state.map === "middlespace") { g.fillStyle = "#eef2ff"; g.fillRect(0, 0, 960, 260); }
     battle.enemies.forEach((e, i) => {
       if (e.hp <= 0) return;
-      g.fillStyle = e.tint;
-      g.fillRect(70 + i * 140, 110, 64, 88);
+      const x = 90 + i * 140, y = 118;
+      drawFoe(g, e, x, y);
       g.fillStyle = "#fff3c4";
-      g.font = "10px monospace";
-      g.fillText(e.name, 70 + i * 140, 100);
-      g.fillStyle = "#3a1020"; g.fillRect(70 + i * 140, 204, 64, 8);
-      g.fillStyle = "#d4454a"; g.fillRect(70 + i * 140, 204, 64 * e.hp / e.maxHp, 8);
+      g.font = "12px monospace";
+      g.fillText(e.name, x - 10, 100);
+      g.fillStyle = "#3a1020"; g.fillRect(x, 214, 72, 8);
+      g.fillStyle = "#d4454a"; g.fillRect(x, 214, 72 * Math.max(0, e.hp) / e.maxHp, 8);
     });
     battle.party.forEach((p, i) => {
       const spr = sprites[p.id];
-      if (spr) g.drawImage(spr, 0, 0, 16, 24, 700, 80 + i * 70, 48, 72);
+      if (spr && p.hp > 0) g.drawImage(spr, 0, 0, 16, 24, 700, 80 + i * 70, 48, 72);
     });
+  }
+
+  function renderBattle() {
+    if (!battle) return;
+    drawBattleCanvas();
     $("battleLog").textContent = battle.log;
     $("battleParty").innerHTML = battle.party.map((p) =>
       `${p.hp <= 0 ? "KO " : ""}${p.name}<br>HP ${Math.max(0, p.hp)}/${p.maxHp}  MP ${p.mp}/${p.maxMp}<br><br>`
@@ -1656,7 +1695,7 @@ HHHHHHHHHHHHHHHH
       back.onclick = () => { battle.menu = "cmd"; renderBattle(); };
       box.appendChild(back);
     } else if (battle.menu === "target") {
-      living(battle.enemies).forEach((e, i) => {
+      living(battle.enemies).forEach((e) => {
         const b = document.createElement("button");
         b.className = "cmd-btn"; b.textContent = e.name;
         b.onclick = () => resolveHero(e);
@@ -1893,7 +1932,7 @@ HHHHHHHHHHHHHHHH
     last = now; anim += now ? 16 : 0;
     update(dt);
     if (mode === "explore" || mode === "dialog") drawWorld();
-    if (mode === "battle") renderBattle();
+    if (mode === "battle") drawBattleCanvas();
     requestAnimationFrame(loop);
   }
 
@@ -1915,9 +1954,10 @@ HHHHHHHHHHHHHHHH
     const g = $("titleArt").getContext("2d");
     g.imageSmoothingEnabled = false;
     g.fillStyle = "#0b1024"; g.fillRect(0, 0, 420, 150);
-    g.fillStyle = "#e8eef6"; g.fillRect(170, 18, 80, 58);
-    g.fillStyle = "#3a5088"; g.fillRect(160, 10, 100, 16);
-    g.fillStyle = "#c9a24a"; g.fillRect(206, 4, 6, 14);
+    g.fillStyle = "#e8eef6"; g.fillRect(168, 28, 28, 58); g.fillRect(224, 28, 28, 58); g.fillRect(188, 40, 44, 46);
+    g.fillStyle = "#3a5088"; g.fillRect(160, 18, 44, 14); g.fillRect(216, 18, 44, 14); g.fillRect(182, 32, 56, 12);
+    g.fillStyle = "#c9a24a"; g.fillRect(206, 6, 6, 18);
+    g.fillStyle = "#9ad4ff"; g.fillRect(176, 48, 6, 8); g.fillRect(234, 48, 6, 8);
     g.drawImage(sprites.musicbox, 200, 86);
     g.drawImage(sprites.johann, 120, 90);
     g.drawImage(sprites.brigitta, 268, 90);
@@ -1988,9 +2028,13 @@ HHHHHHHHHHHHHHHH
 
   if (/(?:^|[?&])debug=1(?:&|$)/.test(location.search)) {
     window.CanticleDebug = {
-      state, warp(map, x, y) { state.map = map; state.x = x * TILE; state.y = y * TILE; },
+      snapshot() { return { mode, map: state.map, quest: state.quest, party: state.party, flags: { ...state.flags } }; },
+      state, warp(map, x, y) { state.map = map; state.x = x * TILE; state.y = y * TILE; renderHud(); },
       join(id) { if (!hasHero(id)) state.party.push(member(id)); },
-      flag: setFlag, battle: startBattle
+      flag: setFlag, battle: startBattle, talkId(id) {
+        const n = currentMap().npcs.find((npc) => npc.id === id);
+        if (n) talk(n);
+      }
     };
   }
 

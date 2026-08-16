@@ -229,6 +229,7 @@
     </div>
     <div id="ending" class="screen hidden">
       <div>
+        <canvas id="endArt" width="420" height="180" style="width:420px;height:180px;image-rendering:pixelated;margin-bottom:18px"></canvas>
         <h2 id="endTitle" style="font-size:16px;color:var(--gold)"></h2>
         <p id="endBody" style="font-size:10px;line-height:1.85;max-width:640px;color:#efe4c4"></p>
         <button class="title-btn" id="endTitleBtn" style="margin-top:22px">Return to Title</button>
@@ -421,6 +422,7 @@ WWWWWWWWWWWWWWWWWW
       { x: 9, y: 8, to: "home", tx: 8, ty: 5 },
       { x: 7, y: 17, to: "forge", tx: 6, ty: 5 },
       { x: 23, y: 8, to: "inn", tx: 6, ty: 5 },
+      { x: 24, y: 17, to: "woods_edge", tx: 4, ty: 2 },
       { x: 25, y: 17, to: "woods_edge", tx: 4, ty: 2 },
       { x: 19, y: 22, to: "castle_road", tx: 8, ty: 14 }
     ]
@@ -748,7 +750,25 @@ HHHHHHHHHHHHHHHH
   function flag(k) { return !!state.flags[k]; }
   function setFlag(k, v = true) { state.flags[k] = v; save(true); }
 
+  function npcActive(n) {
+    if (n.id === "brigitta_wait" && hasHero("brigitta")) return false;
+    if (n.id === "brigitta_lost" && flag("found_brigitta")) return false;
+    if (n.id === "brutus" && flag("brutus_left") && !flag("brutus_hurt")) return false;
+    if (n.id === "brutusbed" && !flag("brutus_hurt")) return false;
+    if (n.id === "siegfried" && state.map === "cottage" && !flag("snake_gone") && !hasHero("siegfried")) return false;
+    return true;
+  }
+
+  function healParty(full) {
+    state.party.forEach((p) => {
+      p.hp = full ? p.maxHp : Math.max(p.hp, 1);
+      if (full) p.mp = p.maxMp;
+      p.alive = p.hp > 0;
+    });
+  }
+
   function resetGame() {
+    HEROES.johann.atk = 8;
     Object.assign(state, {
       map: "home", x: 9 * TILE, y: 4 * TILE, dir: "down",
       flags: {}, gold: 4,
@@ -1087,8 +1107,8 @@ HHHHHHHHHHHHHHHH
       art: "castle" }
   ];
 
-  function drawCine(kind) {
-    const g = $("cineArt").getContext("2d");
+  function drawCine(kind, canvasId = "cineArt") {
+    const g = $(canvasId).getContext("2d");
     g.imageSmoothingEnabled = false;
     g.fillStyle = "#070914"; g.fillRect(0, 0, 420, 180);
     if (kind === "workshop") {
@@ -1112,13 +1132,15 @@ HHHHHHHHHHHHHHHH
       g.fillStyle = "#c9a24a"; g.fillRect(206, 10, 6, 22);
       g.fillStyle = "#9ad4ff"; g.fillRect(160, 70, 8, 10); g.fillRect(252, 70, 8, 10); g.fillRect(198, 80, 8, 10);
     } else if (kind === "end") {
-    } else if (kind === "end") {
       g.fillStyle = "#1a3060"; g.fillRect(0, 0, 420, 180);
-      g.fillStyle = "#e8eef6"; g.fillRect(160, 18, 100, 80);
-      g.drawImage(sprites.musicbox, 200, 110);
-      g.drawImage(sprites.johann, 120, 100);
-      g.drawImage(sprites.brigitta, 250, 100);
-      g.drawImage(sprites.siegfried, 185, 88);
+      g.fillStyle = "#0e1a38"; g.fillRect(0, 130, 420, 50);
+      g.fillStyle = "#e8eef6"; g.fillRect(150, 40, 36, 90); g.fillRect(234, 40, 36, 90); g.fillRect(180, 55, 60, 75);
+      g.fillStyle = "#3a5088"; g.fillRect(142, 28, 52, 16); g.fillRect(226, 28, 52, 16); g.fillRect(174, 42, 72, 16);
+      g.fillStyle = "#c9a24a"; g.fillRect(206, 10, 6, 22);
+      g.drawImage(sprites.musicbox, 202, 118);
+      g.drawImage(sprites.johann, 118, 100);
+      g.drawImage(sprites.brigitta, 258, 100);
+      g.drawImage(sprites.siegfried, 188, 90);
     }
   }
   function showPrologue(i = 0) {
@@ -1172,8 +1194,11 @@ HHHHHHHHHHHHHHHH
     const map = currentMap();
     const f = facingTile();
     const here = { x: Math.floor((state.x + 8) / TILE), y: Math.floor((state.y + 12) / TILE) };
-    const npc = map.npcs.find((n) =>
-      (Math.abs(n.x - f.x) + Math.abs(n.y - f.y) <= 1) || (n.x === here.x && n.y === here.y));
+    const npcs = map.npcs.filter(npcActive);
+    const standing = npcs.find((n) => n.x === here.x && n.y === here.y);
+    const facing = npcs.find((n) => n.x === f.x && n.y === f.y)
+      || npcs.find((n) => Math.abs(n.x - f.x) + Math.abs(n.y - f.y) <= 1);
+    const npc = standing || facing;
     if (npc) { await talk(npc); return; }
     const exit = map.exits.find((e) => e.x === here.x && e.y === here.y);
     if (exit) useExit(exit);
@@ -1226,6 +1251,10 @@ HHHHHHHHHHHHHHHH
       setFlag("ate");
       state.quest = "forge";
       renderHud();
+      return;
+    }
+    if (id === "bowl") {
+      await say("", "The bowl is empty. Maria would still make you scrape it.");
       return;
     }
     if (id === "maria") {
@@ -1387,7 +1416,7 @@ HHHHHHHHHHHHHHHH
       await say("Brigitta", "Fine. If anything happens, you had better be as good as Johann thinks.");
       state.inventory.amulet = 1;
       setFlag("amulet_taken");
-      state.quest = "cottage";
+      state.quest = "delivery";
       toast("Brigitta takes the cursed amulet.");
       renderHud();
       return;
@@ -1401,7 +1430,7 @@ HHHHHHHHHHHHHHHH
       ]);
       state.party.push(member("brigitta"));
       setFlag("met_brigitta");
-      state.quest = "fetch";
+      state.quest = state.inventory.sword ? "serpent" : "fetch";
       toast("Brigitta joined the party!");
       renderHud();
       return;
@@ -1434,13 +1463,20 @@ HHHHHHHHHHHHHHHH
         HEROES.johann.atk = 11;
         state.party.find((p) => p.id === "johann").atk = 11;
         toast("The scrap sword is awakened.");
+        if (state.inventory.amulet) state.quest = "delivery";
+        renderHud();
         return;
       }
       await say("Siegfried", "The queen is failing. The woods are waking. And someone who should have stayed dead is collecting names again.");
       return;
     }
     if (id === "bruno_sleep") { await say("", "Bruno is still unconscious on a mat. For once, he is not talking."); return; }
-    if (id === "hearth") { await say("", "A cottage hearth, hidden by a word of power among ordinary trees."); return; }
+    if (id === "hearth") {
+      healParty(true);
+      renderHud();
+      await say("", "The hidden hearth mends bruises and steadies the breath. HP and MP restored.");
+      return;
+    }
     if (id === "guard") {
       if (!hasHero("siegfried")) await say("", "The castle road climbs toward white stone and distant bells.");
       else await say("Siegfried", "Stay close. The court has grown fond of secrets.");
@@ -1552,9 +1588,18 @@ HHHHHHHHHHHHHHHH
       return;
     }
     if (id === "innkeep") {
-      await say("Innkeeper", flag("brutus_hurt")
-        ? "We did what we could. The woods marked him. He is breathing. That is all I will promise."
-        : "Rooms, stew, and rumors. The castle bells have been odd at night.");
+      if (flag("brutus_hurt")) {
+        await say("Innkeeper", "We did what we could. The woods marked him. He is breathing. That is all I will promise.");
+      }
+      const rest = await say("Innkeeper", "A bed and a bowl of stew, if you need them.", [
+        { label: "Rest (restore HP/MP)", value: "rest" },
+        { label: "Not now", value: "no" }
+      ]);
+      if (rest === "rest") {
+        healParty(true);
+        renderHud();
+        toast("You rest until the bells sound again.");
+      }
       return;
     }
     if (id === "brutusbed") {
@@ -1586,8 +1631,9 @@ HHHHHHHHHHHHHHHH
     });
     battle = {
       enemies, party: state.party.map((p) => ({ ...p })),
-      turn: 0, log: "A hostile melody takes shape!",
-      menu: "cmd", caster: null
+      turn: 0, actor: 0, acted: 0,
+      log: "A hostile melody takes shape!",
+      menu: "cmd", pending: null
     };
     mode = "battle";
     $("battle").classList.remove("hidden");
@@ -1656,7 +1702,7 @@ HHHHHHHHHHHHHHHH
   function renderBattle() {
     if (!battle) return;
     drawBattleCanvas();
-    $("battleLog").textContent = battle.log;
+    $("battleLog").textContent = ((currentHero() || {}).name ? currentHero().name + " — " : "") + battle.log;
     $("battleParty").innerHTML = battle.party.map((p) =>
       `${p.hp <= 0 ? "KO " : ""}${p.name}<br>HP ${Math.max(0, p.hp)}/${p.maxHp}  MP ${p.mp}/${p.maxMp}<br><br>`
     ).join("");
@@ -1704,8 +1750,19 @@ HHHHHHHHHHHHHHHH
     }
   }
   function currentHero() {
+    if (!battle) return null;
     const alive = battle.party.filter((p) => p.hp > 0);
-    return alive[battle.turn % alive.length];
+    if (!alive.length) return null;
+    const idx = Math.max(0, battle.actor) % battle.party.length;
+    if (battle.party[idx] && battle.party[idx].hp > 0) return battle.party[idx];
+    return alive[0];
+  }
+  function nextLivingActor(from) {
+    for (let i = 1; i <= battle.party.length; i++) {
+      const idx = (from + i) % battle.party.length;
+      if (battle.party[idx].hp > 0) return idx;
+    }
+    return from;
   }
   function heroCmd(cmd) {
     const hero = currentHero();
@@ -1713,12 +1770,12 @@ HHHHHHHHHHHHHHHH
     if (cmd === "flee") {
       if (battle.enemies.some((e) => e.boss)) { battleLog("The melody will not let you go."); renderBattle(); return; }
       if (Math.random() < 0.55) { battleLog("You flee!"); finishBattle(false); return; }
-      battleLog("Couldn't run!"); enemyTurns(); return;
+      battleLog("Couldn't run!"); afterHero(); return;
     }
     if (cmd === "defend") {
       hero.defending = true;
       battleLog(`${hero.name} steadies their stance.`);
-      enemyTurns(); return;
+      afterHero(); return;
     }
     if (cmd === "magic") { battle.menu = "magic"; renderBattle(); return; }
     if (cmd === "item") { battle.menu = "item"; renderBattle(); return; }
@@ -1728,6 +1785,7 @@ HHHHHHHHHHHHHHHH
   }
   function pickCanticle(id) {
     const hero = currentHero();
+    if (!hero) return;
     const c = CANTICLES[id];
     if (hero.mp < c.mp) { battleLog("Not enough music in the breath."); battle.menu = "cmd"; renderBattle(); return; }
     battle.pending = { type: "magic", id };
@@ -1745,9 +1803,10 @@ HHHHHHHHHHHHHHHH
   }
   function useBattleItem(id) {
     if (!state.inventory[id]) { battleLog("None left."); return; }
+    const hero = currentHero();
+    if (!hero) return;
     state.inventory[id]--;
     const it = ITEMS[id];
-    const hero = currentHero();
     hero.hp = Math.min(hero.maxHp, hero.hp + (it.heal || 0));
     hero.mp = Math.min(hero.maxMp, hero.mp + (it.mp || 0));
     battleLog(`${hero.name} uses ${it.name}.`);
@@ -1755,6 +1814,7 @@ HHHHHHHHHHHHHHHH
   }
   function resolveHero(target) {
     const hero = currentHero();
+    if (!hero || !target) return;
     const p = battle.pending || { type: "attack" };
     if (p.type === "magic") {
       const c = CANTICLES[p.id];
@@ -1776,7 +1836,18 @@ HHHHHHHHHHHHHHHH
   }
   function afterHero() {
     if (living(battle.enemies).length === 0) { finishBattle(true); return; }
-    enemyTurns();
+    battle.acted = (battle.acted || 0) + 1;
+    const livingCount = living(battle.party).length;
+    if (livingCount === 0) { enemyTurns(); return; }
+    if (battle.acted >= livingCount) {
+      battle.acted = 0;
+      enemyTurns();
+      return;
+    }
+    battle.actor = nextLivingActor(battle.actor);
+    battle.menu = "cmd";
+    battle.pending = null;
+    renderBattle();
   }
   function enemyTurns() {
     for (const e of living(battle.enemies)) {
@@ -1787,6 +1858,7 @@ HHHHHHHHHHHHHHHH
       if (t.hp <= 0) battleLog(`${t.name} falls!`);
     }
     battle.party.forEach((p, i) => {
+      if (!state.party[i]) return;
       state.party[i].hp = Math.max(0, p.hp);
       state.party[i].mp = p.mp;
     });
@@ -1794,49 +1866,59 @@ HHHHHHHHHHHHHHHH
       battleLog("The song goes dark...");
       renderBattle();
       setTimeout(() => {
-        state.party.forEach((p) => p.hp = Math.max(1, Math.floor(p.maxHp * 0.4)));
+        healParty(false);
+        state.party.forEach((p) => { p.hp = Math.max(1, Math.floor(p.maxHp * 0.45)); });
         finishBattle(false, true);
         toast("You stumble back, half-conscious.");
       }, 700);
       return;
     }
-    battle.turn++;
+    battle.actor = battle.party.findIndex((p) => p.hp > 0);
+    if (battle.actor < 0) battle.actor = 0;
+    battle.acted = 0;
     battle.menu = "cmd";
     battle.pending = null;
     renderBattle();
   }
   function finishBattle(won, faint) {
-    $("battle").classList.remove("hidden");
     const after = afterBattle;
     afterBattle = null;
     $("battle").classList.add("hidden");
     mode = "explore";
-    startMusic(currentMap().music);
+    state._encCool = 8;
     if (won) {
       const xp = battle.enemies.reduce((s, e) => s + e.xp, 0);
       const gold = battle.enemies.reduce((s, e) => s + e.gold, 0);
       state.gold += gold;
       toast(`Victory. +${xp} lore  +${gold} gold`);
+      battle.party.forEach((p, i) => {
+        if (!state.party[i]) return;
+        state.party[i].hp = Math.max(1, p.hp);
+        state.party[i].mp = p.mp;
+      });
       if (after === "serpent") afterSerpent();
       if (after === "chimera") afterChimera();
       if (after === "final") afterFinal();
       if (after === "bruno_bully") story([["Bruno", "Fine! Fine! The woods can have you both."]]);
     }
     battle = null;
+    startMusic(currentMap().music);
     renderHud();
     save(true);
   }
   async function afterSerpent() {
     setFlag("snake_gone");
-    await story([
-      ["", "The stone snake shatters. An ancient man in rusted armor stands over you, one-armed, eyes still young."],
-      ["Siegfried", "I am a knight of Lady Ellis and a wizard of weaponry. We should leave. That snake was not the only monster in these woods."]
-    ]);
     if (!hasHero("siegfried")) {
       state.party.push(member("siegfried"));
       toast("Siegfried joined the party!");
     }
     setFlag("met_siegfried");
+    healParty(true);
+    renderHud();
+    await story([
+      ["", "The stone snake shatters. An ancient man in rusted armor stands over you, one-armed, eyes still young."],
+      ["Siegfried", "I am a knight of Lady Ellis and a wizard of weaponry. We should leave. That snake was not the only monster in these woods."]
+    ]);
     state.quest = "amulet";
     renderHud();
   }
@@ -1850,6 +1932,7 @@ HHHHHHHHHHHHHHHH
     state.map = "labyrinth";
     state.x = 3 * TILE; state.y = 3 * TILE;
     state.quest = "labyrinth";
+    healParty(true);
     startMusic("labyrinth");
     renderHud();
   }
@@ -1860,7 +1943,7 @@ HHHHHHHHHHHHHHHH
     $("ending").classList.remove("hidden");
     $("endTitle").textContent = "The First Movement Ends";
     $("endBody").textContent = "The Many-Named One unravels into borrowed faces and is gone — for now. The white castle bells find their true descending scale. Queen Ellis still breathes. Brutus is not stone yet. In a workshop that is also a world, a music box marked J und K Müller keeps singing. Johann looks at Brigitta, at Siegfried, at the scrap sword that learned a canticle. Two worlds remain tangled. The song is not yet finished.";
-    drawCine("end");
+    drawCine("end", "endArt");
     startMusic("title");
     save(true);
   }
@@ -1881,11 +1964,7 @@ HHHHHHHHHHHHHHHH
       }
     }
     map.npcs.forEach((n) => {
-      if (n.id === "brigitta_wait" && hasHero("brigitta")) return;
-      if (n.id === "brigitta_lost" && flag("found_brigitta") && hasHero("brigitta")) return;
-      if (n.id === "brutus" && flag("brutus_left") && !flag("brutus_hurt")) return;
-      if (n.id === "brutusbed" && !flag("brutus_hurt")) return;
-      if (n.id === "siegfried" && !flag("snake_gone") && !hasHero("siegfried") && state.map === "cottage") return;
+      if (!npcActive(n)) return;
       const spr = sprites[n.sprite] || sprites.town;
       ctx.drawImage(spr, Math.floor(n.x * TILE - camX), Math.floor(n.y * TILE - camY - (spr.height - 16)));
     });
@@ -1936,18 +2015,39 @@ HHHHHHHHHHHHHHHH
     requestAnimationFrame(loop);
   }
 
+  function useFieldItem(id) {
+    const it = ITEMS[id];
+    if (!it || it.key || !state.inventory[id]) { toast("Nothing to use."); return; }
+    if (!it.heal && !it.mp) { toast("That cannot be used here."); return; }
+    state.inventory[id]--;
+    state.party.forEach((p) => {
+      if (it.heal) p.hp = Math.min(p.maxHp, p.hp + it.heal);
+      if (it.mp) p.mp = Math.min(p.maxMp, p.mp + it.mp);
+    });
+    toast(`Used ${it.name}.`);
+    renderHud();
+    save(true);
+  }
+
   function openPause(view = "root") {
     pauseView = view;
     mode = "pause";
     $("pause").classList.remove("hidden");
     const extra = $("pauseExtra");
     if (view === "items") {
-      extra.innerHTML = Object.entries(state.inventory).filter(([, n]) => n > 0)
-        .map(([id, n]) => `${ITEMS[id].name}${ITEMS[id].key ? "" : " x" + n}<br><span style="color:#9ab">${ITEMS[id].desc}</span>`).join("<br><br>")
-        || "Pockets empty.";
+      const rows = Object.entries(state.inventory).filter(([, n]) => n > 0);
+      extra.innerHTML = rows.length
+        ? rows.map(([id, n]) => {
+          const usable = !ITEMS[id].key && (ITEMS[id].heal || ITEMS[id].mp);
+          return `<div style="margin-bottom:10px">${ITEMS[id].name}${ITEMS[id].key ? "" : " x" + n}<br><span style="color:#9ab">${ITEMS[id].desc}</span>${usable ? `<br><button class="menu-btn" data-use-item="${id}">Use</button>` : ""}</div>`;
+        }).join("")
+        : "Pockets empty.";
+      extra.querySelectorAll("[data-use-item]").forEach((b) => {
+        b.onclick = () => { useFieldItem(b.dataset.useItem); openPause("items"); };
+      });
     } else if (view === "journal") {
       extra.innerHTML = `${QUEST_TEXT[state.quest]}<br><br>Gold: ${state.gold}<br>Party: ${state.party.map((p) => p.name).join(", ")}`;
-    } else extra.innerHTML = "Enter / Space: talk · I inventory · Esc pause · O options";
+    } else extra.innerHTML = "Enter / Space: talk · I inventory · Esc pause · O options<br>Battle: 1 Attack  2 Canticle  3 Item  4 Defend  5 Flee";
   }
 
   function drawTitleArt() {
@@ -1971,12 +2071,30 @@ HHHHHHHHHHHHHHHH
     if (mode === "title" && (k === "enter" || k === " ")) { e.preventDefault(); startNew(); return; }
     if (mode === "cine" && (k === "enter" || k === " ")) { advanceCine(); return; }
     if (mode === "dialog" && (k === "enter" || k === " ")) {
-      if (!$("dialogChoices").childElementCount && dialogResolve) {
+      const choice = $("dialogChoices").querySelector("button");
+      if (choice) { choice.click(); return; }
+      if (dialogResolve) {
         const r = dialogResolve; closeDialog(); r(true);
       }
       return;
     }
     if (mode === "pause" && k === "escape") { $("pause").classList.add("hidden"); mode = "explore"; return; }
+    if (mode === "battle" && battle) {
+      e.preventDefault();
+      if (k === "escape" && battle.menu !== "cmd") {
+        battle.menu = "cmd"; battle.pending = null; renderBattle(); return;
+      }
+      const btns = [...document.querySelectorAll("#battleCmds .cmd-btn")];
+      if (battle.menu === "cmd") {
+        const cmds = { "1": "attack", "2": "magic", "3": "item", "4": "defend", "5": "flee" };
+        if (cmds[k]) heroCmd(cmds[k]);
+      } else if (/^[1-9]$/.test(k) && btns[Number(k) - 1]) {
+        btns[Number(k) - 1].click();
+      } else if ((k === "enter" || k === " ") && btns[0]) {
+        btns[0].click();
+      }
+      return;
+    }
     if (mode === "explore") {
       if (k === "enter" || k === " ") interact();
       if (k === "i") openPause("items");
@@ -2028,12 +2146,28 @@ HHHHHHHHHHHHHHHH
 
   if (/(?:^|[?&])debug=1(?:&|$)/.test(location.search)) {
     window.CanticleDebug = {
-      snapshot() { return { mode, map: state.map, quest: state.quest, party: state.party, flags: { ...state.flags } }; },
-      state, warp(map, x, y) { state.map = map; state.x = x * TILE; state.y = y * TILE; renderHud(); },
+      snapshot() { return { mode, map: state.map, quest: state.quest, party: state.party.map((p) => ({ id: p.id, hp: p.hp, atk: p.atk })), flags: { ...state.flags }, inv: { ...state.inventory }, gold: state.gold }; },
+      state,
+      warp(map, x, y) { state.map = map; state.x = x * TILE; state.y = y * TILE; if (blocked(state.x, state.y)) { /* keep */ } renderHud(); },
       join(id) { if (!hasHero(id)) state.party.push(member(id)); },
-      flag: setFlag, battle: startBattle, talkId(id) {
+      flag: setFlag, battle: startBattle,
+      talkId(id) {
         const n = currentMap().npcs.find((npc) => npc.id === id);
         if (n) talk(n);
+      },
+      noEnc() { state.flags.no_enc = true; },
+      forceWin() { if (battle) { battle.enemies.forEach((e) => e.hp = 0); finishBattle(true); } },
+      useItem: useFieldItem,
+      clickDialog() {
+        const choice = $("dialogChoices").querySelector("button");
+        if (choice) { choice.click(); return "choice"; }
+        if (dialogResolve) { const r = dialogResolve; closeDialog(); r(true); return "advance"; }
+        return "none";
+      },
+      battleClick(label) {
+        const btn = [...document.querySelectorAll("#battleCmds .cmd-btn")].find((b) => b.textContent.startsWith(label));
+        if (btn) btn.click();
+        return !!btn;
       }
     };
   }

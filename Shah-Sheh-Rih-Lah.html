@@ -1,0 +1,1408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07080c">
+  <title>Shah-Sheh-Rih-Lah — The Seven Scourges</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@450;600;700&display=swap" rel="stylesheet">
+  <script src="./vendor/three.min.js"></script>
+  <style>
+    :root{
+      --ink:#07080c; --panel:#10131ae8; --gold:#d7b56a; --bright:#f3ddaa; --muted:#b7a88a;
+      --sea:#1c3d57; --lantern:#ffb45a; --win:#7dcc98; --lose:#d45b52; --draw:#c9b37a;
+      --line:#d7b56a55; --ease:180ms ease;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;background:#05060a;color:var(--bright);font-family:Inter,system-ui,sans-serif;overflow:hidden}
+    button,input{font:inherit} button{cursor:pointer}
+    h1,h2,h3,.display{font-family:Cinzel,Georgia,serif;letter-spacing:.14em;text-transform:uppercase}
+    .hidden{display:none!important}
+    #view{position:fixed;inset:0;z-index:0}
+    #view canvas{display:block;width:100%;height:100%}
+    .vignette{position:fixed;inset:0;pointer-events:none;z-index:1;background:
+      radial-gradient(ellipse at 50% 42%,transparent 42%,#00000088 100%),
+      linear-gradient(#0006,transparent 18%,transparent 78%,#0009)}
+    .grain{position:fixed;inset:0;pointer-events:none;z-index:2;opacity:.11;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+    .hud{position:fixed;inset:0;z-index:4;display:grid;grid-template-rows:auto 1fr auto;pointer-events:none}
+    .hud > *{pointer-events:auto}
+    .topbar{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:center;padding:16px 22px 10px;background:linear-gradient(#07080cee,#07080c00)}
+    .brand{display:flex;align-items:center;gap:14px}
+    .mark{width:46px;height:46px;border:1px solid var(--gold);transform:rotate(45deg);display:grid;place-items:center;box-shadow:0 0 18px #d7b56a33}
+    .mark span{transform:rotate(-45deg);font-family:Cinzel,serif;color:var(--gold);font-size:13px}
+    .brand h1{margin:0;font-size:clamp(16px,2.1vw,28px);font-weight:500;color:#f6e2b3;text-shadow:0 2px 16px #000}
+    .brand small{display:block;color:var(--muted);letter-spacing:.22em;font-size:9px;margin-top:3px}
+    .match-status{text-align:center}
+    .eyebrow{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+    .turnline{margin-top:4px;color:var(--gold);font-family:Cinzel,serif;font-size:15px}
+    .header-actions{justify-self:end;display:flex;gap:8px;flex-wrap:wrap}
+    .gold-btn,.ghost-btn,.icon-btn{
+      min-height:42px;padding:0 16px;border-radius:3px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:12px;transition:transform var(--ease),box-shadow var(--ease),background var(--ease)
+    }
+    .gold-btn{color:#171007;background:linear-gradient(#ead089,#b7842c);border:1px solid #ffe7a0;box-shadow:inset 0 0 0 2px #5b3916,0 6px 18px #0008}
+    .gold-btn:hover{transform:translateY(-1px)}
+    .gold-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+    .ghost-btn{color:var(--bright);background:#181b22cc;border:1px solid #9e804f88}
+    .ghost-btn:hover{border-color:var(--gold);background:#242833}
+    .play-shell{display:grid;grid-template-columns:280px 1fr 280px;gap:12px;padding:0 16px;min-height:0;align-items:stretch}
+    .panel{background:linear-gradient(160deg,#161a22d8,#0c0e14ee);border:1px solid var(--line);border-radius:6px;box-shadow:0 16px 40px #0008,inset 0 0 30px #0006;padding:16px 16px 14px;position:relative;backdrop-filter:blur(8px);min-height:0;overflow:auto}
+    .panel:before{content:"";position:absolute;inset:5px;border:1px solid #d3a75222;pointer-events:none}
+    .panel h2{font-size:13px;margin:0 0 12px;color:#ead59a;text-align:center;padding-bottom:10px;border-bottom:1px solid #886d3d44}
+    .who{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+    .portrait{width:58px;height:58px;border-radius:50%;border:1px solid var(--gold);display:grid;place-items:center;font-family:Cinzel,serif;font-size:18px;background:radial-gradient(circle at 35% 30%,#4a3a24,#1a120c 70%);box-shadow:inset 0 0 12px #000,0 0 16px #d7b56a22;flex:none}
+    .who strong{display:block;font-size:14px;color:#f3e2b8}
+    .who em{color:var(--muted);font-style:normal;font-size:12px}
+    .stat-row{display:flex;justify-content:space-between;font-size:12px;color:#d8c9aa;padding:5px 0;border-bottom:1px solid #fff1}
+    .belt{height:10px;border-radius:99px;background:#0b0d12;border:1px solid #a8884a66;overflow:hidden;margin-top:8px}
+    .belt > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7a5a22,#f0d089 55%,#b7842c);box-shadow:0 0 10px #f0d08988;transition:width .45s ease}
+    .log{max-height:168px;overflow:auto;font-size:12px;line-height:1.45;color:#cbbda3}
+    .log div{padding:5px 0;border-bottom:1px solid #fff08}
+    .log div:first-child{color:#f0ddb0}
+    .center-stage{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;pointer-events:none;padding-bottom:8px}
+    .chant{pointer-events:none;text-align:center;text-shadow:0 8px 28px #000}
+    .chant .syllable{font-family:Cinzel,serif;font-size:clamp(28px,5vw,64px);letter-spacing:.2em;color:#f7e7c0;opacity:.18;transition:opacity .15s, transform .15s, color .15s}
+    .chant .syllable.on{opacity:1;transform:scale(1.04);color:#fff4d4;text-shadow:0 0 24px #ffd27a88}
+    .chant .syllable.throw{opacity:1;color:#ffd27a;letter-spacing:.32em}
+    .beats{display:flex;gap:8px;margin:10px 0 6px;justify-content:center}
+    .beats i{width:12px;height:12px;border-radius:50%;border:1px solid #d7b56a88;background:#0006;box-shadow:0 0 0 0 #d7b56a00}
+    .beats i.on{background:var(--gold);box-shadow:0 0 16px #f0d089}
+    .result-banner{min-height:28px;font-family:Cormorant Garamond,Georgia,serif;font-size:22px;font-style:italic;color:#f3e2b8}
+    .bottombar{padding:8px 16px 16px;background:linear-gradient(transparent,#07080cf2 36%)}
+    .controls{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end;max-width:1280px;margin:0 auto}
+    .signs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+    .sign-btn{position:relative;padding:10px 8px 12px;background:#12151ccc;border:1px solid #8d734888;color:#ead9b4;border-radius:5px;text-align:center;min-height:118px;transition:.16s}
+    .sign-btn:hover{border-color:var(--gold);background:#1c212c}
+    .sign-btn.selected{border-color:#f0d089;background:#2a2216;box-shadow:0 0 0 1px #f0d089,0 0 22px #d7b56a44;color:#fff4d0}
+    .sign-btn.locked{opacity:.55}
+    .sign-btn svg{width:72px;height:72px;display:block;margin:0 auto 4px}
+    .sign-btn b{display:block;font-family:Cinzel,serif;letter-spacing:.16em;font-size:12px}
+    .sign-btn small{display:block;color:var(--muted);font-size:10px;letter-spacing:.04em;margin-top:2px}
+    .wager-box{width:min(280px,100%);background:#12151ce6;border:1px solid var(--line);border-radius:5px;padding:12px 14px}
+    .wager-box label{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .wager-row{display:flex;gap:8px;align-items:center}
+    .wager-row input[type=range]{flex:1;accent-color:var(--gold)}
+    .wager-val{min-width:2.4em;text-align:right;color:var(--gold);font-variant-numeric:tabular-nums;font-weight:700}
+    .wager-box .gold-btn{width:100%;margin-top:10px}
+
+    .screen{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:24px;background:
+      radial-gradient(ellipse at 50% 30%,#3a271288,transparent 50%),#07080cf2;overflow:auto}
+    .menu{width:min(920px,100%);text-align:center}
+    .menu h1{font-size:clamp(28px,5vw,58px);margin:0 0 8px;color:#f6e4b6;text-shadow:0 0 30px #d7b56a44}
+    .menu .sub{font-family:Cormorant Garamond,Georgia,serif;font-style:italic;font-size:clamp(18px,2.4vw,28px);color:#e7d3a6;margin:0 0 28px}
+    .mode-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;text-align:left}
+    .mode-card{background:linear-gradient(160deg,#1a1e27ee,#0e1118);border:1px solid #9e804f77;padding:18px;border-radius:6px;color:inherit;text-align:left}
+    .mode-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 12px 28px #0008}
+    .mode-card h3{margin:0 0 6px;font-size:15px;color:#f0d089}
+    .mode-card p{margin:0;color:#cbbda3;line-height:1.45;font-size:14px}
+    .menu-actions{display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+
+    .modal-backdrop{position:fixed;inset:0;background:#000c;display:grid;place-items:center;padding:18px;z-index:30;backdrop-filter:blur(7px)}
+    .modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:linear-gradient(145deg,#191c21,#0c0e11);border:1px solid var(--gold);box-shadow:0 28px 90px #000;padding:28px;border-radius:6px;position:relative}
+    .modal h2{color:#efd99e;margin:0 0 10px;font-size:22px}
+    .modal p,.modal li{color:#c9bea8;line-height:1.55}
+    .modal h3{color:#ead59a;font-size:13px;margin:18px 0 8px}
+    .close{position:absolute;right:12px;top:10px;width:40px;height:40px;background:#17191d;border:1px solid #816a44;color:#eadab9;font-size:22px}
+    .canon-note{padding:12px 14px;border-left:3px solid var(--gold);background:#c69a460c;color:#d8c9aa;margin:12px 0}
+    .cycle{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
+    .cycle div{padding:10px;border:1px solid #ffffff19;background:#ffffff05;text-align:center;font-size:12px}
+    .cycle strong{display:block;color:#efd38f;margin-bottom:4px;font-family:Cinzel,serif;letter-spacing:.1em}
+    .setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+    .field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#bcae93;margin-bottom:6px}
+    .field select,.field input{width:100%;height:44px;background:#0e1013;color:#eee0c5;border:1px solid #806a47;padding:0 12px}
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
+    .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(16px);opacity:0;background:#17140e;border:1px solid var(--gold);color:#f1dfb8;padding:12px 18px;z-index:50;transition:.25s;box-shadow:0 10px 30px #000;pointer-events:none}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .story{font-family:Cormorant Garamond,Georgia,serif;font-size:20px;line-height:1.55;color:#ead9b8;text-align:left}
+    .kbd{display:inline-block;border:1px solid #9e804f88;padding:1px 6px;border-radius:3px;font-size:11px;color:var(--gold)}
+    .codex-list{display:grid;gap:8px}
+    .codex-list button{text-align:left;background:#12151c;border:1px solid #8d734866;color:#ead9b4;padding:12px 14px;border-radius:4px}
+    .codex-list button:hover{border-color:var(--gold)}
+    .winlose{font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+    .winlose.win{color:var(--win)} .winlose.lose{color:var(--lose)} .winlose.draw{color:var(--draw)}
+
+    @media(max-width:1100px){
+      .play-shell{grid-template-columns:1fr 1fr}
+      .center-stage{grid-column:1/-1;order:-1;min-height:90px}
+    }
+    @media(max-width:720px){
+      .topbar{grid-template-columns:1fr auto;padding:10px}
+      .match-status{display:none}
+      .play-shell{grid-template-columns:1fr;padding:0 10px}
+      .panel{max-height:160px}
+      .signs{grid-template-columns:repeat(2,1fr)}
+      .controls{grid-template-columns:1fr}
+      .wager-box{width:100%}
+      .mode-grid,.setup-grid{grid-template-columns:1fr}
+      .sign-btn{min-height:96px}
+      .header-actions .ghost-btn{display:none}
+    }
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <div id="view" aria-hidden="true"></div>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+
+  <div class="hud hidden" id="playHud">
+    <header class="topbar">
+      <div class="brand">
+        <div class="mark" aria-hidden="true"><span>SSR</span></div>
+        <div>
+          <h1>Shah-Sheh-Rih-Lah</h1>
+          <small>The Seven Scourges</small>
+        </div>
+      </div>
+      <div class="match-status">
+        <div class="eyebrow" id="modeLabel">Wagered Duel</div>
+        <div class="turnline" id="roundLabel">Throw 1</div>
+      </div>
+      <div class="header-actions">
+        <button class="ghost-btn" id="rulesBtn" type="button">Rules</button>
+        <button class="ghost-btn" id="codexBtn" type="button">Codex</button>
+        <button class="gold-btn" id="menuBtn" type="button">Leave Table</button>
+      </div>
+    </header>
+
+    <div class="play-shell">
+      <aside class="panel" id="oppPanel">
+        <h2>Opponent</h2>
+        <div class="who">
+          <div class="portrait" id="oppPort">M</div>
+          <div>
+            <strong id="oppName">Captain Motim</strong>
+            <em id="oppTitle">Former captain</em>
+          </div>
+        </div>
+        <div class="stat-row"><span>Merits</span><b id="oppMerits">12</b></div>
+        <div class="stat-row"><span>Decisive wins</span><b id="oppWins">0</b></div>
+        <div class="stat-row"><span>Hidden wager</span><b id="oppWager">?</b></div>
+        <div class="eyebrow" style="margin-top:10px">Merit belt</div>
+        <div class="belt" aria-hidden="true"><i id="oppBelt"></i></div>
+        <p id="oppBlurb" style="color:#cbbda3;font-size:13px;line-height:1.45;margin:12px 0 0"></p>
+      </aside>
+
+      <div class="center-stage">
+        <div class="chant" id="chantLine" aria-live="polite">
+          <span class="syllable" data-s="shah">Shah</span>
+          <span class="syllable" data-s="sheh">Sheh</span>
+          <span class="syllable" data-s="rih">Rih</span>
+          <span class="syllable" data-s="lah">Lah</span>
+          <span class="syllable" data-s="hah">Hah</span>
+        </div>
+        <div class="beats" id="beats" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="result-banner" id="resultBanner"></div>
+      </div>
+
+      <aside class="panel">
+        <h2>You</h2>
+        <div class="who">
+          <div class="portrait" id="youPort">Y</div>
+          <div>
+            <strong id="youName">You</strong>
+            <em id="youTitle">Challenger</em>
+          </div>
+        </div>
+        <div class="stat-row"><span>Merits</span><b id="youMerits">24</b></div>
+        <div class="stat-row"><span>Decisive wins</span><b id="youWins">0</b></div>
+        <div class="stat-row"><span>Your wager</span><b id="youWager">1</b></div>
+        <div class="eyebrow" style="margin-top:10px">Merit belt</div>
+        <div class="belt" aria-hidden="true"><i id="youBelt"></i></div>
+        <div class="eyebrow" style="margin:14px 0 6px">Table talk</div>
+        <div class="log" id="log" aria-live="polite"></div>
+      </aside>
+    </div>
+
+    <footer class="bottombar">
+      <div class="controls">
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px" id="signHint">Choose your silent throw — <span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">3</span> <span class="kbd">4</span></div>
+          <div class="signs" id="signRow"></div>
+        </div>
+        <div class="wager-box">
+          <label for="wager"><span>Hidden merits</span><span class="wager-val" id="wagerVal">3</span></label>
+          <div class="wager-row">
+            <button class="ghost-btn" type="button" id="wagerMinus" aria-label="Decrease wager">−</button>
+            <input id="wager" type="range" min="1" max="8" value="3">
+            <button class="ghost-btn" type="button" id="wagerPlus" aria-label="Increase wager">+</button>
+          </div>
+          <button class="gold-btn" id="readyBtn" type="button">Clench the wager</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <section class="screen" id="titleScreen">
+    <div class="menu">
+      <div class="eyebrow">From the world of The Seven Scourges</div>
+      <h1>Shah-Sheh-Rih-Lah</h1>
+      <p class="sub">Five spoken beats. One silent throw. Golden merits clenched in the other hand.</p>
+      <div class="mode-grid">
+        <button class="mode-card" data-mode="duel" type="button">
+          <h3>Wagered Duel</h3>
+          <p>Face a single sailor across the carved table. First to a set number of decisive throws takes the belt.</p>
+        </button>
+        <button class="mode-card" data-mode="hotseat" type="button">
+          <h3>Two Sailors</h3>
+          <p>Pass one device. Each player hides a wager and a throw, then the chant reveals both hands together.</p>
+        </button>
+        <button class="mode-card" data-mode="circuit" type="button">
+          <h3>Merit Belt Circuit</h3>
+          <p>A circle of challengers. Keep your winnings, climb the belt, and survive eight distinct minds at the table.</p>
+        </button>
+        <button class="mode-card" data-mode="story" type="button">
+          <h3>Command of the Ship</h3>
+          <p>Recreate King Caecus’s challenge against Captain Motim. Play to the first win. The stake is the helm.</p>
+        </button>
+      </div>
+      <div class="menu-actions">
+        <button class="ghost-btn" id="practiceBtn" type="button">Practice the signs</button>
+        <button class="ghost-btn" id="titleRulesBtn" type="button">How to play</button>
+        <button class="ghost-btn" id="titleCodexBtn" type="button">Codex</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal-backdrop hidden" id="setupModal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <button class="close" id="closeSetup" type="button" aria-label="Close">×</button>
+      <h2 id="setupTitle">Sit at the table</h2>
+      <p id="setupCopy">Choose your opponent, how many decisive throws win the match, and how many golden merits you carry.</p>
+      <div class="setup-grid">
+        <div class="field" id="oppField">
+          <label for="oppSelect">Opponent</label>
+          <select id="oppSelect"></select>
+        </div>
+        <div class="field" id="firstToField">
+          <label for="firstTo">Play to</label>
+          <select id="firstTo">
+            <option value="1">First decisive throw</option>
+            <option value="2">First to 2</option>
+            <option value="3" selected>First to 3</option>
+            <option value="5">First to 5</option>
+          </select>
+        </div>
+        <div class="field" id="meritField">
+          <label for="startMerits">Starting merits each</label>
+          <select id="startMerits">
+            <option value="12">12 — light purse</option>
+            <option value="24" selected>24 — sailor’s belt</option>
+            <option value="40">40 — heavy belt</option>
+          </select>
+        </div>
+        <div class="field hidden" id="p2Field">
+          <label for="p2Name">Second sailor’s name</label>
+          <input id="p2Name" maxlength="18" value="Motim">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="gold-btn" id="startBtn" type="button">Begin the chant</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="rulesModal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <button class="close" id="closeRules" type="button" aria-label="Close">×</button>
+      <h2>How to play</h2>
+      <p class="canon-note">From the novel: Shah-Sheh-Rih-Lah is a two-player wagering game. Players chant five beats while forming a fixed sign on each syllable, then make a silent throw into one of four choice signs. A secret number of golden merits is clenched in the other hand. The winner takes both hidden wagers.</p>
+      <h3>The chant</h3>
+      <p>Begin in <strong>Hah</strong> — palm upright, four fingers together, thumb extended upward. Speak and sign <em>Shah, Sheh, Rih, Lah, Hah</em>. Immediately after the fifth beat comes the silent throw.</p>
+      <h3>The four choice signs</h3>
+      <div class="cycle">
+        <div><strong>Shah</strong>Three fingers pointed at the opponent; thumb touches the little finger. Beats Sheh.</div>
+        <div><strong>Sheh</strong>Index and middle together toward the opponent; the rest folded. Beats Lah.</div>
+        <div><strong>Lah</strong>Index and middle in a narrow V; the rest folded. Beats Rih.</div>
+        <div><strong>Rih</strong>Thumb and little finger extended, wrist rotated thumb-up. Beats Shah.</div>
+      </div>
+      <h3>Winning, losing, drawing</h3>
+      <ul>
+        <li>Shah defeats Sheh, Sheh defeats Lah, Lah defeats Rih, Rih defeats Shah.</li>
+        <li>Matching signs draw. The opposite pairs also draw: Shah against Lah, and Sheh against Rih.</li>
+        <li>A draw forces another throw. The hidden wagers stay clenched until someone wins.</li>
+        <li>A decisive winner takes both wagers. Matches are often played to the first win, or until a belt is emptied.</li>
+      </ul>
+      <h3>Custom</h3>
+      <p>Speaking the name of the game to someone wearing a merit belt is a formal challenge. Witnesses may officiate. After a win, extend a hand; the other player presses the back of their hand to your palm.</p>
+      <p>Keys: <span class="kbd">1</span> Shah <span class="kbd">2</span> Sheh <span class="kbd">3</span> Rih <span class="kbd">4</span> Lah · <span class="kbd">Space</span> ready · <span class="kbd">+</span>/<span class="kbd">−</span> wager.</p>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="codexModal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <button class="close" id="closeCodex" type="button" aria-label="Close">×</button>
+      <h2>Codex of the signs</h2>
+      <div id="codexHome">
+        <p>The common game preserves five of the seven Scourge names and replaces the rest of the old sequence with a silent wager throw.</p>
+        <div class="codex-list" id="codexList"></div>
+      </div>
+      <div id="codexPage" class="hidden">
+        <button class="ghost-btn" id="codexBack" type="button">Back</button>
+        <h3 id="codexTitle"></h3>
+        <div id="codexBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="storyModal" role="dialog" aria-modal="true">
+    <div class="modal">
+      <h2 id="storyTitle">A challenge for the helm</h2>
+      <div class="story" id="storyBody"></div>
+      <div class="modal-actions">
+        <button class="gold-btn" id="storyContinue" type="button">Raise the hand</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="endModal" role="dialog" aria-modal="true">
+    <div class="modal" style="text-align:center">
+      <h2 id="endTitle">The table is yours</h2>
+      <p id="endBody"></p>
+      <div class="modal-actions" style="justify-content:center">
+        <button class="ghost-btn" id="endMenu" type="button">Return</button>
+        <button class="gold-btn" id="endAgain" type="button">Sit again</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="hotseatModal" role="dialog" aria-modal="true">
+    <div class="modal" style="text-align:center">
+      <h2 id="hotseatTitle">Pass the device</h2>
+      <p id="hotseatBody">Player two should look away until the screen is hidden.</p>
+      <div class="modal-actions" style="justify-content:center">
+        <button class="gold-btn" id="hotseatOk" type="button">I am ready</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+  (() => {
+    const SIGNS = ['shah', 'sheh', 'rih', 'lah'];
+    const CYCLE = ['shah', 'sheh', 'lah', 'rih'];
+    const CHANT = ['shah', 'sheh', 'rih', 'lah', 'hah'];
+    const SIGN_META = {
+      shah: { name: 'Shah', beats: 'Sheh', blurb: 'Three fingers toward the opponent; thumb to little finger.' },
+      sheh: { name: 'Sheh', beats: 'Lah', blurb: 'Index and middle together; the rest folded into the palm.' },
+      rih:  { name: 'Rih',  beats: 'Shah', blurb: 'Thumb and little finger extended; wrist rotated, thumb up.' },
+      lah:  { name: 'Lah',  beats: 'Rih', blurb: 'Index and middle in a narrow V; the rest folded.' },
+      hah:  { name: 'Hah',  beats: '', blurb: 'Neutral stance. Palm upright, four fingers together, thumb up.' }
+    };
+
+    const OPPONENTS = [
+      { id:'corin', name:'Deckhand Corin', title:'Green sailor', glyph:'C', color:'#8aa3b5', merits:0, skill:'novice',
+        blurb:'Throws from instinct. A good table for learning the rhythm of the chant.' },
+      { id:'vell', name:'Quartermaster Vell', title:'Copycat', glyph:'V', color:'#c4a574', skill:'copy',
+        blurb:'Repeats whatever beat you last snapped. Bait her once, punish her twice.' },
+      { id:'saffron', name:'Gambler Saffron', title:'Dice-blooded', glyph:'S', color:'#d4a0c8', skill:'mix',
+        blurb:'Loves a heavy purse and a loud Hah. Rarely throws the same sign twice.' },
+      { id:'rhett', name:'Bosun Rhett', title:'Counter-hand', glyph:'R', color:'#7eb8a2', skill:'counter',
+        blurb:'Watches what you favor and throws the sign that beats it.' },
+      { id:'ilya', name:'Belt-wearer Ilya', title:'Challenger', glyph:'I', color:'#e0c56a', skill:'belt',
+        blurb:'Wears winnings on a merit belt. Mixes counters with feints, and notices an early lock.' },
+      { id:'nyra', name:'Sightless Nyra', title:'Acolyte', glyph:'N', color:'#9aa7d8', skill:'sightless',
+        blurb:'Trained against kings. If you change your throw on Hah, she hears it in your breath.' },
+      { id:'motim', name:'Captain Motim', title:'Mutineer', glyph:'M', color:'#d45b52', skill:'motim',
+        blurb:'Overconfident, loud on the fifth beat. His Hah betrays the choice that follows.' },
+      { id:'caecus', name:'King Caecus', title:'Sightless sovereign', glyph:'K', color:'#6ea0e0', skill:'king',
+        blurb:'Listens past the chant. He has ended matches with a single decisive throw.' }
+    ];
+
+    const CODEX = [
+      { id:'chant', title:'The five-beat chant', body:`<p>Players begin in Hah, then move through Shah, Sheh, Rih, and Lah with the spoken names, returning to Hah on the fifth beat. The signs on those five beats are fixed. They are ceremony, not choice.</p><p>After Hah comes silence. That is the only moment the hands may become a wager.</p>` },
+      { id:'signs', title:'Shah, Sheh, Rih, Lah', body:`<p><strong>Shah</strong> — index, middle, and ring pointed together at the opponent; thumb touching the little finger.</p><p><strong>Sheh</strong> — thumb, ring, and little finger folded; index and middle extended together.</p><p><strong>Rih</strong> — middle three fingers folded; thumb and little finger extended; wrist turned so the thumb points up and the little finger down.</p><p><strong>Lah</strong> — thumb, ring, and little finger folded; index and middle raised in a narrow V.</p>` },
+      { id:'cycle', title:'The cycle and the opposites', body:`<p>The living cycle is a wheel of four: Shah beats Sheh, Sheh beats Lah, Lah beats Rih, Rih beats Shah.</p><p>Across the wheel sit the opposites. Shah against Lah is a draw. Sheh against Rih is a draw. Matching signs are also draws. Any draw forces another throw, with both wagers still hidden in the off-hand.</p>` },
+      { id:'wager', title:'Golden merits and the belt', body:`<p>While the sign hand dances the chant, the other hand clenches a secret number of golden merits. A decisive winner takes both clenched sums.</p><p>Some sailors wear their winnings on a merit belt — advertising both success and a willingness to be challenged. Speaking the game’s name to a belt-wearer is itself a challenge.</p>` },
+      { id:'hah', title:'Hah, the tell, and the Sightless', body:`<p>Hah is the mask. Palm upright, four fingers together, thumb extended upward. Players who have already chosen their throw often change their voice — just slightly — on that fifth beat.</p><p>Only a Sightless ear is said to catch it reliably. Some people train specifically to play against Sightless opponents. Captain Motim had not.</p>` },
+      { id:'story', title:'Command of the ship', body:`<p>Aboard a starving vessel in the debris field, King Caecus challenged Captain Motim for the helm: sail toward the blue light, or turn back into the wrecks.</p><p>They played to the first win, with witnesses to keep both honest. Caecus threw Shah against Lah, a draw; then forced another; then took the game. Motim cried cheat. The king did not turn the ship around.</p>` },
+      { id:'seven', title:'The names the game forgot', locked:true, body:`<p>The old rite does not stop at Hah. The complete sequence is Shah, Sheh, Rih, Lah, Hah, Ehl, Akh. There is no wager throw in the ritual.</p><p>On Ehl, the right arm rises overhead with the palm open. On Akh, the left joins it, and both hands are held toward the sky. Those seven names are the seven Scourges. The sailors’ game kept the first five and spent the rest on gold.</p>` }
+    ];
+
+    const $ = (s, r=document) => r.querySelector(s);
+    const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+    const clamp = (n,a,b) => Math.max(a, Math.min(b, n));
+    const pick = a => a[Math.floor(Math.random()*a.length)];
+    const lerp = (a,b,t) => a + (b-a)*t;
+    const lerpPose = (a,b,t) => {
+      const o = { wrist: a.wrist.map((v,i)=>lerp(v,b.wrist[i],t)) };
+      for (const k of ['thumb','index','middle','ring','pinky']) {
+        o[k] = { splay: lerp(a[k].splay, b[k].splay, t), j: a[k].j.map((v,i)=>lerp(v, b[k].j[i], t)) };
+      }
+      return o;
+    };
+
+    const save = JSON.parse(localStorage.getItem('ssrl-save') || '{}');
+    const persist = () => localStorage.setItem('ssrl-save', JSON.stringify(save));
+    save.unlocked = save.unlocked || { seven:false };
+    save.stats = save.stats || { matches:0, throws:0, meritsWon:0 };
+
+    let audio;
+    const AudioFX = {
+      ctx: null,
+      enabled: false,
+      ensure() {
+        if (this.ctx) return;
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        this.ctx = new AC();
+        this.master = this.ctx.createGain();
+        this.master.gain.value = 0.22;
+        this.master.connect(this.ctx.destination);
+        this.enabled = true;
+        this.ambience();
+      },
+      resume() { this.ensure(); this.ctx && this.ctx.resume(); },
+      tone(freq, dur, type='sine', gain=0.08, at=0) {
+        if (!this.ctx) return;
+        const t = this.ctx.currentTime + at;
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = type; o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(gain, t+0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+        o.connect(g); g.connect(this.master);
+        o.start(t); o.stop(t+dur+0.02);
+      },
+      noise(dur, gain=0.04) {
+        if (!this.ctx) return;
+        const n = this.ctx.createBuffer(1, this.ctx.sampleRate*dur, this.ctx.sampleRate);
+        const d = n.getChannelData(0);
+        for (let i=0;i<d.length;i++) d[i] = Math.random()*2-1;
+        const s = this.ctx.createBufferSource(); s.buffer = n;
+        const f = this.ctx.createBiquadFilter(); f.type='lowpass'; f.frequency.value=900;
+        const g = this.ctx.createGain(); g.gain.value = gain;
+        s.connect(f); f.connect(g); g.connect(this.master); s.start();
+      },
+      beat(name) {
+        const map = { shah:180, sheh:220, rih:270, lah:200, hah:150, throw:90 };
+        this.tone(map[name]||180, 0.28, 'triangle', 0.09);
+        this.tone((map[name]||180)*3.1, 0.18, 'sine', 0.03);
+        this.tone(70, 0.12, 'sine', 0.07);
+      },
+      coins() { this.tone(880, .08, 'square', .03); this.tone(1320, .12, 'sine', .04, .05); },
+      win() { [523,659,784,1046].forEach((f,i)=>this.tone(f,.25,'sine',.05,i*.09)); },
+      lose() { this.tone(180,.4,'sawtooth',.04); this.tone(120,.5,'sine',.05,.05); },
+      draw() { this.tone(330,.2,'triangle',.04); this.tone(247,.25,'sine',.04,.08); },
+      tell() { this.tone(1400,.07,'sine',.025); },
+      ambience() {
+        if (!this.ctx) return;
+        const t = this.ctx;
+        const noiseBuf = t.createBuffer(1, t.sampleRate*3, t.sampleRate);
+        const data = noiseBuf.getChannelData(0);
+        for (let i=0;i<data.length;i++) data[i] = (Math.random()*2-1)*0.4;
+        const src = t.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+        const f = t.createBiquadFilter(); f.type='lowpass'; f.frequency.value = 280;
+        const g = t.createGain(); g.gain.value = 0.045;
+        src.connect(f); f.connect(g); g.connect(this.master); src.start();
+        const swell = () => {
+          if (!this.ctx) return;
+          this.tone(48+Math.random()*8, 2.8, 'sine', 0.03);
+          setTimeout(swell, 4200+Math.random()*1800);
+        };
+        swell();
+      }
+    };
+    audio = AudioFX;
+
+    const POSES = {
+      hah: {
+        wrist:[-1.15, 0.18, 0.05],
+        thumb:{splay:0.95,j:[0.25,0.2,0.15]},
+        index:{splay:-0.04,j:[0.08,0.1,0.08]},
+        middle:{splay:0.0,j:[0.08,0.1,0.08]},
+        ring:{splay:0.04,j:[0.1,0.12,0.1]},
+        pinky:{splay:0.08,j:[0.12,0.14,0.1]}
+      },
+      shah: {
+        wrist:[-0.42, 0.12, 0.04],
+        thumb:{splay:-0.15,j:[1.05,1.05,0.7]},
+        index:{splay:-0.03,j:[0.06,0.05,0.05]},
+        middle:{splay:0.0,j:[0.06,0.05,0.05]},
+        ring:{splay:0.03,j:[0.08,0.08,0.06]},
+        pinky:{splay:0.2,j:[1.25,1.35,0.85]}
+      },
+      sheh: {
+        wrist:[-0.42, 0.1, 0.02],
+        thumb:{splay:0.15,j:[1.15,1.05,0.7]},
+        index:{splay:-0.02,j:[0.05,0.05,0.05]},
+        middle:{splay:0.03,j:[0.05,0.05,0.05]},
+        ring:{splay:0.14,j:[1.3,1.4,0.9]},
+        pinky:{splay:0.2,j:[1.35,1.4,0.9]}
+      },
+      rih: {
+        wrist:[-0.22, 0.2, 1.28],
+        thumb:{splay:1.15,j:[0.12,0.1,0.08]},
+        index:{splay:0.04,j:[1.32,1.42,0.95]},
+        middle:{splay:0.0,j:[1.35,1.45,0.95]},
+        ring:{splay:-0.04,j:[1.3,1.38,0.9]},
+        pinky:{splay:0.42,j:[0.08,0.08,0.08]}
+      },
+      lah: {
+        wrist:[-0.42, 0.08, 0.0],
+        thumb:{splay:0.12,j:[1.12,1.0,0.7]},
+        index:{splay:-0.28,j:[0.05,0.05,0.04]},
+        middle:{splay:0.28,j:[0.05,0.05,0.04]},
+        ring:{splay:0.14,j:[1.28,1.38,0.9]},
+        pinky:{splay:0.22,j:[1.32,1.4,0.9]}
+      },
+      fist: {
+        wrist:[-0.55, 0.05, 0.25],
+        thumb:{splay:0.35,j:[0.95,0.85,0.55]},
+        index:{splay:0.0,j:[1.32,1.45,1.0]},
+        middle:{splay:0.0,j:[1.35,1.48,1.0]},
+        ring:{splay:0.02,j:[1.3,1.42,1.0]},
+        pinky:{splay:0.06,j:[1.22,1.32,0.9]}
+      }
+    };
+
+    function signSVG(sign) {
+      const common = `fill="none" stroke="#e8d4a4" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"`;
+      if (sign==='shah') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${common} d="M22 50c2-10 4-22 8-30m8 30c0-12 1-24 2-32m10 32c-1-11 0-23 3-31"/><path ${common} d="M18 52c4 8 14 10 22 4"/><path ${common} d="M16 48c8 2 14-6 12-14"/></svg>`;
+      if (sign==='sheh') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${common} d="M28 52c1-12 2-26 3-34m10 34c-1-12 0-26 1-34"/><path ${common} d="M22 50c6 8 18 8 24-2"/><path ${common} d="M20 46c6 0 10-8 8-14"/></svg>`;
+      if (sign==='rih') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${common} d="M36 28c0 8-2 14-8 18"/><path ${common} d="M36 40c2 10 8 16 16 18"/><path ${common} d="M34 22c-1-8 2-12 8-12"/><circle cx="36" cy="36" r="7" ${common}/></svg>`;
+      if (sign==='lah') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${common} d="M26 52c-2-14-6-26-12-34m20 34c2-16 10-26 18-34"/><path ${common} d="M22 50c6 8 18 8 24-1"/><path ${common} d="M20 46c6 0 10-8 8-14"/></svg>`;
+      return `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="24" y="22" width="22" height="28" rx="6" ${common}/><path ${common} d="M46 28c8-2 12 4 10 12"/></svg>`;
+    }
+
+    function outcome(a, b) {
+      if (a===b) return 'draw';
+      const i = CYCLE.indexOf(a), j = CYCLE.indexOf(b);
+      if ((i+2)%4===j) return 'draw';
+      if ((i+1)%4===j) return 'win';
+      return 'lose';
+    }
+    function beatsWhat(s) { return CYCLE[(CYCLE.indexOf(s)+1)%4]; }
+    function beatenBy(s) { return CYCLE[(CYCLE.indexOf(s)+3)%4]; }
+
+    const state = {
+      mode: 'duel',
+      phase: 'idle',
+      firstTo: 3,
+      you: { name:'You', title:'Challenger', glyph:'Y', merits:24, wins:0, wager:3, throw:'shah', color:'#e7c37a' },
+      opp: null,
+      hotseat: false,
+      p2: null,
+      logs: [],
+      history: [],
+      youThrows: [],
+      oppThrows: [],
+      lockedThrow: false,
+      changedOnHah: false,
+      earlyLock: false,
+      listenHint: null,
+      circuitIndex: 0,
+      throwIndex: 1,
+      busy: false,
+      practice: false
+    };
+
+    let world = null;
+
+    function makeTextures() {
+      const wood = document.createElement('canvas'); wood.width=512; wood.height=512;
+      const w = wood.getContext('2d');
+      w.fillStyle='#3a2a1c'; w.fillRect(0,0,512,512);
+      for (let i=0;i<40;i++){
+        w.strokeStyle=`rgba(${20+i},${10+i/2},8,${0.08+Math.random()*0.1})`;
+        w.lineWidth=3+Math.random()*6;
+        w.beginPath();
+        const x=Math.random()*512;
+        w.moveTo(x,0);
+        for (let y=0;y<=512;y+=16) w.lineTo(x+Math.sin(y*0.04+i)*8, y);
+        w.stroke();
+      }
+      for (let i=0;i<8;i++){
+        const x=Math.random()*512,y=Math.random()*512;
+        const g=w.createRadialGradient(x,y,2,x,y,18+Math.random()*20);
+        g.addColorStop(0,'#2a1c12'); g.addColorStop(1,'transparent');
+        w.fillStyle=g; w.beginPath(); w.arc(x,y,28,0,6.3); w.fill();
+      }
+      const gold = document.createElement('canvas'); gold.width=256; gold.height=256;
+      const g = gold.getContext('2d');
+      const rg = g.createRadialGradient(128,128,10,128,128,120);
+      rg.addColorStop(0,'#f8e0a0'); rg.addColorStop(.45,'#d4a017'); rg.addColorStop(1,'#6a4a12');
+      g.fillStyle=rg; g.fillRect(0,0,256,256);
+      g.strokeStyle='#f2d789'; g.lineWidth=6; g.beginPath(); g.arc(128,128,70,0,6.3); g.stroke();
+      g.fillStyle='#7a5a18'; g.font='bold 42px serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('S',128,132);
+      return { wood, gold };
+    }
+
+    function createHand(skinHex, cuffHex, isLeft) {
+      const THREE = window.THREE;
+      const root = new THREE.Group();
+      const skin = new THREE.MeshStandardMaterial({ color:skinHex, roughness:0.52, metalness:0.04 });
+      const nailMat = new THREE.MeshStandardMaterial({ color:0xc9b7a6, roughness:0.28, metalness:0.2 });
+      const cloth = new THREE.MeshStandardMaterial({ color:cuffHex, roughness:0.78, metalness:0.05 });
+      const gold = new THREE.MeshStandardMaterial({ color:0xd4b06a, roughness:0.25, metalness:0.85, emissive:0x3a2a10, emissiveIntensity:0.25 });
+
+      const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.29, 1.55, 16), cloth);
+      sleeve.position.y = -1.28; sleeve.castShadow = true; root.add(sleeve);
+      const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.045, 8, 20), gold);
+      cuff.rotation.x = Math.PI/2; cuff.position.y = -0.52; root.add(cuff);
+
+      const palm = new THREE.Group(); root.add(palm);
+      const palmMesh = new THREE.Mesh(new THREE.BoxGeometry(0.92, 1.02, 0.3), skin);
+      palmMesh.castShadow = true; palm.add(palmMesh);
+      const heel = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 10), skin);
+      heel.scale.set(1.5, 0.7, 0.85); heel.position.set(0, -0.46, 0.02); palm.add(heel);
+
+      function finger(lens, radii, withNail=true) {
+        const joints = [];
+        let parent = new THREE.Group();
+        const base = parent;
+        lens.forEach((len, i) => {
+          const pivot = parent;
+          const r = radii[i];
+          const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 4, 10), skin);
+          mesh.position.y = len/2 + r*0.15;
+          mesh.castShadow = true;
+          pivot.add(mesh);
+          if (i===0) {
+            const kn = new THREE.Mesh(new THREE.SphereGeometry(r*1.12, 10, 8), skin);
+            kn.position.y = 0; pivot.add(kn);
+          }
+          const end = new THREE.Group();
+          end.position.y = len + r*0.55;
+          pivot.add(end);
+          if (i===lens.length-1 && withNail) {
+            const n = new THREE.Mesh(new THREE.BoxGeometry(r*1.35, r*0.28, r*0.7), nailMat);
+            n.position.set(0, r*0.2, r*0.55);
+            end.add(n);
+          }
+          joints.push(pivot);
+          parent = end;
+        });
+        return { base, joints };
+      }
+
+      const layout = {
+        index:  { x:-0.30, z:0.04, lens:[0.38,0.24,0.18], r:[0.095,0.082,0.07] },
+        middle: { x:-0.06, z:0.05, lens:[0.42,0.26,0.19], r:[0.1,0.086,0.072] },
+        ring:   { x:0.18,  z:0.03, lens:[0.38,0.24,0.18], r:[0.092,0.08,0.068] },
+        pinky:  { x:0.40,  z:0.00, lens:[0.30,0.20,0.15], r:[0.078,0.068,0.058] }
+      };
+      const fingers = {};
+      for (const [name, L] of Object.entries(layout)) {
+        const f = finger(L.lens, L.r);
+        f.base.position.set(L.x, 0.52, L.z);
+        palm.add(f.base);
+        fingers[name] = f;
+      }
+      const thumb = finger([0.28,0.22,0.18], [0.1,0.088,0.076]);
+      thumb.base.position.set(-0.46, -0.08, 0.12);
+      thumb.base.rotation.set(0.55, 0.55, 1.05);
+      palm.add(thumb.base);
+      fingers.thumb = thumb;
+
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.095, 0.018, 8, 16), gold);
+      ring.rotation.x = Math.PI/2; ring.position.y = 0.02;
+      fingers.ring.joints[1].add(ring);
+
+      if (isLeft) root.scale.x = -1;
+      root.userData = { palm, fingers, pose: JSON.parse(JSON.stringify(POSES.hah)) };
+      applyPose(root, POSES.hah);
+      return root;
+    }
+
+    function applyPose(hand, pose) {
+      const f = hand.userData.fingers;
+      hand.userData.palm.rotation.set(pose.wrist[0], pose.wrist[1], pose.wrist[2]);
+      const names = ['thumb','index','middle','ring','pinky'];
+      names.forEach(n => {
+        const p = pose[n];
+        f[n].base.rotation.z = n==='thumb' ? f[n].base.rotation.z : p.splay;
+        if (n==='thumb') f[n].base.rotation.y = 0.55 + p.splay*0.2;
+        p.j.forEach((ang, i) => { if (f[n].joints[i]) f[n].joints[i].rotation.x = ang; });
+      });
+      hand.userData.pose = pose;
+    }
+
+    function World() {
+      const THREE = window.THREE;
+      const host = $('#view');
+      const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false, powerPreference:'high-performance' });
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.12;
+      host.appendChild(renderer.domElement);
+
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x07080c);
+      scene.fog = new THREE.FogExp2(0x0b1018, 0.034);
+
+      const camera = new THREE.PerspectiveCamera(34, innerWidth/innerHeight, 0.1, 80);
+      camera.position.set(0, 2.55, 6.35);
+      const camTarget = new THREE.Vector3(0, 1.15, 0);
+      const camHome = camera.position.clone();
+
+      const tex = makeTextures();
+      const woodMap = new THREE.CanvasTexture(tex.wood);
+      woodMap.wrapS = woodMap.wrapT = THREE.RepeatWrapping;
+      const goldMap = new THREE.CanvasTexture(tex.gold);
+
+      scene.add(new THREE.AmbientLight(0x1c2a3c, 0.55));
+      const fill = new THREE.DirectionalLight(0x8eb0d0, 0.28);
+      fill.position.set(-6, 8, 4); scene.add(fill);
+      const key = new THREE.SpotLight(0xffc57a, 1.35, 18, 0.55, 0.45, 1);
+      key.position.set(2.2, 6.2, 4.2); key.castShadow = true;
+      key.shadow.mapSize.set(1024,1024); scene.add(key);
+      const keyT = new THREE.Object3D(); keyT.position.set(0,1.1,0); scene.add(keyT); key.target = keyT;
+      const rim = new THREE.PointLight(0x4a7cff, 0.55, 16); rim.position.set(-3.5, 2.2, -3); scene.add(rim);
+      const lanternA = new THREE.PointLight(0xffb45a, 1.1, 9, 2); lanternA.position.set(-1.6, 3.3, 1.4); scene.add(lanternA);
+      const lanternB = new THREE.PointLight(0xff9a3a, 0.7, 8, 2); lanternB.position.set(2.4, 2.8, -0.6); scene.add(lanternB);
+
+      const table = new THREE.Mesh(
+        new THREE.CylinderGeometry(2.35, 2.42, 0.18, 48),
+        new THREE.MeshStandardMaterial({ map:woodMap, roughness:0.62, metalness:0.08, color:0x7a6248 })
+      );
+      table.receiveShadow = true; table.position.y = 0.7; scene.add(table);
+      const inlay = new THREE.Mesh(
+        new THREE.TorusGeometry(1.15, 0.025, 8, 48),
+        new THREE.MeshStandardMaterial({ color:0xd4b06a, metalness:0.8, roughness:0.3, emissive:0x3a2a08, emissiveIntensity:0.35 })
+      );
+      inlay.rotation.x = Math.PI/2; inlay.position.y = 0.8; scene.add(inlay);
+
+      const inlayDisk = new THREE.Mesh(
+        new THREE.CircleGeometry(1.05, 48),
+        new THREE.MeshStandardMaterial({ color:0x24180f, roughness:0.8, metalness:0.2 })
+      );
+      inlayDisk.rotation.x = -Math.PI/2; inlayDisk.position.y = 0.795; scene.add(inlayDisk);
+
+      const glyphMat = new THREE.MeshStandardMaterial({ color:0xe8d4a4, emissive:0x5a4818, emissiveIntensity:0.4, metalness:0.4, roughness:0.4 });
+      const glyphPos = [[0,0.81,0.55],[0.55,0.81,0], [0,0.81,-0.55],[-0.55,0.81,0]];
+      glyphPos.forEach((p,i)=>{
+        const m = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 10), glyphMat);
+        m.position.set(...p); scene.add(m);
+      });
+
+      function lanternMesh(x,y,z) {
+        const g = new THREE.Group();
+        const cage = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.14,0.28,8,1,true),
+          new THREE.MeshStandardMaterial({ color:0x2a241c, metalness:0.6, roughness:0.4, side:THREE.DoubleSide }));
+        const flame = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 10),
+          new THREE.MeshBasicMaterial({ color:0xffc878 }));
+        flame.position.y = 0.02;
+        const glow = new THREE.PointLight(0xffb45a, 0.8, 5);
+        g.add(cage, flame, glow); g.position.set(x,y,z); scene.add(g); return g;
+      }
+      lanternMesh(-1.55, 3.25, 1.35); lanternMesh(2.35, 2.75, -0.55);
+
+      const room = new THREE.Mesh(
+        new THREE.BoxGeometry(16, 8, 14),
+        new THREE.MeshStandardMaterial({ color:0x15120f, roughness:0.9, side:THREE.BackSide })
+      );
+      room.position.y = 3; scene.add(room);
+
+      const windowGeo = new THREE.PlaneGeometry(2.6, 1.6);
+      const stormCanvas = document.createElement('canvas'); stormCanvas.width=256; stormCanvas.height=128;
+      const stormTex = new THREE.CanvasTexture(stormCanvas);
+      const stormMat = new THREE.MeshBasicMaterial({ map:stormTex });
+      const win = new THREE.Mesh(windowGeo, stormMat);
+      win.position.set(0, 3.1, -6.8); scene.add(win);
+      const frame = new THREE.Mesh(new THREE.PlaneGeometry(2.85,1.85), new THREE.MeshStandardMaterial({ color:0x2a2016, metalness:0.3 }));
+      frame.position.set(0,3.1,-6.82); scene.add(frame);
+
+      const coins = [];
+      const coinGeo = new THREE.CylinderGeometry(0.11, 0.11, 0.022, 20);
+      const coinMat = new THREE.MeshStandardMaterial({ map:goldMap, metalness:0.85, roughness:0.28, emissive:0x3a2808, emissiveIntensity:0.22 });
+      function stack(x,z,n) {
+        for (let i=0;i<n;i++) {
+          const c = new THREE.Mesh(coinGeo, coinMat);
+          c.rotation.x = Math.PI/2;
+          c.position.set(x+(Math.random()-.5)*0.04, 0.81+i*0.024, z+(Math.random()-.5)*0.04);
+          c.rotation.z = Math.random()*Math.PI;
+          c.castShadow = true; scene.add(c); coins.push(c);
+        }
+      }
+      stack(-1.55, 0.85, 7); stack(1.55, 0.85, 7); stack(0, 1.55, 4);
+
+      const youHand = createHand(0xc49b78, 0x2c3a4e, false);
+      youHand.position.set(1.15, 1.55, 2.05);
+      youHand.rotation.set(-0.15, -0.35, 0.15);
+      scene.add(youHand);
+      const oppHand = createHand(0xb8896e, 0x3a2420, true);
+      oppHand.position.set(-1.15, 1.62, -1.55);
+      oppHand.rotation.set(-0.05, 2.75, 0.05);
+      scene.add(oppHand);
+
+      const youFist = createHand(0xc49b78, 0x2c3a4e, true);
+      youFist.position.set(2.05, 1.15, 1.55);
+      youFist.rotation.set(-0.6, -0.5, 0.4);
+      youFist.scale.setScalar(0.72);
+      applyPose(youFist, POSES.fist);
+      scene.add(youFist);
+      const oppFist = createHand(0xb8896e, 0x3a2420, false);
+      oppFist.position.set(-2.05, 1.22, -0.95);
+      oppFist.rotation.set(-0.5, 3.4, -0.3);
+      oppFist.scale.setScalar(0.72);
+      applyPose(oppFist, POSES.fist);
+      scene.add(oppFist);
+
+      const motes = [];
+      const moteGeo = new THREE.SphereGeometry(0.012, 6, 6);
+      const moteMat = new THREE.MeshBasicMaterial({ color:0xffe0a0, transparent:true, opacity:0.45 });
+      for (let i=0;i<70;i++) {
+        const m = new THREE.Mesh(moteGeo, moteMat);
+        m.position.set((Math.random()-0.5)*8, 0.8+Math.random()*4, (Math.random()-0.5)*7);
+        m.userData.v = new THREE.Vector3((Math.random()-.5)*0.04, 0.02+Math.random()*0.04, (Math.random()-.5)*0.03);
+        scene.add(m); motes.push(m);
+      }
+
+      const clock = new THREE.Clock();
+      let punch = 0;
+      let stormT = 0;
+      const anim = { youFrom: POSES.hah, youTo: POSES.hah, oppFrom: POSES.hah, oppTo: POSES.hah, t:1, dur:0.28 };
+
+      function drawStorm(t) {
+        const c = stormCanvas.getContext('2d');
+        c.fillStyle='#071018'; c.fillRect(0,0,256,128);
+        for (let i=0;i<18;i++){
+          const x = (i*40 + t*30)%280 - 20;
+          c.fillStyle=`rgba(40,70,100,${0.08+0.1*Math.sin(t+i)})`;
+          c.beginPath(); c.ellipse(x, 40+Math.sin(i+t)*10, 50, 18, 0, 0, 6.3); c.fill();
+        }
+        if (Math.sin(t*3.1)>0.97) {
+          c.fillStyle='rgba(220,230,255,0.35)'; c.fillRect(0,0,256,128);
+        }
+        c.fillStyle='#9ecbff22'; c.fillRect(0,90,256,40);
+        stormTex.needsUpdate = true;
+      }
+
+      function tick() {
+        const dt = Math.min(clock.getDelta(), 0.05);
+        const t = clock.elapsedTime;
+        stormT += dt; drawStorm(stormT);
+        table.rotation.y = Math.sin(t*0.15)*0.01;
+        camera.position.x = camHome.x + Math.sin(t*0.22)*0.08;
+        camera.position.y = camHome.y + Math.sin(t*0.18)*0.04 + punch;
+        camera.lookAt(camTarget);
+        punch *= 0.9;
+        lanternA.intensity = 1.05 + Math.sin(t*5.2)*0.12;
+        lanternB.intensity = 0.65 + Math.sin(t*4.1+1)*0.1;
+        motes.forEach(m => {
+          m.position.addScaledVector(m.userData.v, dt);
+          if (m.position.y>5.2) m.position.y=0.7;
+        });
+        if (anim.t < 1) {
+          anim.t = Math.min(1, anim.t + dt/anim.dur);
+          const e = 1-Math.pow(1-anim.t, 3);
+          applyPose(youHand, lerpPose(anim.youFrom, anim.youTo, e));
+          applyPose(oppHand, lerpPose(anim.oppFrom, anim.oppTo, e));
+        }
+        renderer.render(scene, camera);
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+
+      addEventListener('resize', () => {
+        camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+        renderer.setSize(innerWidth, innerHeight);
+      });
+
+      return {
+        setHands(youSign, oppSign, dur=0.28) {
+          anim.youFrom = youHand.userData.pose;
+          anim.oppFrom = oppHand.userData.pose;
+          anim.youTo = POSES[youSign] || POSES.hah;
+          anim.oppTo = POSES[oppSign] || POSES.hah;
+          anim.t = 0; anim.dur = dur;
+        },
+        punchIn() { punch = 0.18; camHome.z = 5.7; },
+        resetCam() { camHome.set(0, 2.55, 6.35); },
+        flash(color) { scene.fog.color.set(color); setTimeout(()=>scene.fog.color.set(0x0b1018), 180); }
+      };
+    }
+
+    function log(msg) { state.logs.unshift(msg); if (state.logs.length>40) state.logs.pop(); renderHud(); }
+    let toastTimer;
+    function toast(s) {
+      const t = $('#toast'); t.textContent = s; t.classList.add('show');
+      clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+    }
+
+    function beltWidth(merits, cap) { return `${clamp(merits/cap,0,1)*100}%`; }
+
+    function renderHud() {
+      const y = state.you, o = state.hotseat ? state.p2 : state.opp;
+      if (!o) return;
+      $('#youName').textContent = y.name;
+      $('#youTitle').textContent = y.title;
+      $('#youPort').textContent = y.glyph;
+      $('#youPort').style.color = y.color;
+      $('#youMerits').textContent = y.merits;
+      $('#youWins').textContent = y.wins;
+      $('#youWager').textContent = state.phase==='wager' || state.phase==='countdown' || state.phase==='chant' ? y.wager : (state.phase==='idle' ? y.wager : y.wager);
+      $('#youBelt').style.width = beltWidth(y.merits, 48);
+      $('#oppName').textContent = o.name;
+      $('#oppTitle').textContent = o.title;
+      $('#oppPort').textContent = o.glyph;
+      $('#oppPort').style.color = o.color || '#d4b06a';
+      $('#oppMerits').textContent = state.mode==='story' ? '—' : o.merits;
+      $('#oppWins').textContent = o.wins || 0;
+      $('#oppWager').textContent = (state.phase==='reveal' || state.phase==='resolve') ? o.wager : 'clenched';
+      $('#oppBelt').style.width = beltWidth(o.merits||0, 48);
+      $('#oppBlurb').textContent = o.blurb || '';
+      $('#log').innerHTML = state.logs.slice(0,8).map(x=>`<div>${x}</div>`).join('');
+      $('#roundLabel').textContent = `Throw ${state.throwIndex}`;
+      const modeNames = { duel:'Wagered Duel', hotseat:'Two Sailors', circuit:'Merit Belt Circuit', story:'Command of the Ship', practice:'Practice' };
+      $('#modeLabel').textContent = modeNames[state.mode] || 'Match';
+      const maxW = Math.max(1, Math.min(8, y.merits));
+      $('#wager').max = maxW;
+      if (y.wager > maxW) y.wager = maxW;
+      $('#wager').value = y.wager;
+      $('#wagerVal').textContent = y.wager;
+      const wagerLocked = !['wager','idle'].includes(state.phase) || state.busy;
+      $('#wager').disabled = wagerLocked || state.practice || state.mode==='story';
+      if (state.practice) {
+        $('#readyBtn').disabled = state.busy;
+        $('#readyBtn').textContent = 'Run a practice chant';
+      } else {
+        $('#readyBtn').disabled = state.busy || !['wager','idle'].includes(state.phase);
+        const p2turn = state.hotseat && state.hotseatStep===2;
+        $('#readyBtn').textContent = state.busy ? 'Chanting…' : state.mode==='story' ? 'Call the game' : p2turn ? 'Clench & chant' : 'Clench the wager';
+      }
+      if (state.mode==='story') {
+        $('#youWager').textContent = 'the helm';
+        $('#oppWager').textContent = state.phase==='reveal' || state.phase==='resolve' ? 'the helm' : 'the helm';
+      }
+      if (state.mode==='circuit') $('#modeLabel').textContent = `Merit Belt Circuit · ${state.circuitIndex+1} / ${OPPONENTS.length}`;
+      $$('.sign-btn').forEach(b => {
+        b.classList.toggle('selected', b.dataset.sign === y.throw);
+        b.classList.toggle('locked', state.phase==='reveal' || state.phase==='resolve');
+      });
+    }
+
+    function buildSigns() {
+      $('#signRow').innerHTML = SIGNS.map(s => `
+        <button class="sign-btn" type="button" data-sign="${s}" aria-pressed="false">
+          ${signSVG(s)}
+          <b>${SIGN_META[s].name}</b>
+          <small>beats ${SIGN_META[s].beats}</small>
+        </button>`).join('');
+      $$('.sign-btn').forEach(b => b.onclick = () => chooseThrow(b.dataset.sign));
+    }
+
+    function chooseThrow(sign) {
+      if (['reveal','resolve'].includes(state.phase) || state.busy && state.phase==='throw') return;
+      if (state.practice) {
+        state.you.throw = sign;
+        world && world.setHands(sign, sign, 0.22);
+        renderHud();
+        return;
+      }
+      const prev = state.you.throw;
+      state.you.throw = sign;
+      if (state.phase==='chant' && state.chantBeat >= 4) state.changedOnHah = true;
+      if (state.phase==='wager' || state.phase==='idle') state.earlyLock = true;
+      if (prev!==sign && state.phase==='chant') audio.tell();
+      renderHud();
+    }
+
+    function aiThrow() {
+      const skill = state.opp.skill;
+      const last = state.youThrows[state.youThrows.length-1];
+      const freq = {};
+      SIGNS.forEach(s => freq[s]=0);
+      state.youThrows.forEach(s => freq[s]++);
+      const favorite = SIGNS.slice().sort((a,b)=>freq[b]-freq[a])[0] || pick(SIGNS);
+      if (skill==='novice') return pick(SIGNS);
+      if (skill==='copy') return last || pick(SIGNS);
+      if (skill==='mix') {
+        const avoid = state.oppThrows[state.oppThrows.length-1];
+        return pick(SIGNS.filter(s=>s!==avoid).length?SIGNS.filter(s=>s!==avoid):SIGNS);
+      }
+      if (skill==='counter') return beatenBy(favorite);
+      if (skill==='belt') {
+        if (state.earlyLock && Math.random()<0.55) return beatenBy(state.you.throw);
+        return Math.random()<0.5 ? beatenBy(favorite) : pick(SIGNS);
+      }
+      if (skill==='sightless') {
+        if (state.changedOnHah && Math.random()<0.8) return beatenBy(state.you.throw);
+        return Math.random()<0.6 ? beatenBy(favorite) : pick(SIGNS);
+      }
+      if (skill==='motim') {
+        const choice = Math.random()<0.35 ? 'lah' : pick(SIGNS);
+        state.listenHint = choice;
+        return choice;
+      }
+      if (skill==='king') {
+        if (state.changedOnHah || state.earlyLock) return beatenBy(state.you.throw);
+        const mix = [beatenBy(favorite), pick(SIGNS), beatenBy(last||favorite)];
+        return pick(mix);
+      }
+      return pick(SIGNS);
+    }
+
+    function aiWager() {
+      if (state.mode==='story') return 0;
+      const m = Math.max(1, state.opp.merits);
+      const cap = Math.min(8, m);
+      if (state.opp.skill==='novice') return 1+Math.floor(Math.random()*Math.min(3,cap));
+      if (state.opp.skill==='mix' || state.opp.skill==='motim') return clamp(2+Math.floor(Math.random()*5),1,cap);
+      return clamp(Math.ceil(cap*0.25)+Math.floor(Math.random()*2), 1, cap);
+    }
+
+    function setChant(active) {
+      $$('#chantLine .syllable').forEach(el => {
+        el.classList.toggle('on', el.dataset.s===active);
+        el.classList.remove('throw');
+      });
+      const idx = CHANT.indexOf(active);
+      $$('#beats i').forEach((el,i)=>el.classList.toggle('on', i===idx));
+    }
+
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    async function runChant() {
+      state.busy = true; state.phase = 'countdown'; state.changedOnHah = false; renderHud();
+      $('#resultBanner').textContent = '';
+      world && world.resetCam();
+      audio.resume();
+      for (let n=3;n>=1;n--) {
+        $('#resultBanner').textContent = n;
+        audio.tone(220+n*40, 0.12, 'sine', 0.05);
+        await sleep(480);
+      }
+      $('#resultBanner').textContent = '';
+      state.phase = 'chant';
+      world && world.setHands('hah','hah', 0.2);
+      await sleep(200);
+      for (let i=0;i<CHANT.length;i++) {
+        state.chantBeat = i;
+        const s = CHANT[i];
+        setChant(s);
+        world && world.setHands(s, s, i===4 ? 0.16 : 0.22);
+        audio.beat(s);
+        if (s==='hah' && state.opp && state.opp.skill==='motim' && state.oppThrowLocked) {
+          audio.tone(980, 0.09, 'sine', 0.03);
+          world && world.setHands('hah', state.opp.throw, 0.38);
+          $('#resultBanner').textContent = 'A hitch in his Hah — the next sign is already in the throat.';
+        }
+        await sleep(i===4 ? 520 : 600);
+      }
+      $$('#chantLine .syllable').forEach(el=>el.classList.remove('on'));
+      $('#chantLine').querySelector('[data-s="hah"]').classList.add('throw');
+      $('#chantLine').querySelector('[data-s="hah"]').textContent = 'THROW';
+      audio.beat('throw');
+      state.phase = 'throw';
+      world && world.punchIn();
+      await sleep(160);
+      const oppSign = state.hotseat ? state.p2.throw : (state.oppThrowLocked ? state.opp.throw : aiThrow());
+      const youSign = state.you.throw;
+      if (!state.hotseat) state.opp.throw = oppSign;
+      state.oppThrowLocked = false;
+      world && world.setHands(youSign, state.hotseat ? state.p2.throw : oppSign, 0.09);
+      await sleep(420);
+      $('#chantLine').querySelector('[data-s="hah"]').textContent = 'Hah';
+      $('#chantLine').querySelector('[data-s="hah"]').classList.remove('throw');
+      await resolveThrow(youSign, state.hotseat ? state.p2.throw : oppSign);
+    }
+
+    async function resolveThrow(youSign, oppSign) {
+      state.phase = 'reveal';
+      state.youThrows.push(youSign);
+      (state.hotseat ? state.oppThrows : state.oppThrows).push(oppSign);
+      if (state.hotseat) state.p2.throw = oppSign;
+      save.stats.throws = (save.stats.throws||0)+1; persist();
+      const res = outcome(youSign, oppSign);
+      const yn = SIGN_META[youSign].name, on = SIGN_META[oppSign].name;
+      $('#oppWager').textContent = state.mode==='story' ? 'the helm' : (state.hotseat?state.p2.wager:state.opp.wager);
+      if (res==='draw') {
+        audio.draw();
+        world && world.flash(0x3a3420);
+        $('#resultBanner').innerHTML = `<span class="winlose draw">${yn} against ${on}. Again.</span>`;
+        log(`${yn} against ${on}. Opposite or matching — the officiator calls another throw.`);
+        toast('No winner. The merits stay clenched.');
+        state.throwIndex++;
+        state.busy = false;
+        state.phase = 'wager';
+        state.earlyLock = false;
+        renderHud();
+        if (state.mode==='story' || state.autoContinue) setTimeout(()=>{ if(state.phase==='wager') beginThrow(); }, 1100);
+        return;
+      }
+      const youWon = res==='win';
+      if (youWon) audio.win(); else audio.lose();
+      world && world.flash(youWon ? 0x1c3a28 : 0x3a1820);
+      $('#resultBanner').innerHTML = youWon
+        ? `<span class="winlose win">${yn} defeats ${on}</span>`
+        : `<span class="winlose lose">${on} defeats ${yn}</span>`;
+      const yw = state.you.wager;
+      const ow = state.mode==='story' ? 0 : (state.hotseat ? state.p2.wager : state.opp.wager);
+      if (state.mode==='story') {
+        if (youWon) { state.you.wins++; log('The officiator: “That’s the game for the king.”'); endMatch(true, 'Command of the ship is yours. Sail toward the blue light.'); }
+        else { state.opp.wins++; log('Motim seizes the call.'); endMatch(false, 'Motim takes the helm. The ship turns back into the wrecks.'); }
+        renderHud(); return;
+      }
+      if (youWon) {
+        state.you.merits += yw + ow;
+        if (state.hotseat) state.p2.merits -= ow; else state.opp.merits -= ow;
+        state.you.wins++;
+        save.stats.meritsWon = (save.stats.meritsWon||0)+ow; persist();
+        audio.coins();
+        log(`You take ${yw+ow} merits. ${yn} beats ${on}.`);
+      } else {
+        state.you.merits -= yw;
+        if (state.hotseat) { state.p2.merits += yw+ow; state.p2.wins++; }
+        else { state.opp.merits += yw+ow; state.opp.wins++; }
+        log(`${state.hotseat?state.p2.name:state.opp.name} takes ${yw+ow} merits. ${on} beats ${yn}.`);
+      }
+      state.throwIndex++;
+      renderHud();
+      await sleep(900);
+      const target = state.firstTo;
+      const p2 = state.hotseat ? state.p2 : state.opp;
+      if (state.you.merits<=0) { endMatch(false, 'Your purse is empty. The belt passes.'); return; }
+      if (p2.merits<=0) { endMatch(true, 'Their belt is empty. The circle hushes for you.'); return; }
+      if (state.you.wins>=target) {
+        if (state.mode==='circuit' && state.circuitIndex>=OPPONENTS.length-1)
+          endMatch(true, 'Eight challengers yield. The merit belt is yours.');
+        else if (state.mode==='circuit')
+          endMatch(true, `${state.opp.name} yields. Another sailor is already sitting.`);
+        else endMatch(true, `First to ${target}. The table is yours.`);
+        return;
+      }
+      if ((p2.wins||0)>=target) {
+        endMatch(false, state.mode==='circuit' ? `${p2.name} empties your claim on the belt.` : `${p2.name} reaches ${target} first.`);
+        return;
+      }
+      state.busy = false; state.phase = 'wager'; state.earlyLock = false;
+      if (state.mode==='circuit') maybeAdvanceCircuit();
+      renderHud();
+    }
+
+    function maybeAdvanceCircuit() {
+      /* stay on opponent until match end */
+    }
+
+    function endMatch(won, text) {
+      state.busy = false; state.phase = 'resolve';
+      save.stats.matches = (save.stats.matches||0)+1;
+      if (won) save.unlocked.seven = true;
+      persist();
+      $('#endTitle').textContent = won ? 'A decisive hand' : 'The wager is lost';
+      $('#endBody').textContent = text;
+      $('#endAgain').textContent = state.mode==='circuit' && won && state.circuitIndex < OPPONENTS.length-1 ? 'Next challenger' : 'Sit again';
+      $('#endModal').classList.remove('hidden');
+      if (state.mode==='story') {
+        $('#storyTitle').textContent = won ? 'Forward. Only forward.' : 'The brig waits';
+      }
+    }
+
+    function fillOpponents() {
+      $('#oppSelect').innerHTML = OPPONENTS.map(o => `<option value="${o.id}">${o.name} — ${o.title}</option>`).join('');
+    }
+
+    function cloneOpp(id) {
+      const o = OPPONENTS.find(x=>x.id===id) || OPPONENTS[0];
+      return { ...o, merits: state.startMerits, wins:0, wager:1, throw:'shah' };
+    }
+
+    function openSetup(mode) {
+      state.mode = mode;
+      $('#setupModal').classList.remove('hidden');
+      $('#p2Field').classList.toggle('hidden', mode!=='hotseat');
+      $('#oppField').classList.toggle('hidden', mode==='hotseat' || mode==='circuit' || mode==='story');
+      $('#meritField').classList.toggle('hidden', mode==='story');
+      $('#firstToField').classList.toggle('hidden', mode==='story');
+      if (mode==='story') { $('#setupTitle').textContent = 'Command of the ship'; $('#setupCopy').textContent = 'Caecus against Motim. First decisive throw. The stake is the helm, witnessed in the corridor.'; }
+      else if (mode==='hotseat') { $('#setupTitle').textContent = 'Two sailors'; $('#setupCopy').textContent = 'Each of you will hide a wager and a throw. Pass the device between clenched fists.'; }
+      else if (mode==='circuit') { $('#setupTitle').textContent = 'The merit belt circuit'; $('#setupCopy').textContent = 'Eight challengers. Your purse carries forward. First to the selected count against each sailor.'; }
+      else { $('#setupTitle').textContent = 'Sit at the table'; $('#setupCopy').textContent = 'Choose a mind to play against, and how many golden merits you each carry.'; }
+    }
+
+    function beginMatch() {
+      state.startMerits = +$('#startMerits').value;
+      state.firstTo = state.mode==='story' ? 1 : +$('#firstTo').value;
+      state.you = { name: state.mode==='story' ? 'Caecus' : 'You', title: state.mode==='story' ? 'Sightless king' : 'Challenger', glyph: state.mode==='story' ? 'C' : 'Y', merits: state.mode==='story' ? 0 : state.startMerits, wins:0, wager: Math.min(3, state.startMerits||3), throw:'shah', color:'#e7c37a' };
+      state.logs = []; state.youThrows=[]; state.oppThrows=[]; state.throwIndex=1; state.circuitIndex = state.mode==='circuit' ? 0 : state.circuitIndex; state.practice=false; state.hotseatStep=1; state.oppThrowLocked=false;
+      if (state.mode==='hotseat') {
+        state.hotseat = true;
+        state.p2 = { name: $('#p2Name').value.trim()||'Second sailor', title:'Opposite hand', glyph:'2', merits:state.startMerits, wins:0, wager:3, throw:'sheh', color:'#d45b52', blurb:'A living opponent across the same table.' };
+        state.opp = state.p2;
+      } else {
+        state.hotseat = false;
+        const id = state.mode==='story' ? 'motim' : state.mode==='circuit' ? OPPONENTS[0].id : $('#oppSelect').value;
+        state.opp = cloneOpp(id);
+        if (state.mode==='story') { state.opp.merits = 0; state.opp.blurb = 'He chuckles at games in a crisis — and has not trained against a Sightless ear.'; }
+      }
+      $('#setupModal').classList.add('hidden');
+      $('#titleScreen').classList.add('hidden');
+      $('#playHud').classList.remove('hidden');
+      renderHud();
+      if (state.mode==='story') {
+        $('#storyTitle').textContent = 'Shah-Sheh-Rih-Lah';
+        $('#storyBody').innerHTML = `<p>The corridor is narrow, the ship starving, the fog thick as wool. You are Caecus. You speak the game’s name to the man wearing a merit belt — a challenge he cannot refuse.</p><p>The stake is command. If you win, the prow stays pointed at the blue light. If Motim wins, the ship turns around.</p><p>You play to the first decisive throw. Listen on <em>Hah</em>. Some throats change when the choice is already made.</p>`;
+        $('#storyModal').classList.remove('hidden');
+      } else {
+        log('Witnesses gather. Golden merits catch the lantern light.');
+        state.phase = 'wager';
+        renderHud();
+      }
+      world && world.setHands('hah','hah', 0.4);
+    }
+
+    function beginThrow() {
+      if (state.busy) return;
+      if (state.hotseat) {
+        if (state.hotseatStep!==2) {
+          state._p1 = { throw: state.you.throw, wager: state.you.wager };
+          state.hotseatStep = 2;
+          $('#hotseatTitle').textContent = `Pass to ${state.p2.name}`;
+          $('#hotseatBody').textContent = `${state.you.name} should look away. ${state.p2.name} will choose a hidden throw and wager, then clench.`;
+          $('#hotseatModal').classList.remove('hidden');
+          return;
+        }
+        state.p2.throw = state.you.throw;
+        state.p2.wager = state.you.wager;
+        state.you.throw = state._p1.throw;
+        state.you.wager = state._p1.wager;
+        state.hotseatStep = 1;
+        runChant();
+        return;
+      }
+      state.opp.wager = aiWager();
+      if (state.opp.skill==='motim') {
+        state.opp.throw = aiThrow();
+        state.oppThrowLocked = true;
+      } else {
+        state.oppThrowLocked = false;
+      }
+      runChant();
+    }
+
+    function showMenu() {
+      $('#playHud').classList.add('hidden');
+      $('#titleScreen').classList.remove('hidden');
+      $('#endModal').classList.add('hidden');
+      $('#storyModal').classList.add('hidden');
+      state.phase = 'idle'; state.busy=false;
+      world && world.resetCam();
+      world && world.setHands('hah','hah', 0.5);
+    }
+
+    function openCodex(page) {
+      $('#codexModal').classList.remove('hidden');
+      if (!page) {
+        $('#codexHome').classList.remove('hidden');
+        $('#codexPage').classList.add('hidden');
+        $('#codexList').innerHTML = CODEX.map(c => {
+          const locked = c.locked && !save.unlocked.seven;
+          return `<button type="button" data-id="${c.id}" ${locked?'disabled':''}>${c.title}${locked?' — win a match to unseal':''}</button>`;
+        }).join('');
+        $$('#codexList button').forEach(b => b.onclick = () => openCodex(b.dataset.id));
+        return;
+      }
+      const c = CODEX.find(x=>x.id===page);
+      $('#codexHome').classList.add('hidden');
+      $('#codexPage').classList.remove('hidden');
+      $('#codexTitle').textContent = c.title;
+      $('#codexBody').innerHTML = c.body;
+    }
+
+    function startPractice() {
+      state.practice = true; state.mode='practice';
+      state.you = { name:'You', title:'Student of the signs', glyph:'Y', merits:0, wins:0, wager:0, throw:'hah', color:'#e7c37a' };
+      state.opp = { name:'Mirror', title:'Practice hand', glyph:'M', merits:0, wins:0, wager:0, throw:'hah', color:'#9aa7d8', blurb:'Form each sign until the fingers remember. The silent throw is the only choice that matters.' };
+      state.logs = ['Hold a sign. Watch both hands take the shape from the book.'];
+      state.phase = 'idle';
+      $('#titleScreen').classList.add('hidden');
+      $('#playHud').classList.remove('hidden');
+      $('#readyBtn').textContent = 'Run a practice chant';
+      renderHud();
+      world && world.setHands('hah','hah', 0.3);
+    }
+
+    function bind() {
+      buildSigns(); fillOpponents();
+      $$('.mode-card').forEach(b => b.onclick = () => { audio.resume(); openSetup(b.dataset.mode); });
+      $('#practiceBtn').onclick = () => { audio.resume(); startPractice(); };
+      $('#titleRulesBtn').onclick = $('#rulesBtn').onclick = () => $('#rulesModal').classList.remove('hidden');
+      $('#titleCodexBtn').onclick = $('#codexBtn').onclick = () => openCodex();
+      $('#closeRules').onclick = () => $('#rulesModal').classList.add('hidden');
+      $('#closeCodex').onclick = () => $('#codexModal').classList.add('hidden');
+      $('#codexBack').onclick = () => openCodex();
+      $('#closeSetup').onclick = () => $('#setupModal').classList.add('hidden');
+      $('#startBtn').onclick = beginMatch;
+      $('#menuBtn').onclick = showMenu;
+      $('#endMenu').onclick = showMenu;
+      $('#endAgain').onclick = () => {
+        $('#endModal').classList.add('hidden');
+        if (state.mode==='circuit' && state.you.wins>=state.firstTo && state.circuitIndex < OPPONENTS.length-1) {
+          state.circuitIndex++;
+          const keep = state.you.merits;
+          const winsKeep = 0;
+          state.opp = cloneOpp(OPPONENTS[state.circuitIndex].id);
+          state.you.wins = winsKeep; state.you.merits = keep;
+          state.throwIndex = 1; state.youThrows=[]; state.oppThrows=[];
+          log(`${state.opp.name} sits. The belt still hangs heavy.`);
+          state.phase='wager'; renderHud();
+        } else if (state.mode==='story') { openSetup('story'); }
+        else beginMatch();
+      };
+      $('#storyContinue').onclick = () => { $('#storyModal').classList.add('hidden'); state.phase='wager'; log('Witnesses take their places. Play to the first win.'); renderHud(); };
+      $('#hotseatOk').onclick = () => {
+        $('#hotseatModal').classList.add('hidden');
+        state.you.throw = pick(SIGNS);
+        state.you.wager = clamp(3, 1, Math.max(1, state.p2.merits));
+        renderHud();
+        toast(`${state.p2.name}: choose in private, then clench.`);
+      };
+      $('#wager').oninput = () => { state.you.wager = +$('#wager').value; renderHud(); };
+      $('#wagerMinus').onclick = () => { state.you.wager = clamp(state.you.wager-1,1,+ $('#wager').max); renderHud(); };
+      $('#wagerPlus').onclick = () => { state.you.wager = clamp(state.you.wager+1,1,+ $('#wager').max); renderHud(); };
+      $('#readyBtn').onclick = () => {
+        audio.resume();
+        if (state.practice) { runPracticeChant(); return; }
+        beginThrow();
+      };
+      document.addEventListener('keydown', e => {
+        if (e.key==='Escape') { $('#rulesModal').classList.add('hidden'); $('#codexModal').classList.add('hidden'); }
+        if (['1','2','3','4'].includes(e.key)) chooseThrow(SIGNS[+e.key-1]);
+        if (e.key==='q'||e.key==='Q') chooseThrow('shah');
+        if (e.key==='w'||e.key==='W') chooseThrow('sheh');
+        if (e.key==='e'||e.key==='E') chooseThrow('rih');
+        if (e.key==='r'||e.key==='R') chooseThrow('lah');
+        if (e.key===' ' && (state.phase==='wager'||state.phase==='idle'||state.practice)) { e.preventDefault(); $('#readyBtn').click(); }
+        if (e.key==='+' || e.key==='=') $('#wagerPlus').click();
+        if (e.key==='-' || e.key==='_') $('#wagerMinus').click();
+      });
+      ['click','pointerdown'].forEach(ev => document.addEventListener(ev, () => audio.resume(), { once:true }));
+    }
+
+    async function runPracticeChant() {
+      state.busy = true;
+      for (const s of CHANT) {
+        setChant(s); world && world.setHands(s,s,0.22); audio.beat(s); await sleep(560);
+      }
+      setChant(null);
+      world && world.setHands(state.you.throw, state.you.throw, 0.1);
+      audio.beat('throw');
+      $('#resultBanner').textContent = `Silent throw: ${SIGN_META[state.you.throw].name}`;
+      state.busy = false;
+    }
+
+    function boot() {
+      bind();
+      if (!window.THREE || !window.THREE.WebGLRenderer) {
+        toast('WebGL is unavailable — signs still play in the HUD.');
+        return;
+      }
+      try { world = World(); }
+      catch (err) { console.error(err); toast('The cabin lanterns failed to light. The game still runs in the HUD.'); }
+    }
+    if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+  })();
+  </script>
+</body>
+</html>

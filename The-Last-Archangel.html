@@ -982,7 +982,7 @@ function dmgCalc(atk,def,pow,el,tgtEl){
 }
 
 function heroCommand(which){
-  if(mode!=="battle"||!battle.cur||battle.cur.side!=="h") return;
+  if(mode!=="battle"||!battle||battle.over||!battle.cur||battle.cur.side!=="h") return;
   const h=battle.heroes[battle.cur.i];
   if(battle.menu==="main"){
     if(which==="ok"){
@@ -1062,6 +1062,7 @@ function resolveHero(){
       const tgts=S.tgt==="enemies"?alive("e"):[battle.enemies[battle.target]].filter(e=>e&&e.hp>0);
       let last=0;
       tgts.forEach(e=>{
+        if(!e) return;
         const d=dmgCalc(h.atk,e.def,S.pow,S.el,e.el);
         e.hp=Math.max(0,e.hp-d); last=d;
         if(S.drain) h.hp=Math.min(h.maxHp,h.hp+Math.round(d*0.35));
@@ -1071,8 +1072,10 @@ function resolveHero(){
     }
   } else {
     const e=battle.enemies[battle.target];
-    const d=dmgCalc(h.atk,e.def,1,"phys",e.el);
-    e.hp=Math.max(0,e.hp-d);
+    if(!e||e.hp<=0){ battle.target=firstLive("e"); if(battle.target<0){ nextTurn(); return; } }
+    const foe=battle.enemies[battle.target];
+    const d=dmgCalc(h.atk,foe.def,1,"phys",foe.el);
+    foe.hp=Math.max(0,foe.hp-d);
     battle.log=h.name+" attacks! "+d+" damage.";
     sfx("hit");
   }
@@ -1082,6 +1085,8 @@ function resolveHero(){
 }
 
 function winBattle(){
+  if(!battle || battle.over) return;
+  battle.over=true;
   const exp=battle.enemies.reduce((a,e)=>a+e.exp,0);
   const man=battle.enemies.reduce((a,e)=>a+e.manna,0);
   state.manna+=man;
@@ -1100,6 +1105,8 @@ function winBattle(){
 }
 
 function loseBattle(){
+  if(!battle || battle.over) return;
+  battle.over=true;
   battle.log="The party falls...";
   paintBattle();
   setTimeout(()=>{
@@ -1375,6 +1382,10 @@ function press(which){
   if(mode==="explore"){
     if(which==="ok") interact();
     if(which==="cancel") openMenu();
+    if(which==="up") tryMove(0,-1);
+    if(which==="down") tryMove(0,1);
+    if(which==="left") tryMove(-1,0);
+    if(which==="right") tryMove(1,0);
   }
   if(mode==="end" && which==="ok"){show(els.end,false); show(els.title,true); mode="title";}
 }

@@ -123,10 +123,25 @@
     .codex-list button:hover{border-color:var(--gold)}
     .winlose{font-size:13px;letter-spacing:.16em;text-transform:uppercase}
     .winlose.win{color:var(--win)} .winlose.lose{color:var(--lose)} .winlose.draw{color:var(--draw)}
+    .version-bar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 auto 12px;max-width:680px}
+    .ver-btn{min-height:54px;padding:10px 14px;border-radius:4px;border:1px solid #9e804f77;background:#12151c;color:#ead9b4;text-transform:uppercase;letter-spacing:.1em;font-size:12px;font-weight:700;line-height:1.35}
+    .ver-btn small{display:block;font-weight:600;letter-spacing:.04em;text-transform:none;color:var(--muted);margin-top:3px;font-size:11px}
+    .ghost-btn.on,.ver-btn.on{border-color:#f0d089;background:#2a2216;color:#fff4d0;box-shadow:0 0 18px #d7b56a33}
+    .ver-btn.on small{color:#e8d4a4}
+    .version-note{font-family:Cormorant Garamond,Georgia,serif;font-style:italic;color:#d8c9aa;margin:0 0 22px;font-size:18px}
+    .field .version-bar{margin:0;max-width:none}
+    .sign-btn.sky{border-color:#7aa0c866}
+    .sign-btn.sky.selected{border-color:#b7d4ff;box-shadow:0 0 0 1px #b7d4ff,0 0 22px #7aa0c844}
+    body:not(.full-seq) .sky-only{display:none!important}
+    body.full-seq .signs{grid-template-columns:repeat(6,minmax(0,1fr))}
+    body.full-seq .sign-btn{min-height:104px;padding:8px 4px 10px}
+    body.full-seq .sign-btn svg{width:54px;height:54px}
+    .chant.seven .syllable{font-size:clamp(16px,3.1vw,40px);letter-spacing:.1em}
 
     @media(max-width:1100px){
       .play-shell{grid-template-columns:1fr 1fr}
       .center-stage{grid-column:1/-1;order:-1;min-height:90px}
+      body.full-seq .signs{grid-template-columns:repeat(3,1fr)}
     }
     @media(max-width:720px){
       .topbar{grid-template-columns:1fr auto;padding:10px}
@@ -136,9 +151,11 @@
       .signs{grid-template-columns:repeat(2,1fr)}
       .controls{grid-template-columns:1fr}
       .wager-box{width:100%}
-      .mode-grid,.setup-grid{grid-template-columns:1fr}
+      .mode-grid,.setup-grid,.version-bar{grid-template-columns:1fr}
       .sign-btn{min-height:96px}
+      body.full-seq .signs{grid-template-columns:repeat(2,1fr)}
       .header-actions .ghost-btn{display:none}
+      .header-actions #hudVersion{display:inline-flex;align-items:center}
     }
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
   </style>
@@ -162,6 +179,7 @@
         <div class="turnline" id="roundLabel">Throw 1</div>
       </div>
       <div class="header-actions">
+        <button class="ghost-btn" id="hudVersion" type="button" aria-pressed="false">Full sequence</button>
         <button class="ghost-btn" id="rulesBtn" type="button">Rules</button>
         <button class="ghost-btn" id="codexBtn" type="button">Codex</button>
         <button class="gold-btn" id="menuBtn" type="button">Leave Table</button>
@@ -193,8 +211,10 @@
           <span class="syllable" data-s="rih">Rih</span>
           <span class="syllable" data-s="lah">Lah</span>
           <span class="syllable" data-s="hah">Hah</span>
+          <span class="syllable sky-only" data-s="ehl">Ehl</span>
+          <span class="syllable sky-only" data-s="akh">Akh</span>
         </div>
-        <div class="beats" id="beats" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="beats" id="beats" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i class="sky-only"></i><i class="sky-only"></i></div>
         <div class="result-banner" id="resultBanner"></div>
       </div>
 
@@ -220,7 +240,7 @@
     <footer class="bottombar">
       <div class="controls">
         <div>
-          <div class="eyebrow" style="margin-bottom:8px" id="signHint">Choose your silent throw — <span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">3</span> <span class="kbd">4</span></div>
+          <div class="eyebrow" style="margin-bottom:8px" id="signHint">Choose your silent throw — <span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">3</span> <span class="kbd">4</span><span class="sky-only"> <span class="kbd">5</span> <span class="kbd">6</span></span></div>
           <div class="signs" id="signRow"></div>
         </div>
         <div class="wager-box">
@@ -240,7 +260,12 @@
     <div class="menu">
       <div class="eyebrow">From the world of The Seven Scourges</div>
       <h1>Shah-Sheh-Rih-Lah</h1>
-      <p class="sub">Five spoken beats. One silent throw. Golden merits clenched in the other hand.</p>
+      <p class="sub" id="titleSub">Five spoken beats. One silent throw. Golden merits clenched in the other hand.</p>
+      <div class="version-bar" role="group" aria-label="Game sequence">
+        <button type="button" class="ver-btn on" data-full="0">Sailors' game<small>Five beats · four throws</small></button>
+        <button type="button" class="ver-btn" data-full="1">Full sequence<small>Seven names · Ehl &amp; Akh</small></button>
+      </div>
+      <p class="version-note" id="versionNote">The sailors stop at Hah and spend the rest on gold. Toggle the full sequence to restore the forgotten throws.</p>
       <div class="mode-grid">
         <button class="mode-card" data-mode="duel" type="button">
           <h3>Wagered Duel</h3>
@@ -298,6 +323,13 @@
           <label for="p2Name">Second sailor’s name</label>
           <input id="p2Name" maxlength="18" value="Motim">
         </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Sequence</label>
+          <div class="version-bar" role="group" aria-label="Game sequence">
+            <button type="button" class="ver-btn on" data-full="0">Sailors' game<small>Shah through Hah, then throw</small></button>
+            <button type="button" class="ver-btn" data-full="1">Full sequence<small>Through Ehl and Akh, then throw</small></button>
+          </div>
+        </div>
       </div>
       <div class="modal-actions">
         <button class="gold-btn" id="startBtn" type="button">Begin the chant</button>
@@ -326,9 +358,16 @@
         <li>A draw forces another throw. The hidden wagers stay clenched until someone wins.</li>
         <li>A decisive winner takes both wagers. Matches are often played to the first win, or until a belt is emptied.</li>
       </ul>
+      <h3>The full sequence</h3>
+      <p>The old rite does not stop at Hah. Toggle <strong>Full sequence</strong> to chant all seven Scourge names — Shah, Sheh, Rih, Lah, Hah, Ehl, Akh — and throw afterward from six signs. Ehl raises the right arm overhead, palm open. Akh raises the left to join it.</p>
+      <div class="cycle" style="grid-template-columns:repeat(2,1fr)">
+        <div><strong>Ehl</strong>Right arm to the sky. Beats Shah and Sheh. Draws with Akh.</div>
+        <div><strong>Akh</strong>Both hands overhead. Beats Lah and Rih. Draws with Ehl.</div>
+      </div>
+      <p>The sailors’ four-sign cycle is unchanged. Shah and Sheh still cut down Akh; Lah and Rih still drag Ehl back to the table.</p>
       <h3>Custom</h3>
       <p>Speaking the name of the game to someone wearing a merit belt is a formal challenge. Witnesses may officiate. After a win, extend a hand; the other player presses the back of their hand to your palm.</p>
-      <p>Keys: <span class="kbd">1</span> Shah <span class="kbd">2</span> Sheh <span class="kbd">3</span> Rih <span class="kbd">4</span> Lah · <span class="kbd">Space</span> ready · <span class="kbd">+</span>/<span class="kbd">−</span> wager.</p>
+      <p>Keys: <span class="kbd">1</span> Shah <span class="kbd">2</span> Sheh <span class="kbd">3</span> Rih <span class="kbd">4</span> Lah <span class="kbd">5</span> Ehl <span class="kbd">6</span> Akh · <span class="kbd">Space</span> ready · <span class="kbd">+</span>/<span class="kbd">−</span> wager.</p>
     </div>
   </div>
 
@@ -383,16 +422,30 @@
 
   <script>
   (() => {
-    const SIGNS = ['shah', 'sheh', 'rih', 'lah'];
-    const CYCLE = ['shah', 'sheh', 'lah', 'rih'];
-    const CHANT = ['shah', 'sheh', 'rih', 'lah', 'hah'];
-    const SIGN_META = {
-      shah: { name: 'Shah', beats: 'Sheh', blurb: 'Three fingers toward the opponent; thumb to little finger.' },
-      sheh: { name: 'Sheh', beats: 'Lah', blurb: 'Index and middle together; the rest folded into the palm.' },
-      rih:  { name: 'Rih',  beats: 'Shah', blurb: 'Thumb and little finger extended; wrist rotated, thumb up.' },
-      lah:  { name: 'Lah',  beats: 'Rih', blurb: 'Index and middle in a narrow V; the rest folded.' },
-      hah:  { name: 'Hah',  beats: '', blurb: 'Neutral stance. Palm upright, four fingers together, thumb up.' }
+    const SIGNS4 = ['shah', 'sheh', 'rih', 'lah'];
+    const SIGNS6 = ['shah', 'sheh', 'rih', 'lah', 'ehl', 'akh'];
+    const CHANT5 = ['shah', 'sheh', 'rih', 'lah', 'hah'];
+    const CHANT7 = ['shah', 'sheh', 'rih', 'lah', 'hah', 'ehl', 'akh'];
+    const BEATS = {
+      shah: ['sheh', 'akh'],
+      sheh: ['lah', 'akh'],
+      lah: ['rih', 'ehl'],
+      rih: ['shah', 'ehl'],
+      ehl: ['shah', 'sheh'],
+      akh: ['lah', 'rih']
     };
+    const DRAW_PAIRS = new Set(['shah-lah','lah-shah','sheh-rih','rih-sheh','ehl-akh','akh-ehl']);
+    const SIGN_META = {
+      shah: { name: 'Shah', blurb: 'Three fingers toward the opponent; thumb to little finger.' },
+      sheh: { name: 'Sheh', blurb: 'Index and middle together; the rest folded into the palm.' },
+      rih:  { name: 'Rih',  blurb: 'Thumb and little finger extended; wrist rotated, thumb up.' },
+      lah:  { name: 'Lah',  blurb: 'Index and middle in a narrow V; the rest folded.' },
+      hah:  { name: 'Hah',  blurb: 'Neutral stance. Palm upright, four fingers together, thumb up.' },
+      ehl:  { name: 'Ehl',  blurb: 'Right arm raised overhead, palm open toward the sky.' },
+      akh:  { name: 'Akh',  blurb: 'Left arm joins the right. Both hands held to the heavens.' }
+    };
+    const throwSigns = () => state.full ? SIGNS6 : SIGNS4;
+    const chantBeats = () => state.full ? CHANT7 : CHANT5;
 
     const OPPONENTS = [
       { id:'corin', name:'Deckhand Corin', title:'Green sailor', glyph:'C', color:'#8aa3b5', merits:0, skill:'novice',
@@ -420,7 +473,8 @@
       { id:'wager', title:'Golden merits and the belt', body:`<p>While the sign hand dances the chant, the other hand clenches a secret number of golden merits. A decisive winner takes both clenched sums.</p><p>Some sailors wear their winnings on a merit belt — advertising both success and a willingness to be challenged. Speaking the game’s name to a belt-wearer is itself a challenge.</p>` },
       { id:'hah', title:'Hah, the tell, and the Sightless', body:`<p>Hah is the mask. Palm upright, four fingers together, thumb extended upward. Players who have already chosen their throw often change their voice — just slightly — on that fifth beat.</p><p>Only a Sightless ear is said to catch it reliably. Some people train specifically to play against Sightless opponents. Captain Motim had not.</p>` },
       { id:'story', title:'Command of the ship', body:`<p>Aboard a starving vessel in the debris field, King Caecus challenged Captain Motim for the helm: sail toward the blue light, or turn back into the wrecks.</p><p>They played to the first win, with witnesses to keep both honest. Caecus threw Shah against Lah, a draw; then forced another; then took the game. Motim cried cheat. The king did not turn the ship around.</p>` },
-      { id:'seven', title:'The names the game forgot', locked:true, body:`<p>The old rite does not stop at Hah. The complete sequence is Shah, Sheh, Rih, Lah, Hah, Ehl, Akh. There is no wager throw in the ritual.</p><p>On Ehl, the right arm rises overhead with the palm open. On Akh, the left joins it, and both hands are held toward the sky. Those seven names are the seven Scourges. The sailors’ game kept the first five and spent the rest on gold.</p>` }
+      { id:'seven', title:'The names the game forgot', body:`<p>The old rite does not stop at Hah. The complete sequence is Shah, Sheh, Rih, Lah, Hah, Ehl, Akh. There is no wager throw in the ritual — but the expanded game restores a silent throw after the seventh name, now choosing among six signs.</p><p>On Ehl, the right arm rises overhead with the palm open. On Akh, the left joins it, and both hands are held toward the sky. Those seven names are the seven Scourges. The sailors’ game kept the first five and spent the rest on gold.</p>` },
+      { id:'expanded', title:'Ehl, Akh, and the sky cycle', body:`<p>In the full sequence, Ehl and Akh sit above the sailors’ wheel without breaking it.</p><p><strong>Ehl</strong> beats Shah and Sheh — the call to the sky outruns the opening names. Lah and Rih still drag it back to the table.</p><p><strong>Akh</strong> beats Lah and Rih — the completed sign closes the old wager. Shah and Sheh still cut it down.</p><p>Ehl against Akh is a draw: they are one motion split across two beats. Matching signs still draw, as do Shah/Lah and Sheh/Rih.</p>` }
     ];
 
     const $ = (s, r=document) => r.querySelector(s);
@@ -480,7 +534,7 @@
         s.connect(f); f.connect(g); g.connect(this.master); s.start();
       },
       beat(name) {
-        const map = { shah:180, sheh:220, rih:270, lah:200, hah:150, throw:90 };
+        const map = { shah:180, sheh:220, rih:270, lah:200, hah:150, ehl:310, akh:360, throw:90 };
         this.tone(map[name]||180, 0.28, 'triangle', 0.09);
         this.tone((map[name]||180)*3.1, 0.18, 'sine', 0.03);
         this.tone(70, 0.12, 'sine', 0.07);
@@ -560,6 +614,8 @@
         pinky:{splay:0.08, j:[1.28,1.38,0.95]}
       }
     };
+    POSES.ehl = JSON.parse(JSON.stringify(POSES.hah));
+    POSES.akh = JSON.parse(JSON.stringify(POSES.hah));
 
     function signSVG(sign) {
       const s = `fill="none" stroke="#e8d4a4" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"`;
@@ -567,21 +623,31 @@
       if (sign==='sheh') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${s} d="M24 56c4-2 18-2 24 2"/><path ${s} d="M32 52V18M40 52V18"/><path ${s} d="M22 50c4 10 14 12 22 4"/><path ${s} d="M20 46c7 0 12-8 10-15"/></svg>`;
       if (sign==='rih') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${s} d="M36 40c-2 8-8 14-16 16"/><path ${s} d="M36 40c2 10 10 16 18 18"/><path ${s} d="M36 38V16"/><circle cx="36" cy="40" r="6.5" ${s}/></svg>`;
       if (sign==='lah') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${s} d="M24 56c4-2 18-2 24 2"/><path ${s} d="M34 52L22 20M38 52L52 20"/><path ${s} d="M22 50c4 10 14 12 22 4"/><path ${s} d="M20 46c7 0 12-8 10-15"/></svg>`;
+      if (sign==='ehl') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${s} d="M36 62V18"/><path ${s} d="M36 18c-7-1-12 6-10 13M36 18c7-1 12 6 10 13"/><path ${s} d="M28 8h16"/></svg>`;
+      if (sign==='akh') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${s} d="M24 62V20M48 62V20"/><path ${s} d="M24 20c-6 0-10 7-8 13M48 20c6 0 10 7 8 13"/><path ${s} d="M16 10h16M40 10h16"/></svg>`;
       return `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="24" y="22" width="22" height="28" rx="7" ${s}/><path ${s} d="M46 28c8-1 12 6 9 13"/></svg>`;
     }
 
     function outcome(a, b) {
+      if (!a || !b) return 'draw';
       if (a===b) return 'draw';
-      const i = CYCLE.indexOf(a), j = CYCLE.indexOf(b);
-      if ((i+2)%4===j) return 'draw';
-      if ((i+1)%4===j) return 'win';
+      if (DRAW_PAIRS.has(a+'-'+b)) return 'draw';
+      if ((BEATS[a]||[]).includes(b)) return 'win';
       return 'lose';
     }
-    function beatsWhat(s) { return CYCLE[(CYCLE.indexOf(s)+1)%4]; }
-    function beatenBy(s) { return CYCLE[(CYCLE.indexOf(s)+3)%4]; }
+    function beatsList(s) { return (BEATS[s]||[]).filter(x => throwSigns().includes(x)); }
+    function beatsLabel(s) {
+      const names = beatsList(s).map(x => SIGN_META[x].name);
+      return names.length ? names.join(', ') : '—';
+    }
+    function beatenBy(s) {
+      const counters = throwSigns().filter(x => outcome(x, s)==='win');
+      return counters.length ? pick(counters) : pick(throwSigns());
+    }
 
     const state = {
       mode: 'duel',
+      full: false,
       phase: 'idle',
       firstTo: 3,
       you: { name:'You', title:'Challenger', glyph:'Y', merits:24, wins:0, wager:3, throw:'shah', color:'#e7c37a' },
@@ -882,7 +948,24 @@
       const clock = new THREE.Clock();
       let punch = 0;
       let stormT = 0;
-      const anim = { youFrom: POSES.hah, youTo: POSES.hah, oppFrom: POSES.hah, oppTo: POSES.hah, t:1, dur:0.28 };
+      const xf = (x,y,z,rx,ry,rz,sc) => ({x,y,z,rx,ry,rz,sc});
+      const YOU_SIGN = { rest: xf(0.92,1.42,1.72,-0.22,-0.42,0.12,1.12), sky: xf(0.42,2.92,1.18,-1.52,-0.12,0.04,1.12) };
+      const YOU_OFF  = { rest: xf(2.35,0.92,1.85,-0.85,-0.55,0.55,0.55), sky: xf(1.12,2.80,1.28,-1.48,0.32,-0.12,0.92) };
+      const OPP_SIGN = { rest: xf(-0.82,1.58,-1.15,-0.08,2.82,0.04,1.05), sky: xf(-0.38,3.08,-0.72,-1.42,2.98,0.02,1.05) };
+      const OPP_OFF  = { rest: xf(-2.35,0.98,-0.70,-0.70,3.50,-0.35,0.55), sky: xf(-1.12,2.94,-0.78,-1.46,3.28,0.08,0.90) };
+      function readXf(h){ return xf(h.position.x,h.position.y,h.position.z,h.rotation.x,h.rotation.y,h.rotation.z,h.scale.x); }
+      function putXf(h,a){ h.position.set(a.x,a.y,a.z); h.rotation.set(a.rx,a.ry,a.rz); h.scale.setScalar(a.sc); }
+      function mixXf(a,b,t){ return xf(lerp(a.x,b.x,t),lerp(a.y,b.y,t),lerp(a.z,b.z,t),lerp(a.rx,b.rx,t),lerp(a.ry,b.ry,t),lerp(a.rz,b.rz,t),lerp(a.sc,b.sc,t)); }
+      function signXf(bank, sign){ return (sign==='ehl'||sign==='akh') ? bank.sky : bank.rest; }
+      function offXf(bank, sign){ return sign==='akh' ? bank.sky : bank.rest; }
+      function offPose(sign){ return sign==='akh' ? POSES.hah : POSES.fist; }
+      const anim = {
+        youFrom: POSES.hah, youTo: POSES.hah, oppFrom: POSES.hah, oppTo: POSES.hah,
+        youOffFrom: POSES.fist, youOffTo: POSES.fist, oppOffFrom: POSES.fist, oppOffTo: POSES.fist,
+        youXfFrom: YOU_SIGN.rest, youXfTo: YOU_SIGN.rest, oppXfFrom: OPP_SIGN.rest, oppXfTo: OPP_SIGN.rest,
+        youOffXfFrom: YOU_OFF.rest, youOffXfTo: YOU_OFF.rest, oppOffXfFrom: OPP_OFF.rest, oppOffXfTo: OPP_OFF.rest,
+        t:1, dur:0.28
+      };
 
       function drawStorm(t) {
         const c = stormCanvas.getContext('2d');
@@ -919,6 +1002,12 @@
           const e = 1-Math.pow(1-anim.t, 3);
           applyPose(youHand, lerpPose(anim.youFrom, anim.youTo, e));
           applyPose(oppHand, lerpPose(anim.oppFrom, anim.oppTo, e));
+          applyPose(youFist, lerpPose(anim.youOffFrom, anim.youOffTo, e));
+          applyPose(oppFist, lerpPose(anim.oppOffFrom, anim.oppOffTo, e));
+          putXf(youHand, mixXf(anim.youXfFrom, anim.youXfTo, e));
+          putXf(oppHand, mixXf(anim.oppXfFrom, anim.oppXfTo, e));
+          putXf(youFist, mixXf(anim.youOffXfFrom, anim.youOffXfTo, e));
+          putXf(oppFist, mixXf(anim.oppOffXfFrom, anim.oppOffXfTo, e));
         }
         renderer.render(scene, camera);
         requestAnimationFrame(tick);
@@ -934,8 +1023,16 @@
         setHands(youSign, oppSign, dur=0.28) {
           anim.youFrom = youHand.userData.pose;
           anim.oppFrom = oppHand.userData.pose;
+          anim.youOffFrom = youFist.userData.pose;
+          anim.oppOffFrom = oppFist.userData.pose;
           anim.youTo = POSES[youSign] || POSES.hah;
           anim.oppTo = POSES[oppSign] || POSES.hah;
+          anim.youOffTo = offPose(youSign);
+          anim.oppOffTo = offPose(oppSign);
+          anim.youXfFrom = readXf(youHand); anim.youXfTo = signXf(YOU_SIGN, youSign);
+          anim.oppXfFrom = readXf(oppHand); anim.oppXfTo = signXf(OPP_SIGN, oppSign);
+          anim.youOffXfFrom = readXf(youFist); anim.youOffXfTo = offXf(YOU_OFF, youSign);
+          anim.oppOffXfFrom = readXf(oppFist); anim.oppOffXfTo = offXf(OPP_OFF, oppSign);
           anim.t = 0; anim.dur = dur;
         },
         punchIn() { punch = 0.18; camHome.z = 5.7; },
@@ -997,6 +1094,13 @@
         $('#oppWager').textContent = state.phase==='reveal' || state.phase==='resolve' ? 'the helm' : 'the helm';
       }
       if (state.mode==='circuit') $('#modeLabel').textContent = `Merit Belt Circuit · ${state.circuitIndex+1} / ${OPPONENTS.length}`;
+      if (state.full) {
+        const base = $('#modeLabel').textContent;
+        $('#modeLabel').textContent = base + ' · Full sequence';
+      }
+      $('#hudVersion').classList.toggle('on', state.full);
+      $('#hudVersion').setAttribute('aria-pressed', state.full ? 'true' : 'false');
+      $('#hudVersion').textContent = state.full ? 'Full sequence on' : 'Full sequence';
       $$('.sign-btn').forEach(b => {
         b.classList.toggle('selected', b.dataset.sign === y.throw);
         b.classList.toggle('locked', state.phase==='reveal' || state.phase==='resolve');
@@ -1004,16 +1108,18 @@
     }
 
     function buildSigns() {
-      $('#signRow').innerHTML = SIGNS.map(s => `
-        <button class="sign-btn" type="button" data-sign="${s}" aria-pressed="false">
+      const signs = throwSigns();
+      $('#signRow').innerHTML = signs.map(s => `
+        <button class="sign-btn ${s==='ehl'||s==='akh'?'sky':''}" type="button" data-sign="${s}" aria-pressed="false">
           ${signSVG(s)}
           <b>${SIGN_META[s].name}</b>
-          <small>beats ${SIGN_META[s].beats}</small>
+          <small>beats ${beatsLabel(s)}</small>
         </button>`).join('');
       $$('.sign-btn').forEach(b => b.onclick = () => chooseThrow(b.dataset.sign));
     }
 
     function chooseThrow(sign) {
+      if (!throwSigns().includes(sign) && !(state.practice && sign==='hah')) return;
       if (['reveal','resolve'].includes(state.phase) || state.busy && state.phase==='throw') return;
       if (state.practice) {
         state.you.throw = sign;
@@ -1023,45 +1129,47 @@
       }
       const prev = state.you.throw;
       state.you.throw = sign;
-      if (state.phase==='chant' && state.chantBeat >= 4) state.changedOnHah = true;
+      if (state.phase==='chant' && state.chantBeat >= chantBeats().length-2) state.changedOnHah = true;
       if (state.phase==='wager' || state.phase==='idle') state.earlyLock = true;
       if (prev!==sign && state.phase==='chant') audio.tell();
       renderHud();
     }
 
     function aiThrow() {
+      const pool = throwSigns();
       const skill = state.opp.skill;
       const last = state.youThrows[state.youThrows.length-1];
       const freq = {};
-      SIGNS.forEach(s => freq[s]=0);
-      state.youThrows.forEach(s => freq[s]++);
-      const favorite = SIGNS.slice().sort((a,b)=>freq[b]-freq[a])[0] || pick(SIGNS);
-      if (skill==='novice') return pick(SIGNS);
-      if (skill==='copy') return last || pick(SIGNS);
+      pool.forEach(s => freq[s]=0);
+      state.youThrows.forEach(s => { if (freq[s]!=null) freq[s]++; });
+      const favorite = pool.slice().sort((a,b)=>freq[b]-freq[a])[0] || pick(pool);
+      if (skill==='novice') return pick(pool);
+      if (skill==='copy') return pool.includes(last) ? last : pick(pool);
       if (skill==='mix') {
         const avoid = state.oppThrows[state.oppThrows.length-1];
-        return pick(SIGNS.filter(s=>s!==avoid).length?SIGNS.filter(s=>s!==avoid):SIGNS);
+        const opts = pool.filter(s=>s!==avoid);
+        return pick(opts.length?opts:pool);
       }
       if (skill==='counter') return beatenBy(favorite);
       if (skill==='belt') {
         if (state.earlyLock && Math.random()<0.55) return beatenBy(state.you.throw);
-        return Math.random()<0.5 ? beatenBy(favorite) : pick(SIGNS);
+        return Math.random()<0.5 ? beatenBy(favorite) : pick(pool);
       }
       if (skill==='sightless') {
         if (state.changedOnHah && Math.random()<0.8) return beatenBy(state.you.throw);
-        return Math.random()<0.6 ? beatenBy(favorite) : pick(SIGNS);
+        return Math.random()<0.6 ? beatenBy(favorite) : pick(pool);
       }
       if (skill==='motim') {
-        const choice = Math.random()<0.35 ? 'lah' : pick(SIGNS);
+        const choice = Math.random()<0.35 ? 'lah' : pick(pool);
         state.listenHint = choice;
         return choice;
       }
       if (skill==='king') {
         if (state.changedOnHah || state.earlyLock) return beatenBy(state.you.throw);
-        const mix = [beatenBy(favorite), pick(SIGNS), beatenBy(last||favorite)];
+        const mix = [beatenBy(favorite), pick(pool), beatenBy(last||favorite)];
         return pick(mix);
       }
-      return pick(SIGNS);
+      return pick(pool);
     }
 
     function aiWager() {
@@ -1078,7 +1186,8 @@
         el.classList.toggle('on', el.dataset.s===active);
         el.classList.remove('throw');
       });
-      const idx = CHANT.indexOf(active);
+      const seq = chantBeats();
+      const idx = seq.indexOf(active);
       $$('#beats i').forEach((el,i)=>el.classList.toggle('on', i===idx));
     }
 
@@ -1098,22 +1207,29 @@
       state.phase = 'chant';
       world && world.setHands('hah','hah', 0.2);
       await sleep(200);
-      for (let i=0;i<CHANT.length;i++) {
+      const seq = chantBeats();
+      const lastI = seq.length-1;
+      for (let i=0;i<seq.length;i++) {
         state.chantBeat = i;
-        const s = CHANT[i];
+        const s = seq[i];
         setChant(s);
-        world && world.setHands(s, s, i===4 ? 0.16 : 0.22);
+        world && world.setHands(s, s, i>=5 ? 0.32 : 0.22);
         audio.beat(s);
-        if (s==='hah' && state.opp && state.opp.skill==='motim' && state.oppThrowLocked) {
+        const tellBeat = state.full ? 'akh' : 'hah';
+        if (s===tellBeat && state.opp && state.opp.skill==='motim' && state.oppThrowLocked) {
           audio.tone(980, 0.09, 'sine', 0.03);
-          world && world.setHands('hah', state.opp.throw, 0.38);
-          $('#resultBanner').textContent = 'A hitch in his Hah — the next sign is already in the throat.';
+          world && world.setHands(s, state.opp.throw, 0.38);
+          $('#resultBanner').textContent = state.full
+            ? 'His Akh wavers — the throw is already in the arms.'
+            : 'A hitch in his Hah — the next sign is already in the throat.';
         }
-        await sleep(i===4 ? 520 : 600);
+        await sleep(i===lastI ? 560 : 580);
       }
       $$('#chantLine .syllable').forEach(el=>el.classList.remove('on'));
-      $('#chantLine').querySelector('[data-s="hah"]').classList.add('throw');
-      $('#chantLine').querySelector('[data-s="hah"]').textContent = 'THROW';
+      const lastName = seq[lastI];
+      const lastEl = $(`#chantLine [data-s="${lastName}"]`);
+      lastEl.classList.add('throw');
+      lastEl.textContent = 'THROW';
       audio.beat('throw');
       state.phase = 'throw';
       world && world.punchIn();
@@ -1124,8 +1240,8 @@
       state.oppThrowLocked = false;
       world && world.setHands(youSign, state.hotseat ? state.p2.throw : oppSign, 0.09);
       await sleep(420);
-      $('#chantLine').querySelector('[data-s="hah"]').textContent = 'Hah';
-      $('#chantLine').querySelector('[data-s="hah"]').classList.remove('throw');
+      lastEl.textContent = SIGN_META[lastName].name;
+      lastEl.classList.remove('throw');
       await resolveThrow(youSign, state.hotseat ? state.p2.throw : oppSign);
     }
 
@@ -1260,13 +1376,16 @@
       $('#setupModal').classList.add('hidden');
       $('#titleScreen').classList.add('hidden');
       $('#playHud').classList.remove('hidden');
+      buildSigns();
       renderHud();
       if (state.mode==='story') {
         $('#storyTitle').textContent = 'Shah-Sheh-Rih-Lah';
         $('#storyBody').innerHTML = `<p>The corridor is narrow, the ship starving, the fog thick as wool. You are Caecus. You speak the game’s name to the man wearing a merit belt — a challenge he cannot refuse.</p><p>The stake is command. If you win, the prow stays pointed at the blue light. If Motim wins, the ship turns around.</p><p>You play to the first decisive throw. Listen on <em>Hah</em>. Some throats change when the choice is already made.</p>`;
         $('#storyModal').classList.remove('hidden');
       } else {
-        log('Witnesses gather. Golden merits catch the lantern light.');
+        log(state.full
+          ? 'Witnesses gather. The full sequence is spoken — Ehl and Akh sit with the four throws.'
+          : 'Witnesses gather. Golden merits catch the lantern light.');
         state.phase = 'wager';
         renderHud();
       }
@@ -1312,6 +1431,44 @@
       world && world.setHands('hah','hah', 0.5);
     }
 
+    function setFull(on, opts={}) {
+      const next = !!on;
+      if (next===state.full && !opts.force) {
+        syncVersionButtons();
+        return;
+      }
+      if (state.busy && !opts.force) {
+        toast('Wait for the throw to finish.');
+        syncVersionButtons();
+        return;
+      }
+      state.full = next;
+      save.full = next;
+      if (next) save.unlocked.seven = true;
+      persist();
+      document.body.classList.toggle('full-seq', next);
+      $('#chantLine').classList.toggle('seven', next);
+      syncVersionButtons();
+      if ($('#titleSub')) {
+        $('#titleSub').textContent = next
+          ? 'Seven spoken names. Six silent throws. The sequence the sailors forgot.'
+          : 'Five spoken beats. One silent throw. Golden merits clenched in the other hand.';
+      }
+      if ($('#versionNote')) {
+        $('#versionNote').textContent = next
+          ? 'After Akh, throw Ehl or Akh as well as the four sailors’ signs. The old wheel still holds.'
+          : 'The sailors stop at Hah and spend the rest on gold. Toggle the full sequence to restore the forgotten throws.';
+      }
+      if (state.you && !throwSigns().includes(state.you.throw)) state.you.throw = 'shah';
+      if (state.p2 && !throwSigns().includes(state.p2.throw)) state.p2.throw = 'sheh';
+      buildSigns();
+      if (state.practice || $('#playHud') && !$('#playHud').classList.contains('hidden')) renderHud();
+      world && world.setHands(state.you?.throw || 'hah', state.you?.throw || 'hah', 0.28);
+    }
+    function syncVersionButtons() {
+      $$('.ver-btn').forEach(b => b.classList.toggle('on', (b.dataset.full==='1') === !!state.full));
+    }
+
     function openCodex(page) {
       $('#codexModal').classList.remove('hidden');
       if (!page) {
@@ -1334,11 +1491,15 @@
     function startPractice() {
       state.practice = true; state.mode='practice';
       state.you = { name:'You', title:'Student of the signs', glyph:'Y', merits:0, wins:0, wager:0, throw:'hah', color:'#e7c37a' };
-      state.opp = { name:'Mirror', title:'Practice hand', glyph:'M', merits:0, wins:0, wager:0, throw:'hah', color:'#9aa7d8', blurb:'Form each sign until the fingers remember. The silent throw is the only choice that matters.' };
-      state.logs = ['Hold a sign. Watch both hands take the shape from the book.'];
+      state.opp = { name:'Mirror', title:'Practice hand', glyph:'M', merits:0, wins:0, wager:0, throw:'hah', color:'#9aa7d8',
+        blurb: state.full
+          ? 'Raise Ehl, then Akh. The silent throw may now be any of the six living signs.'
+          : 'Form each sign until the fingers remember. The silent throw is the only choice that matters.' };
+      state.logs = [state.full ? 'The rite does not stop at Hah.' : 'Hold a sign. Watch both hands take the shape from the book.'];
       state.phase = 'idle';
       $('#titleScreen').classList.add('hidden');
       $('#playHud').classList.remove('hidden');
+      buildSigns();
       $('#readyBtn').textContent = 'Run a practice chant';
       renderHud();
       world && world.setHands('hah','hah', 0.3);
@@ -1346,6 +1507,8 @@
 
     function bind() {
       buildSigns(); fillOpponents();
+      $$('.ver-btn').forEach(b => b.onclick = () => { audio.resume(); setFull(b.dataset.full==='1'); });
+      $('#hudVersion').onclick = () => { audio.resume(); setFull(!state.full); };
       $$('.mode-card').forEach(b => b.onclick = () => { audio.resume(); openSetup(b.dataset.mode); });
       $('#practiceBtn').onclick = () => { audio.resume(); startPractice(); };
       $('#titleRulesBtn').onclick = $('#rulesBtn').onclick = () => $('#rulesModal').classList.remove('hidden');
@@ -1374,7 +1537,7 @@
       $('#storyContinue').onclick = () => { $('#storyModal').classList.add('hidden'); state.phase='wager'; log('Witnesses take their places. Play to the first win.'); renderHud(); };
       $('#hotseatOk').onclick = () => {
         $('#hotseatModal').classList.add('hidden');
-        state.you.throw = pick(SIGNS);
+        state.you.throw = pick(throwSigns());
         state.you.wager = clamp(3, 1, Math.max(1, state.p2.merits));
         renderHud();
         toast(`${state.p2.name}: choose in private, then clench.`);
@@ -1389,11 +1552,13 @@
       };
       document.addEventListener('keydown', e => {
         if (e.key==='Escape') { $('#rulesModal').classList.add('hidden'); $('#codexModal').classList.add('hidden'); }
-        if (['1','2','3','4'].includes(e.key)) chooseThrow(SIGNS[+e.key-1]);
+        const pool = throwSigns();
+        if (['1','2','3','4','5','6'].includes(e.key) && pool[+e.key-1]) chooseThrow(pool[+e.key-1]);
         if (e.key==='q'||e.key==='Q') chooseThrow('shah');
         if (e.key==='w'||e.key==='W') chooseThrow('sheh');
         if (e.key==='e'||e.key==='E') chooseThrow('rih');
         if (e.key==='r'||e.key==='R') chooseThrow('lah');
+        if ((e.key==='f'||e.key==='F') && !['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) setFull(!state.full);
         if (e.key===' ' && (state.phase==='wager'||state.phase==='idle'||state.practice)) { e.preventDefault(); $('#readyBtn').click(); }
         if (e.key==='+' || e.key==='=') $('#wagerPlus').click();
         if (e.key==='-' || e.key==='_') $('#wagerMinus').click();
@@ -1403,8 +1568,9 @@
 
     async function runPracticeChant() {
       state.busy = true;
-      for (const s of CHANT) {
-        setChant(s); world && world.setHands(s,s,0.22); audio.beat(s); await sleep(560);
+      const seq = chantBeats();
+      for (const s of seq) {
+        setChant(s); world && world.setHands(s,s, s==='ehl'||s==='akh'?0.32:0.22); audio.beat(s); await sleep(560);
       }
       setChant(null);
       world && world.setHands(state.you.throw, state.you.throw, 0.1);
@@ -1415,6 +1581,7 @@
 
     function boot() {
       bind();
+      setFull(!!save.full, {force:true});
       if (!window.THREE || !window.THREE.WebGLRenderer) {
         toast('WebGL is unavailable — signs still play in the HUD.');
         return;

@@ -59,6 +59,13 @@ body.zeige-en .en{
   position:static;width:auto;height:auto;margin:0;clip:auto;overflow:visible;white-space:normal;
   display:block;font-style:italic;font-weight:700;color:var(--ink-soft);font-size:.82em;line-height:1.3;
 }
+body.zeige-en .hero .en,
+body.zeige-en .mode .en,
+body.zeige-en .mission .en,
+body.zeige-en .feedback .en,
+body.zeige-en .modal .en{
+  margin-top:4px;padding-left:8px;border-left:3px solid var(--gold);
+}
 .skip{
   position:absolute;left:-9999px;top:0;z-index:80;
   background:var(--ink);color:#fff;padding:.7em 1.1em;font-weight:800;text-decoration:none;
@@ -78,6 +85,7 @@ body.zeige-en .en{
 .brand h1{font-family:var(--display);font-size:1.15rem;letter-spacing:.01em;line-height:1.1}
 .brand .sub{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
 .hud{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#hud[hidden], .hud[hidden], #lives[hidden]{display:none !important}
 .chip{
   background:#f3ead4;border:2px solid var(--ink);border-radius:999px;
   padding:5px 11px;font-weight:800;font-size:.82rem;white-space:nowrap;
@@ -178,10 +186,11 @@ body.zeige-en .en{
 
 .actors{
   position:relative;z-index:2;display:flex;justify-content:center;align-items:flex-end;
-  gap:clamp(8px,4vw,48px);min-height:340px;padding:28px 12px 18px;
+  gap:clamp(8px,4vw,48px);min-height:340px;padding:48px 12px 28px;
 }
-.actor{width:min(180px,28vw);text-align:center;transition:transform .35s, opacity .35s}
-.actor.off{opacity:.28;transform:scale(.86) translateY(12px);pointer-events:none}
+.actor{width:min(180px,28vw);text-align:center;transition:transform .35s, opacity .35s, filter .35s}
+.actor.off{opacity:.34;filter:grayscale(.55);transform:scale(.86) translateY(12px);pointer-events:none}
+.actor:not(.off) .nametag{background:var(--gold)}
 .actor .nametag{
   display:inline-block;margin-top:-6px;background:var(--paper);border:2px solid var(--ink);
   border-radius:999px;padding:2px 10px;font-weight:800;font-size:.8rem;
@@ -212,12 +221,12 @@ body.zeige-en .en{
 .arm-l,.arm-r{transform-origin:50% 8%}
 .leg-l,.leg-r{transform-origin:50% 6%}
 .head{transform-origin:50% 80%}
-.lid{transform-origin:center;transform-box:fill-box}
+.lid{transform-origin:50% 0%;transform-box:fill-box;transform:scaleY(0)}
 
 .actor.idle .figure{animation:breathe calc(2.6s / var(--motion)) ease-in-out infinite}
 .actor.idle .lid{animation:blink calc(4.8s / var(--motion)) ease-in-out infinite}
 @keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-@keyframes blink{0%,42%,48%,100%{transform:scaleY(1)}45%{transform:scaleY(.08)}}
+@keyframes blink{0%,40%,47%,100%{transform:scaleY(0)}43%{transform:scaleY(1)}}
 
 .actor.jump .figure{animation:jump .7s cubic-bezier(.2,1.4,.3,1)}
 .actor.jump .shadow{animation:squash .7s ease}
@@ -275,7 +284,7 @@ body.zeige-en .en{
 .actor.confused .head{animation:huh .6s ease 3}
 @keyframes huh{0%,100%{transform:rotate(0)}40%{transform:rotate(16deg)}}
 
-.actor.eyes .lid{transform:scaleY(.08)}
+.actor.eyes .lid{transform:scaleY(1)}
 .actor.eyes .pupil{opacity:0}
 
 .simon-fox{
@@ -285,18 +294,14 @@ body.zeige-en .en{
 .simon-fox.talk .jaw{animation:talk .2s ease-in-out infinite}
 @keyframes talk{50%{transform:translateY(3px)}}
 .bubble{
-  position:absolute;z-index:4;left:96px;bottom:78px;max-width:min(420px,70%);
+  position:absolute;z-index:6;left:50%;top:18px;max-width:min(460px,78%);
   background:#fff;border:3px solid var(--ink);border-radius:18px;
   padding:10px 14px;font-family:var(--display);font-size:1.15rem;line-height:1.2;
-  box-shadow:4px 4px 0 var(--ink);opacity:0;transform:translateY(8px);pointer-events:none;
-  transition:opacity .2s, transform .2s;
+  box-shadow:4px 4px 0 var(--ink);opacity:0;visibility:hidden;transform:translate(-50%,8px);pointer-events:none;
+  transition:opacity .2s, transform .2s;text-align:center;
 }
-.bubble.on{opacity:1;transform:none}
-.bubble:before{
-  content:"";position:absolute;left:-10px;bottom:16px;width:16px;height:16px;
-  background:#fff;border-left:3px solid var(--ink);border-bottom:3px solid var(--ink);
-  transform:rotate(45deg);
-}
+.bubble.on{opacity:1;visibility:visible;transform:translate(-50%,0)}
+.stage-wrap:has(.timer.on) .bubble{top:32px}
 .bubble .en{margin-top:2px}
 .timer{
   position:absolute;left:12px;right:12px;top:10px;height:10px;background:rgba(255,255,255,.45);
@@ -391,13 +396,16 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
     <div class="brand">
       <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
         <circle cx="32" cy="32" r="30" fill="#c62828"/>
-        <ellipse cx="32" cy="36" rx="16" ry="14" fill="#f4a261"/>
-        <ellipse cx="18" cy="22" rx="8" ry="10" fill="#f4a261"/>
-        <ellipse cx="46" cy="22" rx="8" ry="10" fill="#f4a261"/>
-        <circle cx="26" cy="34" r="3" fill="#1c2a33"/>
-        <circle cx="38" cy="34" r="3" fill="#1c2a33"/>
-        <ellipse cx="32" cy="40" rx="4" ry="3" fill="#e76f51"/>
-        <path d="M24 46 Q32 52 40 46" stroke="#1c2a33" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="18" cy="20" rx="7" ry="12" fill="#f4a261"/>
+        <ellipse cx="46" cy="20" rx="7" ry="12" fill="#f4a261"/>
+        <ellipse cx="18" cy="20" rx="3.2" ry="6" fill="#ffe8d6"/>
+        <ellipse cx="46" cy="20" rx="3.2" ry="6" fill="#ffe8d6"/>
+        <ellipse cx="32" cy="36" rx="16" ry="15" fill="#f4a261"/>
+        <ellipse cx="32" cy="42" rx="10" ry="8" fill="#ffe8d6"/>
+        <circle cx="26" cy="34" r="2.6" fill="#1c2a33"/>
+        <circle cx="38" cy="34" r="2.6" fill="#1c2a33"/>
+        <ellipse cx="32" cy="41" rx="3.2" ry="2.2" fill="#5c2e1a"/>
+        <path d="M24 48 Q32 54 40 48" stroke="#1c2a33" stroke-width="2" fill="none" stroke-linecap="round"/>
       </svg>
       <div>
         <h1 lang="de">Simon sagt!</h1>
@@ -410,7 +418,7 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
       <div class="lives" id="lives" aria-label="Leben"></div>
     </div>
     <div class="hud" role="group" aria-label="Einstellungen">
-      <button type="button" class="mini" id="btnEn" aria-pressed="true">English</button>
+      <button type="button" class="mini" id="btnEn" aria-pressed="true" title="Englisch unter dem Deutsch einblenden">EN</button>
       <button type="button" class="mini" id="btnAudio" aria-pressed="true">Ton</button>
       <button type="button" class="mini" id="btnMotion" aria-pressed="true">Animation</button>
       <button type="button" class="mini" id="btnContrast" aria-pressed="false">Kontrast</button>
@@ -495,17 +503,18 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
       <div class="bubble" id="bubble" lang="de"></div>
       <svg class="simon-fox" id="fox" viewBox="0 0 90 110" aria-hidden="true">
         <ellipse cx="46" cy="102" rx="22" ry="6" fill="rgba(0,0,0,.18)"/>
-        <ellipse cx="46" cy="70" rx="28" ry="24" fill="#f4a261"/>
-        <ellipse cx="22" cy="38" rx="12" ry="16" fill="#f4a261"/>
-        <ellipse cx="70" cy="38" rx="12" ry="16" fill="#f4a261"/>
-        <ellipse cx="22" cy="38" rx="5" ry="8" fill="#ffe8d6"/>
-        <ellipse cx="70" cy="38" rx="5" ry="8" fill="#ffe8d6"/>
-        <circle cx="36" cy="66" r="4.5" fill="#1c2a33"/>
-        <circle cx="56" cy="66" r="4.5" fill="#1c2a33"/>
-        <ellipse cx="46" cy="76" rx="6" ry="4.5" fill="#e76f51"/>
+        <ellipse cx="22" cy="36" rx="10" ry="16" fill="#f4a261"/>
+        <ellipse cx="70" cy="36" rx="10" ry="16" fill="#f4a261"/>
+        <ellipse cx="22" cy="36" rx="4" ry="8" fill="#ffe8d6"/>
+        <ellipse cx="70" cy="36" rx="4" ry="8" fill="#ffe8d6"/>
+        <ellipse cx="46" cy="68" rx="26" ry="24" fill="#f4a261"/>
+        <ellipse cx="46" cy="78" rx="14" ry="12" fill="#ffe8d6"/>
+        <circle cx="36" cy="64" r="4" fill="#1c2a33"/>
+        <circle cx="56" cy="64" r="4" fill="#1c2a33"/>
+        <ellipse cx="46" cy="76" rx="5" ry="3.5" fill="#5c2e1a"/>
         <path class="jaw" d="M34 86 Q46 96 58 86" stroke="#1c2a33" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <circle cx="46" cy="18" r="12" fill="#c62828"/>
-        <rect x="40" y="28" width="12" height="8" fill="#c62828"/>
+        <circle cx="46" cy="16" r="11" fill="#c62828"/>
+        <rect x="41" y="26" width="10" height="8" fill="#c62828"/>
       </svg>
       <div class="actors" id="actors"></div>
     </div>
@@ -645,7 +654,7 @@ const PUPPET = `<svg class="puppet" viewBox="0 0 160 280" aria-hidden="true">
         </g>
         <g class="hair hair-otto">
           <path class="hair" d="M42 70 Q40 18 80 16 Q120 18 118 70 Q118 40 96 34 Q80 28 64 34 Q42 40 42 70Z"/>
-          <path class="hair" d="M50 28 L56 8 L64 30 M74 18 L80 2 L86 18 M96 30 L104 8 L110 28" fill="none" stroke="var(--hair)" stroke-width="6" stroke-linecap="round"/>
+          <path class="hair" d="M48 36 L54 20 L62 38 M74 26 L80 14 L86 26 M98 38 L106 20 L112 36" fill="none" stroke="var(--hair)" stroke-width="5" stroke-linecap="round"/>
         </g>
         <g class="hair hair-frau">
           <ellipse cx="80" cy="40" rx="38" ry="32" class="hair"/>
@@ -655,12 +664,12 @@ const PUPPET = `<svg class="puppet" viewBox="0 0 160 280" aria-hidden="true">
         <g class="eye eye-l">
           <ellipse cx="66" cy="60" rx="8" ry="9" fill="#fff"/>
           <circle class="pupil" cx="67" cy="62" r="4" fill="#1c2a33"/>
-          <rect class="lid" x="58" y="50" width="16" height="10" rx="4" fill="var(--skin)"/>
+          <rect class="lid" x="57" y="50" width="18" height="22" rx="8" fill="var(--skin)"/>
         </g>
         <g class="eye eye-r">
           <ellipse cx="94" cy="60" rx="8" ry="9" fill="#fff"/>
           <circle class="pupil" cx="95" cy="62" r="4" fill="#1c2a33"/>
-          <rect class="lid" x="86" y="50" width="16" height="10" rx="4" fill="var(--skin)"/>
+          <rect class="lid" x="85" y="50" width="18" height="22" rx="8" fill="var(--skin)"/>
         </g>
         <g class="glasses" stroke="#1c2a33" stroke-width="3" fill="none">
           <circle cx="66" cy="62" r="12"/><circle cx="94" cy="62" r="12"/>
@@ -721,6 +730,11 @@ const MISSIONS = {
   ]
 };
 
+const ANIM_MS = {
+  jump:800, wave:2000, clap:1800, turn:1100, run:1600, dance:2200,
+  laugh:1800, no:1200, confused:1600, come:900
+};
+
 const state = {
   mode:"give",
   level:"leicht",
@@ -729,6 +743,7 @@ const state = {
   lives:3,
   simonOn:false,
   busy:false,
+  session:0,
   listenTimer:null,
   current:null,
   poses:{mira:"idle", otto:"idle", frau:"idle"},
@@ -739,6 +754,16 @@ const $ = id => document.getElementById(id);
 let audioCtx = null;
 let deVoice = null;
 
+function bumpSession(){
+  state.session++;
+  state.busy = false;
+  clearTimeout(state.listenTimer);
+  state.listenTimer = null;
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  hideBubble();
+  return state.session;
+}
+function alive(session){ return session === state.session; }
 function cmdById(id){ return BEFEHLE.find(b => b.id === id); }
 function formText(cmd, form){ return cmd[form]; }
 
@@ -805,10 +830,11 @@ function playAnim(who, anim, persist){
     if (persist){
       state.poses[id] = persist === "stand" ? "idle" : persist;
     } else {
+      const ms = ANIM_MS[anim] || 1400;
       state.animTimer[id] = window.setTimeout(() => {
         el.classList.remove(anim);
         el.classList.add(restClass(id));
-      }, 1400);
+      }, ms);
     }
   });
 }
@@ -858,20 +884,25 @@ if (window.speechSynthesis){
 
 function speak(text){
   return new Promise(resolve => {
+    let done = false;
+    const finish = () => { if (done) return; done = true; resolve(); };
     if ($("btnAudio").getAttribute("aria-pressed") !== "true" || !window.speechSynthesis){
-      resolve(); return;
+      finish(); return;
     }
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = "de-DE";
-    u.rate = 0.92;
-    u.pitch = 1.05;
-    if (deVoice) u.voice = deVoice;
-    u.onend = resolve;
-    u.onerror = resolve;
-    $("fox").classList.add("talk");
-    speechSynthesis.speak(u);
-    setTimeout(() => $("fox").classList.remove("talk"), Math.min(2400, text.length*80));
+    try{
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "de-DE";
+      u.rate = 0.92;
+      u.pitch = 1.05;
+      if (deVoice) u.voice = deVoice;
+      u.onend = finish;
+      u.onerror = finish;
+      $("fox").classList.add("talk");
+      speechSynthesis.speak(u);
+      setTimeout(() => $("fox").classList.remove("talk"), Math.min(2400, text.length*80));
+      setTimeout(finish, Math.max(1800, text.length * 90));
+    }catch(e){ finish(); }
   });
 }
 
@@ -891,10 +922,17 @@ function feedback(kind, de, en, tip){
 
 function updateHud(){
   $("scoreChip").textContent = "Punkte: " + state.score;
-  $("roundChip").textContent = "Runde " + Math.max(1, state.round);
-  $("lives").innerHTML = [0,1,2].map(i =>
-    `<svg class="heart${i<state.lives?"":" off"}" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-6.6-4.35-9.3-8.1C.5 9.6 1.7 5.5 5.4 4.4 7.5 3.8 9.5 4.6 12 7c2.5-2.4 4.5-3.2 6.6-2.6 3.7 1.1 4.9 5.2 2.7 8.5C18.6 16.65 12 21 12 21z"/></svg>`
-  ).join("");
+  if (state.mode === "give"){
+    const total = MISSIONS[state.level].length;
+    $("roundChip").textContent = `${Math.min(state.round+1, total)} / ${total}`;
+    $("lives").hidden = true;
+  } else {
+    $("roundChip").textContent = "Runde " + (state.round + 1);
+    $("lives").hidden = false;
+    $("lives").innerHTML = [0,1,2].map(i =>
+      `<svg class="heart${i<state.lives?"":" off"}" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-6.6-4.35-9.3-8.1C.5 9.6 1.7 5.5 5.4 4.4 7.5 3.8 9.5 4.6 12 7c2.5-2.4 4.5-3.2 6.6-2.6 3.7 1.1 4.9 5.2 2.7 8.5C18.6 16.65 12 21 12 21z"/></svg>`
+    ).join("");
+  }
   $("hud").hidden = false;
 }
 
@@ -926,7 +964,7 @@ function optionSet(mission){
 function renderCmds(opts, extraClass){
   $("cmds").className = "cmds" + (extraClass ? " " + extraClass : "");
   $("cmds").innerHTML = opts.map((o,i) => `
-    <button type="button" class="cmd" data-i="${i}">
+    <button type="button" class="cmd" data-i="${i}" data-cmd="${o.cmd.id}" data-form="${o.form}">
       <span class="key">${i+1}</span>
       <span class="de" lang="de">${formText(o.cmd, o.form)}</span>
       <span class="en">${o.cmd.en}</span>
@@ -944,11 +982,11 @@ function renderRef(){
 
 /* ---------- GIVE MODE ---------- */
 function startGive(){
+  bumpSession();
   state.mode = "give";
   state.round = 0;
   state.score = 0;
   state.lives = 3;
-  state.busy = false;
   $("timer").classList.remove("on");
   $("simonBtn").style.display = "";
   $("whoPick").innerHTML = "";
@@ -999,6 +1037,7 @@ function onCommand(opt, btn){
   if (state.mode === "free"){ onFreeTap(opt); return; }
 
   const m = state.current;
+  const session = state.session;
   const form = WHO[m.who].form;
   const spoken = (state.simonOn ? "Simon sagt: " : "") + formText(opt.cmd, opt.form);
   state.busy = true;
@@ -1013,6 +1052,7 @@ function onCommand(opt, btn){
   else refuse(m.who);
 
   window.setTimeout(() => {
+    if (!alive(session)) return;
     if (verbOk && simonOk){
       sfx("ok");
       state.score += 10 + (m.simon ? 0 : 5);
@@ -1022,16 +1062,16 @@ function onCommand(opt, btn){
         : "Ohne „Simon sagt“ bleiben sie stehen — perfekter Trick!";
       feedback("ok", "Richtig!", "Correct!", grammarTip(opt.cmd, form) + " " + extra);
       state.round++;
-      window.setTimeout(nextMission, 1600);
+      window.setTimeout(() => { if (alive(session)) nextMission(); }, 1600);
     } else {
       sfx("bad");
       btn.classList.add("bad");
       let why = "";
       let whyEn = "";
-      if (!verbOk && opt.form !== form){
+      if (opt.cmd.id === m.cmd && opt.form !== form){
         why = `Falsche Anrede. ${WHO[m.who].name} braucht die ${form}-Form.`;
         whyEn = `Wrong address form. Use the ${form} imperative.`;
-      } else if (!verbOk){
+      } else if (opt.cmd.id !== m.cmd){
         why = "Das ist der falsche Befehl.";
         whyEn = "That is the wrong command.";
       } else if (m.simon && !state.simonOn){
@@ -1044,19 +1084,18 @@ function onCommand(opt, btn){
       feedback("err", "Noch nicht.", whyEn, why);
       state.busy = false;
       window.setTimeout(() => {
-        if (state.mode === "give" && state.current === m){
-          resetPoses();
-          if (m.start){
-            targetsOf(m.who).forEach(id => {
-              const el = $("actor-"+id);
-              if (!el) return;
-              el.classList.remove("idle");
-              el.classList.add(m.start);
-              state.poses[id] = m.start;
-            });
-          }
-          setActorActive(m.who);
+        if (!alive(session) || state.mode !== "give" || state.current !== m) return;
+        resetPoses();
+        if (m.start){
+          targetsOf(m.who).forEach(id => {
+            const el = $("actor-"+id);
+            if (!el) return;
+            el.classList.remove("idle");
+            el.classList.add(m.start);
+            state.poses[id] = m.start;
+          });
         }
+        setActorActive(m.who);
       }, 700);
     }
     hideBubble();
@@ -1065,11 +1104,12 @@ function onCommand(opt, btn){
 
 /* ---------- LISTEN MODE ---------- */
 function startListen(){
+  bumpSession();
+  const session = state.session;
   state.mode = "listen";
   state.round = 0;
   state.score = 0;
   state.lives = 3;
-  state.busy = false;
   showScreen("screen-play");
   renderActors();
   renderRef();
@@ -1082,7 +1122,7 @@ function startListen(){
   $("whoPill").innerHTML = `<span class="dot frau"></span> Alle auf dem Platz`;
   updateHud();
   $("cmds").innerHTML = "";
-  window.setTimeout(listenRound, 600);
+  window.setTimeout(() => { if (alive(session)) listenRound(); }, 600);
 }
 
 function listenChoices(must){
@@ -1100,7 +1140,10 @@ function listenRound(){
   if (state.lives <= 0){ endGame(false); return; }
   const max = state.level === "leicht" ? 12 : state.level === "mittel" ? 16 : 20;
   if (state.round >= max){ endGame(true); return; }
+  const session = state.session;
   state.busy = true;
+  resetPoses();
+  setActorActive("all");
   hideBubble();
   $("feedback").className = "feedback";
   $("feedback").textContent = "";
@@ -1112,37 +1155,41 @@ function listenRound(){
   const phrase = (simon ? "Simon sagt: " : "") + formText(cmd, form);
   listenChoices(cmd);
   sfx("whistle");
-  bubble(phrase, (simon?"Simon says: ":"") + cmd.en);
-  speak(phrase).then(() => {
-    state.busy = false;
-    const ms = Math.max(1400, 4200 - state.round*140);
-    const bar = $("timerBar");
-    bar.style.transition = "none";
-    bar.style.transform = "scaleX(1)";
-    void bar.offsetWidth;
-    bar.style.transition = `transform ${ms}ms linear`;
-    bar.style.transform = "scaleX(0)";
-    clearTimeout(state.listenTimer);
-    state.listenTimer = setTimeout(() => {
-      if (state.mode !== "listen" || state.busy) return;
-      state.busy = true;
-      if (simon){
-        miss("Zu langsam!", "Too slow — Simon did say it.");
-      } else {
-        // correctly did nothing
-        sfx("ok");
-        state.score += 8;
-        state.round++;
-        feedback("ok", "Gut gewartet!", "You waited — they didn't say Simon sagt.");
-        updateHud();
-        setTimeout(listenRound, 800);
-      }
-    }, ms);
-  });
+  window.setTimeout(() => {
+    if (!alive(session) || state.mode !== "listen") return;
+    bubble(phrase, (simon?"Simon says: ":"") + cmd.en);
+    speak(phrase).then(() => {
+      if (!alive(session) || state.mode !== "listen") return;
+      state.busy = false;
+      const ms = Math.max(1400, 4200 - state.round*140);
+      const bar = $("timerBar");
+      bar.style.transition = "none";
+      bar.style.transform = "scaleX(1)";
+      void bar.offsetWidth;
+      bar.style.transition = `transform ${ms}ms linear`;
+      bar.style.transform = "scaleX(0)";
+      clearTimeout(state.listenTimer);
+      state.listenTimer = setTimeout(() => {
+        if (!alive(session) || state.mode !== "listen" || state.busy) return;
+        state.busy = true;
+        if (simon){
+          miss("Zu langsam!", "Too slow — Simon did say it.");
+        } else {
+          sfx("ok");
+          state.score += 8;
+          state.round++;
+          feedback("ok", "Gut gewartet!", "You waited — they didn't say Simon sagt.");
+          updateHud();
+          setTimeout(() => { if (alive(session)) listenRound(); }, 800);
+        }
+      }, ms);
+    });
+  }, 280);
 }
 
 function onListenTap(opt){
   if (state.busy) return;
+  const session = state.session;
   state.busy = true;
   clearTimeout(state.listenTimer);
   const m = state.current;
@@ -1154,7 +1201,7 @@ function onListenTap(opt){
     state.round++;
     feedback("ok", "Super!", "You followed Simon.", grammarTip(opt.cmd, m.form));
     updateHud();
-    setTimeout(listenRound, 1300);
+    setTimeout(() => { if (alive(session)) listenRound(); }, 1300);
   } else if (!m.simon){
     playAnim("all", "laugh", null);
     miss("Simon hat nichts gesagt!", "Simon didn't say it — you moved anyway.");
@@ -1165,34 +1212,42 @@ function onListenTap(opt){
 }
 
 function miss(de, en){
+  const session = state.session;
   sfx("bad");
   state.lives--;
   updateHud();
   feedback("err", de, en);
-  if (state.lives <= 0) setTimeout(() => endGame(false), 900);
-  else { state.round++; setTimeout(listenRound, 1100); }
+  if (state.lives <= 0) setTimeout(() => { if (alive(session)) endGame(false); }, 900);
+  else { state.round++; setTimeout(() => { if (alive(session)) listenRound(); }, 1100); }
 }
 
 /* ---------- FREE PLAY ---------- */
 function startFree(){
+  bumpSession();
   state.mode = "free";
-  state.busy = false;
   showScreen("screen-play");
   renderActors();
   renderRef();
-  setActorActive("all");
   $("timer").classList.remove("on");
   $("simonBtn").style.display = "";
   $("hud").hidden = true;
   $("missionTitle").textContent = "Freies Spiel";
   $("missionText").innerHTML = `Wähle, wen du ansprichst, und gib Befehle.<span class="en">Choose who you are talking to, then give commands.</span>`;
   state.freeWho = "mira";
+  state.simonOn = false;
+  $("simonBtn").setAttribute("aria-pressed","false");
+  $("simonBtn").innerHTML = `Simon sagt <span aria-hidden="true">?</span>`;
+  setActorActive("mira");
   $("whoPill").innerHTML = `<span class="dot mira"></span> Mira · du`;
   $("whoPick").innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">
     ${["mira","otto","beide","frau"].map(w => `<button type="button" class="mini free-who" data-w="${w}">${WHO[w].name}</button>`).join("")}
   </div>`;
   $("whoPick").querySelectorAll(".free-who").forEach(b => b.addEventListener("click", () => {
     state.freeWho = b.dataset.w;
+    hideBubble();
+    $("feedback").className = "feedback";
+    $("feedback").textContent = "";
+    resetPoses();
     setActorActive(state.freeWho);
     $("whoPill").innerHTML = `<span class="dot ${WHO[state.freeWho].color}"></span> ${WHO[state.freeWho].name} · ${WHO[state.freeWho].hint}`;
     $("whoPick").querySelectorAll(".free-who").forEach(x => x.style.background = "");
@@ -1225,10 +1280,12 @@ function onFreeTap(opt){
 
 /* ---------- end ---------- */
 function endGame(win){
-  clearTimeout(state.listenTimer);
-  speechSynthesis && speechSynthesis.cancel();
+  bumpSession();
   showScreen("screen-end");
   $("hud").hidden = false;
+  $("lives").hidden = true;
+  $("roundChip").textContent = win ? "Fertig" : "Pause";
+  $("scoreChip").textContent = "Punkte: " + state.score;
   if (win){
     burst();
     $("endTitle").textContent = "Geschafft!";
@@ -1308,12 +1365,15 @@ document.querySelectorAll(".mode").forEach(btn => btn.addEventListener("click", 
 }));
 
 $("btnQuit").addEventListener("click", () => {
-  clearTimeout(state.listenTimer);
-  if (window.speechSynthesis) speechSynthesis.cancel();
+  bumpSession();
   $("hud").hidden = true;
   showScreen("screen-start");
 });
-$("btnHome").addEventListener("click", () => { $("hud").hidden = true; showScreen("screen-start"); });
+$("btnHome").addEventListener("click", () => {
+  bumpSession();
+  $("hud").hidden = true;
+  showScreen("screen-start");
+});
 $("btnAgain").addEventListener("click", () => {
   if (state.mode === "listen") startListen();
   else if (state.mode === "free") startFree();

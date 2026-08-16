@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0d10">
+  <title>Trifecta — A Playable Adaptation</title>
+  <style>
+    :root{
+      --ink:#08090b;--obsidian:#0b0d10;--charcoal:#171a1f;--panel:#101216;
+      --gold:#c69a46;--bright:#e5bb55;--parchment:#eee3c9;--muted:#a99d86;
+      --red:#e15447;--blue:#4e88e1;--yellow:#f1bc32;--cyan:#65d7db;
+      --shadow:0 18px 55px #000b;--ease:180ms ease-out;
+    }
+    *{box-sizing:border-box} html,body{margin:0;min-height:100%;background:var(--ink);color:var(--parchment)}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:
+      radial-gradient(circle at 50% 22%,#5a321c22 0 16%,transparent 38%),
+      radial-gradient(circle at 8% 55%,#f2872430 0 1%,transparent 15%),
+      radial-gradient(circle at 92% 58%,#f2872428 0 1%,transparent 15%),
+      linear-gradient(115deg,#050607,#101317 45%,#070809);overflow-x:hidden}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90' viewBox='0 0 90 90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.23'/%3E%3C/svg%3E")}
+    button,select{font:inherit} button{cursor:pointer}.hidden{display:none!important}
+    .topbar{height:84px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:18px;padding:0 28px;border-bottom:1px solid #d6aa5155;background:#080a0de8;position:relative;z-index:5;box-shadow:0 8px 30px #0008}
+    .brand{display:flex;align-items:center;gap:16px}.brand-mark{width:42px;height:42px;display:grid;place-items:center;color:var(--gold);border:1px solid #c69a4677;transform:rotate(45deg)}.brand-mark span{transform:rotate(-45deg);font-family:Georgia,serif;font-size:22px}
+    h1,h2,h3,.display{font-family:Cinzel,Georgia,"Times New Roman",serif;letter-spacing:.12em;text-transform:uppercase}.brand h1{font-size:clamp(25px,3vw,43px);font-weight:500;margin:0;color:#f0d796;text-shadow:0 2px 8px #000}
+    .match-status{text-align:center}.eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}.turnline{margin-top:5px;color:var(--bright);font-family:Georgia,serif;font-size:17px;letter-spacing:.08em}
+    .header-actions{justify-self:end;display:flex;gap:10px}.gold-btn,.ghost-btn{min-height:46px;padding:0 22px;border-radius:3px;text-transform:uppercase;font-weight:750;letter-spacing:.08em;transition:transform var(--ease),box-shadow var(--ease),background var(--ease)}
+    .gold-btn{color:#171007;background:linear-gradient(#eac96e,#b77c26);border:1px solid #ffe7a0;box-shadow:inset 0 0 0 2px #5b3916,0 6px 18px #0008}.gold-btn:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 2px #5b3916,0 8px 24px #d89f3a32}.ghost-btn{color:var(--parchment);background:#181b20;border:1px solid #9e804f88}.ghost-btn:hover{background:#24282f;border-color:var(--gold)}
+    .game-shell{display:grid;grid-template-columns:minmax(590px,1fr) 330px;gap:22px;max-width:1440px;margin:0 auto;padding:24px;min-height:calc(100vh - 84px)}
+    .board-frame{position:relative;display:grid;place-items:center;min-height:690px;border:1px solid #9f7e4266;background:linear-gradient(145deg,#201b17dd,#0b0c0fee),repeating-linear-gradient(24deg,#fff0 0 8px,#fff1 9px 10px);box-shadow:var(--shadow),inset 0 0 80px #000;border-radius:6px;overflow:hidden}
+    .board-frame:before,.board-frame:after{content:"";position:absolute;width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,#ffc45a 0 4%,#dc7d2a 5% 9%,#3b1d0d 20%,transparent 60%);filter:blur(3px);animation:torch 4s ease-in-out infinite;top:44%;opacity:.72}.board-frame:before{left:-38px}.board-frame:after{right:-38px;animation-delay:-1.8s}
+    @keyframes torch{50%{transform:scale(1.16);opacity:.9}}
+    #board{width:min(100%,1050px);height:auto;max-height:calc(100vh - 115px);filter:drop-shadow(0 20px 25px #000);touch-action:manipulation}
+    .board-slab{fill:url(#stone);stroke:#a37b39;stroke-width:4}.inner-slab{fill:#171512;stroke:#5d4930;stroke-width:2}.grid-line{stroke:#80683f;stroke-width:2;opacity:.82}.node{fill:#27231e;stroke:#b18b4b;stroke-width:2}.node.legal{fill:#5d4b22;stroke:#ffe08a;stroke-width:4;cursor:pointer;animation:legalPulse 1.4s ease-in-out infinite}.node.keep{fill:#151419;stroke-width:4}.keep-label{fill:#dcc58e;font:700 13px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;text-anchor:middle;paint-order:stroke;stroke:#090909;stroke-width:3px}.keep-crystal{filter:drop-shadow(0 0 8px currentColor)}
+    @keyframes legalPulse{50%{stroke:#fff4bb;filter:drop-shadow(0 0 7px #eac55a)}}
+    .piece{cursor:pointer;transition:filter var(--ease)}.piece:hover,.piece:focus{filter:brightness(1.24) drop-shadow(0 0 8px currentColor);outline:none}.piece.selected{filter:brightness(1.3) drop-shadow(0 0 11px currentColor)}.piece-bridge{stroke:#08090b;stroke-width:42;stroke-linecap:round}.piece-bridge-color{stroke-width:34;stroke-linecap:round}.piece-base{stroke:#08090b;stroke-width:3}.piece-ring{fill:none;stroke:#f4df9b;stroke-width:2;opacity:.65}.piece-glyph{fill:#f8ebcf;font:800 16px Inter,sans-serif;text-anchor:middle;dominant-baseline:central;pointer-events:none}.piece-type{fill:#ddd0b4;font:600 9px Inter,sans-serif;text-anchor:middle;paint-order:stroke;stroke:#08090b;stroke-width:3px;pointer-events:none}.selection-halo{fill:none;stroke:#ffe29b;stroke-width:4;stroke-dasharray:5 5;animation:spin 8s linear infinite;transform-origin:center}@keyframes spin{to{stroke-dashoffset:-100}}
+    .side{display:flex;flex-direction:column;gap:16px}.panel{background:linear-gradient(145deg,#16191edb,#0c0e12ef);border:1px solid #9d7b4088;border-radius:5px;box-shadow:0 12px 30px #0008,inset 0 0 25px #0008;padding:20px;position:relative}.panel:before{content:"";position:absolute;inset:5px;border:1px solid #d3a75225;pointer-events:none}.panel h2{font-size:18px;font-weight:600;text-align:center;color:#e7cf97;margin:0 0 17px;padding-bottom:14px;border-bottom:1px solid #886d3d55}.objective{font-family:Georgia,serif;text-align:center;font-size:18px;line-height:1.45;margin:8px 0 18px}.rule-cue{display:grid;grid-template-columns:42px 1fr;gap:12px;padding:12px 0;border-top:1px solid #ffffff12}.rule-icon{width:40px;height:40px;border:1px solid #a88c5c;border-radius:50%;display:grid;place-items:center;color:var(--bright);font-weight:800}.rule-cue strong{display:block;font-size:13px;text-transform:uppercase;letter-spacing:.1em;margin:2px 0 3px}.rule-cue small{color:#b8ad99;line-height:1.35}
+    .turn-card{text-align:center}.faction-dot{display:inline-block;width:10px;height:10px;border-radius:50%;box-shadow:0 0 9px currentColor;margin-right:7px}.instruction{min-height:44px;color:#d1c5ad;line-height:1.42;font-size:14px;margin:8px 0 14px}.aspect-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.aspect-btn{padding:9px 4px;background:#111318;border:1px solid #6f614b;color:#dbcfba;border-radius:4px;font-size:11px}.aspect-btn:hover:not(:disabled){border-color:var(--bright);color:#fff}.aspect-btn:disabled{opacity:.35;cursor:not-allowed}.aspect-btn.active{border-color:#f0c65c;background:#322615;color:#ffe3a0}.aspect-symbol{display:block;font-size:18px;margin-bottom:2px}
+    .players{display:grid;gap:8px}.player-row{display:grid;grid-template-columns:12px 1fr auto;gap:9px;align-items:center;padding:8px 10px;border:1px solid #ffffff12;background:#ffffff05;font-size:13px}.player-row.current{border-color:#d5ae5a88;background:#d5ae5a0d}.player-row.defeated{opacity:.43;text-decoration:line-through}.piece-count{font-variant-numeric:tabular-nums;color:#b7aa90}.log{max-height:112px;overflow:auto;font-size:12px;line-height:1.45;color:#b9af9c;padding-right:4px}.log div{padding:4px 0;border-bottom:1px solid #fff08}.log div:first-child{color:#e8d7af}
+    .modal-backdrop{position:fixed;inset:0;background:#000c;display:grid;place-items:center;padding:20px;z-index:30;backdrop-filter:blur(6px)}.modal{width:min(720px,100%);max-height:90vh;overflow:auto;background:linear-gradient(145deg,#191c21,#0c0e11);border:1px solid var(--gold);box-shadow:0 28px 90px #000;padding:30px;border-radius:6px;position:relative}.modal h2{color:#efd99e;margin:0 0 12px;font-size:25px}.modal p,.modal li{color:#c9bea8;line-height:1.55}.close{position:absolute;right:16px;top:13px;width:42px;height:42px;background:#17191d;border:1px solid #816a44;color:#eadab9;font-size:22px}.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:23px 0}.field label{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:#bcae93;margin-bottom:7px}.field select{width:100%;height:46px;background:#0e1013;color:#eee0c5;border:1px solid #806a47;padding:0 12px}.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}.legend div{padding:13px;border:1px solid #ffffff19;background:#ffffff05}.legend strong{display:block;color:#efd38f;margin-bottom:4px}.legend small{color:#b6ab98;line-height:1.35}.canon-note{padding:14px 16px;border-left:3px solid var(--gold);background:#c69a460c}.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+    .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:#17140e;border:1px solid var(--gold);color:#f1dfb8;padding:12px 18px;z-index:50;transition:.25s;box-shadow:0 10px 30px #000}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media(max-width:1040px){.topbar{grid-template-columns:1fr auto}.match-status{display:none}.game-shell{grid-template-columns:1fr}.board-frame{min-height:600px}.side{display:grid;grid-template-columns:1fr 1fr}.side .panel:first-child{grid-row:span 2}}
+    @media(max-width:690px){.topbar{height:auto;min-height:72px;padding:12px 14px}.brand-mark{display:none}.brand h1{font-size:27px}.header-actions .ghost-btn{display:none}.gold-btn{padding:0 13px}.game-shell{padding:10px;gap:10px}.board-frame{min-height:430px}.side{display:flex}.panel{padding:16px}.setup-grid,.legend{grid-template-columns:1fr}.modal{padding:24px 18px}#board{max-height:none}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark" aria-hidden="true"><span>△</span></div><h1>Trifecta</h1></div>
+    <div class="match-status"><div class="eyebrow" id="modeLabel">Solo Match</div><div class="turnline" id="roundLabel">◆ Round 1 ◆</div></div>
+    <div class="header-actions"><button class="ghost-btn" id="rulesBtn">Rules</button><button class="gold-btn" id="newBtn">New Match</button></div>
+  </header>
+
+  <main class="game-shell">
+    <section class="board-frame" aria-label="Trifecta game board">
+      <svg id="board" viewBox="0 0 1080 980" role="application" aria-label="Expanded triangular Trifecta board. Select one of your pieces, then a highlighted destination.">
+        <defs>
+          <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3a3228"/><stop offset=".48" stop-color="#171512"/><stop offset="1" stop-color="#2d251d"/></linearGradient>
+          <radialGradient id="medallion"><stop stop-color="#4a3a20"/><stop offset=".6" stop-color="#181512"/><stop offset="1" stop-color="#070807"/></radialGradient>
+          <linearGradient id="gigasGradient" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#11131a"/><stop offset=".2" stop-color="#d9483e"/><stop offset=".43" stop-color="#151821"/><stop offset=".64" stop-color="#477ed4"/><stop offset=".82" stop-color="#16171c"/><stop offset="1" stop-color="#e4b43d"/></linearGradient>
+        </defs>
+        <polygon class="board-slab" points="540,24 24,952 1056,952"/>
+        <polygon class="inner-slab" points="540,66 61,926 1019,926"/>
+        <g id="edges"></g><circle cx="540" cy="650" r="84" fill="url(#medallion)" stroke="#a37b39" stroke-width="3"/><path d="M540 594l44 77h-88z" fill="none" stroke="#ad8644" stroke-width="3"/><circle cx="540" cy="650" r="18" fill="#b48b43" opacity=".5"/>
+        <g id="nodes"></g><g id="keeps"></g><g id="pieces"></g>
+      </svg>
+    </section>
+
+    <aside class="side">
+      <section class="panel">
+        <h2>Objective</h2>
+        <p class="objective">Enter either rival keep—or become the last faction standing.</p>
+        <div class="rule-cue"><div class="rule-icon">◇</div><div><strong>Move</strong><small>Select a piece, then a glowing linked space.</small></div></div>
+        <div class="rule-cue"><div class="rule-icon">⌾</div><div><strong>Surround</strong><small>Build enough pressure around a rival to capture it.</small></div></div>
+        <div class="rule-cue"><div class="rule-icon">△</div><div><strong>Conquer</strong><small>Move any piece into an opposing corner keep.</small></div></div>
+      </section>
+      <section class="panel turn-card">
+        <div class="eyebrow">Current command</div>
+        <h2 id="turnTitle"><span class="faction-dot"></span>Azure Turn</h2>
+        <div class="instruction" id="instruction" aria-live="polite">Select one of your pieces.</div>
+        <div class="aspect-row" aria-label="Change selected Mage Fowl power">
+          <button class="aspect-btn" data-aspect="strength"><span class="aspect-symbol">◆</span>Strength</button>
+          <button class="aspect-btn" data-aspect="swiftness"><span class="aspect-symbol">➶</span>Swiftness</button>
+          <button class="aspect-btn" data-aspect="sight"><span class="aspect-symbol">◉</span>Sight</button>
+        </div>
+      </section>
+      <section class="panel"><h2>Forces</h2><div class="players" id="players"></div></section>
+      <section class="panel"><h2>Chronicle</h2><div class="log" id="log" aria-live="polite"></div></section>
+    </aside>
+  </main>
+
+  <div class="modal-backdrop hidden" id="setupModal" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+    <div class="modal"><h2 id="setupTitle">Begin a New Match</h2><p>Command one faction against two rivals, or pass the board among three players.</p>
+      <div class="setup-grid">
+        <div class="field"><label for="mode">Match type</label><select id="mode"><option value="solo">Solo vs. two computer rivals</option><option value="local">Three players, same device</option></select></div>
+        <div class="field"><label for="faction">Your faction</label><select id="faction"><option value="blue">Azure — lower left</option><option value="red">Ember — upper keep</option><option value="yellow">Dorian — lower right</option></select></div>
+        <div class="field"><label for="difficulty">Computer skill</label><select id="difficulty"><option value="novice">Novice</option><option value="adept" selected>Adept</option><option value="master">Master</option></select></div>
+        <div class="field"><label for="first">First turn</label><select id="first"><option value="human">Your faction</option><option value="random">Random faction</option></select></div>
+      </div>
+      <div class="modal-actions"><button class="gold-btn" id="startBtn">Enter the Chamber</button></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="rulesModal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+    <div class="modal"><button class="close" id="closeRules" aria-label="Close rules">×</button><h2 id="rulesTitle">How to Play</h2>
+      <p class="canon-note"><strong>From the novel:</strong> Trifecta has three players, a triangular board of light and dark spaces, keeps at its tips, pieces with different abilities and physical sizes, and capture by surrounding. The Mage Gigas is a colossal, hovering, three-section creature whose black armor shimmers red, blue, and yellow. Reaching a rival keep defeats its ruler.</p>
+      <h3>Playable adaptation</h3><ol><li>Turns proceed Ember, Azure, then Dorian. Move one piece or change one Mage Fowl’s power.</li><li>Ordinary movement follows one engraved link into an empty space. Every cell of a multi-space piece must fit at its destination.</li><li>After acting, your adjacent pieces exert surrounding pressure. Mage Fowl require two pressure to capture, Mage Beasts require three, Mage Bears require four, and the Mage Gigas requires five. Strength counts as two pressure.</li><li>Capture every rival piece to eliminate that faction. Enter either rival keep to win immediately.</li></ol>
+      <div class="legend"><div><strong>◆ Strength</strong><small>Counts as two surrounding pressure. Creatures with Strength also resist capture.</small></div><div><strong>➶ Swiftness</strong><small>May travel through up to two linked, empty spaces in one move.</small></div><div><strong>◉ Sight</strong><small>May leap directly to an empty space exactly two links away.</small></div></div>
+      <p><strong>Expanded armies:</strong> Each faction commands five one-space Mage Fowl, one two-space Mage Beast, and one three-space Mage Bear. The unique seven-space Mage Gigas begins neutral. Surround it with five pressure to take command; another faction may later seize it. The Gigas hovers one linked step, contributes three surrounding pressure, and wins normally if any part reaches a rival keep.</p>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script>
+  (()=>{
+    const COLORS={red:'#e15447',blue:'#4e88e1',yellow:'#f1bc32',neutral:'#c8b68c'};
+    const NAMES={red:'Ember',blue:'Azure',yellow:'Dorian',neutral:'Unbound'};
+    const ORDER=['red','blue','yellow']; const SIZE=11;
+    const state={pieces:[],turn:'blue',round:1,selected:null,legal:[],winner:null,mode:'solo',human:'blue',difficulty:'adept',busy:false,logs:[],defeated:new Set()};
+    const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+    const board=$('#board'), edges=$('#edges'),nodes=$('#nodes'),keeps=$('#keeps'),piecesG=$('#pieces');
+    const pts={};
+    for(let r=0;r<=SIZE;r++) for(let c=0;c<=r;c++){const y=108+r*74,x=540+(c-r/2)*80;pts[`${r}-${c}`]={x,y,r,c,id:`${r}-${c}`};}
+    const neighbors=id=>{const {r,c}=pts[id], out=[];[[r,c-1],[r,c+1],[r-1,c-1],[r-1,c],[r+1,c],[r+1,c+1]].forEach(([a,b])=>{const k=`${a}-${b}`;if(pts[k])out.push(k)});return out};
+    const distance=(a,b)=>{if(a===b)return 0;let q=[[a,0]],seen=new Set([a]);while(q.length){const [n,d]=q.shift();for(const x of neighbors(n)){if(x===b)return d+1;if(!seen.has(x)){seen.add(x);q.push([x,d+1])}}}return 99};
+    const keepAt={red:'0-0',blue:'11-0',yellow:'11-11'};
+    const svg=(tag,attrs={})=>{const e=document.createElementNS('http://www.w3.org/2000/svg',tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));return e};
+    function drawStatic(){
+      Object.values(pts).forEach(p=>neighbors(p.id).forEach(n=>{if(p.id<n){const q=pts[n];edges.append(svg('line',{x1:p.x,y1:p.y,x2:q.x,y2:q.y,class:'grid-line'}));}}));
+      Object.values(pts).forEach(p=>{const c=svg('circle',{cx:p.x,cy:p.y,r:10,class:`node ${Object.values(keepAt).includes(p.id)?'keep':''}`,'data-id':p.id});c.addEventListener('click',()=>onDestination(p.id));nodes.append(c)});
+      ORDER.forEach(f=>{const p=pts[keepAt[f]],g=svg('g',{style:`color:${COLORS[f]}`});g.append(svg('path',{d:`M${p.x} ${p.y-31}l17 24-8 22h-18l-8-22z`,fill:COLORS[f],stroke:'#f6d690','stroke-width':2,class:'keep-crystal'}));const t=svg('text',{x:p.x,y:p.y+42,class:'keep-label'});t.textContent=NAMES[f]+' Keep';g.append(t);keeps.append(g)});
+    }
+    function resetPieces(){state.pieces=[
+      {id:'r1',f:'red',type:'mage',aspect:'strength',pos:'1-0'},{id:'r2',f:'red',type:'mage',aspect:'sight',pos:'1-1'},{id:'r3',f:'red',type:'mage',aspect:'swiftness',pos:'2-0'},{id:'r4',f:'red',type:'mage',aspect:'strength',pos:'2-1'},{id:'r5',f:'red',type:'mage',aspect:'sight',pos:'2-2'},
+      {id:'r6',f:'red',type:'creature',aspect:'swiftness',pos:'3-0',cells:['3-0','3-1']},{id:'r7',f:'red',type:'behemoth',aspect:'strength',pos:'3-2',cells:['3-2','3-3','4-3']},
+      {id:'b1',f:'blue',type:'mage',aspect:'strength',pos:'11-0'},{id:'b2',f:'blue',type:'mage',aspect:'sight',pos:'11-1'},{id:'b3',f:'blue',type:'mage',aspect:'swiftness',pos:'10-0'},{id:'b4',f:'blue',type:'mage',aspect:'strength',pos:'10-1'},{id:'b5',f:'blue',type:'mage',aspect:'sight',pos:'9-0'},
+      {id:'b6',f:'blue',type:'creature',aspect:'swiftness',pos:'11-2',cells:['11-2','10-2']},{id:'b7',f:'blue',type:'behemoth',aspect:'strength',pos:'9-1',cells:['9-1','9-2','10-3']},
+      {id:'y1',f:'yellow',type:'mage',aspect:'strength',pos:'11-11'},{id:'y2',f:'yellow',type:'mage',aspect:'sight',pos:'11-10'},{id:'y3',f:'yellow',type:'mage',aspect:'swiftness',pos:'10-10'},{id:'y4',f:'yellow',type:'mage',aspect:'strength',pos:'10-9'},{id:'y5',f:'yellow',type:'mage',aspect:'sight',pos:'9-9'},
+      {id:'y6',f:'yellow',type:'creature',aspect:'swiftness',pos:'11-9',cells:['11-9','10-8']},{id:'y7',f:'yellow',type:'behemoth',aspect:'strength',pos:'9-8',cells:['9-8','9-7','10-7']},
+      {id:'gigas',f:'neutral',type:'gigas',aspect:'trinity',pos:'6-2',cells:['6-2','6-3','7-2','7-3','7-4','8-3','8-4']}];}
+    const cellsOf=p=>p.cells||[p.pos];
+    const pieceAt=id=>state.pieces.find(p=>cellsOf(p).includes(id));
+    const translatedCells=(p,dest)=>{const a=pts[p.pos],b=pts[dest];if(!a||!b)return[];return cellsOf(p).map(id=>{const q=pts[id];return `${q.r+b.r-a.r}-${q.c+b.c-a.c}`})};
+    const validDestination=(p,dest)=>{const moved=translatedCells(p,dest);return moved.length===cellsOf(p).length&&moved.every(id=>pts[id]&&!state.pieces.some(other=>other!==p&&cellsOf(other).includes(id)))};
+    const living=f=>state.pieces.some(p=>p.f===f);
+    const pressureValue=p=>p.type==='gigas'?3:p.aspect==='strength'?2:1;
+    const defenseValue=p=>p.type==='gigas'?5:p.type==='behemoth'?4:p.type==='creature'?3:2;
+    const pieceName=p=>p.type==='gigas'?'Mage Gigas':p.type==='behemoth'?'Mage Bear':p.type==='creature'?'Mage Beast':'Mage Fowl';
+    const pressureAgainst=(enemy,f)=>{const attackers=new Set();cellsOf(enemy).forEach(cell=>neighbors(cell).forEach(n=>{const a=pieceAt(n);if(a&&a.f===f)attackers.add(a)}));let pressure=0;attackers.forEach(a=>pressure+=pressureValue(a));return pressure};
+    const isHumanTurn=()=>state.mode==='local'||state.turn===state.human;
+    function legalFor(p){
+      if(!p)return[]; let out=[];
+      if(p.aspect==='swiftness'){
+        const first=neighbors(p.pos).filter(n=>validDestination(p,n));out.push(...first);first.forEach(mid=>neighbors(mid).filter(x=>x!==p.pos&&validDestination(p,x)).forEach(x=>out.push(x)));
+      }else if(p.aspect==='sight'){
+        Object.keys(pts).filter(x=>distance(p.pos,x)===2&&validDestination(p,x)).forEach(x=>out.push(x));
+      }else out=neighbors(p.pos).filter(n=>validDestination(p,n));
+      return [...new Set(out)];
+    }
+    function render(){
+      piecesG.innerHTML='';
+      state.pieces.forEach(p=>{const occupied=cellsOf(p).map(id=>pts[id]),cx=occupied.reduce((s,q)=>s+q.x,0)/occupied.length,cy=occupied.reduce((s,q)=>s+q.y,0)/occupied.length,isGigas=p.type==='gigas',pieceColor=isGigas?'url(#gigasGradient)':COLORS[p.f],g=svg('g',{class:`piece ${state.selected===p.id?'selected':''}`,tabindex:'0',role:'button','aria-label':`${NAMES[p.f]} ${pieceName(p)}, size ${occupied.length}, ${p.aspect}, at ${cellsOf(p).join(' and ')}`,style:`color:${COLORS[p.f]}`});g.dataset.id=p.id;
+        if(occupied.length>1){for(let i=0;i<occupied.length;i++)for(let j=i+1;j<occupied.length;j++)if(neighbors(cellsOf(p)[i]).includes(cellsOf(p)[j])){g.append(svg('line',{x1:occupied[i].x,y1:occupied[i].y,x2:occupied[j].x,y2:occupied[j].y,class:'piece-bridge'}));g.append(svg('line',{x1:occupied[i].x,y1:occupied[i].y,x2:occupied[j].x,y2:occupied[j].y,stroke:pieceColor,class:'piece-bridge-color'}));}}
+        occupied.forEach(q=>{if(state.selected===p.id)g.append(svg('circle',{cx:q.x,cy:q.y,r:isGigas?31:27,class:'selection-halo'}));g.append(svg('circle',{cx:q.x,cy:q.y,r:isGigas?25:p.type==='mage'?18:22,fill:pieceColor,class:'piece-base'}));g.append(svg('circle',{cx:q.x,cy:q.y,r:isGigas?19:p.type==='mage'?13:16,class:'piece-ring'}));});
+        const glyph=svg('text',{x:cx,y:cy-1,class:'piece-glyph'});glyph.textContent=isGigas?'G':p.aspect==='strength'?'◆':p.aspect==='swiftness'?'➶':'◉';g.append(glyph);
+        const label=svg('text',{x:cx,y:cy+38,class:'piece-type'});label.textContent=isGigas?`MAGE GIGAS · 7 SPACES${p.f==='neutral'?' · UNBOUND':' · '+NAMES[p.f]}`:p.type==='behemoth'?'MAGE BEAR · 3 SPACES':p.type==='creature'?'MAGE BEAST · 2 SPACES':'MAGE FOWL · 1 SPACE';g.append(label);
+        g.addEventListener('click',()=>selectPiece(p.id));g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();selectPiece(p.id)}});piecesG.append(g)});
+      $$('.node').forEach(n=>n.classList.toggle('legal',state.legal.includes(n.dataset.id)));
+      const color=COLORS[state.turn];$('#turnTitle').innerHTML=`<span class="faction-dot" style="background:${color};color:${color}"></span>${NAMES[state.turn]} Turn`;
+      $('#roundLabel').textContent=`◆ Round ${state.round} ◆`;$('#modeLabel').textContent=state.mode==='solo'?`Solo · ${cap(state.difficulty)}`:'Three-Player Match';
+      const sel=state.pieces.find(p=>p.id===state.selected);$$('.aspect-btn').forEach(b=>{b.disabled=!sel||sel.type!=='mage'||!isHumanTurn()||state.busy;b.classList.toggle('active',sel?.aspect===b.dataset.aspect)});
+      $('#instruction').textContent=state.winner?`${NAMES[state.winner]} controls the board.`:state.busy?'The rival masters consider the board…':!isHumanTurn()?'The rival master is moving…':sel?`${pieceName(sel)} selected. Choose a glowing space${sel.type==='mage'?' or change its power.':'.'}`:'Select one of your pieces.';
+      const gigas=state.pieces.find(p=>p.type==='gigas');$('#players').innerHTML=ORDER.map(f=>`<div class="player-row ${state.turn===f?'current':''} ${state.defeated.has(f)?'defeated':''}"><i class="faction-dot" style="background:${COLORS[f]};color:${COLORS[f]}"></i><span>${NAMES[f]}${state.mode==='solo'&&f===state.human?' · You':''}</span><span class="piece-count">${state.pieces.filter(p=>p.f===f).length} pieces</span></div>`).join('')+`<div class="player-row"><i class="faction-dot" style="background:linear-gradient(90deg,#e15447,#4e88e1,#f1bc32)"></i><span>Mage Gigas</span><span class="piece-count">${gigas.f==='neutral'?'Unbound':NAMES[gigas.f]}</span></div>`;
+      $('#log').innerHTML=state.logs.slice(0,8).map(x=>`<div>${x}</div>`).join('');
+    }
+    function selectPiece(id){if(state.winner||state.busy||!isHumanTurn())return;const p=state.pieces.find(x=>x.id===id);if(!p||p.f!==state.turn){toast(`It is ${NAMES[state.turn]}'s turn.`);return}state.selected=id;state.legal=legalFor(p);render()}
+    function onDestination(dest){if(!state.legal.includes(dest)||!state.selected||state.busy)return;takeAction({type:'move',id:state.selected,dest})}
+    function changeAspect(aspect){const p=state.pieces.find(x=>x.id===state.selected);if(!p||p.type!=='mage'||p.aspect===aspect)return;p.aspect=aspect;log(`${NAMES[p.f]} Mage Fowl turns to ${cap(aspect)}.`);afterAction(p)}
+    function takeAction(a){const p=state.pieces.find(x=>x.id===a.id);if(!p)return;if(a.type==='aspect'){p.aspect=a.aspect;log(`${NAMES[p.f]} Mage Fowl turns to ${cap(a.aspect)}.`)}else{const from=cellsOf(p).join(' + '),moved=translatedCells(p,a.dest);p.pos=a.dest;if(p.cells)p.cells=moved;log(`${NAMES[p.f]} ${pieceName(p)} moves ${from} → ${moved.join(' + ')}.`);const rival=ORDER.find(f=>f!==p.f&&moved.includes(keepAt[f]));if(rival){state.winner=p.f;log(`${NAMES[p.f]} enters the ${NAMES[rival]} Keep and wins!`);celebrate();render();return}}afterAction(p)}
+    function afterAction(actor){resolveCaptures(actor.f);checkEliminations();state.selected=null;state.legal=[];if(!state.winner)advanceTurn();render();if(!state.winner&&!isHumanTurn())queueAI()}
+    function resolveCaptures(f){
+      const captured=[];state.pieces.filter(p=>p.f!==f).forEach(enemy=>{if(pressureAgainst(enemy,f)>=defenseValue(enemy))captured.push(enemy)});
+      if(captured.length){const ordinary=captured.filter(p=>p.type!=='gigas');state.pieces=state.pieces.filter(p=>!ordinary.includes(p));captured.forEach(p=>{if(p.type==='gigas'){const former=p.f;p.f=f;log(`${NAMES[f]} binds the Mage Gigas${former==='neutral'?'':' away from '+NAMES[former]}!`);toast(`${NAMES[f]} now commands the Gigas`)}else log(`${NAMES[f]} surrounds and captures a ${NAMES[p.f]} ${pieceName(p)}.`)});if(ordinary.length)toast(`${ordinary.length} piece${ordinary.length>1?'s':''} captured`)}
+    }
+    function checkEliminations(){ORDER.forEach(f=>{if(!living(f)&&!state.defeated.has(f)){state.defeated.add(f);log(`${NAMES[f]} has lost all forces.`)}});const alive=ORDER.filter(living);if(alive.length===1){state.winner=alive[0];log(`${NAMES[alive[0]]} is the last faction standing.`);celebrate()}}
+    function advanceTurn(){let i=ORDER.indexOf(state.turn);do{i=(i+1)%3;if(i===0)state.round++}while(!living(ORDER[i]));state.turn=ORDER[i]}
+    function allActions(f){const arr=[];state.pieces.filter(p=>p.f===f).forEach(p=>{legalFor(p).forEach(dest=>arr.push({type:'move',id:p.id,dest}));if(p.type==='mage')['strength','swiftness','sight'].filter(a=>a!==p.aspect).forEach(aspect=>arr.push({type:'aspect',id:p.id,aspect}))});return arr}
+    function scoreAction(a){const p=state.pieces.find(x=>x.id===a.id);if(a.type==='aspect')return state.difficulty==='novice'?Math.random()*4:(a.aspect==='strength'?5:2)+Math.random()*2;let s=Math.random()*4;const oldPos=p.pos,oldCells=p.cells?[...p.cells]:null,moved=translatedCells(p,a.dest);p.pos=a.dest;if(p.cells)p.cells=moved;
+      if(ORDER.some(f=>f!==p.f&&moved.includes(keepAt[f])))s+=1000;state.pieces.filter(e=>e.f!==p.f).forEach(e=>{if(pressureAgainst(e,p.f)>=defenseValue(e))s+=e.type==='gigas'?180:e.type==='behemoth'?95:e.type==='creature'?60:35});
+      const target=Math.min(...moved.flatMap(cell=>ORDER.filter(f=>f!==p.f&&!state.defeated.has(f)).map(f=>distance(cell,keepAt[f]))));s+=(SIZE-target)*(state.difficulty==='master'?4:2);if(moved.some(x=>x==='7-3'||x==='7-4'))s+=5;p.pos=oldPos;if(oldCells)p.cells=oldCells;return s}
+    function queueAI(){state.busy=true;render();setTimeout(()=>{const acts=allActions(state.turn);if(!acts.length){log(`${NAMES[state.turn]} has no legal action.`);advanceTurn();state.busy=false;render();if(!isHumanTurn())queueAI();return}let chosen;if(state.difficulty==='novice')chosen=acts[Math.floor(Math.random()*acts.length)];else chosen=acts.map(a=>[a,scoreAction(a)]).sort((x,y)=>y[1]-x[1])[0][0];state.busy=false;takeAction(chosen)},state.difficulty==='master'?650:480)}
+    function newGame(){state.mode=$('#mode').value;state.human=$('#faction').value;state.difficulty=$('#difficulty').value;state.turn=$('#first').value==='random'?ORDER[Math.floor(Math.random()*3)]:state.human;state.round=1;state.selected=null;state.legal=[];state.winner=null;state.busy=false;state.logs=[];state.defeated=new Set();resetPieces();log('The magical torches flare. A new match begins.');$('#setupModal').classList.add('hidden');render();if(!isHumanTurn())queueAI()}
+    function log(s){state.logs.unshift(s)} function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+    let toastTimer;function toast(s){const t=$('#toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800)}
+    function celebrate(){toast(`${NAMES[state.winner]} claims victory!`)}
+    $('#newBtn').onclick=()=>$('#setupModal').classList.remove('hidden');$('#startBtn').onclick=newGame;$('#rulesBtn').onclick=()=>$('#rulesModal').classList.remove('hidden');$('#closeRules').onclick=()=>$('#rulesModal').classList.add('hidden');$$('.aspect-btn').forEach(b=>b.onclick=()=>changeAspect(b.dataset.aspect));
+    [$('#rulesModal'),$('#setupModal')].forEach(m=>m.addEventListener('click',e=>{if(e.target===m&&m.id==='rulesModal')m.classList.add('hidden')}));document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#rulesModal').classList.add('hidden')});
+    drawStatic();resetPieces();log('The board awaits your command.');render();$('#setupModal').classList.remove('hidden');
+  })();
+  </script>
+</body>
+</html>

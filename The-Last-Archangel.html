@@ -39,7 +39,7 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
 #how .back{margin-top:10px;border-color:var(--gold);color:var(--gold)}
 .win{background:linear-gradient(#1c3c88,#102050);border:3px solid #e4c56a;box-shadow:inset 0 0 0 1px #6a4820,2px 2px 0 #000;color:#f8f0d8}
 #hud{position:absolute;left:4px;top:4px;z-index:8;display:flex;gap:4px;pointer-events:none}
-#hud .chip{padding:2px 4px;font-size:6px;min-width:70px}
+#hud .chip{padding:2px 4px;font-size:6px;min-width:56px}
 #hud .bar{height:3px;background:#0008;margin-top:2px}
 #hud .bar>i{display:block;height:100%;background:var(--hp)}
 #hud .mp>i{background:var(--mp)}
@@ -65,7 +65,7 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
 .partybox .row.dead{opacity:.4}
 .partybox .nm{color:var(--gold)}
 #blog{position:absolute;left:4px;right:4px;top:4px;z-index:12;padding:5px 7px;font-size:8px;min-height:28px;line-height:1.4}
-#touch{position:absolute;left:0;right:0;bottom:0;height:0;z-index:30;pointer-events:none}
+#touch{position:absolute;left:0;right:0;bottom:0;height:0;z-index:9;pointer-events:none}
 @media(pointer:coarse){
   #touch{height:auto;pointer-events:auto;display:flex;justify-content:space-between;padding:8px 12px 16px;align-items:flex-end}
   .pad{display:grid;grid-template-columns:repeat(3,42px);grid-template-rows:repeat(3,42px);gap:3px}
@@ -121,7 +121,7 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
   </div>
   <div id="how" class="screen hidden">
     <h2>How to Play</h2>
-    <p>Arrow keys / WASD move. Z, Enter, or Space confirms. X or Esc opens the menu and cancels.</p>
+    <p>Arrow keys / WASD move. Z, Enter, or Space confirms. X or Esc opens the menu and cancels. In the menu, up and down change pages.</p>
     <p style="margin-top:8px">You are Xandir, a Watcher sentenced to serve as Destroying Angel until the End of Time. Walk the maps, speak with every soul, and fight when darkness bars the way.</p>
     <p style="margin-top:8px">Ambrosia restores the body. Serche water restores the spirit. Manna is the coin of both Heaven and Nod.</p>
     <p style="margin-top:8px">The tale follows the trilogy: Pompeii and the Fortuna house; Jarom and Clara against Beelzebub; Olympus, Cain, and the All-Seeing Eye.</p>
@@ -260,7 +260,7 @@ M("heaven","Court of Light",[],0,{floor:"#d8d0c0",wall:"#c8b888",dec:"#fff8c0",b
 `,{npcs:[{id:"center",x:9,y:3,spr:"pillar",name:"The Columns"},{id:"seraph0",x:14,y:7,spr:"seraph",name:"High Seraph"}],
   warps:[]});
 
-M("pompeii","Pompeii, 79 A.D.",["ash","ash","shade"],0.12,{floor:"#c8b090",wall:"#8a6040",dec:"#d07030",bg:"#f0a060"},`
+M("pompeii","Pompeii, 79 A.D.",["ash","ash","shade"],0.06,{floor:"#c8b090",wall:"#8a6040",dec:"#d07030",bg:"#f0a060"},`
 ############################
 #^^^^##^^^^................#
 #^^^####^^^....TTT.........#
@@ -277,7 +277,7 @@ M("pompeii","Pompeii, 79 A.D.",["ash","ash","shade"],0.12,{floor:"#c8b090",wall:
 `,{npcs:[{id:"seraph",x:18,y:5,spr:"seraph",name:"High Seraph"},{id:"citizen",x:22,y:9,spr:"human",name:"Pompeian"}],
   warps:[{x:24,y:10,to:"nyc",tx:22,ty:7,need:"pompeiiDone"}]});
 
-M("nyc","New York, 2012",["imp","suit","imp"],0.1,{floor:"#3a3a48",wall:"#2a2a38",dec:"#4060a0",bg:"#12121c"},`
+M("nyc","New York, 2012",["imp","suit","imp"],0.06,{floor:"#3a3a48",wall:"#2a2a38",dec:"#4060a0",bg:"#12121c"},`
 ############################
 #BBBBBB##BBBBBB##BBBBBBBBBB#
 #B....B##B....B##B........B#
@@ -310,7 +310,7 @@ M("fortuna","Fortuna House",[],0,{floor:"#c8a878",wall:"#6a4030",dec:"#a05040",b
 `,{npcs:[{id:"eden",x:6,y:6,spr:"eden",name:"Eden"},{id:"judy",x:12,y:5,spr:"judy",name:"Judy"},{id:"daren",x:10,y:3,spr:"daren",name:"Daren"}],
   warps:[{x:8,y:9,to:"nyc",tx:3,ty:5}]});
 
-M("forest","The Giant Wood",["thorn","thorn","wretch"],0.14,{floor:"#2a4a28",wall:"#143018",dec:"#1a3820",bg:"#0c2010"},`
+M("forest","The Giant Wood",["thorn","thorn","wretch"],0.07,{floor:"#2a4a28",wall:"#143018",dec:"#1a3820",bg:"#0c2010"},`
 ##########################
 #TTTTTTTTTTTTTTTTTTTTTTTT#
 #T....T....T....T....T..T#
@@ -328,7 +328,7 @@ M("forest","The Giant Wood",["thorn","thorn","wretch"],0.14,{floor:"#2a4a28",wal
 `,{npcs:[{id:"absalom",x:6,y:7,spr:"seraph",name:"Absalom"},{id:"yearti",x:12,y:11,spr:"yearti",name:"Yearti"}],
   warps:[{x:2,y:8,to:"nyc",tx:25,ty:8},{x:22,y:3,to:"tunnels",tx:2,ty:17,need:"yeartiJoined"}]});
 
-M("tunnels","Tubal's Tunnels",["wretch","ach","wretch"],0.16,{floor:"#3a3428",wall:"#1c1810",dec:"#5a4030",bg:"#100c08"},`
+M("tunnels","Tubal's Tunnels",["wretch","ach","wretch"],0.08,{floor:"#3a3428",wall:"#1c1810",dec:"#5a4030",bg:"#100c08"},`
 ############################
 #..........................#
 #.##.##.####.##.####.##.##.#
@@ -351,7 +351,7 @@ M("tunnels","Tubal's Tunnels",["wretch","ach","wretch"],0.16,{floor:"#3a3428",wa
 `,{npcs:[{id:"jubal",x:14,y:1,spr:"giant",name:"Jubal"},{id:"tubal",x:24,y:8,spr:"giant",name:"Tubal"},{id:"dusteater",x:24,y:15,spr:"boss",name:"Dusteater"}],
   warps:[{x:1,y:17,to:"forest",tx:3,ty:8},{x:26,y:1,to:"hell",tx:2,ty:13,need:"dusteaterDown"}]});
 
-M("hell","A Cold Day in Hell",["flame","pool","ach"],0.14,{floor:"#4a2020",wall:"#2a1010",dec:"#c04020",bg:"#180808"},`
+M("hell","A Cold Day in Hell",["flame","pool","ach"],0.07,{floor:"#4a2020",wall:"#2a1010",dec:"#c04020",bg:"#180808"},`
 ########################
 #^^^^#..........#^^^^^^#
 #^^^^#...TTTT...#^^^^^^#
@@ -375,7 +375,7 @@ M("fortress","The Cherub Fortress",[],0,{floor:"#d8d0b0",wall:"#a09060",dec:"#f0
 #....................#
 #..HHHH........HHHH..#
 #..H..H...++...H..H..#
-#..HHHH........HHHH..#
+#..HHHH........H..H..#
 #....................#
 #========....========#
 #....................#
@@ -384,10 +384,10 @@ M("fortress","The Cherub Fortress",[],0,{floor:"#d8d0b0",wall:"#a09060",dec:"#f0
 #....H...@....H......#
 #....................#
 ######################
-`,{npcs:[{id:"clara",x:8,y:6,spr:"clara",name:"Clara"},{id:"shop",x:16,y:3,spr:"human",name:"Manna Keeper"},{id:"judy2",x:4,y:9,spr:"judy",name:"Judy"},{id:"rest",x:16,y:9,spr:"seraph",name:"Cherub Healer"}],
-  warps:[{x:1,y:6,to:"rome",tx:2,ty:8,need:"claraJoined"},{x:20,y:6,to:"olympus",tx:20,ty:9,need:"jenningsDown"},{x:10,y:1,to:"cainhall",tx:10,ty:11,need:"armor3"}]});
+`,{npcs:[{id:"clara",x:8,y:6,spr:"clara",name:"Clara"},{id:"shop",x:16,y:5,spr:"human",name:"Manna Keeper"},{id:"judy2",x:4,y:9,spr:"judy",name:"Judy"},{id:"rest",x:16,y:9,spr:"seraph",name:"Cherub Healer"}],
+  warps:[{x:1,y:6,to:"rome",tx:2,ty:8,need:"claraJoined"},{x:20,y:6,to:"olympus",tx:20,ty:9,need:"jenningsDown"},{x:10,y:1,to:"cainhall",tx:9,ty:10,need:"armor3"}]});
 
-M("rome","Rome Away from Rome",["legion","horse","legion"],0.13,{floor:"#b09070",wall:"#704030",dec:"#c04020",bg:"#402010"},`
+M("rome","Rome Away from Rome",["legion","horse","legion"],0.07,{floor:"#b09070",wall:"#704030",dec:"#c04020",bg:"#402010"},`
 ########################
 #BBBB^^^^BBBB^^^^BBBBBB#
 #B..B^^^^B..B^^^^B....B#
@@ -405,13 +405,13 @@ M("rome","Rome Away from Rome",["legion","horse","legion"],0.13,{floor:"#b09070"
 `,{npcs:[{id:"jennings",x:12,y:9,spr:"jennings",name:"President Jennings"},{id:"nero",x:18,y:6,spr:"human",name:"Nero's Echo"},{id:"horsemen",x:12,y:5,spr:"boss",name:"Four Horsemen"}],
   warps:[{x:1,y:8,to:"fortress",tx:2,ty:6}]});
 
-M("olympus","Olympus Mons, 2020",["oly","oly","horse"],0.1,{floor:"#88b868",wall:"#c8b060",dec:"#f0e090",bg:"#88c8f0"},`
+M("olympus","Olympus Mons, 2020",["oly","oly","horse"],0.06,{floor:"#88b868",wall:"#c8b060",dec:"#f0e090",bg:"#88c8f0"},`
 ##########################
 #TTTT,,,,,,,,,,,,,,,,TTTT#
 #T,,,,,,,,,,,,,,,,,,,,,,T#
 #T,,,,HHHH,,,,,,,,HHHH,,T#
 #T,,,,H++H,,,,,,,,H++H,,T#
-#T,,,,HHHH,,,,,,,,HHHH,,T#
+#T,,,,H..H,,,,,,,,H..H,,T#
 #T,,,,,,,,,,,,,,,,,,,,,,T#
 #T,,,,,,========,,,,,,,,T#
 #T,,,,,,,,,,,,,,,,,,,,,,T#
@@ -423,7 +423,7 @@ M("olympus","Olympus Mons, 2020",["oly","oly","horse"],0.1,{floor:"#88b868",wall
 `,{npcs:[{id:"ares",x:7,y:4,spr:"ares",name:"Ares"},{id:"zeus",x:19,y:4,spr:"seraph",name:"Zeus"},{id:"xandir2",x:12,y:8,spr:"xandir",name:"Xandir"},{id:"armor",x:6,y:10,spr:"chest",name:"Belt of Truth"},{id:"armor2",x:19,y:9,spr:"chest",name:"Breastplate"},{id:"armor3",x:12,y:11,spr:"chest",name:"Shield of Faith"}],
   warps:[{x:2,y:8,to:"fortress",tx:19,ty:6}]});
 
-M("cainhall","Throne of Master Mahan",["marked","ach","snake"],0.12,{floor:"#2a2018",wall:"#181410",dec:"#603018",bg:"#0c0808"},`
+M("cainhall","Throne of Master Mahan",["marked","ach","snake"],0.07,{floor:"#2a2018",wall:"#181410",dec:"#603018",bg:"#0c0808"},`
 ####################
 #..................#
 #....##########....#
@@ -440,7 +440,7 @@ M("cainhall","Throne of Master Mahan",["marked","ach","snake"],0.12,{floor:"#2a2
 `,{npcs:[{id:"cain",x:9,y:4,spr:"cain",name:"Cain"},{id:"ridnax",x:7,y:7,spr:"boss",name:"Ridnax"},{id:"prince",x:12,y:4,spr:"lucifer",name:"The Prince"}],
   warps:[{x:10,y:11,to:"fortress",tx:10,ty:2},{x:1,y:8,to:"tartarus",tx:2,ty:18,need:"cainDown"}]});
 
-M("tartarus","Tartarus / The Eye",["snake","eye","marked"],0.15,{floor:"#1a1830",wall:"#0c0a18",dec:"#c8e8f0",bg:"#080814"},`
+M("tartarus","Tartarus / The Eye",["snake","eye","marked"],0.08,{floor:"#1a1830",wall:"#0c0a18",dec:"#c8e8f0",bg:"#080814"},`
 ############################
 #..........................#
 #.##.##.########.##.##.##.##
@@ -537,9 +537,8 @@ function blocked(x,y){
 
 function join(id,lv){
   if(!state.heroes[id]) state.heroes[id]=heroInst(id,lv||lead().lv);
-  if(!state.party.includes(id)){
-    if(state.party.length<4) state.party.push(id);
-  }
+  if(!state.party.includes(id) && state.party.length<4) state.party.push(id);
+  return state.party.includes(id);
 }
 
 function toast(msg){els.toast.textContent=msg; els.toast.classList.add("show"); toastT=2.2;}
@@ -567,6 +566,7 @@ function show(el,on){el.classList.toggle("hidden",!on);}
 
 function startGame(act){
   state=newState(act);
+  $("chronMenu").classList.add("hidden"); $("titleMenu").classList.remove("hidden");
   show(els.title,false); show(els.how,false); show(els.end,false);
   if(act===1){
     mode="dialog";
@@ -606,11 +606,13 @@ function queueDialog(pages,onDone){
 }
 function paintDialog(){
   const p=dialogQ[dialogI];
+  if(!p) return;
   els.dWho.textContent=p.n||" ";
   els.dTxt.textContent=(p.t||"").slice(0,typed);
 }
 function advanceDialog(){
   const p=dialogQ[dialogI];
+  if(!p) return;
   if(typed<(p.t||"").length){typed=p.t.length; paintDialog(); return;}
   dialogI++;
   if(dialogI>=dialogQ.length){
@@ -838,12 +840,13 @@ function script(id){
     case "prince":
       return [{n:"The Prince",t:"I am the Son of the Morning. Worship me."},{n:"Cain",t:"..."},{n:"The Prince",t:"You can let me in of your own accord, or I can kick down the door."}];
     case "druiel":
-      if(!F.chain){F.chain=true; state.items.diamond=(state.items.diamond||0)+1; join("yearti",lead().lv);
+      if(!F.chain){F.chain=true; state.items.diamond=(state.items.diamond||0)+1;
+        const joined=join("yearti",lead().lv);
         state.heroes.xandir && (state.heroes.xandir.skills=["slash","drink","vesuvius","hurricane","seven"]);
         return [{n:"Druiel",t:"A chain? Is there an anchor to go with it?"},
           {n:"Druiel",t:"This is no ordinary chain. It was forged to hold the Prince of Darkness as he was cast from the Heavens."},
           {n:"Xandir",t:"Then we take it to the Eye."},
-          {n:"",t:"The Binding Chain is yours. Sevenfold is remembered. Yearti finds you in the dark."}];}
+          {n:"",t:joined?"The Binding Chain is yours. Sevenfold is remembered. Yearti finds you in the dark.":"The Binding Chain is yours. Sevenfold is remembered. Yearti is near, but four is a crowd."}];}
       return [{n:"Druiel",t:"Shut the Eye. Do not look too long into it."}];
     case "lucifer":
       if(!F.luciferDown){
@@ -877,6 +880,7 @@ function ending(){
   show(els.end,true);
   sfx("win");
   try{localStorage.removeItem(SAVE);}catch(e){}
+  $("btnContinue").disabled=true;
 }
 
 function tryMove(dx,dy){
@@ -898,7 +902,7 @@ function onStep(){
   sfx("step");
   encounterLock--;
   const m=map();
-  if(m.encRate && encounterLock<=0 && m.enc.length && Math.random()<m.encRate){
+  if(m.encRate && encounterLock<=0 && m.enc.length && Math.random()<m.encRate && !window.TLA?.noEnc){
     encounterLock=12;
     const group=[]; const n=1+Math.floor(Math.random()*Math.min(3,m.enc.length));
     for(let i=0;i<n;i++) group.push(m.enc[Math.floor(Math.random()*m.enc.length)]);
@@ -916,8 +920,9 @@ function cloneEnemy(id){
 }
 
 function startBattle(ids,onWin){
+  if(mode==="battle" && battle && !battle.over) return;
   show(els.dialog,false); show(els.menu,false); show(els.prompt,false);
-  state.party.forEach(id=>{const h=state.heroes[id]; if(h.hp<=0){h.hp=1;} h.alive=h.hp>0;});
+  state.party.forEach(id=>{const h=state.heroes[id]; if(h.hp<=0) h.hp=Math.max(1,Math.floor(h.maxHp*0.3)); h.alive=h.hp>0; h.defending=false;});
   const foes=ids.map(cloneEnemy).filter(Boolean);
   if(!foes.length){ toast("Nothing answers."); return; }
   battle={enemies:foes, heroes:state.party.map(id=>state.heroes[id]),
@@ -967,9 +972,11 @@ function enemyAct(t){
   const e=battle.enemies[t.i]; if(!e||e.hp<=0){ nextTurn(); return; }
   const hs=alive("h"); if(!hs.length) return;
   const tgt=hs[Math.floor(Math.random()*hs.length)];
-  const dmg=dmgCalc(e.atk,tgt.def,1,e.el,null);
+  const def=tgt.defending?tgt.def*2:tgt.def;
+  const dmg=dmgCalc(e.atk,def,1,e.el,null);
   tgt.hp=Math.max(0,tgt.hp-dmg);
   if(tgt.hp<=0) tgt.alive=false;
+  tgt.defending=false;
   battle.log=e.name+" strikes "+tgt.name+" for "+dmg+"!";
   sfx("hurt"); battle.flash=8; paintBattle();
   setTimeout(nextTurn, 500);
@@ -1005,6 +1012,7 @@ function heroCommand(which){
       if(h.mp<S.mp){battle.log="Not enough spirit."; sfx("hurt"); paintBattle(); return;}
       battle.skill=sid;
       if(S.tgt==="enemy"||S.tgt==="enemies"){battle.menu="target"; battle.target=firstLive("e");}
+      else if(S.tgt==="ally"){battle.menu="targetH"; battle.target=0;}
       else {resolveHero(); return;}
     }
   } else if(battle.menu==="item"){
@@ -1029,7 +1037,7 @@ function heroCommand(which){
   } else if(battle.menu==="targetH"){
     if(which==="up") battle.target=(battle.target+battle.heroes.length-1)%battle.heroes.length;
     if(which==="down") battle.target=(battle.target+1)%battle.heroes.length;
-    if(which==="cancel"){battle.menu="item";}
+    if(which==="cancel"){battle.menu=battle.skill?"skill":"item";}
     if(which==="ok") resolveHero();
   }
   paintBattle();
@@ -1041,6 +1049,7 @@ function prevLive(side,i){const a=side==="e"?battle.enemies:battle.heroes; for(l
 function itemList(){return Object.keys(state.items).filter(k=>state.items[k]>0).map(id=>({id,...ITEMS[id],n:state.items[id]}));}
 
 function resolveHero(){
+  if(!battle||battle.over||!battle.cur) return;
   const h=battle.heroes[battle.cur.i];
   h.defending=false;
   if(battle.item){
@@ -1154,7 +1163,7 @@ function paintMenu(){
   } else if(menuTab===1){
     const list=itemList();
     b=list.map((it,i)=>(i===menuSel?"▶ ":"  ")+it.name+" x"+it.n+"<br><span style='color:#aaa'>"+it.desc+"</span>").join("<br><br>")||"Empty pockets.";
-    b+=`<br><br>Manna: ${state.manna}<br><span style="color:#e4c56a">Z uses the selected item.</span>`;
+    b+=`<br><br>Manna: ${state.manna}<br><span style="color:#e4c56a">← → choose · Z uses</span>`;
   } else if(menuTab===2){
     const F=state.flags;
     const q=[];
@@ -1178,14 +1187,15 @@ function paintMenu(){
   els.menuBody.innerHTML=b;
 }
 function menuInput(which){
-  if(menuTab===1 && itemList().length){
-    const list=itemList();
-    if(which==="up"){menuSel=(menuSel+list.length-1)%list.length; paintMenu(); sfx("menu"); return;}
-    if(which==="down"){menuSel=(menuSel+1)%list.length; paintMenu(); sfx("menu"); return;}
-    if(which==="ok"){useFieldItem(list[menuSel].id); paintMenu(); return;}
+  const list=itemList();
+  if(menuTab===1 && list.length && (which==="left"||which==="right")){
+    if(which==="left") menuSel=(menuSel+list.length-1)%list.length;
+    else menuSel=(menuSel+1)%list.length;
+    paintMenu(); sfx("menu"); return;
   }
-  if(which==="up"||which==="left"){menuTab=(menuTab+4)%5; menuSel=0; paintMenu(); sfx("menu");}
-  if(which==="down"||which==="right"){menuTab=(menuTab+1)%5; menuSel=0; paintMenu(); sfx("menu");}
+  if(menuTab===1 && which==="ok" && list.length){ useFieldItem(list[menuSel].id); paintMenu(); return; }
+  if(which==="up"){menuTab=(menuTab+4)%5; menuSel=0; paintMenu(); sfx("menu");}
+  if(which==="down"){menuTab=(menuTab+1)%5; menuSel=0; paintMenu(); sfx("menu");}
   if(which==="cancel") closeMenu();
   if(which==="ok"){
     if(menuTab===3){save(); toast("Chronicle saved."); sfx("ok");}
@@ -1204,13 +1214,13 @@ function useFieldItem(id){
 }
 
 function save(){try{localStorage.setItem(SAVE,JSON.stringify(state)); $("btnContinue").disabled=false;}catch(e){toast("Cannot save.");}}
-function load(){try{const r=localStorage.getItem(SAVE); if(!r) return false; state=JSON.parse(r); state.flags=Object.assign(blankFlags(),state.flags||{}); return true;}catch(e){return false;}}
+function load(){try{const r=localStorage.getItem(SAVE); if(!r) return false; state=JSON.parse(r); state.flags=Object.assign(blankFlags(),state.flags||{}); state.moving=false; state.t=0; return true;}catch(e){return false;}}
 
 function renderHUD(){
   if(!state||mode==="title") {show(els.hud,false); return;}
   if(mode==="battle") return;
   show(els.hud,true);
-  els.hud.innerHTML=state.party.slice(0,3).map(id=>{
+  els.hud.innerHTML=state.party.slice(0,4).map(id=>{
     const h=state.heroes[id];
     const pw=Math.max(0,Math.round(100*h.hp/h.maxHp));
     const mw=Math.max(0,Math.round(100*h.mp/h.maxMp));
@@ -1387,7 +1397,7 @@ function press(which){
     if(which==="left") tryMove(-1,0);
     if(which==="right") tryMove(1,0);
   }
-  if(mode==="end" && which==="ok"){show(els.end,false); show(els.title,true); mode="title";}
+  if(mode==="end" && which==="ok"){show(els.end,false); show(els.title,true); $("chronMenu").classList.add("hidden"); $("titleMenu").classList.remove("hidden"); mode="title";}
 }
 
 addEventListener("keydown",e=>{
@@ -1414,7 +1424,7 @@ $("btnNew").onclick=()=>startGame(1);
 $("btnContinue").onclick=()=>{if(load()){show(els.title,false); mode="explore"; toast("Chronicle restored."); renderHUD();} else toast("No save.");};
 $("btnHow").onclick=()=>{show(els.how,true);};
 $("btnHowBack").onclick=()=>{show(els.how,false);};
-$("btnEnd").onclick=()=>{show(els.end,false); show(els.title,true); mode="title";};
+$("btnEnd").onclick=()=>{show(els.end,false); show(els.title,true); $("chronMenu").classList.add("hidden"); $("titleMenu").classList.remove("hidden"); mode="title";};
 $("btnChronicles").onclick=()=>{ $("titleMenu").classList.add("hidden"); $("chronMenu").classList.remove("hidden"); };
 $("btnChronBack").onclick=()=>{ $("chronMenu").classList.add("hidden"); $("titleMenu").classList.remove("hidden"); };
 $("btnAct1").onclick=()=>startGame(1);
@@ -1429,6 +1439,28 @@ els.cmds.addEventListener("click",e=>{
   const i=btns.indexOf(e.target.closest("button"));
   if(i>=0){ battle.sel=i; heroCommand("ok"); }
 });
+els.menuTabs.addEventListener("click",e=>{
+  if(mode!=="menu") return;
+  const btns=[...els.menuTabs.querySelectorAll("button")];
+  const i=btns.indexOf(e.target.closest("button"));
+  if(i>=0){ menuTab=i; menuSel=0; paintMenu(); }
+});
+
+window.TLA={
+  noEnc:false,
+  snap(){
+    return {mode, map:state&&state.map, x:state&&state.x, y:state&&state.y, party:state&&state.party.slice(),
+      flags:state&&Object.assign({},state.flags), manna:state&&state.manna,
+      hp:state&&state.party.map(id=>({id,hp:state.heroes[id].hp,lv:state.heroes[id].lv})),
+      dialog:mode==="dialog"&&dialogQ[dialogI]?{n:dialogQ[dialogI].n,t:dialogQ[dialogI].t,i:dialogI,len:dialogQ.length}:null,
+      battle:battle&&{log:battle.log,over:!!battle.over,menu:battle.menu,ehp:battle.enemies.map(e=>e.hp),hhp:battle.heroes.map(h=>h.hp)}};
+  },
+  warp, startGame,
+  flag(k,v){ if(state) state.flags[k]=v; },
+  kill(){ if(battle && !battle.over){ battle.enemies.forEach(e=>e.hp=0); nextTurn(); } },
+  talk(id){ const pages=script(id); if(pages&&pages.length) queueDialog(pages, pages._done); },
+  mash(){ if(mode==="dialog"){ typed=9999; advanceDialog(); } else if(mode==="battle") this.kill(); }
+};
 
 requestAnimationFrame(loop);
 })();

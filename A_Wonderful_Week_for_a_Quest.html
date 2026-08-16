@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>A Wonderful Week for a Quest</title>
+<meta name="description" content="A 16-bit RPG adaptation of Michael D. Young’s comic fantasy of the Beandom.">
+<style>
+  :root {
+    --ink: #0a0714;
+    --navy: #14204a;
+    --navy2: #1c2e6b;
+    --gold: #e6c15a;
+    --gold2: #f8e39a;
+    --cream: #fff4d2;
+    --muted: #c9b88a;
+    --hp: #d94c4c;
+    --mp: #4aa3e8;
+    --ok: #4cbf7a;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; background: #05040a; color: var(--cream);
+    font-family: "Courier New", ui-monospace, monospace;
+    overflow: hidden; user-select: none; -webkit-user-select: none;
+    touch-action: none;
+  }
+  #wrap {
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+  }
+  #stage {
+    position: relative;
+    width: min(100vw, calc(100vh * 256 / 224));
+    height: min(100vh, calc(100vw * 224 / 256));
+    background: #000;
+    box-shadow: 0 0 0 3px #3a2a12, 0 0 0 6px #e6c15a, 0 0 40px #e6c15a44;
+    image-rendering: pixelated;
+  }
+  canvas {
+    display: block; width: 100%; height: 100%;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+  }
+  .panel {
+    position: absolute; left: 3%; right: 3%;
+    background: linear-gradient(#1a2760, #10183c);
+    border: 3px solid #e6c15a;
+    box-shadow: inset 0 0 0 2px #8a6a22, 0 8px 24px #000a;
+    color: var(--cream);
+    padding: 10px 12px;
+    font-size: clamp(11px, 2.4vw, 15px);
+    line-height: 1.35;
+    letter-spacing: .02em;
+  }
+  #hud {
+    top: 2%; display: none; pointer-events: none;
+  }
+  #hud.show { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+  .stat { display: flex; gap: 10px; align-items: center; }
+  .bar {
+    width: 88px; height: 8px; background: #0008; border: 1px solid #e6c15a88;
+  }
+  .bar > i { display: block; height: 100%; }
+  #dialog {
+    bottom: 3%; display: none; min-height: 28%;
+  }
+  #dialog.show { display: block; }
+  #who {
+    position: absolute; top: -13px; left: 14px;
+    background: #14204a; border: 2px solid #e6c15a; padding: 1px 10px;
+    font-size: .85em; color: var(--gold2); letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  #line { min-height: 3.2em; white-space: pre-wrap; }
+  #choices { margin-top: 8px; display: none; }
+  #choices.show { display: grid; gap: 4px; }
+  .choice {
+    border: 1px solid #e6c15a55; padding: 5px 8px; cursor: pointer;
+    background: #0003;
+  }
+  .choice.on, .choice:hover { background: #e6c15a22; border-color: #e6c15a; }
+  #next {
+    position: absolute; right: 10px; bottom: 6px; color: var(--gold);
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  #footnote {
+    position: absolute; left: 3%; right: 3%; bottom: 34%;
+    display: none; font-size: clamp(10px, 2vw, 13px);
+    color: #d7ecff; background: #0c1230ee;
+  }
+  #footnote.show { display: block; }
+  #menu, #battle, #titleui, #pause {
+    position: absolute; inset: 0; display: none;
+  }
+  #menu.show, #battle.show, #titleui.show, #pause.show { display: block; }
+  #titleui {
+    background: transparent; pointer-events: none;
+  }
+  #titleui .inner {
+    position: absolute; left: 8%; right: 8%; bottom: 8%;
+    text-align: center; pointer-events: auto;
+  }
+  h1 {
+    margin: 0 0 6px; font-size: clamp(18px, 4.2vw, 32px);
+    color: var(--gold2); letter-spacing: .16em; text-transform: uppercase;
+    text-shadow: 0 3px 0 #5a3a10, 0 0 18px #e6c15a88;
+  }
+  .sub { color: var(--muted); letter-spacing: .2em; font-size: .78em; text-transform: uppercase; }
+  .blink { margin-top: 16px; color: var(--gold); animation: blink 1.2s steps(2) infinite; }
+  .btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+  button {
+    font: inherit; cursor: pointer; color: #1a1208;
+    background: linear-gradient(#f4dc8a, #c9962e);
+    border: 2px solid #fff4c4; box-shadow: inset 0 0 0 2px #6a4a12;
+    padding: 8px 14px; letter-spacing: .08em; text-transform: uppercase;
+  }
+  button.ghost {
+    color: var(--cream); background: #14204acc; border-color: #e6c15a; box-shadow: none;
+  }
+  #pause .panel, #menu .panel { top: 12%; bottom: 12%; overflow: auto; }
+  #battle .panel { bottom: 3%; top: auto; }
+  #bLog { min-height: 2.4em; margin-bottom: 8px; }
+  #bActs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .act {
+    border: 1px solid #e6c15a66; padding: 7px 8px; cursor: pointer; background: #0003;
+  }
+  .act.on { border-color: #e6c15a; background: #e6c15a22; }
+  #touch {
+    display: none; position: absolute; inset: 0; pointer-events: none;
+  }
+  .pad, .a-btn {
+    pointer-events: auto; position: absolute; opacity: .78;
+  }
+  .pad {
+    left: 12px; bottom: 12px; width: 132px; height: 132px;
+  }
+  .pad b {
+    position: absolute; width: 42px; height: 42px; background: #14204acc;
+    border: 2px solid #e6c15a; color: var(--gold2);
+    display: grid; place-items: center; font-size: 16px;
+  }
+  .pad .u { left: 45px; top: 0; } .pad .d { left: 45px; bottom: 0; }
+  .pad .l { left: 0; top: 45px; } .pad .r { right: 0; top: 45px; }
+  .a-btn {
+    right: 18px; bottom: 28px; width: 64px; height: 64px; border-radius: 50%;
+    background: #c9962ecc; border: 3px solid #fff4c4; color: #1a1208;
+    font-weight: 800; display: grid; place-items: center; font-size: 22px;
+  }
+  .b-btn {
+    right: 92px; bottom: 18px; width: 48px; height: 48px; border-radius: 50%;
+    background: #4aa3e8cc; border: 2px solid #d7ecff; color: #081018;
+    font-weight: 800; display: grid; place-items: center; pointer-events: auto;
+    position: absolute;
+  }
+  @media (pointer: coarse) { #touch { display: block; } }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+</style>
+</head>
+<body>
+  <div id="wrap">
+    <div id="stage">
+      <canvas id="c" width="256" height="224" aria-label="Game screen"></canvas>
+      <div id="hud" class="panel">
+        <div class="stat">
+          <strong id="pName">SQUIRES</strong>
+          <span>HP <span id="hpN">20</span></span>
+          <div class="bar" aria-hidden="true"><i id="hpB" style="width:100%;background:var(--hp)"></i></div>
+          <span>MP <span id="mpN">10</span></span>
+          <div class="bar" aria-hidden="true"><i id="mpB" style="width:100%;background:var(--mp)"></i></div>
+        </div>
+        <div id="loc" style="color:var(--gold2)">Beanvale</div>
+      </div>
+      <div id="dialog" class="panel" role="dialog" aria-live="polite">
+        <div id="who">Jackdaw</div>
+        <div id="line"></div>
+        <div id="choices"></div>
+        <div id="next">▼</div>
+      </div>
+      <div id="footnote" class="panel"></div>
+      <div id="titleui">
+        <div class="inner">
+          <div class="sub">Michael D. Young · Books 1–7 of the Beandom</div>
+          <h1>A Wonderful Week<br>for a Quest</h1>
+          <div class="sub">A 16-bit love letter to the genre</div>
+          <div class="blink" id="press">Press Start / Enter / Tap</div>
+          <div class="btns">
+            <button id="btnNew">New Quest</button>
+            <button id="btnCont" class="ghost">Continue</button>
+            <button id="btnMute" class="ghost">Sound: On</button>
+          </div>
+        </div>
+      </div>
+      <div id="menu">
+        <div class="panel">
+          <div class="sub">Quest Log · Beandom</div>
+          <h2 id="mTitle" style="color:var(--gold2);margin:.3em 0">Party</h2>
+          <div id="mBody"></div>
+          <div class="btns">
+            <button id="btnSave">Save</button>
+            <button id="btnClose" class="ghost">Close</button>
+            <button id="btnTitle" class="ghost">Title</button>
+          </div>
+        </div>
+      </div>
+      <div id="battle">
+        <div class="panel">
+          <div id="bLog"></div>
+          <div id="bActs"></div>
+        </div>
+      </div>
+      <div id="touch">
+        <div class="pad">
+          <b class="u" data-k="ArrowUp">▲</b>
+          <b class="d" data-k="ArrowDown">▼</b>
+          <b class="l" data-k="ArrowLeft">◀</b>
+          <b class="r" data-k="ArrowRight">▶</b>
+        </div>
+        <div class="a-btn" data-k="Enter">A</div>
+        <div class="b-btn" data-k="Escape">B</div>
+      </div>
+    </div>
+  </div>
+  <p class="sr" id="live" aria-live="polite"></p>
+<script>
+(() => {
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  ctx.imageSmoothingEnabled = false;
+
+  const W = 256, H = 224, T = 16;
+  const SAVE = "wonderfulWeekQuest_v1";
+  const $ = (id) => document.getElementById(id);
+
+  const keys = {};
+  const tap = { x: 0, y: 0, down: false };
+
+  const PAL = {
+    void: "#05040a", sky: "#5b8fd4", dusk: "#2a1a4a",
+    grass: "#3d7a3a", grass2: "#2d5a2c", grass3: "#4e9a48",
+    path: "#c2a06a", path2: "#a8844a", water: "#2a6aaa", water2: "#1e4e88",
+    tree: "#1f4a22", tree2: "#2e7a32", leaf: "#46a84a",
+    wall: "#6a5340", wall2: "#4a382c", roof: "#8b3030", roof2: "#c44a3a",
+    floor: "#8a6a48", floor2: "#6e5238",
+    gold: "#e6c15a", cream: "#fff4d2", navy: "#14204a",
+    skin: "#efc39a", hair: "#f2d66a", hair2: "#2a1a10",
+    green: "#3a8a4a", dark: "#1a1020"
+  };
+
+  const G = {
+    mode: "title",
+    map: "village",
+    px: 12.5, py: 12.5, dir: 2, walk: 0,
+    flags: {},
+    gold: 12,
+    inv: [{ id: "luna", n: 3 }, { id: "taco", n: 1 }],
+    party: [],
+    quest: "Hear Jackdaw’s Uppercase Prophecy in Beanvale.",
+    day: 1,
+    enc: 0,
+    dialog: null,
+    battle: null,
+    camX: 0, camY: 0,
+    t: 0,
+    mute: false,
+    footnote: null
+  };
+
+  function hero() {
+    return {
+      id: "squires", name: "Squires",
+      maxHp: 28, hp: 28, maxMp: 16, mp: 16, atk: 6, def: 3, spd: 7,
+      skills: ["dance", "trip", "goat", "accident"]
+    };
+  }
+  function grimble() {
+    return {
+      id: "grimble", name: "Grimblewaith",
+      maxHp: 36, hp: 36, maxMp: 8, mp: 8, atk: 9, def: 6, spd: 4,
+      skills: ["smash", "block", "peptalk"]
+    };
+  }
+
+  const ITEMS = {
+    luna: { name: "Luna Bean", desc: "Tastes terrible. Restores 18 HP.", heal: 18 },
+    taco: { name: "Taco Tuesday Leftover", desc: "Bellissimo’s favorite portable snack. Restores 30 HP.", heal: 30 },
+    magic: { name: "Magic Bean", desc: "The Beandom’s treasure. Restores 12 MP.", mp: 12 },
+    skip: { name: "Skipping Bean", desc: "A prank bean. Throws an enemy off-beat.", stun: true }
+  };
+
+  const SKILLS = {
+    dance: { name: "Awkward Dance", mp: 4, desc: "Transfix foes with two left feet.", all: true, confuse: 70, dmg: 4 },
+    trip: { name: "Heroic Trip", mp: 3, desc: "Fall into someone on purpose-ish.", dmg: 10, stun: 40 },
+    goat: { name: "Goat Call", mp: 5, desc: "A flock answers. Sort of.", dmg: 14 },
+    accident: { name: "Acidentiality", mp: 8, desc: "No one can beat Squires’ powers of accident.", dmg: 22, special: "pebble" },
+    smash: { name: "Whatsit Smash", mp: 3, desc: "Hands too big for the mail slot, perfect for clubs.", dmg: 16 },
+    block: { name: "Guard", mp: 0, desc: "Look menacing. Take half damage.", guard: true },
+    peptalk: { name: "Supporting Role", mp: 4, desc: "Heal the actual hero.", heal: 16, ally: true },
+    secret: { name: "The Great Secret", mp: 0, desc: "Elisabeth Louisa Meriwether.", special: "elm", all: true }
+  };
+
+  /* ---------- maps ---------- */
+  const TILE = {
+    ".": "grass", "=": "path", ",": "beans", "~": "water", "T": "tree",
+    "#": "wall", "H": "house", "R": "roof", "D": "door", " ": "floor",
+    "^": "mtn", "S": "statue", "*": "flower", "C": "cave", "X": "dark",
+    "W": "wood", "B": "bridge", "P": "plaza", "F": "fire", "A": "arena",
+    "G": "gobfloor", "L": "lair", "N": "navy", "+": "path"
+  };
+  const SOLID = new Set(["water", "tree", "wall", "house", "roof", "mtn", "dark"]);
+
+  function parseMap(str) {
+    const rows = str.trim().split("\n").map((r) => r.replace(/^\s+/, ""));
+    const w = Math.max(...rows.map((r) => r.length));
+    const padded = rows.map((r) => {
+      const pad = r[0] === "T" || r[0] === "^" || r[0] === "#" || r[0] === "X" ? r[0] : ".";
+      return r.padEnd(w, pad);
+    });
+    return { w, h: padded.length, rows: padded };
+  }
+
+  const MAPS = {
+    village: parseMap(`
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+T,,....,,....RRRR......****....T
+T,,,,,,....RHHHHHR.....****RRR.T
+T,,,,,,....RH   HR.....====HHH.T
+T..,,,,....RH D HR.....==.=H D.T
+T..........=HHHHH=.....==.=HHH.T
+T.********.=======.....=.......T
+T.********........P.P.........*T
+T......====================....T
+T......==RRRR==~~~~==RRRR==....T
+T......==HHHH==~~~~==H  H==....T
+T......==H  H==~~~~==H DH==....T
+T......==H DH==B~~B==HHHH==....T
+T......==HHHH==================T
+T......====================....T
+T..,,.......*****..............T
+T.,,,,......*****..............T
+TTTTTTTTTTTTTTTTTTTTTTTT=======T
+`),
+    world: parseMap(`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^TTTT................................^^
+^^T..T.........=======================^^
+^^TTTT.........=.....................=^^
+^^.............=..............^^^^^..=^^
+^^,,...........=..............^   ^..=^^
+^^,,,..........=======================^^
+^^,,...........=......................^^
+^^.............=.........P............^^
+^^.............=......................^^
+^^================..............CCC...^^
+^^.............=....TTT.........C C...^^
+^^.............=....T.T.........CCC...^^
+^^TTTT.........=======..........AAA...^^
+^^T..T..........................A A...^^
+^^TTTT....................X  X..AAA...^^
+^^........................X  X........^^
+^^........................XXXX........^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+`),
+    tower: parseMap(`
+################
+#NNNNNNNNNNNNNN#
+#N   WW     N N#
+#N   WW  F  N N#
+#N          N N#
+#N    WWW     N#
+#N    W W     N#
+#N            N#
+#NNNNNNNNNNNDNN#
+################
+`),
+    forest: parseMap(`
+TTTTTTTTTTTTTTTTTTTTTTTT
+T......T....T......T..TT
+T.T........T...****...TT
+T....TTTT......****....T
+T.T........T...........T
+T....T..=======...T....T
+T.T.....==FFF==......T.T
+T.......=======........T
+T.T.........T.....T....T
+T....T.............T...T
+T.T......T....TTTT.....T
+TTTTTTTTTTTTTTTTTTTTTTTT
+`),
+    arena: parseMap(`
+^^^^^^^^^^^^^^^^^^^^
+^AAAAAAAAAAAAAAAAAA^
+^A................A^
+^A..AAAAAAAAAAAA..A^
+^A..A..........A..A^
+^A..A..........A..A^
+^A..A..........A..A^
+^A..AAAAAAAAAAAA..A^
+^A................A^
+^AAAAAAAAAAAAAAAAAA^
+^^^^^^^^^^^^^^^^^^^^
+`),
+    cave: parseMap(`
+XXXXXXXXXXXXXXXXXXXXXX
+XGGGGGGGGGGGGGGGGGGGGX
+XG~~~~GGGGGG~~~~GGGGGX
+XGGGGGGFFFFFFGGGGGGGGX
+XGGGGGGFFFFFFGGGGGGGGX
+XG~~~~GGGGGG~~~~GGGGGX
+XGGGGGGGGGGGGGGGGGGGGX
+XGGGGGGGGGGGGDGGGGGGGX
+XXXXXXXXXXXXXXXXXXXXXX
+`),
+    lair: parseMap(`
+XXXXXXXXXXXXXXXX
+XLLLLLLLLLLLLLLX
+XL~~~~LLLL~~~~LX
+XLLLLLFFFFLLLLLX
+XLLLLLLLLLLLLLLX
+XL~~~~LLLL~~~~LX
+XLLLLLLLLLDLLLLX
+XXXXXXXXXXXXXXXX
+`),
+    rally: parseMap(`
+TTTTTTTTTTTTTTTTTTTTTTTT
+T......................T
+T....P.P.P.P.P.P.P.....T
+T......................T
+T========~~~~==========T
+T........~~~~..........T
+T........B~~B..........T
+T........~~~~..........T
+T=====S============....T
+T......................T
+TTTTTTTTTTTTTTTTTTTTTTTT
+`)
+  };
+
+  const STARTS = {
+    village: [13, 8],
+    world: [10, 8],
+    tower: [7, 7],
+    forest: [11, 7],
+    arena: [10, 6],
+    cave: [10, 6],
+    lair: [7, 5],
+    rally: [6, 8]
+  };
+
+  const MAPNAME = {
+    village: "Beanvale",
+    world: "The Beandom",
+    tower: "Jackdaw’s Tower",
+    forest: "Elven Woods (allegedly)",
+    arena: "Dwarven Amphitheater",
+    cave: "Goblin Family Cave",
+    lair: "ELM’s Former Latrine Lair",
+    rally: "The Rally Hill"
+  };
+
+  function tileAt(map, x, y) {
+    const m = MAPS[map];
+    if (y < 0 || x < 0 || y >= m.h || x >= m.w) return "wall";
+    return TILE[m.rows[y][x]] || "grass";
+  }
+  function blocked(map, x, y) {
+    if (SOLID.has(tileAt(map, x, y))) return true;
+    const tx = Math.floor(x), ty = Math.floor(y);
+    return npcsFor().some((n) => n.x === tx && n.y === ty);
+  }
+
+  /* ---------- NPCs & warps ---------- */
+  const WARPS = {
+    village: [
+      { x: 24, y: 17, to: "world", tx: 8, ty: 10, need: "grimbleJoin" },
+      { x: 25, y: 17, to: "world", tx: 8, ty: 10, need: "grimbleJoin" },
+      { x: 26, y: 17, to: "world", tx: 8, ty: 10, need: "grimbleJoin" },
+      { x: 27, y: 17, to: "world", tx: 8, ty: 10, need: "grimbleJoin" },
+      { x: 28, y: 17, to: "world", tx: 8, ty: 10, need: "grimbleJoin" },
+      { x: 29, y: 17, to: "world", tx: 8, ty: 10, need: "grimbleJoin" },
+      { x: 30, y: 17, to: "world", tx: 8, ty: 10, need: "grimbleJoin" }
+    ],
+    world: [
+      { x: 2, y: 10, to: "village", tx: 26, ty: 16 },
+      { x: 3, y: 10, to: "village", tx: 26, ty: 16 },
+      { x: 31, y: 5, to: "tower", tx: 7, ty: 7, need: "grimble" },
+      { x: 32, y: 5, to: "tower", tx: 7, ty: 7, need: "grimble" },
+      { x: 33, y: 5, to: "tower", tx: 7, ty: 7, need: "grimble" },
+      { x: 19, y: 12, to: "forest", tx: 11, ty: 7, need: "quest" },
+      { x: 21, y: 12, to: "forest", tx: 11, ty: 7, need: "quest" },
+      { x: 23, y: 12, to: "forest", tx: 11, ty: 7, need: "quest" },
+      { x: 32, y: 13, to: "arena", tx: 10, ty: 6, need: "quest" },
+      { x: 33, y: 13, to: "arena", tx: 10, ty: 6, need: "quest" },
+      { x: 34, y: 13, to: "arena", tx: 10, ty: 6, need: "quest" },
+      { x: 33, y: 14, to: "arena", tx: 10, ty: 6, need: "quest" },
+      { x: 32, y: 10, to: "cave", tx: 10, ty: 6, need: "quest" },
+      { x: 33, y: 10, to: "cave", tx: 10, ty: 6, need: "quest" },
+      { x: 34, y: 10, to: "cave", tx: 10, ty: 6, need: "quest" },
+      { x: 33, y: 11, to: "cave", tx: 10, ty: 6, need: "quest" },
+      { x: 27, y: 16, to: "lair", tx: 7, ty: 5 },
+      { x: 28, y: 16, to: "lair", tx: 7, ty: 5 },
+      { x: 25, y: 8, to: "rally", tx: 6, ty: 8, need: "allSecrets" }
+    ],
+    tower: [{ x: 12, y: 8, to: "world", tx: 32, ty: 6 }],
+    forest: [
+      { x: 11, y: 1, to: "world", tx: 21, ty: 13 },
+      { x: 12, y: 1, to: "world", tx: 21, ty: 13 },
+      { x: 11, y: 10, to: "world", tx: 21, ty: 13 },
+      { x: 12, y: 10, to: "world", tx: 21, ty: 13 }
+    ],
+    arena: [{ x: 10, y: 8, to: "world", tx: 33, ty: 15 }, { x: 9, y: 8, to: "world", tx: 33, ty: 15 }],
+    cave: [{ x: 13, y: 7, to: "world", tx: 31, ty: 11 }],
+    lair: [{ x: 10, y: 6, to: "world", tx: 26, ty: 16 }],
+    rally: [{ x: 2, y: 8, to: "world", tx: 24, ty: 8 }, { x: 1, y: 8, to: "world", tx: 24, ty: 8 }]
+  };
+
+  function npcsFor() {
+    const f = G.flags;
+    const list = [];
+    if (G.map === "village") {
+      list.push(npc(14, 6, "jackdaw", "Jackdaw", talkJackdawVillage));
+      list.push(npc(18, 8, "mordeck", "Mordeck", talkMordeck));
+      if (!f.roderickGone) list.push(npc(16, 8, "roderick", "Sir Roderick 3RG", talkRoderick));
+      list.push(npc(22, 14, "bell", "Bellissimo", talkBell));
+      list.push(npc(8, 8, "ellie", "Ellie", talkEllie));
+      list.push(npc(6, 5, "villager", "Bean Farmer", () => say([
+        { who: "Farmer", text: "Magic beans are the principal crop. If someone says they couldn’t give a bean, they mean it." },
+        { who: "Jackdaw", text: "You’re welcome. I spotted you that one so you wouldn’t wonder until Chapter Five.", note: "Other expressions include “Everything just beany” and “I’d give my best bean for that.”" }
+      ])));
+      list.push(npc(25, 11, "villager", "Innkeeper", talkInn));
+    }
+    if (G.map === "world") {
+      if (!f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
+      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: "NE mountain gap: Jackdaw. Stand in the trees south of the highway: elves. East caves: goblins. SE stone ring: dwarves. Far south hole: ELM. Golden P: rally (later)." }])));
+    }
+    if (G.map === "tower") {
+      list.push(npc(8, 3, "jackdaw", "Jackdaw", talkJackdawTower));
+    }
+    if (G.map === "forest") {
+      list.push(npc(11, 6, "elf", "Elder Elf", talkElf));
+    }
+    if (G.map === "arena") {
+      list.push(npc(10, 4, "dwarf", "Dwarven Elder", talkDwarf));
+      if (!f.secretE) list.push(npc(10, 5, "champ", "Champion", talkChamp));
+    }
+    if (G.map === "cave") {
+      list.push(npc(10, 4, "hob", "Hobgoblin", talkHob));
+      if (f.secretM) list.push(npc(8, 4, "grimble", "Grimblewaith", () => say([{ who: "Grimblewaith", text: "I’m staying for Goblin, Goblin, Hobgoblin. Don’t wait up. And don’t hold the map upside-down." }])));
+    }
+    if (G.map === "lair") {
+      list.push(npc(7, 3, "elm", "ELM", talkElmLair));
+    }
+    if (G.map === "rally") {
+      if (!f.elmDown) list.push(npc(12, 3, "elm", "Lord ELM", talkElmRally));
+      if (f.elmDown && !f.wormDown) list.push(npc(12, 5, "worm", "Wormtoe", talkWorm));
+      if (f.saved) list.push(npc(8, 8, "mordeck", "Mordeck", talkEnding));
+    }
+    return list;
+  }
+
+  function npc(x, y, sprite, name, talk) {
+    return { x, y, sprite, name, talk };
+  }
+
+  function questBang(n) {
+    const f = G.flags;
+    if (n.sprite === "jackdaw" && G.map === "village" && !f.prophecy) return true;
+    if (n.sprite === "roderick" && f.prophecy && !f.rejected) return true;
+    if (n.sprite === "grimble" && G.map === "world" && !f.grimble) return true;
+    if (n.sprite === "jackdaw" && G.map === "tower" && (!f.quest || (f.secretL && f.secretE && f.secretM && !f.finale))) return true;
+    if (n.sprite === "elf" && !f.secretL) return true;
+    if (n.sprite === "champ" && !f.secretE) return true;
+    if (n.sprite === "hob" && !f.secretM) return true;
+    if (n.sprite === "elm" && G.map === "rally" && !f.elmDown) return true;
+    if (n.sprite === "worm" && !f.wormDown) return true;
+    return false;
+  }
+
+  /* ---------- dialogue ---------- */
+  function say(lines, after) {
+    G.mode = "dialog";
+    G.dialog = { lines, i: 0, after, choice: 0 };
+    renderDialog();
+    $("dialog").classList.add("show");
+    $("footnote").classList.remove("show");
+  }
+  function renderDialog() {
+    const d = G.dialog;
+    if (!d) return;
+    const line = d.lines[d.i];
+    $("who").textContent = line.who || "???";
+    $("line").textContent = line.text;
+    $("live").textContent = (line.who || "") + ": " + line.text;
+    const box = $("choices");
+    box.innerHTML = "";
+    if (line.choices) {
+      box.classList.add("show");
+      line.choices.forEach((c, i) => {
+        const div = document.createElement("div");
+        div.className = "choice" + (i === d.choice ? " on" : "");
+        div.textContent = (i === d.choice ? "► " : "  ") + c.label;
+        div.onclick = () => { d.choice = i; pickChoice(); };
+        box.appendChild(div);
+      });
+      $("next").style.display = "none";
+    } else {
+      box.classList.remove("show");
+      $("next").style.display = "block";
+    }
+    if (line.note) {
+      G.footnote = line.note;
+      $("footnote").textContent = "Jackdaw’s footnote: " + line.note;
+      $("footnote").classList.add("show");
+    } else {
+      $("footnote").classList.remove("show");
+    }
+  }
+  function advanceDialog() {
+    const d = G.dialog;
+    if (!d) return;
+    const line = d.lines[d.i];
+    if (line.choices) { pickChoice(); return; }
+    d.i++;
+    if (d.i >= d.lines.length) {
+      closeDialog();
+      if (d.after) d.after();
+    } else renderDialog();
+  }
+  function pickChoice() {
+    const d = G.dialog;
+    const line = d.lines[d.i];
+    const c = line.choices[d.choice];
+    closeDialog();
+    if (c.fn) c.fn();
+  }
+  function closeDialog() {
+    G.dialog = null;
+    G.mode = "explore";
+    $("dialog").classList.remove("show");
+    $("footnote").classList.remove("show");
+  }
+
+  function talkJackdawVillage() {
+    if (G.flags.prophecy) {
+      say([
+        { who: "Jackdaw", text: "Still here? The prophecy will not fulfill itself, goat boy. Also, stop yawning at my sunrises." },
+        { who: "Jackdaw", text: "Sir Roderick is posing somewhere photogenic. You might try talking to him. Or not. Narrators are famously unhelpful." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Jackdaw", text: "Hey, you! Yes, you with the drooping eyes. I saw you yawn. Don’t you like idyllic pastoral scenes?" },
+      { who: "Jackdaw", text: "Fine. No more sunrises. Just a trio of country bumpkins with the best kind of adventure in store." },
+      { who: "Jackdaw", text: "I have successfully deciphered… the Prophecy!", note: "Capital P. Ten points for a Chosen One, extra for a Dark Lord, and more for each capitalized noun." },
+      { who: "Jackdaw", text: "“A great evil shall rise… unless the Hero of Legend shall vanquish this evil through courage, cunning, and undeniable good looks. This Hero shall rise from the valley and his name shall be Rod…”" },
+      { who: "Jackdaw", text: "That’s it. The scroll trails off mid-sentence. I was simply preserving the character of the piece." },
+      { who: "Squires", text: "Did you hear that, neighbors? Rod-something! Does that ring any bells?" },
+      { who: "Bellissimo", text: "Roddy Squires, sub-assistant goat herder, hero of all the land? Doesn’t seem like much of a prospect." },
+      { who: "Jackdaw", text: "Go on. Talk to the knight with the bleached horse. This is the part where destinies get messy." }
+    ], () => {
+      G.flags.prophecy = true;
+      G.quest = "Talk to Sir Roderick 3RG about joining his quest. (He will be insufferable.)";
+      save();
+    });
+  }
+
+  function talkRoderick() {
+    if (!G.flags.prophecy) {
+      say([{ who: "Sir Roderick 3RG", text: "Do you speak to all heroes like that? Come back when a prophecy is involved. I have damsels to schedule." }]);
+      return;
+    }
+    say([
+      { who: "Sir Roderick 3RG", text: "What about Sir Roderick the Really, Really, Really Great? That’s me, by the way. I shorten it to 3RG for peasants." },
+      { who: "Squires", text: "Sir! I want to go with you. I’m eminently qualified. Mysterious orphan, short stature, shiny pendant, never left the valley…" },
+      { who: "Sir Roderick 3RG", text: "Stop! You’re making my head hurt. I don’t do sidekicks, just front ones. Says so in my contract.", note: "The contract does contain a sidekick clause for times of great distress. He has not read that far." },
+      { who: "Squires", text: "You’ll regret this! I’ll be a greater hero than you ever were!" },
+      { who: "Jackdaw", text: "Which is proof that sometimes you don’t need strange candles to wax a bit prophetic. That’s four-shadowing." }
+    ], () => {
+      G.flags.rejected = true;
+      G.flags.roderickGone = true;
+      G.quest = "Leave Beanvale. Pity parties often meet on the east road.";
+      save();
+    });
+  }
+
+  function talkBell() {
+    const lines = [
+      { who: "Bellissimo", text: "He only rescues damsels in distress. Dis-stress. I threw myself in that puddle and he still galloped off." },
+      { who: "Bellissimo", text: "There could have been alligators. Or really aggressive catfish." , note: "Only one documented death by catfish: Theopholis, rumored to have dragon blood." }
+    ];
+    if (G.flags.prophecy) lines.push({ who: "Bellissimo", text: "If you become a hero, try noticing the people standing right in front of you. My real name is Mary Sue Bellmont, by the way. Later." });
+    say(lines);
+  }
+
+  function talkMordeck() {
+    say([
+      { who: "Mordeck", text: "Last time Jackdaw had big news, his beard broke the kingdom’s length record. Personally, I couldn’t give a bean." },
+      { who: "Mordeck", text: "If the river fails, the beanstalks wither, and giants fall out of the sky. Try not to let that happen on a Tuesday." }
+    ]);
+  }
+
+  function talkEllie() {
+    say([
+      { who: "Ellie", text: "Any certified Hero is oath-bound to answer the Hero Call. I have the ram’s horn ready." },
+      { who: "Ellie", text: "If Roderick doesn’t show, maybe we need a new hero. Don’t look at me. Look at the guy with goat smell and a prophecy." }
+    ]);
+  }
+
+  function talkInn() {
+    say([{
+      who: "Innkeeper",
+      text: "Welcome to the Hungry Hedgehog. Taco Tuesday leftovers, luna beans, and beds that only slightly smell of goat. Rest for 5 beans?",
+      choices: [
+        { label: "Rest (5 beans)", fn: () => {
+          if (G.gold < 5) { say([{ who: "Innkeeper", text: "That’s not even a lima. Come back when you can give a bean." }]); return; }
+          G.gold -= 5;
+          G.party.forEach((p) => { p.hp = p.maxHp; p.mp = p.maxMp; });
+          hud();
+          say([{ who: "Innkeeper", text: "You sleep. Jackdaw narrates your dreams in footnotes. HP and MP restored." }]);
+        }},
+        { label: "Buy luna bean (8 beans)", fn: () => {
+          if (G.gold < 8) { say([{ who: "Innkeeper", text: "No credit. This is a cash-bean establishment." }]); return; }
+          G.gold -= 8;
+          const it = G.inv.find((i) => i.id === "luna");
+          if (it) it.n++; else G.inv.push({ id: "luna", n: 1 });
+          hud();
+          say([{ who: "Innkeeper", text: "Tastes terrible. Makes excellent board-game pieces. Also heals." }]);
+        }},
+        { label: "Just looking", fn: () => say([{ who: "Innkeeper", text: "If you see Sir Roderick, tell him his tab is still open. Heroes." }]) }
+      ]
+    }]);
+  }
+
+  function talkGrimbleMeet() {
+    say([
+      { who: "Grimblewaith", text: "What you lookin’ at, kid? Try working for a villain. That’ll make you count your blessings twice." },
+      { who: "Squires", text: "There’s a prophecy about me. I’m supposed to take down the Lord of Darkness and foil his Master Plan." },
+      { who: "Grimblewaith", text: "ELM always spoke of a Master Plan. He’s a jerk. He deserves a good foiling. I’ll be your… actor in a supporting role." },
+      { who: "Grimblewaith", text: "First we see this wizard of yours. He lives on Mount Ominous. Don’t say the name too loudly. Thunder’s jumpy.", note: "Wizards live in high places because the H.O.M.E. Tome requires it. When it comes to magic, there’s no place like H.O.M.E." },
+      { who: "Squires", text: "I know a mountain climbing song. It gets higher the higher you climb—" },
+      { who: "Grimblewaith", text: "No." }
+    ], () => {
+      G.flags.grimble = true;
+      G.flags.grimbleJoin = true;
+      if (!G.party.find((p) => p.id === "grimble")) G.party.push(grimble());
+      G.quest = "Climb Mount Ominous (northeast) and show Jackdaw the prophecy wasn’t upside-down.";
+      save();
+    });
+  }
+
+  function talkJackdawTower() {
+    if (G.flags.quest) {
+      if (G.flags.secretL && G.flags.secretE && G.flags.secretM) {
+        say([
+          { who: "Jackdaw", text: "Elisabeth Louisa Meriwether. Of course it is. ELM couldn’t even villain-name himself properly." },
+          { who: "Jackdaw", text: "Roderick has been added to ELM’s statue collection. He makes a great doorstop. That leaves you, Roddy." },
+          { who: "Jackdaw", text: "Go to the rally on the central hill. I’ll stall him with a singing duel. I soundly beat arias. He trounces ballads. Orkengwarf is a tie nobody wanted." }
+        ], () => {
+          G.flags.finale = true;
+          G.quest = "Walk onto the golden P on the world map. Speak the Great Secret. Try not to aim.";
+          G.party.forEach((p) => { p.hp = p.maxHp; p.mp = p.maxMp; });
+          hud();
+          save();
+        });
+        return;
+      }
+      say([
+        { who: "Jackdaw", text: "Three pieces. Elves in the west woods (they look like dwarves). Dwarves at the southern amphitheater (they look like giants). Goblins in the eastern cave (they like vegetables, mostly)." },
+        { who: "Jackdaw", text: "If you hold my map upside-down, that is a you problem. The runic N is a 10,000-year tradition." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Jackdaw", text: "Ah. The goat herder and the unemployed Whatsit. Come in. Don’t sit on the cauldron." },
+      { who: "Jackdaw", text: "ELM—lowercase dark lord, receding hairline, lives in an old troll latrine cave—joined the Viler Villains Society. He’s damming the enchanted river with a pebble." },
+      { who: "Jackdaw", text: "No water, no magic beans, no Beandom. The Great Secret can unmake him. It is split among elves, dwarves, and goblins, because of course it is." },
+      { who: "Jackdaw", text: "Bring me all three parts. Try not to die. If you do, I shall narrate it wittily." }
+    ], () => {
+      G.flags.quest = true;
+      G.quest = "Collect the Great Secret: Elves (west), Dwarves (south), Goblins (east).";
+      G.inv.push({ id: "magic", n: 2 });
+      save();
+    });
+  }
+
+  function talkElf() {
+    if (G.flags.secretL) {
+      say([{ who: "Elder Elf", text: "The first part remains Louisa. Wrong answers still become trees. Cobbler is doing a moss fresco of a dragon. You’ve seen it." }]);
+      return;
+    }
+    say([
+      { who: "Squires", text: "I’ve never eaten with dwarves before!" },
+      { who: "Elder Elf", text: "We’re elves, of course. We live in mountains, ski, and hold records for snow-angel wingspan. The cookie elves are a different union." },
+      { who: "Elder Elf", text: "To obtain our part of the Great Secret, you must answer the Riddle of Ages." }
+    ], () => {
+      say([{
+        who: "Elves",
+        text: "Peter Piper picked a peck of pickled peppers… If Peter Piper picked a peck of pickled peppers, where’s the peck of pickled peppers Peter Piper picked?",
+        choices: [
+          { label: "In the basement, probably. (Grimble)", fn: () => say([
+            { who: "Elder Elf", text: "Incorrect. Traditionally we would turn you into trees. Today I am feeling merciful and merely disappointed." },
+            { who: "Squires", text: "Let me try. Peppers can’t be pickled until after you pick them!" }
+          ], giveLouisa) },
+          { label: "Peppers can’t be pickled until after you pick them.", fn: giveLouisa },
+          { label: "A dragon did it. The moss told me.", fn: () => say([
+            { who: "Elder Elf", text: "Moss prophecy is a C.O.W.S. technique, not an elven one. Try thinking with your mouth for once." }
+          ], talkElf) }
+        ]
+      }]);
+    });
+  }
+  function giveLouisa() {
+    say([
+      { who: "Elder Elf", text: "Yes! And how much wood could a woodchuck chuck if a woodchuck could chuck wood?" },
+      { who: "Squires", text: "A woodchuck would chuck as much as he could chuck if a woodchuck could chuck wood." },
+      { who: "Elder Elf", text: "I would also have accepted 253 square feet. The first part of the Great Secret is… Louisa!" },
+      { who: "Grimblewaith", text: "Louisa who?" },
+      { who: "Elder Elf", text: "It will all become clear when you have the other two pieces. Wrong answers become trees. That’s why there are so many." }
+    ], () => {
+      G.flags.secretL = true;
+      updateQuestSecrets();
+      save();
+    });
+  }
+
+  function talkDwarf() {
+    if (G.flags.secretE) {
+      say([{ who: "Dwarven Elder", text: "Our part is Elisabeth. The champion is in a coma and will later found a habitat for fuzzy creatures. Watch your step." }]);
+      return;
+    }
+    say([{ who: "Dwarven Elder", text: "We do not part with the Great Secret lightly. You must defeat our champion. Also, we do not all like dirt and axes. Stereotypes are exhausting." }]);
+  }
+  function talkChamp() {
+    say([
+      { who: "Champion", text: "WHO WILL FIGHT ME?" },
+      { who: "Squires", text: "You said you were dwarves! He’s a giant!" },
+      { who: "Dwarven Elder", text: "You probably think we like to dig in the dirt, too." }
+    ], () => startBattle([enemy("champ")], { canFlee: false, boss: true, onWin: dwarfWin }));
+  }
+  function dwarfWin() {
+    say([
+      { who: "Dwarven Elder", text: "Your clumsiness overcame your fear. You have a great gift." },
+      { who: "Squires", text: "Of clumsiness? That’s a curse." },
+      { who: "Dwarven Elder", text: "Do not discount your abilities. The secret is… Elisabeth!" }
+    ], () => {
+      G.flags.secretE = true;
+      updateQuestSecrets();
+      save();
+    });
+  }
+
+  function talkHob() {
+    if (G.flags.secretM) {
+      say([{ who: "Chieftain", text: "Meriwether. Now go. We have meat, ale, and a game that is definitely not Duck, Duck, Goose." }]);
+      return;
+    }
+    say([
+      { who: "Hobgoblin", text: "Did you come for dinner?" },
+      { who: "Squires", text: "We didn’t come AS dinner, if that’s what you mean." },
+      { who: "Grimblewaith", text: "Goblins don’t eat people. They rather like their vegetables. Also I have no idea what I am. Whatsit is a working title." },
+      { who: "Chieftain", text: "Family first. Then secrets. Sit. Endure the Johnnybeans. The last part of the Great Secret is… Meriwether!" }
+    ], () => startBattle([enemy("goblin"), enemy("hob")], { canFlee: true, onWin: goblinWin }));
+  }
+  function goblinWin() {
+    say([
+      { who: "Squires", text: "Elisabeth Louisa Meriwether. What kind of secret is that?" },
+      { who: "Grimblewaith", text: "I think I’m going to stay. I have catching up to do with my family. Who’s up for Goblin, Goblin, Hobgoblin?" },
+      { who: "Squires", text: "I’ll come back when I’m a big-shot hero. Maybe." }
+    ], () => {
+      G.flags.secretM = true;
+      G.party = G.party.filter((p) => p.id !== "grimble");
+      updateQuestSecrets();
+      save();
+    });
+  }
+
+  function talkElmLair() {
+    say([
+      { who: "ELM", text: "Ah! The morning mail! Grimblewaith, go fetch—oh. You’re not him. Membership in the Viler Villains Society is not a visitor’s pass." },
+      { who: "ELM", text: "Dastardly list: 1) stench demon 2) orphanage 3) imprison a damsel 4) evil laughing lessons." },
+      { who: "Jackdaw", text: "His laugh is two parts chuckle, one part whooping cough, pinch of evil. Understatement of the Year. I checked." }
+    ], () => startBattle([enemy("hench"), enemy("hench")], { onWin: () => {
+      G.gold += 20;
+      say([{ who: "ELM", text: "You’ll never stop the pebble! Also, stop saying my name like it’s a gardener’s." }]);
+    }}));
+  }
+
+  function talkElmRally() {
+    if (!(G.flags.secretL && G.flags.secretE && G.flags.secretM)) {
+      say([{ who: "ELM", text: "Swear allegiance by sundown or you’ll never see another drop of enchanted water. Your hero is a doorstop." }]);
+      return;
+    }
+    say([
+      { who: "ELM", text: "Quiet! You may only compliment me or insult my enemies. Sneezes must be incorporated." },
+      { who: "Squires", text: "Oh great one, did you achoo-se your own name?" },
+      { who: "ELM", text: "That wasn’t a compliment! Who in the beanstalk are you?" }
+    ], () => startBattle([enemy("elm")], { canFlee: false, boss: true, onWin: elmWin }));
+  }
+  function elmWin() {
+    say([
+      { who: "Squires", text: "Just an underling, Elisabeth. Nice middle name, too. Louisa. And M… for Meriwether." },
+      { who: "ELM", text: "Minions, take him away—! Mother—" },
+      { who: "Wormtoe", text: "I always knew you were a pathetic crybaby. The pebble still blocks the river. Only the one who placed it—or someone who moves it by accident—can free the water." },
+      { who: "Squires", text: "Look out. No one can beat my powers of acidentiality." }
+    ], () => {
+      G.flags.elmDown = true;
+      G.quest = "Trip. Fall. Save the Beandom by accident.";
+      save();
+    });
+  }
+
+  function talkWorm() {
+    say([{ who: "Wormtoe", text: "Ten tries, ten bruised toes. That pebble doesn’t care about prophecies." }],
+      () => startBattle([enemy("worm")], { canFlee: false, boss: true, onWin: wormWin }));
+  }
+  function wormWin() {
+    say([
+      { who: "Wormtoe", text: "No, not water! What a cruel world!" },
+      { who: "Jackdaw", text: "Actually, it’s quite a wonderful world, and you’ll be seeing much more of it… as a goat!" },
+      { who: "Crowd", text: "Three cheers for the hero!" },
+      { who: "Jackdaw", text: "They will unveil a statue. Grimble will complain. I have exactly seventy words and a vacation tower with indoor plumbing." }
+    ], () => {
+      G.flags.wormDown = true;
+      G.flags.saved = true;
+      G.quest = "Attend the statue unveiling. Ignore Mordeck’s epic poetry.";
+      G.map = "village";
+      G.px = 16; G.py = 8;
+      save();
+      say([
+        { who: "Mordeck", text: "FREE FOOD AND ALE FOR ALL! …Now that I have your attention: a statue of Roddy Squires, who I would not have bet a bean on." },
+        { who: "Jackdaw", text: "Henceforth the Meriwethers revert to Michelle, Petronella, Theodora, and Kumquat. Rutabaga, quixotic, anthropomorphic." },
+        { who: "ELM", text: "Don’t you dare end with an H.E.A. It’s so cliché. End it properly." },
+        { who: "Jackdaw", text: "Very well. And many of them lived reasonably happy for some time thereafter." },
+        { who: "Jackdaw", text: "There are six more days in this wonderful week—ogres, wells, pirates, phoenixes, bards, and the end of the quest as we know it. But this, goat boy, is your statue. Well done." }
+      ], () => {
+        G.flags.credits = true;
+        G.mode = "credits";
+        save();
+      });
+    });
+  }
+
+  function talkEnding() {
+    say([{ who: "Mordeck", text: "One statue per world-saving victory. House policy. Now eat something before the elves start a food chant." }]);
+  }
+
+  function updateQuestSecrets() {
+    const a = [G.flags.secretL && "Louisa", G.flags.secretE && "Elisabeth", G.flags.secretM && "Meriwether"].filter(Boolean);
+    if (a.length === 3) G.quest = "Return to Jackdaw’s tower. The name is complete. (It is a terrible villain name.)";
+    else G.quest = "Great Secret so far: " + (a.join(" / ") || "(none)") + ". Elves west, dwarves south, goblins east.";
+  }
+
+  /* ---------- combat ---------- */
+  function enemy(type) {
+    const E = {
+      bug: { name: "Bean Bug", hp: 10, maxHp: 10, atk: 3, def: 1, xp: 4, gold: 3, spr: "bug" },
+      skip: { name: "Skipping Bean", hp: 8, maxHp: 8, atk: 4, def: 0, xp: 5, gold: 4, spr: "skip", evade: 40 },
+      orc: { name: "Audition Orc", hp: 18, maxHp: 18, atk: 6, def: 2, xp: 8, gold: 6, spr: "orc" },
+      goblin: { name: "Goblin Cousin", hp: 16, maxHp: 16, atk: 5, def: 2, xp: 7, gold: 5, spr: "gob" },
+      hob: { name: "Hobgoblin", hp: 20, maxHp: 20, atk: 6, def: 3, xp: 9, gold: 8, spr: "hob" },
+      hench: { name: "Henchman Applicant", hp: 14, maxHp: 14, atk: 5, def: 1, xp: 6, gold: 5, spr: "hench" },
+      champ: { name: "Dwarven Champion", hp: 42, maxHp: 42, atk: 9, def: 4, xp: 30, gold: 25, spr: "champ", boss: true },
+      elm: { name: "Lord ELM", hp: 50, maxHp: 50, atk: 8, def: 3, xp: 40, gold: 0, spr: "elm", boss: true },
+      worm: { name: "Wormtoe", hp: 55, maxHp: 55, atk: 10, def: 5, xp: 50, gold: 40, spr: "worm", boss: true }
+    };
+    return Object.assign({ stun: 0, confuse: 0 }, E[type]);
+  }
+
+  function startBattle(enemies, opts = {}) {
+    G.mode = "battle";
+    G.battle = {
+      foes: enemies,
+      i: 0,
+      menu: "main",
+      sel: 0,
+      target: 0,
+      log: opts.boss ? "A dramatic sting would play here. Imagine one." : "A wild nuisance approaches!",
+      canFlee: opts.canFlee !== false,
+      onWin: opts.onWin,
+      guard: {},
+      anim: 0
+    };
+    $("battle").classList.add("show");
+    $("hud").classList.add("show");
+    blitBattleMenu();
+    sfx("enc");
+  }
+
+  function blitBattleMenu() {
+    const b = G.battle;
+    $("bLog").textContent = b.log;
+    const acts = $("bActs");
+    acts.innerHTML = "";
+    let opts = [];
+    if (b.menu === "main") {
+      opts = ["Attack", "Skill", "Item"];
+      if (b.canFlee) opts.push("Flee");
+    } else if (b.menu === "skill") {
+      const p = G.party[b.i];
+      opts = p.skills.map((id) => SKILLS[id].name + " (" + SKILLS[id].mp + " MP)");
+      if (p.id === "squires" && G.flags.secretL && G.flags.secretE && G.flags.secretM && G.battle.foes.some((f) => f.spr === "elm"))
+        opts.push("The Great Secret (0 MP)");
+      opts.push("Back");
+    } else if (b.menu === "item") {
+      opts = G.inv.map((it) => ITEMS[it.id].name + " x" + it.n);
+      opts.push("Back");
+    } else if (b.menu === "target") {
+      opts = b.foes.map((f, i) => (f.hp <= 0 ? "(down) " : "") + f.name + "  " + f.hp + "/" + f.maxHp);
+      opts.push("Back");
+    }
+    opts.forEach((o, i) => {
+      const d = document.createElement("div");
+      d.className = "act" + (i === b.sel ? " on" : "");
+      d.textContent = (i === b.sel ? "► " : "  ") + o;
+      d.onclick = () => { b.sel = i; confirmBattle(); };
+      acts.appendChild(d);
+    });
+    b.opts = opts;
+  }
+
+  function confirmBattle() {
+    const b = G.battle;
+    if (!b) return;
+    const p = G.party[b.i];
+    if (b.menu === "main") {
+      const c = b.opts[b.sel];
+      if (c === "Attack") { b.pending = { type: "atk" }; b.menu = "target"; b.sel = 0; }
+      else if (c === "Skill") { b.menu = "skill"; b.sel = 0; }
+      else if (c === "Item") { b.menu = "item"; b.sel = 0; }
+      else if (c === "Flee") { tryFlee(); return; }
+    } else if (b.menu === "skill") {
+      if (b.opts[b.sel] === "Back") { b.menu = "main"; b.sel = 0; }
+      else {
+        const label = b.opts[b.sel];
+        let id = p.skills.find((s) => label.startsWith(SKILLS[s].name));
+        if (label.startsWith("The Great Secret")) id = "secret";
+        const sk = SKILLS[id];
+        if (p.mp < sk.mp) { b.log = "Not enough MP. Jackdaw would make a joke about beans here."; blitBattleMenu(); return; }
+        b.pending = { type: "skill", id };
+        if (sk.all || sk.ally || sk.guard) { resolvePlayer(); return; }
+        b.menu = "target"; b.sel = 0;
+      }
+    } else if (b.menu === "item") {
+      if (b.opts[b.sel] === "Back") { b.menu = "main"; b.sel = 0; }
+      else {
+        b.pending = { type: "item", idx: b.sel };
+        resolvePlayer(); return;
+      }
+    } else if (b.menu === "target") {
+      if (b.opts[b.sel] === "Back") { b.menu = "main"; b.sel = 0; }
+      else if (b.foes[b.sel] && b.foes[b.sel].hp > 0) { b.target = b.sel; resolvePlayer(); return; }
+    }
+    blitBattleMenu();
+  }
+
+  function dmg(atk, def) {
+    return Math.max(1, atk + irand(0, 4) - def);
+  }
+  function irand(a, b) { return a + Math.floor(Math.random() * (b - a + 1)); }
+
+  function resolvePlayer() {
+    const b = G.battle;
+    const p = G.party[b.i];
+    const act = b.pending;
+    if (act.type === "atk") {
+      const f = b.foes[b.target];
+      if (f.spr === "elm") { b.log = "Swords bounce off. He flinches at vowels, not steel. Use the Great Secret."; }
+      else if (f.spr === "worm") { b.log = "Wormtoe and the pebble only yield to accident. Try Acidentiality."; }
+      else if (f.evade && Math.random() * 100 < f.evade) { b.log = f.name + " skipped aside. (Skipping beans. It’s a whole thing.)"; }
+      else {
+        const n = dmg(p.atk, f.def);
+        f.hp -= n;
+        b.log = p.name + " bonks " + f.name + " for " + n + "!";
+        sfx("hit");
+      }
+    } else if (act.type === "skill") {
+      const sk = SKILLS[act.id];
+      p.mp -= sk.mp;
+      if (sk.guard) { b.guard[p.id] = true; b.log = p.name + " braces. Large hands help."; }
+      else if (sk.ally) {
+        const t = G.party[0];
+        t.hp = Math.min(t.maxHp, t.hp + sk.heal);
+        b.log = p.name + " reminds " + t.name + " that supporting roles still count. +" + sk.heal + " HP.";
+      } else if (act.id === "secret") {
+        b.foes.forEach((f) => { if (f.spr === "elm") { f.hp = 0; } });
+        b.log = "Elisabeth… Louisa… Meriwether! ELM clutches his chest. The Viler Villains Society would like a word.";
+        sfx("magic");
+      } else if (act.id === "accident" && b.foes.some((f) => f.spr === "worm")) {
+        b.foes.forEach((f) => { f.hp = 0; });
+        b.log = "Squires screams, reels, trips over an orc, and lands on the pebble. The river explodes upward.";
+        sfx("magic");
+      } else {
+        const targets = sk.all ? b.foes.filter((f) => f.hp > 0) : [b.foes[b.target]];
+        let msg = p.name + " uses " + sk.name + "! ";
+        targets.forEach((f) => {
+          if (f.spr === "elm" && act.id !== "secret") { msg += "ELM wants a name, not a dance. "; return; }
+          if (f.spr === "worm" && act.id !== "accident") { msg += "Not accidental enough. "; return; }
+          if (f.evade && Math.random() * 100 < f.evade / 2) { msg += f.name + " hops. "; return; }
+          const n = dmg(sk.dmg, f.def);
+          f.hp -= n;
+          msg += f.name + " takes " + n + ". ";
+          if (sk.confuse && Math.random() * 100 < sk.confuse) { f.confuse = 2; msg += "Transfixed! "; }
+          if (sk.stun && Math.random() * 100 < sk.stun) { f.stun = 1; msg += "Stunned! "; }
+        });
+        b.log = msg;
+        sfx("magic");
+      }
+    } else if (act.type === "item") {
+      const it = G.inv[act.idx];
+      const def = ITEMS[it.id];
+      if (def.heal) { p.hp = Math.min(p.maxHp, p.hp + def.heal); b.log = p.name + " eats a " + def.name + ". +" + def.heal + " HP."; }
+      if (def.mp) { p.mp = Math.min(p.maxMp, p.mp + def.mp); b.log = p.name + " swallows a " + def.name + ". Magic tastes like dirt and destiny."; }
+      if (def.stun) {
+        const f = b.foes.find((x) => x.hp > 0);
+        if (f) { f.stun = 2; b.log = "The skipping bean skips into " + f.name + "."; }
+      }
+      it.n--;
+      if (it.n <= 0) G.inv.splice(act.idx, 1);
+    }
+    hud();
+    blitBattleMenu();
+    if (checkWin()) return;
+    nextBattler();
+  }
+
+  function nextBattler() {
+    const b = G.battle;
+    b.menu = "main"; b.sel = 0; b.pending = null;
+    b.i++;
+    while (b.i < G.party.length && G.party[b.i].hp <= 0) b.i++;
+    if (b.i >= G.party.length) {
+      enemyTurns();
+    } else blitBattleMenu();
+  }
+
+  function enemyTurns() {
+    const b = G.battle;
+    const msgs = [];
+    b.foes.forEach((f) => {
+      if (f.hp <= 0) return;
+      if (f.stun > 0) { f.stun--; msgs.push(f.name + " is too busy howling at a hangnail."); return; }
+      if (f.confuse > 0) { f.confuse--; msgs.push(f.name + " watches Squires’ dance and forgets to attack."); return; }
+      const alive = G.party.filter((p) => p.hp > 0);
+      const t = alive[irand(0, alive.length - 1)];
+      let n = dmg(f.atk, t.def);
+      if (b.guard[t.id]) n = Math.max(1, Math.floor(n / 2));
+      t.hp -= n;
+      msgs.push(f.name + " hits " + t.name + " for " + n + ".");
+    });
+    b.guard = {};
+    b.log = msgs.join(" ");
+    hud();
+    if (G.party.every((p) => p.hp <= 0)) {
+      b.log = "You slump into the beans. Jackdaw clears his throat. “That was not the prophecy I had in mind.”";
+      blitBattleMenu();
+      setTimeout(() => {
+        endBattle(false);
+        G.party.forEach((p) => { p.hp = Math.max(1, Math.floor(p.maxHp / 2)); });
+        say([{ who: "Jackdaw", text: "I rewound that with the Clairvoyant Crystal 3001. Don’t get used to it. Try a luna bean and less heroics." }]);
+      }, 900);
+      return;
+    }
+    b.i = 0;
+    while (G.party[b.i].hp <= 0) b.i++;
+    blitBattleMenu();
+  }
+
+  function checkWin() {
+    const b = G.battle;
+    if (b.foes.every((f) => f.hp <= 0)) {
+      const gold = b.foes.reduce((s, f) => s + f.gold, 0);
+      G.gold += gold;
+      b.log = "Victory! +" + gold + " beans (currency). The crowd would sing if this weren’t a book.";
+      blitBattleMenu();
+      sfx("win");
+      setTimeout(() => endBattle(true), 700);
+      return true;
+    }
+    return false;
+  }
+  function tryFlee() {
+    if (Math.random() < 0.6) { G.battle.log = "You fled. Squires trips, but in a useful direction."; endBattle(false); }
+    else { G.battle.log = "Couldn’t run. Two left feet."; enemyTurns(); }
+  }
+  function endBattle(won) {
+    const cb = G.battle && G.battle.onWin;
+    G.battle = null;
+    G.mode = "explore";
+    $("battle").classList.remove("show");
+    hud();
+    if (won && cb) cb();
+  }
+
+  /* ---------- interaction ---------- */
+  function facing() {
+    const d = [[0, -1], [1, 0], [0, 1], [-1, 0]][G.dir];
+    return { x: Math.round(G.px) + d[0], y: Math.round(G.py) + d[1] };
+  }
+  function interact() {
+    if (G.mode === "dialog") { advanceDialog(); return; }
+    if (G.mode === "battle") { confirmBattle(); return; }
+    if (G.mode === "title") { startNew(); return; }
+    if (G.mode === "credits") { G.mode = "title"; showTitle(); return; }
+    if (G.mode === "menu") { $("menu").classList.remove("show"); G.mode = "explore"; return; }
+    if (G.mode !== "explore") return;
+    const f = facing();
+    const n = npcsFor().find((p) => p.x === f.x && p.y === f.y);
+    if (n) { n.talk(); return; }
+    const w = (WARPS[G.map] || []).find((p) => p.x === Math.round(G.px) && p.y === Math.round(G.py) || (p.x === f.x && p.y === f.y));
+    if (w) { tryWarp(w); return; }
+    const t = tileAt(G.map, f.x, f.y);
+    if (t === "beans") say([{ who: "Squires", text: "Magic beans. The land’s greatest treasure. Also breakfast." }]);
+    else if (t === "water") say([{ who: "Squires", text: "A river… trickle… glorified puddle. Bellissimo could still drown in drama here." }]);
+    else if (t === "statue") say([{ who: "Plaque", text: G.flags.saved ? "Roddy Squires, Sub-Assistant Goat Herder, Hero of Legend. Watch your step." : "Reserved for the next hero. Currently vacant, like Sir Roderick’s self-awareness." }]);
+    else if (t === "fire") say([{ who: "Jackdaw", text: "Do not eat the grottlebeast if it has cooked long enough to taste like chicken. That’s how you get lectures." }]);
+  }
+
+  function tryWarp(w) {
+    if (w.need === "grimbleJoin" && !G.flags.rejected) {
+      say([{ who: "Squires", text: "I should hear the prophecy and talk to Sir Roderick first. Jackdaw gets snippy when you skip setup." }]);
+      return;
+    }
+    if (w.need === "grimbleJoin" && G.flags.rejected && !G.flags.grimble) {
+      G.map = "world"; G.px = 8.5; G.py = 10.5;
+      say([{ who: "Jackdaw", text: "East of Beanvale, two pity parties collide. Go on. Destiny smells like goat and villain-school dropout." }]);
+      return;
+    }
+    if (w.need === "grimble" && !G.flags.grimble) {
+      say([{ who: "Narrator", text: "Mount Ominous is no place for a solo goat herder. Find a supporting role first." }]);
+      return;
+    }
+    if (w.need === "quest" && !G.flags.quest) {
+      say([{ who: "Jackdaw", text: "That way lies a piece of the Great Secret, and also spoilers. Climb my tower first." }]);
+      return;
+    }
+    if (w.need === "allSecrets" && !(G.flags.secretL && G.flags.secretE && G.flags.secretM && G.flags.finale)) {
+      say([{ who: "Soldier", text: "ELM’s rally is gathering. Come back when you know a certain three-part name. And maybe a song." }]);
+      return;
+    }
+    warp(w.to, w.tx, w.ty);
+  }
+  function warp(map, x, y) {
+    G.map = map; G.px = x + .5; G.py = y + .5;
+    sfx("warp");
+    hud();
+  }
+
+  /* ---------- movement ---------- */
+  let acc = 0;
+  function tryMove(dx, dy) {
+    if (G.mode !== "explore") return;
+    if (dx > 0) G.dir = 1; if (dx < 0) G.dir = 3; if (dy > 0) G.dir = 2; if (dy < 0) G.dir = 0;
+    const nx = G.px + dx * 0.12, ny = G.py + dy * 0.12;
+    const cx = nx, cy = ny;
+    const pts = [[cx - .3, cy - .1], [cx + .3, cy - .1], [cx - .3, cy + .35], [cx + .3, cy + .35]];
+    if (pts.some(([x, y]) => blocked(G.map, Math.floor(x), Math.floor(y)))) return;
+    G.px = nx; G.py = ny; G.walk += 0.2;
+    const ix = Math.round(G.px), iy = Math.round(G.py);
+    (WARPS[G.map] || []).forEach((w) => {
+      if (w.x === ix && w.y === iy) tryWarp(w);
+    });
+    if (["world", "forest"].includes(G.map) && G.flags.quest && !G.flags.saved) {
+      G.enc += 0.35;
+      if (G.enc > 28 + Math.random() * 18) {
+        G.enc = 0;
+        const pool = G.map === "forest" ? ["bug", "skip"] : ["bug", "skip", "orc", "hench"];
+        const n = 1 + (Math.random() < 0.35 ? 1 : 0);
+        startBattle(Array.from({ length: n }, () => enemy(pool[irand(0, pool.length - 1)])));
+      }
+    }
+  }
+
+  /* ---------- draw ---------- */
+  function col(c) { ctx.fillStyle = c; }
+  function r(x, y, w, h) { ctx.fillRect(x | 0, y | 0, w, h); }
+
+  function drawTile(kind, sx, sy, t) {
+    const flicker = ((t / 20) | 0) % 2;
+    if (kind === "grass") {
+      col(PAL.grass); r(sx, sy, T, T);
+      col(PAL.grass3); r(sx + 3, sy + 5, 2, 2); r(sx + 10, sy + 11, 2, 2);
+      col(PAL.grass2); r(sx + 8, sy + 2, 1, 1);
+    } else if (kind === "path" || kind === "plaza" || kind === "bridge" || kind === "arena") {
+      col(kind === "arena" ? "#8a7a6a" : PAL.path); r(sx, sy, T, T);
+      col(PAL.path2); r(sx, sy + 15, T, 1); r(sx + 4, sy + 6, 2, 1);
+    } else if (kind === "beans") {
+      col(PAL.grass); r(sx, sy, T, T);
+      col("#6a3"); r(sx + 2, sy + 8, 3, 6); r(sx + 8, sy + 7, 3, 7);
+      col(PAL.gold); r(sx + 2, sy + 6, 3, 3); r(sx + 8, sy + 5, 3, 3);
+    } else if (kind === "water") {
+      col(flicker ? PAL.water : PAL.water2); r(sx, sy, T, T);
+      col("#8cf8"); r(sx + 2, sy + 4 + flicker, 5, 1);
+    } else if (kind === "tree") {
+      col(PAL.grass); r(sx, sy, T, T);
+      col("#5a3a20"); r(sx + 6, sy + 10, 4, 6);
+      col(PAL.tree2); r(sx + 2, sy + 1, 12, 11);
+      col(PAL.leaf); r(sx + 4, sy + 3, 3, 3);
+    } else if (kind === "wall" || kind === "house" || kind === "roof") {
+      col(kind === "roof" ? PAL.roof : PAL.wall); r(sx, sy, T, T);
+      col(kind === "roof" ? PAL.roof2 : PAL.wall2);
+      r(sx, sy, T, 2); r(sx + 2, sy + 5, 4, 3);
+    } else if (kind === "door") {
+      col(PAL.wall); r(sx, sy, T, T);
+      col("#3a2418"); r(sx + 3, sy + 4, 10, 12);
+      col(PAL.gold); r(sx + 10, sy + 10, 2, 2);
+    } else if (kind === "floor" || kind === "wood" || kind === "gobfloor" || kind === "lair") {
+      col(kind === "lair" ? "#3a2a22" : kind === "gobfloor" ? "#4a5a3a" : PAL.floor); r(sx, sy, T, T);
+      col(PAL.floor2); r(sx, sy + 15, T, 1);
+    } else if (kind === "mtn") {
+      col("#5a6570"); r(sx, sy, T, T);
+      col("#dde"); r(sx + 4, sy + 2, 6, 4);
+    } else if (kind === "statue") {
+      col(PAL.path); r(sx, sy, T, T);
+      col("#c8d0d8"); r(sx + 4, sy + 2, 8, 12);
+      col(PAL.gold); r(sx + 5, sy + 14, 6, 2);
+    } else if (kind === "flower") {
+      col(PAL.grass); r(sx, sy, T, T);
+      col("#f6c"); r(sx + 6, sy + 6, 3, 3);
+      col(PAL.gold); r(sx + 7, sy + 7, 1, 1);
+    } else if (kind === "cave" || kind === "dark") {
+      col("#1a1520"); r(sx, sy, T, T);
+      col("#000"); r(sx + 4, sy + 4, 8, 8);
+    } else if (kind === "fire") {
+      col(PAL.floor); r(sx, sy, T, T);
+      col(flicker ? "#f80" : "#fa0"); r(sx + 5, sy + 4, 6, 8);
+    } else if (kind === "navy") {
+      col("#1a2460"); r(sx, sy, T, T);
+      col("#e6c15a33"); r(sx + 1, sy + 1, 14, 1);
+    } else {
+      col(PAL.grass); r(sx, sy, T, T);
+    }
+  }
+
+  function drawChar(kind, x, y, dir, frame, shadow) {
+    const px = Math.round(x), py = Math.round(y);
+    if (shadow) { col("#0006"); r(px + 2, py + 14, 12, 3); }
+    if (kind === "squires") {
+      col("#6a4a28"); r(px + 4, py + 9, 8, 6);
+      col(PAL.skin); r(px + 5, py + 4, 6, 6);
+      col(PAL.hair); r(px + 5, py + 2, 6, 3);
+      col("#3a2"); r(px + 4, py + 14, 3, 3); r(px + 9, py + 14, 3, 3);
+      if (frame) { r(px + 4, py + 14, 3, 2); }
+    } else if (kind === "grimble") {
+      col(PAL.green); r(px + 3, py + 6, 10, 9);
+      col("#2a5a32"); r(px + 4, py + 3, 8, 5);
+      col("#1a3"); r(px + 1, py + 8, 4, 4); r(px + 11, py + 8, 4, 4);
+    } else if (kind === "jackdaw") {
+      col("#2a2460"); r(px + 4, py + 8, 8, 7);
+      col("#eee8"); r(px + 5, py + 7, 6, 8);
+      col(PAL.skin); r(px + 5, py + 4, 6, 4);
+      col("#223"); r(px + 4, py + 0, 8, 4);
+      col("#e6c15a"); r(px + 7, py + 0, 2, 2);
+    } else if (kind === "bell") {
+      col("#c45"); r(px + 4, py + 8, 8, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#3a1a10"); r(px + 4, py + 2, 8, 4);
+      col("#8cf"); r(px + 2, py + 1, 2, 2); r(px + 12, py + 2, 2, 2);
+    } else if (kind === "roderick") {
+      col("#dde"); r(px + 4, py + 8, 8, 7);
+      col(PAL.gold); r(px + 5, py + 7, 6, 2);
+      col(PAL.skin); r(px + 5, py + 3, 6, 5);
+      col("#fff"); r(px + 5, py + 1, 6, 3);
+    } else if (kind === "mordeck") {
+      col("#6a3"); r(px + 3, py + 8, 10, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#c8b"); r(px + 5, py + 3, 6, 2);
+    } else if (kind === "elm") {
+      col("#2a1a28"); r(px + 4, py + 8, 8, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#4a3020"); r(px + 5, py + 2, 6, 3);
+      col("#000"); r(px + 6, py + 6, 2, 1);
+    } else if (kind === "worm") {
+      col("#6a6a5a"); r(px + 3, py + 6, 10, 10);
+      col("#3a3"); r(px + 5, py + 4, 6, 4);
+    } else if (kind === "elf" || kind === "dwarf") {
+      col("#5a3a20"); r(px + 4, py + 9, 8, 6);
+      col(PAL.skin); r(px + 5, py + 5, 6, 5);
+      col(kind === "elf" ? "#c8c0a0" : "#d8a030"); r(px + 4, py + 2, 8, 6);
+    } else if (kind === "champ") {
+      col("#5a4030"); r(px + 2, py + 4, 12, 12);
+      col(PAL.hair2); r(px + 3, py + 2, 10, 8);
+    } else if (kind === "hob" || kind === "gob") {
+      col("#3a7a3a"); r(px + 4, py + 8, 8, 7);
+      col("#2a5a2a"); r(px + 5, py + 4, 6, 5);
+    } else if (kind === "ellie" || kind === "villager") {
+      col("#b85"); r(px + 4, py + 8, 8, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#e8c050"); r(px + 5, py + 2, 6, 3);
+    } else if (kind === "sign") {
+      col("#6a4a20"); r(px + 7, py + 6, 2, 10);
+      col("#d2b06a"); r(px + 3, py + 2, 10, 8);
+    } else if (kind === "hench" || kind === "orc") {
+      col("#4a5a3a"); r(px + 4, py + 7, 8, 8);
+      col("#6a7a4a"); r(px + 5, py + 3, 6, 5);
+    } else if (kind === "bug") {
+      col("#3a2a10"); r(px + 5, py + 8, 6, 5);
+      col(PAL.gold); r(px + 6, py + 6, 4, 4);
+    } else if (kind === "skip") {
+      col(PAL.gold); r(px + 5, py + 6 + (frame ? -2 : 0), 6, 6);
+    }
+    // eyes
+    if (!["sign", "bug", "skip"].includes(kind)) {
+      col("#112"); r(px + 6, py + 6, 1, 1); r(px + 9, py + 6, 1, 1);
+    }
+  }
+
+  function drawMap() {
+    const m = MAPS[G.map];
+    G.camX = G.px * T - W / 2 + 8;
+    G.camY = G.py * T - H / 2 + 8;
+    G.camX = Math.max(0, Math.min(m.w * T - W, G.camX));
+    G.camY = Math.max(0, Math.min(m.h * T - H, G.camY));
+    const bg = G.map === "tower" ? "#0c1230" : G.map === "cave" || G.map === "lair" ? "#120c14" : G.map === "arena" ? "#3a3428" : "#87b";
+    col(bg); r(0, 0, W, H);
+    const x0 = Math.max(0, (G.camX / T) | 0);
+    const y0 = Math.max(0, (G.camY / T) | 0);
+    const x1 = Math.min(m.w, x0 + 18);
+    const y1 = Math.min(m.h, y0 + 16);
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+      drawTile(tileAt(G.map, x, y), x * T - G.camX, y * T - G.camY, G.t);
+    }
+    const sprites = npcsFor().map((n) => ({ kind: n.sprite, x: n.x * T - G.camX, y: n.y * T - G.camY, z: n.y, bang: questBang(n) }));
+    sprites.push({ kind: "squires", x: G.px * T - G.camX, y: G.py * T - G.camY, z: G.py, me: true });
+    if (G.party.some((p) => p.id === "grimble") && G.mode === "explore") {
+      const ox = [0, -6, 0, 6][G.dir], oy = [8, 0, -8, 0][G.dir];
+      sprites.push({ kind: "grimble", x: G.px * T - G.camX + ox, y: G.py * T - G.camY + oy, z: G.py - 0.1 });
+    }
+    sprites.sort((a, b) => a.z - b.z);
+    sprites.forEach((s) => {
+      drawChar(s.kind, s.x, s.y, G.dir, ((G.walk | 0) % 2), true);
+      if (s.bang) {
+        col(PAL.gold); r(s.x + 6, s.y - 6, 4, 6); col(PAL.navy); r(s.x + 7, s.y - 5, 2, 3); r(s.x + 7, s.y - 1, 2, 1);
+      }
+    });
+  }
+
+  function drawTitle(t) {
+    col("#0b1024"); r(0, 0, W, H);
+    for (let i = 0; i < 18; i++) {
+      col(PAL.grass); r(0, 140 + i * 5, W, 5);
+      col(PAL.grass2); r(i * 20 + (t / 8) % 20, 148, 3, 2);
+    }
+    for (let i = 0; i < 8; i++) drawTile("beans", 16 + i * 28, 160, t);
+    drawChar("jackdaw", 40, 88, 2, 0, true);
+    drawChar("squires", 118, 110, 1, (t / 12) & 1, true);
+    drawChar("grimble", 148, 108, 3, 0, true);
+    drawChar("bell", 188, 100, 2, 0, true);
+    drawChar("roderick", 210, 92, 3, 0, true);
+    col(PAL.gold); r(70, 28, 116, 2); r(70, 72, 116, 2);
+  }
+
+  function drawCredits(t) {
+    col("#0a0714"); r(0, 0, W, H);
+    ctx.fillStyle = PAL.gold;
+    ctx.font = "8px monospace";
+    const lines = [
+      "A WONDERFUL WEEK FOR A QUEST",
+      "Book I of the Beandom",
+      "Adapted from the novel by",
+      "Michael D. Young",
+      "",
+      "Starring",
+      "Roddy Squires  -  himself, accidentally",
+      "Grimblewaith   -  supporting role",
+      "Jackdaw        -  narrator, footnotes",
+      "Bellissimo     -  Mary Sue Bellmont",
+      "Sir Roderick 3RG",
+      "ELM            -  Elisabeth Louisa Meriwether",
+      "",
+      "And many of them lived",
+      "reasonably happy",
+      "for some time thereafter.",
+      "",
+      "Press Enter"
+    ];
+    lines.forEach((s, i) => {
+      ctx.fillStyle = i === 0 ? PAL.gold : PAL.cream;
+      ctx.fillText(s, 18, 20 + ((i * 10 + (t / 3)) % 220));
+    });
+  }
+
+  function drawBattleBack() {
+    col("#1a1040"); r(0, 0, W, 140);
+    col("#2a1a10"); r(0, 140, W, 84);
+    const b = G.battle;
+    if (!b) return;
+    b.foes.forEach((f, i) => {
+      if (f.hp <= 0) return;
+      const x = 90 + i * 40 - (b.foes.length - 1) * 16;
+      const y = 48 + Math.sin((G.t + i * 12) / 10) * (f.spr === "skip" ? 4 : 1);
+      drawChar(f.spr, x, y, 2, (G.t / 10) & 1, true);
+      col("#000"); r(x, y + 20, 16, 3);
+      col(PAL.hp); r(x, y + 20, Math.max(0, 16 * f.hp / f.maxHp), 3);
+    });
+    G.party.forEach((p, i) => {
+      if (p.hp <= 0) return;
+      drawChar(p.id === "grimble" ? "grimble" : "squires", 40 + i * 28, 100, 1, 0, true);
+    });
+  }
+
+  /* ---------- hud / menu ---------- */
+  function hud() {
+    const p = G.party[0];
+    if (!p) return;
+    $("pName").textContent = p.name.toUpperCase();
+    $("hpN").textContent = Math.max(0, p.hp);
+    $("mpN").textContent = p.mp;
+    $("hpB").style.width = Math.max(0, 100 * p.hp / p.maxHp) + "%";
+    $("mpB").style.width = Math.max(0, 100 * p.mp / p.maxMp) + "%";
+    $("loc").textContent = MAPNAME[G.map] + " · " + G.gold + " beans";
+    if (G.mode === "explore" || G.mode === "dialog" || G.mode === "battle") $("hud").classList.add("show");
+    else $("hud").classList.remove("show");
+  }
+
+  function openMenu() {
+    G.mode = "menu";
+    $("menu").classList.add("show");
+    const body = G.party.map((p) => p.name + "  HP " + p.hp + "/" + p.maxHp + "  MP " + p.mp + "/" + p.maxMp).join("\n");
+    const items = G.inv.length ? G.inv.map((i) => ITEMS[i.id].name + " ×" + i.n).join("\n") : "(empty pockets, full destiny)";
+    $("mBody").innerHTML = "<pre style='white-space:pre-wrap;font:inherit'>" +
+      body + "\n\nInventory\n" + items + "\n\nQuest\n" + G.quest +
+      "\n\nSecrets: " + ["Louisa", "Elisabeth", "Meriwether"].filter((_, i) => [G.flags.secretL, G.flags.secretE, G.flags.secretM][i]).join(", ") +
+      "\n\nArrows move · Enter talk · Esc menu</pre>";
+  }
+
+  /* ---------- audio ---------- */
+  let ac, master, tuneT = 0;
+  function audioInit() {
+    if (ac) return;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain();
+    master.gain.value = 0.08;
+    master.connect(ac.destination);
+  }
+  function beep(freq, dur, type, vol) {
+    if (G.mute || !ac) return;
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || "square";
+    o.frequency.value = freq;
+    g.gain.value = vol || 0.2;
+    g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+    o.connect(g); g.connect(master);
+    o.start(); o.stop(ac.currentTime + dur);
+  }
+  function sfx(kind) {
+    if (kind === "hit") beep(180, .08, "square");
+    if (kind === "magic") { beep(440, .1); beep(660, .12, "triangle"); }
+    if (kind === "enc") { beep(220, .1); setTimeout(() => beep(180, .12), 80); }
+    if (kind === "win") { beep(523, .1); setTimeout(() => beep(659, .1), 90); setTimeout(() => beep(784, .18), 180); }
+    if (kind === "warp") beep(300, .06, "triangle");
+    if (kind === "ok") beep(520, .05, "square", .12);
+  }
+  const THEME = [392, 440, 494, 523, 494, 440, 392, 330, 349, 392, 0, 392, 523, 494];
+  function music() {
+    if (G.mute || !ac || G.mode === "battle") return;
+    if (G.t % 18 === 0) {
+      const n = THEME[(tuneT++) % THEME.length];
+      if (n) beep(n, 0.16, "triangle", 0.07);
+    }
+  }
+
+  /* ---------- save ---------- */
+  function save() {
+    const data = {
+      map: G.map, px: G.px, py: G.py, flags: G.flags, gold: G.gold, inv: G.inv,
+      party: G.party, quest: G.quest, dir: G.dir
+    };
+    localStorage.setItem(SAVE, JSON.stringify(data));
+  }
+  function load() {
+    const raw = localStorage.getItem(SAVE);
+    if (!raw) return false;
+    try {
+      const d = JSON.parse(raw);
+      Object.assign(G, { map: d.map, px: d.px, py: d.py, flags: d.flags, gold: d.gold, inv: d.inv, party: d.party, quest: d.quest, dir: d.dir || 2 });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function showTitle() {
+    G.mode = "title";
+    $("titleui").classList.add("show");
+    $("hud").classList.remove("show");
+    $("dialog").classList.remove("show");
+    $("battle").classList.remove("show");
+    $("menu").classList.remove("show");
+    $("btnCont").style.display = localStorage.getItem(SAVE) ? "inline-block" : "none";
+  }
+
+  function startNew() {
+    audioInit();
+    G.flags = {};
+    G.gold = 12;
+    G.inv = [{ id: "luna", n: 3 }];
+    G.party = [hero()];
+    G.map = "village";
+    G.px = 11.5; G.py = 8.5; G.dir = 2;
+    G.quest = "Hear Jackdaw’s Uppercase Prophecy in Beanvale.";
+    G.mode = "explore";
+    $("titleui").classList.remove("show");
+    hud();
+    say([
+      { who: "Jackdaw", text: "Once upon a time, in a verdant valley where the sun showered resplendent sunrises over every blushing bud of morning…" },
+      { who: "Jackdaw", text: "Hey, you! I saw you yawn. In this age of computers you still opened a quest. Points for heart, if not for taste in sunrises." },
+      { who: "Jackdaw", text: "I’m Jackdaw the Wizard, third cousin to Merlin, narrator, and owner of a beard of Rapunzelic proportions. Do not ask me to cut it." },
+      { who: "Jackdaw", text: "That scrawny blonde specimen is Roddy Squires, Sub-Assistant Goat Herder. You. Walk up to me in the square. Use the stick or arrows. Enter to talk." }
+    ]);
+    save();
+  }
+  function continueGame() {
+    audioInit();
+    if (!load()) { startNew(); return; }
+    G.mode = "explore";
+    $("titleui").classList.remove("show");
+    hud();
+  }
+
+  /* ---------- input ---------- */
+  window.addEventListener("keydown", (e) => {
+    keys[e.key] = true;
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " ", "Enter"].includes(e.key)) e.preventDefault();
+    if (e.key === "m" || e.key === "M") toggleMute();
+    if (G.mode === "dialog") {
+      if (G.dialog && G.dialog.lines[G.dialog.i].choices) {
+        if (e.key === "ArrowUp") G.dialog.choice = Math.max(0, G.dialog.choice - 1);
+        if (e.key === "ArrowDown") G.dialog.choice = Math.min(G.dialog.lines[G.dialog.i].choices.length - 1, G.dialog.choice + 1);
+        renderDialog();
+      }
+      if (e.key === "Enter" || e.key === " ") advanceDialog();
+      return;
+    }
+    if (G.mode === "battle") {
+      const b = G.battle;
+      if (e.key === "ArrowUp") b.sel = Math.max(0, b.sel - 1);
+      if (e.key === "ArrowDown") b.sel = Math.min(b.opts.length - 1, b.sel + 1);
+      if (e.key === "ArrowLeft") b.sel = Math.max(0, b.sel - 2);
+      if (e.key === "ArrowRight") b.sel = Math.min(b.opts.length - 1, b.sel + 2);
+      if (e.key === "Enter" || e.key === " ") confirmBattle();
+      if (e.key === "Escape") { b.menu = "main"; b.sel = 0; blitBattleMenu(); }
+      blitBattleMenu();
+      return;
+    }
+    if (e.key === "Enter" || e.key === " ") interact();
+    if (e.key === "Escape" && G.mode === "explore") openMenu();
+    else if (e.key === "Escape" && G.mode === "menu") { $("menu").classList.remove("show"); G.mode = "explore"; }
+  });
+  window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+
+  document.querySelectorAll("[data-k]").forEach((el) => {
+    const down = (ev) => { ev.preventDefault(); keys[el.dataset.k] = true; if (el.dataset.k === "Enter") interact(); if (el.dataset.k === "Escape" && G.mode === "explore") openMenu(); };
+    const up = () => { keys[el.dataset.k] = false; };
+    el.addEventListener("pointerdown", down);
+    el.addEventListener("pointerup", up);
+    el.addEventListener("pointerleave", up);
+  });
+
+  $("btnNew").onclick = startNew;
+  $("btnCont").onclick = continueGame;
+  $("btnMute").onclick = toggleMute;
+  $("btnSave").onclick = () => { save(); $("mBody").insertAdjacentHTML("afterbegin", "<p style='color:var(--gold)'>Saved in this browser.</p>"); };
+  $("btnClose").onclick = () => { $("menu").classList.remove("show"); G.mode = "explore"; };
+  $("btnTitle").onclick = () => { save(); $("menu").classList.remove("show"); showTitle(); };
+  canvas.addEventListener("click", () => { if (G.mode === "title") startNew(); else interact(); });
+
+  function toggleMute() {
+    G.mute = !G.mute;
+    $("btnMute").textContent = "Sound: " + (G.mute ? "Off" : "On");
+    if (!G.mute) audioInit();
+  }
+
+  /* ---------- loop ---------- */
+  function tick() {
+    G.t++;
+    if (G.mode === "explore") {
+      let dx = 0, dy = 0;
+      if (keys.ArrowUp || keys.w || keys.W) dy -= 1;
+      if (keys.ArrowDown || keys.s || keys.S) dy += 1;
+      if (keys.ArrowLeft || keys.a || keys.A) dx -= 1;
+      if (keys.ArrowRight || keys.d || keys.D) dx += 1;
+      if (dx || dy) tryMove(dx, dy);
+    }
+    if (G.mode === "title") drawTitle(G.t);
+    else if (G.mode === "credits") drawCredits(G.t);
+    else if (G.mode === "battle") { drawBattleBack(); }
+    else drawMap();
+    music();
+    requestAnimationFrame(tick);
+  }
+
+  showTitle();
+  tick();
+})();
+</script>
+</body>
+</html>

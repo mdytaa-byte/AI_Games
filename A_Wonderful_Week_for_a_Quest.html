@@ -307,7 +307,7 @@
     "W": "wood", "B": "bridge", "P": "plaza", "F": "fire", "A": "arena",
     "G": "gobfloor", "L": "lair", "N": "navy", "+": "path"
   };
-  const SOLID = new Set(["water", "tree", "wall", "house", "roof", "mtn", "dark"]);
+  const SOLID = new Set(["water", "tree", "wall", "house", "roof", "mtn", "dark", "navy"]);
 
   function parseMap(str) {
     const rows = str.trim().split("\n").map((r) => r.replace(/^\s+/, ""));
@@ -489,28 +489,21 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       { x: 19, y: 12, to: "forest", tx: 11, ty: 7, need: "quest" },
       { x: 21, y: 12, to: "forest", tx: 11, ty: 7, need: "quest" },
       { x: 23, y: 12, to: "forest", tx: 11, ty: 7, need: "quest" },
-      { x: 32, y: 13, to: "arena", tx: 10, ty: 6, need: "quest" },
-      { x: 33, y: 13, to: "arena", tx: 10, ty: 6, need: "quest" },
-      { x: 34, y: 13, to: "arena", tx: 10, ty: 6, need: "quest" },
-      { x: 33, y: 14, to: "arena", tx: 10, ty: 6, need: "quest" },
-      { x: 32, y: 10, to: "cave", tx: 10, ty: 6, need: "quest" },
-      { x: 33, y: 10, to: "cave", tx: 10, ty: 6, need: "quest" },
-      { x: 34, y: 10, to: "cave", tx: 10, ty: 6, need: "quest" },
+      { x: 32, y: 14, to: "arena", tx: 10, ty: 6, need: "quest" },
       { x: 33, y: 11, to: "cave", tx: 10, ty: 6, need: "quest" },
       { x: 27, y: 16, to: "lair", tx: 7, ty: 5 },
-      { x: 28, y: 16, to: "lair", tx: 7, ty: 5 },
       { x: 25, y: 8, to: "rally", tx: 6, ty: 8, need: "allSecrets" }
     ],
-    tower: [{ x: 12, y: 8, to: "world", tx: 32, ty: 6 }],
+    tower: [{ x: 12, y: 8, to: "world", tx: 28, ty: 6 }],
     forest: [
-      { x: 11, y: 1, to: "world", tx: 21, ty: 13 },
-      { x: 12, y: 1, to: "world", tx: 21, ty: 13 },
-      { x: 11, y: 10, to: "world", tx: 21, ty: 13 },
-      { x: 12, y: 10, to: "world", tx: 21, ty: 13 }
+      { x: 11, y: 1, to: "world", tx: 16, ty: 10 },
+      { x: 12, y: 1, to: "world", tx: 16, ty: 10 },
+      { x: 11, y: 10, to: "world", tx: 16, ty: 10 },
+      { x: 12, y: 10, to: "world", tx: 16, ty: 10 }
     ],
-    arena: [{ x: 10, y: 8, to: "world", tx: 33, ty: 15 }, { x: 9, y: 8, to: "world", tx: 33, ty: 15 }],
-    cave: [{ x: 13, y: 7, to: "world", tx: 31, ty: 11 }],
-    lair: [{ x: 10, y: 6, to: "world", tx: 26, ty: 16 }],
+    arena: [{ x: 10, y: 8, to: "world", tx: 29, ty: 15 }, { x: 9, y: 8, to: "world", tx: 29, ty: 15 }],
+    cave: [{ x: 13, y: 7, to: "world", tx: 30, ty: 10 }],
+    lair: [{ x: 10, y: 6, to: "world", tx: 24, ty: 16 }],
     rally: [{ x: 2, y: 8, to: "world", tx: 24, ty: 8 }, { x: 1, y: 8, to: "world", tx: 24, ty: 8 }]
   };
 
@@ -519,10 +512,10 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     const list = [];
     if (G.map === "village") {
       list.push(npc(14, 6, "jackdaw", "Jackdaw", talkJackdawVillage));
-      list.push(npc(18, 8, "mordeck", "Mordeck", talkMordeck));
+      list.push(npc(18, 7, "mordeck", "Mordeck", talkMordeck));
       if (!f.roderickGone) list.push(npc(16, 8, "roderick", "Sir Roderick 3RG", talkRoderick));
       list.push(npc(22, 14, "bell", "Bellissimo", talkBell));
-      list.push(npc(8, 8, "ellie", "Ellie", talkEllie));
+      list.push(npc(7, 7, "ellie", "Ellie", talkEllie));
       list.push(npc(6, 5, "villager", "Bean Farmer", () => say([
         { who: "Farmer", text: "Magic beans are the principal crop. If someone says they couldn’t give a bean, they mean it." },
         { who: "Jackdaw", text: "You’re welcome. I spotted you that one so you wouldn’t wonder until Chapter Five.", note: "Other expressions include “Everything just beany” and “I’d give my best bean for that.”" }
@@ -551,8 +544,8 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       list.push(npc(7, 3, "elm", "ELM", talkElmLair));
     }
     if (G.map === "rally") {
-      if (!f.elmDown) list.push(npc(12, 3, "elm", "Lord ELM", talkElmRally));
-      if (f.elmDown && !f.wormDown) list.push(npc(12, 5, "worm", "Wormtoe", talkWorm));
+      if (!f.elmDown) list.push(npc(7, 3, "elm", "Lord ELM", talkElmRally));
+      if (f.elmDown && !f.wormDown) list.push(npc(16, 5, "worm", "Wormtoe", talkWorm));
       if (f.saved) list.push(npc(8, 8, "mordeck", "Mordeck", talkEnding));
     }
     return list;
@@ -765,7 +758,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
         return;
       }
       say([
-        { who: "Jackdaw", text: "Three pieces. Elves in the west woods (they look like dwarves). Dwarves at the southern amphitheater (they look like giants). Goblins in the eastern cave (they like vegetables, mostly)." },
+        { who: "Jackdaw", text: "Three pieces. Elves in the clump of trees south of the highway (they look like dwarves). Dwarves in the stone ring to the southeast (they look like giants). Goblins in the eastern caves (they like vegetables, mostly)." },
         { who: "Jackdaw", text: "If you hold my map upside-down, that is a you problem. The runic N is a 10,000-year tradition." }
       ]);
       return;
@@ -777,7 +770,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       { who: "Jackdaw", text: "Bring me all three parts. Try not to die. If you do, I shall narrate it wittily." }
     ], () => {
       G.flags.quest = true;
-      G.quest = "Collect the Great Secret: Elves (west), Dwarves (south), Goblins (east).";
+      G.quest = "Collect the Great Secret: elves in the southern trees, dwarves in the SE stone ring, goblins in the eastern caves.";
       G.inv.push({ id: "magic", n: 2 });
       save();
     });
@@ -869,6 +862,8 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     ], () => {
       G.flags.secretM = true;
       G.party = G.party.filter((p) => p.id !== "grimble");
+      const s = G.party[0];
+      if (s) { s.hp = s.maxHp; s.mp = s.maxMp; }
       updateQuestSecrets();
       save();
     });
@@ -894,7 +889,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       { who: "ELM", text: "Quiet! You may only compliment me or insult my enemies. Sneezes must be incorporated." },
       { who: "Squires", text: "Oh great one, did you achoo-se your own name?" },
       { who: "ELM", text: "That wasn’t a compliment! Who in the beanstalk are you?" }
-    ], () => startBattle([enemy("elm")], { canFlee: false, boss: true, onWin: elmWin }));
+    ], () => startBattle([enemy("elm")], { canFlee: false, boss: true, heal: true, onWin: elmWin }));
   }
   function elmWin() {
     say([
@@ -911,7 +906,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
 
   function talkWorm() {
     say([{ who: "Wormtoe", text: "Ten tries, ten bruised toes. That pebble doesn’t care about prophecies." }],
-      () => startBattle([enemy("worm")], { canFlee: false, boss: true, onWin: wormWin }));
+      () => startBattle([enemy("worm")], { canFlee: false, boss: true, heal: true, onWin: wormWin }));
   }
   function wormWin() {
     say([
@@ -925,6 +920,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       G.quest = "Attend the statue unveiling. Ignore Mordeck’s epic poetry.";
       G.map = "village";
       G.px = 16; G.py = 8;
+      hud();
       save();
       say([
         { who: "Mordeck", text: "FREE FOOD AND ALE FOR ALL! …Now that I have your attention: a statue of Roddy Squires, who I would not have bet a bean on." },
@@ -935,6 +931,8 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       ], () => {
         G.flags.credits = true;
         G.mode = "credits";
+        $("hud").classList.remove("show");
+        $("dialog").classList.remove("show");
         save();
       });
     });
@@ -947,7 +945,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   function updateQuestSecrets() {
     const a = [G.flags.secretL && "Louisa", G.flags.secretE && "Elisabeth", G.flags.secretM && "Meriwether"].filter(Boolean);
     if (a.length === 3) G.quest = "Return to Jackdaw’s tower. The name is complete. (It is a terrible villain name.)";
-    else G.quest = "Great Secret so far: " + (a.join(" / ") || "(none)") + ". Elves west, dwarves south, goblins east.";
+    else G.quest = "Great Secret so far: " + (a.join(" / ") || "(none)") + ". Elves: southern trees. Dwarves: SE ring. Goblins: east caves.";
   }
 
   /* ---------- combat ---------- */
@@ -959,7 +957,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       goblin: { name: "Goblin Cousin", hp: 16, maxHp: 16, atk: 5, def: 2, xp: 7, gold: 5, spr: "gob" },
       hob: { name: "Hobgoblin", hp: 20, maxHp: 20, atk: 6, def: 3, xp: 9, gold: 8, spr: "hob" },
       hench: { name: "Henchman Applicant", hp: 14, maxHp: 14, atk: 5, def: 1, xp: 6, gold: 5, spr: "hench" },
-      champ: { name: "Dwarven Champion", hp: 42, maxHp: 42, atk: 9, def: 4, xp: 30, gold: 25, spr: "champ", boss: true },
+      champ: { name: "Dwarven Champion", hp: 30, maxHp: 30, atk: 8, def: 3, xp: 30, gold: 25, spr: "champ", boss: true },
       elm: { name: "Lord ELM", hp: 50, maxHp: 50, atk: 8, def: 3, xp: 40, gold: 0, spr: "elm", boss: true },
       worm: { name: "Wormtoe", hp: 55, maxHp: 55, atk: 10, def: 5, xp: 50, gold: 40, spr: "worm", boss: true }
     };
@@ -967,6 +965,13 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   }
 
   function startBattle(enemies, opts = {}) {
+    if (opts.boss) {
+      G.party.forEach((p) => {
+        p.mp = p.maxMp;
+        if (opts.heal) p.hp = p.maxHp;
+      });
+      hud();
+    }
     G.mode = "battle";
     G.battle = {
       foes: enemies,
@@ -978,7 +983,8 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       canFlee: opts.canFlee !== false,
       onWin: opts.onWin,
       guard: {},
-      anim: 0
+      anim: 0,
+      over: false
     };
     $("battle").classList.add("show");
     $("hud").classList.add("show");
@@ -995,6 +1001,12 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     if (b.menu === "main") {
       opts = ["Attack", "Skill", "Item"];
       if (b.canFlee) opts.push("Flee");
+      if (b.foes.some((f) => f.spr === "elm" && f.hp > 0) && G.flags.secretL && G.flags.secretE && G.flags.secretM) {
+        opts.unshift("The Great Secret");
+      }
+      if (b.foes.some((f) => f.spr === "worm" && f.hp > 0)) {
+        opts.unshift("Acidentiality");
+      }
     } else if (b.menu === "skill") {
       const p = G.party[b.i];
       opts = p.skills.map((id) => SKILLS[id].name + " (" + SKILLS[id].mp + " MP)");
@@ -1020,11 +1032,18 @@ TTTTTTTTTTTTTTTTTTTTTTTT
 
   function confirmBattle() {
     const b = G.battle;
-    if (!b) return;
+    if (!b || b.over) return;
     const p = G.party[b.i];
+    if (!p) return;
     if (b.menu === "main") {
       const c = b.opts[b.sel];
-      if (c === "Attack") { b.pending = { type: "atk" }; b.menu = "target"; b.sel = 0; }
+      if (c === "The Great Secret") { b.pending = { type: "skill", id: "secret" }; resolvePlayer(); return; }
+      else if (c === "Acidentiality") { b.pending = { type: "skill", id: "accident" }; resolvePlayer(); return; }
+      else if (c === "Attack") {
+        b.pending = { type: "atk" };
+        b.menu = "target";
+        b.sel = Math.max(0, b.foes.findIndex((f) => f.hp > 0));
+      }
       else if (c === "Skill") { b.menu = "skill"; b.sel = 0; }
       else if (c === "Item") { b.menu = "item"; b.sel = 0; }
       else if (c === "Flee") { tryFlee(); return; }
@@ -1035,10 +1054,12 @@ TTTTTTTTTTTTTTTTTTTTTTTT
         let id = p.skills.find((s) => label.startsWith(SKILLS[s].name));
         if (label.startsWith("The Great Secret")) id = "secret";
         const sk = SKILLS[id];
+        if (!sk) { b.menu = "main"; b.sel = 0; blitBattleMenu(); return; }
         if (p.mp < sk.mp) { b.log = "Not enough MP. Jackdaw would make a joke about beans here."; blitBattleMenu(); return; }
         b.pending = { type: "skill", id };
         if (sk.all || sk.ally || sk.guard) { resolvePlayer(); return; }
-        b.menu = "target"; b.sel = 0;
+        b.menu = "target";
+        b.sel = Math.max(0, b.foes.findIndex((f) => f.hp > 0));
       }
     } else if (b.menu === "item") {
       if (b.opts[b.sel] === "Back") { b.menu = "main"; b.sel = 0; }
@@ -1048,7 +1069,11 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       }
     } else if (b.menu === "target") {
       if (b.opts[b.sel] === "Back") { b.menu = "main"; b.sel = 0; }
-      else if (b.foes[b.sel] && b.foes[b.sel].hp > 0) { b.target = b.sel; resolvePlayer(); return; }
+      else {
+        let t = b.sel;
+        if (!b.foes[t] || b.foes[t].hp <= 0) t = b.foes.findIndex((f) => f.hp > 0);
+        if (t >= 0) { b.target = t; resolvePlayer(); return; }
+      }
     }
     blitBattleMenu();
   }
@@ -1069,7 +1094,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       else if (f.evade && Math.random() * 100 < f.evade) { b.log = f.name + " skipped aside. (Skipping beans. It’s a whole thing.)"; }
       else {
         const n = dmg(p.atk, f.def);
-        f.hp -= n;
+        f.hp = Math.max(0, f.hp - n);
         b.log = p.name + " bonks " + f.name + " for " + n + "!";
         sfx("hit");
       }
@@ -1097,7 +1122,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
           if (f.spr === "worm" && act.id !== "accident") { msg += "Not accidental enough. "; return; }
           if (f.evade && Math.random() * 100 < f.evade / 2) { msg += f.name + " hops. "; return; }
           const n = dmg(sk.dmg, f.def);
-          f.hp -= n;
+          f.hp = Math.max(0, f.hp - n);
           msg += f.name + " takes " + n + ". ";
           if (sk.confuse && Math.random() * 100 < sk.confuse) { f.confuse = 2; msg += "Transfixed! "; }
           if (sk.stun && Math.random() * 100 < sk.stun) { f.stun = 1; msg += "Stunned! "; }
@@ -1141,6 +1166,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       if (f.stun > 0) { f.stun--; msgs.push(f.name + " is too busy howling at a hangnail."); return; }
       if (f.confuse > 0) { f.confuse--; msgs.push(f.name + " watches Squires’ dance and forgets to attack."); return; }
       const alive = G.party.filter((p) => p.hp > 0);
+      if (!alive.length) { msgs.push(f.name + " stands over the fallen."); return; }
       const t = alive[irand(0, alive.length - 1)];
       let n = dmg(f.atk, t.def);
       if (b.guard[t.id]) n = Math.max(1, Math.floor(n / 2));
@@ -1171,6 +1197,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       const gold = b.foes.reduce((s, f) => s + f.gold, 0);
       G.gold += gold;
       b.log = "Victory! +" + gold + " beans (currency). The crowd would sing if this weren’t a book.";
+      b.over = true;
       blitBattleMenu();
       sfx("win");
       setTimeout(() => endBattle(true), 700);
@@ -1192,9 +1219,13 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   }
 
   /* ---------- interaction ---------- */
+  function playerCell() {
+    return { x: Math.floor(G.px), y: Math.floor(G.py) };
+  }
   function facing() {
+    const c = playerCell();
     const d = [[0, -1], [1, 0], [0, 1], [-1, 0]][G.dir];
-    return { x: Math.round(G.px) + d[0], y: Math.round(G.py) + d[1] };
+    return { x: c.x + d[0], y: c.y + d[1] };
   }
   function interact() {
     if (G.mode === "dialog") { advanceDialog(); return; }
@@ -1203,10 +1234,11 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     if (G.mode === "credits") { G.mode = "title"; showTitle(); return; }
     if (G.mode === "menu") { $("menu").classList.remove("show"); G.mode = "explore"; return; }
     if (G.mode !== "explore") return;
+    const here = playerCell();
     const f = facing();
-    const n = npcsFor().find((p) => p.x === f.x && p.y === f.y);
+    const n = npcsFor().find((p) => (p.x === f.x && p.y === f.y) || (p.x === here.x && p.y === here.y));
     if (n) { n.talk(); return; }
-    const w = (WARPS[G.map] || []).find((p) => p.x === Math.round(G.px) && p.y === Math.round(G.py) || (p.x === f.x && p.y === f.y));
+    const w = (WARPS[G.map] || []).find((p) => (p.x === here.x && p.y === here.y) || (p.x === f.x && p.y === f.y));
     if (w) { tryWarp(w); return; }
     const t = tileAt(G.map, f.x, f.y);
     if (t === "beans") say([{ who: "Squires", text: "Magic beans. The land’s greatest treasure. Also breakfast." }]);
@@ -1241,32 +1273,51 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   }
   function warp(map, x, y) {
     G.map = map; G.px = x + .5; G.py = y + .5;
+    G.enc = 0;
     sfx("warp");
     hud();
   }
 
   /* ---------- movement ---------- */
-  let acc = 0;
+  let lastTile = { x: -1, y: -1 };
   function tryMove(dx, dy) {
     if (G.mode !== "explore") return;
     if (dx > 0) G.dir = 1; if (dx < 0) G.dir = 3; if (dy > 0) G.dir = 2; if (dy < 0) G.dir = 0;
-    const nx = G.px + dx * 0.12, ny = G.py + dy * 0.12;
-    const cx = nx, cy = ny;
-    const pts = [[cx - .3, cy - .1], [cx + .3, cy - .1], [cx - .3, cy + .35], [cx + .3, cy + .35]];
-    if (pts.some(([x, y]) => blocked(G.map, Math.floor(x), Math.floor(y)))) return;
-    G.px = nx; G.py = ny; G.walk += 0.2;
-    const ix = Math.round(G.px), iy = Math.round(G.py);
-    (WARPS[G.map] || []).forEach((w) => {
-      if (w.x === ix && w.y === iy) tryWarp(w);
-    });
+    const oldX = G.px, oldY = G.py;
+    const cx = Math.floor(G.px), cy = Math.floor(G.py);
+    if (dx) {
+      const nx = G.px + dx * 0.12;
+      const destX = dx > 0 ? Math.floor(nx + 0.45) : Math.floor(nx);
+      if (!blocked(G.map, destX, cy)) G.px = nx;
+    }
+    if (dy) {
+      const ny = G.py + dy * 0.12;
+      const destY = dy > 0 ? Math.floor(ny + 0.45) : Math.floor(ny);
+      if (!blocked(G.map, Math.floor(G.px), destY)) G.py = ny;
+    }
+    if (G.px === oldX && G.py === oldY) return;
+    G.walk += 0.2;
+    const here = playerCell();
+    const standing = (WARPS[G.map] || []).find((w) => w.x === here.x && w.y === here.y);
+    const key = standing ? G.map + ":" + here.x + "," + here.y : null;
+    if (standing && G.warpKey !== key) {
+      G.warpKey = key;
+      tryWarp(standing);
+    }
+    if (!standing) G.warpKey = null;
     if (["world", "forest"].includes(G.map) && G.flags.quest && !G.flags.saved) {
-      G.enc += 0.35;
-      if (G.enc > 28 + Math.random() * 18) {
-        G.enc = 0;
-        const pool = G.map === "forest" ? ["bug", "skip"] : ["bug", "skip", "orc", "hench"];
-        const n = 1 + (Math.random() < 0.35 ? 1 : 0);
-        startBattle(Array.from({ length: n }, () => enemy(pool[irand(0, pool.length - 1)])));
+      if (here.x !== lastTile.x || here.y !== lastTile.y) {
+        lastTile = here;
+        G.enc += 1;
+        if (G.enc > 14 + Math.random() * 10) {
+          G.enc = 0;
+          const pool = G.map === "forest" ? ["bug", "skip"] : ["bug", "skip", "orc", "hench"];
+          const n = 1 + (Math.random() < 0.3 ? 1 : 0);
+          startBattle(Array.from({ length: n }, () => enemy(pool[irand(0, pool.length - 1)])));
+        }
       }
+    } else {
+      lastTile = here;
     }
   }
 
@@ -1451,15 +1502,13 @@ TTTTTTTTTTTTTTTTTTTTTTTT
 
   function drawCredits(t) {
     col("#0a0714"); r(0, 0, W, H);
-    ctx.fillStyle = PAL.gold;
-    ctx.font = "8px monospace";
     const lines = [
       "A WONDERFUL WEEK FOR A QUEST",
       "Book I of the Beandom",
+      "",
       "Adapted from the novel by",
       "Michael D. Young",
       "",
-      "Starring",
       "Roddy Squires  -  himself, accidentally",
       "Grimblewaith   -  supporting role",
       "Jackdaw        -  narrator, footnotes",
@@ -1473,9 +1522,13 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       "",
       "Press Enter"
     ];
+    const start = 18 - Math.max(0, ((t / 8) | 0) - 20);
     lines.forEach((s, i) => {
+      const y = start + i * 11;
+      if (y < 8 || y > 216) return;
       ctx.fillStyle = i === 0 ? PAL.gold : PAL.cream;
-      ctx.fillText(s, 18, 20 + ((i * 10 + (t / 3)) % 220));
+      ctx.font = "8px monospace";
+      ctx.fillText(s, 16, y);
     });
   }
 
@@ -1661,6 +1714,10 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   $("btnClose").onclick = () => { $("menu").classList.remove("show"); G.mode = "explore"; };
   $("btnTitle").onclick = () => { save(); $("menu").classList.remove("show"); showTitle(); };
   canvas.addEventListener("click", () => { if (G.mode === "title") startNew(); else interact(); });
+  $("dialog").addEventListener("click", (e) => {
+    if (e.target.closest(".choice")) return;
+    if (G.mode === "dialog") advanceDialog();
+  });
 
   function toggleMute() {
     G.mute = !G.mute;
@@ -1689,6 +1746,16 @@ TTTTTTTTTTTTTTTTTTTTTTTT
 
   showTitle();
   tick();
+  window.__WQ = {
+    G,
+    cell: playerCell,
+    talk: interact,
+    warp,
+    save,
+    load,
+    blocked: (x, y) => blocked(G.map, x, y),
+    mapSize: () => ({ w: MAPS[G.map].w, h: MAPS[G.map].h, id: G.map })
+  };
 })();
 </script>
 </body>

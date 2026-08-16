@@ -224,8 +224,8 @@ html[data-spots="an"] .hotspot .tag{opacity:1;}
 html[data-motion="aus"] .max.laufen, html[data-motion="aus"] .max.stoppen{animation:none;left:42%;}
 
 .zaehl{
-  position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;
-  background:rgba(24,41,31,.72);color:var(--papier);text-align:center;padding:1rem;
+  position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+  background:rgba(24,41,31,.78);color:var(--papier);text-align:center;padding:1rem;
 }
 .zaehl .zahl{
   font-family:var(--serif);font-size:clamp(2.4rem,8vw,5rem);margin:.2em 0;color:var(--gold);
@@ -273,7 +273,7 @@ footer.wrap{color:var(--tinte-weich);font-size:.9em;padding-bottom:2.4rem;}
 .code-box{
   background:var(--nadel);color:var(--papier);border-radius:var(--radius);padding:1rem 1.15rem;margin:1rem 0;
 }
-.code-val{font-family:var(--mono);font-size:1.05em;display:block;margin:.4em 0 .7em;word-break:break-all;}
+.code-val{font-family:var(--mono);font-size:1.15em;letter-spacing:.06em;display:block;margin:.4em 0 .7em;word-break:break-all;}
 .name-feld{margin:.8rem 0;}
 .name-feld label{display:block;font-weight:700;margin-bottom:.3em;}
 .name-feld input{
@@ -485,7 +485,7 @@ html[data-motion="aus"] *{
     <div class="code-box">
       <p><strong>Dein Abgabecode</strong> <span class="en gloss" style="color:#c9d6c4">Your submission code</span></p>
       <code class="code-val" id="code-val">Bitte gib zuerst deinen Namen ein.</code>
-      <p>Kopiere diesen Code in die Canvas-Aufgabe. Der Code gehört zu deinem Namen.</p>
+      <p>Kopiere diesen Code in die Canvas-Aufgabe. Der Code gehört zu deinem Namen. Am besten den Knopf <em>Code kopieren</em> nutzen, nicht abtippen.</p>
       <p><button type="button" class="btn" id="btn-copy" style="background:var(--gold)">Code kopieren</button></p>
     </div>
     <div class="btn-row">
@@ -513,37 +513,37 @@ html[data-motion="aus"] *{
    ============================================================ */
 const SPOTS = {
   sofa:{ szene:"wohnzimmer", label:"das Sofa", wo:"hinter dem Sofa", wohin:"hinter das Sofa",
-    prep:"hinter", gut:true, en:"behind the sofa", style:"left:29%;top:46%;width:26%;height:30%", halt:"38%" },
+    prep:"hinter", gut:true, en:"behind the sofa", style:"left:30%;top:54%;width:25%;height:20%", halt:"42%" },
   tisch:{ szene:"wohnzimmer", label:"der Tisch", wo:"unter dem Tisch", wohin:"unter den Tisch",
-    prep:"unter", gut:true, en:"under the table", style:"left:36%;top:64%;width:16%;height:16%", halt:"44%" },
+    prep:"unter", gut:true, en:"under the table", style:"left:37%;top:75%;width:13%;height:10%", halt:"44%" },
   schrank:{ szene:"wohnzimmer", label:"der Schrank", wo:"in dem Schrank", wohin:"in den Schrank",
-    prep:"in", gut:true, en:"in the wardrobe", style:"left:80%;top:26%;width:17%;height:52%", halt:"86%" },
+    prep:"in", gut:true, en:"in the wardrobe", style:"left:80%;top:28%;width:17%;height:50%", halt:"86%" },
   vorhaenge:{ szene:"wohnzimmer", label:"die Vorhänge", wo:"zwischen den Vorhängen", wohin:"zwischen die Vorhänge",
-    prep:"zwischen", gut:true, en:"between the curtains", style:"left:52%;top:6%;width:20%;height:38%", halt:"60%" },
+    prep:"zwischen", gut:true, en:"between the curtains", style:"left:50%;top:8%;width:20%;height:36%", halt:"60%" },
   pflanze:{ szene:"wohnzimmer", label:"die Pflanze", wo:"hinter der Pflanze", wohin:"hinter die Pflanze",
-    prep:"hinter", gut:true, en:"behind the plant", style:"left:68%;top:42%;width:11%;height:34%", halt:"72%" },
+    prep:"hinter", gut:true, en:"behind the plant", style:"left:68%;top:46%;width:10%;height:28%", halt:"72%" },
   tuer:{ szene:"wohnzimmer", label:"die Tür", wo:"vor der Tür", wohin:"vor die Tür",
-    prep:"vor", gut:false, en:"in front of the door", style:"left:3%;top:28%;width:12%;height:50%", halt:"8%" },
+    prep:"vor", gut:false, en:"in front of the door", style:"left:3%;top:54%;width:11%;height:24%", halt:"8%" },
   sessel:{ szene:"wohnzimmer", label:"der Sessel", wo:"auf dem Sessel", wohin:"auf den Sessel",
-    prep:"auf", gut:false, en:"on the armchair", style:"left:15%;top:50%;width:14%;height:26%", halt:"22%" },
+    prep:"auf", gut:false, en:"on the armchair", style:"left:16%;top:54%;width:13%;height:20%", halt:"22%" },
   fenster:{ szene:"wohnzimmer", label:"das Fenster", wo:"neben dem Fenster", wohin:"neben das Fenster",
-    prep:"neben", gut:false, en:"next to the window", style:"left:70%;top:8%;width:9%;height:28%", halt:"74%" },
+    prep:"neben", gut:false, en:"next to the window", style:"left:71%;top:9%;width:8%;height:26%", halt:"74%" },
   baum:{ szene:"garten", label:"der Baum", wo:"hinter dem Baum", wohin:"hinter den Baum",
-    prep:"hinter", gut:true, en:"behind the tree", style:"left:5%;top:12%;width:18%;height:58%", halt:"12%" },
+    prep:"hinter", gut:true, en:"behind the tree", style:"left:4%;top:14%;width:17%;height:48%", halt:"12%" },
   bank:{ szene:"garten", label:"die Bank", wo:"unter der Bank", wohin:"unter die Bank",
-    prep:"unter", gut:true, en:"under the bench", style:"left:24%;top:58%;width:16%;height:18%", halt:"30%" },
+    prep:"unter", gut:true, en:"under the bench", style:"left:25%;top:64%;width:14%;height:14%", halt:"30%" },
   huette:{ szene:"garten", label:"die Hütte", wo:"in der Hütte", wohin:"in die Hütte",
-    prep:"in", gut:true, en:"in the shed", style:"left:80%;top:34%;width:18%;height:42%", halt:"88%" },
+    prep:"in", gut:true, en:"in the shed", style:"left:81%;top:32%;width:17%;height:42%", halt:"88%" },
   buesche:{ szene:"garten", label:"die Büsche", wo:"zwischen den Büschen", wohin:"zwischen die Büsche",
-    prep:"zwischen", gut:true, en:"between the bushes", style:"left:42%;top:46%;width:16%;height:26%", halt:"50%" },
+    prep:"zwischen", gut:true, en:"between the bushes", style:"left:42%;top:62%;width:12%;height:16%", halt:"50%" },
   tonne:{ szene:"garten", label:"die Tonne", wo:"hinter der Tonne", wohin:"hinter die Tonne",
-    prep:"hinter", gut:true, en:"behind the bin", style:"left:72%;top:56%;width:8%;height:20%", halt:"74%" },
+    prep:"hinter", gut:true, en:"behind the bin", style:"left:73%;top:65%;width:6%;height:13%", halt:"74%" },
   zaun:{ szene:"garten", label:"der Zaun", wo:"vor dem Zaun", wohin:"vor den Zaun",
-    prep:"vor", gut:false, en:"in front of the fence", style:"left:2%;top:72%;width:22%;height:16%", halt:"10%" },
+    prep:"vor", gut:false, en:"in front of the fence", style:"left:2%;top:71%;width:18%;height:14%", halt:"10%" },
   schaukel:{ szene:"garten", label:"die Schaukel", wo:"auf der Schaukel", wohin:"auf die Schaukel",
-    prep:"auf", gut:false, en:"on the swing", style:"left:62%;top:28%;width:12%;height:42%", halt:"66%" },
+    prep:"auf", gut:false, en:"on the swing", style:"left:64%;top:33%;width:10%;height:30%", halt:"66%" },
   brunnen:{ szene:"garten", label:"der Brunnen", wo:"neben dem Brunnen", wohin:"neben den Brunnen",
-    prep:"neben", gut:false, en:"next to the fountain", style:"left:54%;top:52%;width:10%;height:22%", halt:"58%" }
+    prep:"neben", gut:false, en:"next to the fountain", style:"left:56%;top:68%;width:7%;height:14%", halt:"58%" }
 };
 
 const FOLGEN = [
@@ -1197,8 +1197,13 @@ function zeigeHideFeedback(titel, grund, art, r, spot, ziel){
 
 function zeigeWo(r){
   $("wo-box").hidden = false;
-  $("wo-frage").textContent = r.woFrage;
-  $("wo-en").textContent = r.woEn || "";
+  if(S.gefunden){
+    $("wo-frage").textContent = "Wo sollst du sein?";
+    $("wo-en").textContent = "Where should you be? (Mia’s hiding place, not the spot where you were found.)";
+  }else{
+    $("wo-frage").textContent = r.woFrage;
+    $("wo-en").textContent = r.woEn || "";
+  }
   $("wo-fb").textContent = "";
   const box = $("wo-opts"); box.innerHTML = "";
   r.woOptionen.forEach(o=>{
@@ -1286,7 +1291,7 @@ function baueCode(name){
   const pct = max ? Math.round(ges/max*100) : 0;
   const norm = name.trim().toLowerCase().replace(/\s+/g," ");
   const roh = norm+"|"+eintraege.join("")+"|"+ges+"|"+max;
-  const pruef = hash32(roh+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  const pruef = hash32(roh+"|"+SALT).toString(16).toUpperCase().padStart(8,"0").slice(-8);
   return { code:"VS-"+eintraege.join("")+"-"+ges+"-"+pct+"-"+pruef, ges, max, pct, folgen:eintraege };
 }
 function codeAktualisieren(){
@@ -1325,7 +1330,7 @@ function zeigeErgebnis(){
 $("name-in").addEventListener("input", codeAktualisieren);
 $("btn-copy").addEventListener("click", async ()=>{
   const t = $("code-val").textContent;
-  if(!/^VS-/.test(t)){ sagen("Es gibt noch keinen Code."); return; }
+  if(!/^VS-\d+-\d+-\d+-[0-9A-F]{8}$/.test(t)){ sagen("Es gibt noch keinen Code."); return; }
   try{
     await navigator.clipboard.writeText(t);
     $("btn-copy").textContent = "Code kopiert";
@@ -1340,7 +1345,7 @@ $("btn-verify").addEventListener("click", ()=>{
   const name = $("v-name").value.trim();
   const code = $("v-code").value.trim().toUpperCase();
   const out = $("v-out");
-  const m = /^VS-(\d+)-(\d+)-(\d+)-([0-9A-Z]{7})$/.exec(code);
+  const m = /^VS-(\d+)-(\d+)-(\d+)-([0-9A-F]{8})$/.exec(code);
   if(!name || !m){ out.textContent = "Bitte Name und einen vollständigen Code im Format VS-…-…-…-… eingeben."; return; }
   const [, folgen, ges, pct, pruef] = m;
   const norm = name.toLowerCase().replace(/\s+/g," ");
@@ -1351,7 +1356,7 @@ $("btn-verify").addEventListener("click", ()=>{
     max += f.max;
   });
   if(!ok){ out.textContent = "Ungültig: unbekannte Folgennummer."; return; }
-  const soll = hash32(norm+"|"+folgen+"|"+ges+"|"+max+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  const soll = hash32(norm+"|"+folgen+"|"+ges+"|"+max+"|"+SALT).toString(16).toUpperCase().padStart(8,"0").slice(-8);
   const echtPct = max ? Math.round(Number(ges)/max*100) : 0;
   out.textContent = (soll===pruef)
     ? "Gültig. "+name+" hat die Folgen "+folgen.split("").join(", ")+" gespielt: "+ges+" von "+max+" Punkten ("+echtPct+" %)."

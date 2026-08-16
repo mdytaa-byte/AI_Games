@@ -235,6 +235,7 @@ function clamp(v,a,b){return v<a?a:v>b?b:v}
 function rand(a,b){return a+Math.floor(Math.random()*(b-a+1))}
 function mulberry(a){return function(){let t=a+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296}}
 function toast(msg, ms=1400){
+  if(mode==="end" || (el.endscr && el.endscr.classList.contains("show"))) return;
   el.toast.textContent=msg; el.toast.style.display="block";
   clearTimeout(toast._t); toast._t=setTimeout(()=>el.toast.style.display="none", ms);
 }
@@ -268,9 +269,9 @@ function fresh(){
   const nadia=newHero("nadia","Nadia","nadia");
   G={
     map:"bedroom", px:8, py:8, dir:2, gold:20,
-    rank:0, steps:0, flags:{}, items:{potion:3, ether:1, hi:0, phoenix:0, ration:0},
+    rank:0, steps:0, flags:{}, items:{potion:5, ether:2, hi:1, phoenix:1, ration:1},
     keys:{}, party:[rich,aaron], bench:nadia, chests:{},
-    saveAt:{map:"bedroom",x:8,y:8}
+    saveAt:{map:"bedroom",x:8,y:8}, noEnc:false
   };
   healFull(rich); healFull(aaron); healFull(nadia);
   nadia.hp=nadia.mhp;
@@ -413,8 +414,8 @@ defMap("school",{
     "####################"
   ],
   warps:[
-    {x:0,y:8,to:"street",tx:16,ty:10},
-    {x:16,y:1,to:"gym",tx:6,ty:10},
+    {x:0,y:8,to:"street",tx:14,ty:11},
+    {x:16,y:1,to:"gym",tx:6,ty:8},
     {x:10,y:10,to:"detention",tx:4,ty:6, need:"detention_open"}
   ],
   npcs:[
@@ -447,7 +448,7 @@ defMap("gym",{
     "#......D.....#",
     "##############"
   ],
-  warps:[{x:7,y:10,to:"school",tx:16,ty:2}],
+  warps:[{x:7,y:10,to:"school",tx:16,ty:3}],
   npcs:[
     {x:7,y:3,spr:"coach",name:"Mr. Green", talk:async()=>raceTalk()},
     {x:4,y:6,spr:"mallory",name:"Mallory", vis:()=>fl("four")&&!fl("mallory1"), talk:async()=>malloryFight()}
@@ -494,7 +495,7 @@ defMap("sanctuary",{
     {x:14,y:13,to:"house",tx:7,ty:5},
     {x:1,y:10,to:"trial",tx:6,ty:18, need:"quests_given"},
     {x:24,y:10,to:"corridor",tx:1,ty:14, need:"card"},
-    {x:14,y:10,to:"hub",tx:8,ty:8, need:"knighted"}
+    {x:14,y:10,to:"hub",tx:8,ty:7, need:"four"}
   ],
   npcs:[
     {x:13,y:3,spr:"minerva",name:"Minerva", talk:async()=>minervaTalk()},
@@ -627,7 +628,7 @@ defMap("stronghold",{
     "#..#..#....#..#..#",
     "#................#",
     "#................#",
-    "#....########....#",
+    "#....##..####....#",
     "#....#......#....#",
     "#....#......#....#",
     "#................#",
@@ -733,37 +734,34 @@ defMap("grayrealm",{
 });
 
 function generateCorridor(){
-  const W=25,H=17, rng=mulberry(7741);
-  const g=Array.from({length:H},()=>Array(W).fill("#"));
-  function carve(x,y){
-    g[y][x]=".";
-    const dirs=[[2,0],[-2,0],[0,2],[0,-2]];
-    for(let i=dirs.length-1;i>0;i--){const j=Math.floor(rng()*(i+1)); [dirs[i],dirs[j]]=[dirs[j],dirs[i]];}
-    for(const [dx,dy] of dirs){
-      const nx=x+dx, ny=y+dy;
-      if(ny>0&&ny<H-1&&nx>0&&nx<W-1&&g[ny][nx]==="#"){
-        g[y+dy/2][x+dx/2]=".";
-        carve(nx,ny);
-      }
-    }
-  }
-  carve(1,H-3);
-  g[H-2][1]="D";
-  g[2][W-3]=".";
-  g[3][W-3]=".";
-  g[8][12]="."; g[8][13]="."; g[9][12]=".";
-  g[4][6]=".";
-  const rows=g.map(r=>r.join(""));
   defMap("corridor",{
     name:"Corridor of Keys", bg:"#2a2040", music:"dark", dark:true,
-    rows,
-    warps:[{x:1,y:H-2,to:"sanctuary",tx:24,ty:10}],
-    enc:{rate:15, foes:["lostkey","graypawn","garg"]},
+    rows:[
+      "#########################",
+      "#.................#######",
+      "#.................#.....#",
+      "#.................#.....#",
+      "#.......###########.....#",
+      "#.......#...............#",
+      "#.......#...............#",
+      "#.......#...............#",
+      "#.......#######.#########",
+      "#.......................#",
+      "#.......................#",
+      "#.......................#",
+      "#.......................#",
+      "#.......................#",
+      "#.......................#",
+      "#D......................#",
+      "#########################"
+    ],
+    warps:[{x:1,y:15,to:"sanctuary",tx:24,ty:10}],
+    enc:{rate:22, foes:["lostkey","graypawn","garg"]},
     npcs:[
-      {x:6,y:4,spr:"garg",name:"Gargoyle Twins", vis:()=>!fl("gargoyles"), talk:async()=>gargFight()},
-      {x:12,y:8,spr:"golem",name:"Golf Golem", vis:()=>!fl("golem"), talk:async()=>golemFight()},
-      {x:W-3,y:2,spr:"grayk",name:"Gray Knight", vis:()=>!fl("grayknight"), talk:async()=>grayFight()},
-      {x:W-4,y:3,spr:"phillip",name:"Phillip", vis:()=>fl("grayknight")&&!fl("phillip_seen"), talk:async()=>fatherTalk()}
+      {x:3,y:4,spr:"garg",name:"Gargoyle Twins", vis:()=>!fl("gargoyles"), talk:async()=>gargFight()},
+      {x:12,y:6,spr:"golem",name:"Golf Golem", vis:()=>!fl("golem"), talk:async()=>golemFight()},
+      {x:20,y:2,spr:"grayk",name:"Gray Knight", vis:()=>!fl("grayknight"), talk:async()=>grayFight()},
+      {x:22,y:2,spr:"phillip",name:"Phillip", vis:()=>fl("grayknight")&&!fl("phillip_seen"), talk:async()=>fatherTalk()}
     ]
   });
 }
@@ -997,13 +995,15 @@ function walkable(x,y){
 let walkF=0, moving=0, mdx=0, mdy=0;
 
 function tryMove(dx,dy){
-  if(mode!=="world"||moving) return;
+  if(mode!=="world"||moving) return false;
   if(dx===1) G.dir=3; else if(dx===-1) G.dir=1; else if(dy===1) G.dir=2; else if(dy===-1) G.dir=0;
   const nx=G.px+dx, ny=G.py+dy;
-  if(!walkable(nx,ny)){ sfx("no"); return; }
-  mdx=dx; mdy=dy; moving=8; G.px=nx; G.py=ny;
+  if(!walkable(nx,ny)){ return false; }
+  mdx=dx; mdy=dy; moving=G.fast?1:8; G.px=nx; G.py=ny;
   G.steps++;
   sfx("step");
+  if(G.fast){ moving=0; afterStep(); }
+  return true;
 }
 
 function afterStep(){
@@ -1031,8 +1031,8 @@ function afterStep(){
     warp(w.to,w.tx,w.ty);
     return;
   }
-  if(m.enc && (fl("sanctuary")||m.id==="trial"||m.id==="corridor"||m.id==="stronghold"||m.id==="grayrealm")){
-    if(G.steps%m.enc.rate===0 && Math.random()<0.55){
+  if(m.enc && !G.noEnc && (m.id==="trial"||m.id==="corridor"||m.id==="stronghold"||m.id==="grayrealm")){
+    if(G.steps%m.enc.rate===0 && Math.random()<0.4){
       const id=m.enc.foes[rand(0,m.enc.foes.length-1)];
       startBattle([makeEnemy(id)], false);
     }
@@ -1046,17 +1046,27 @@ function warp(id,x,y){
   el.loc.textContent=m?m.name:id;
 }
 
+let busy=false;
 async function interact(){
-  if(mode!=="world") return;
+  if(mode!=="world"||busy) return;
   const dx=[0,-1,0,1][G.dir], dy=[-1,0,1,0][G.dir];
-  const tx=G.px+dx, ty=G.py+dy;
-  const n=npcAt(tx,ty)||npcAt(G.px,G.py);
-  if(n && n.talk){ await n.talk(); return; }
-  const ch=curMap().chests.find(c=>c.x===tx&&c.y===ty);
-  if(ch){ await openChest(ch); return; }
-  const t=tileAt(tx,ty);
+  const spots=[[G.px+dx,G.py+dy],[G.px,G.py],[G.px+1,G.py],[G.px-1,G.py],[G.px,G.py+1],[G.px,G.py-1]];
+  for(const [tx,ty] of spots){
+    const n=npcAt(tx,ty);
+    if(n && n.talk){
+      if(tx!==G.px||ty!==G.py){
+        if(tx>G.px) G.dir=3; else if(tx<G.px) G.dir=1; else if(ty>G.py) G.dir=2; else G.dir=0;
+      }
+      busy=true;
+      try{ await n.talk(); } finally{ busy=false; }
+      return;
+    }
+  }
+  const ch=curMap().chests.find(c=>spots.some(([x,y])=>c.x===x&&c.y===y));
+  if(ch){ busy=true; try{ await openChest(ch); } finally{ busy=false; } return; }
+  const t=tileAt(G.px+dx, G.py+dy);
   if(t==="D"){
-    const w=curMap().warps.find(w=>w.x===tx&&w.y===ty);
+    const w=curMap().warps.find(w=>w.x===G.px+dx&&w.y===G.py+dy);
     if(w){
       if(w.need && !fl(w.need)){ await say("","Sealed."); return; }
       warp(w.to,w.tx,w.ty);
@@ -1090,6 +1100,8 @@ function say(name, text){
 function choose(opts){
   return new Promise(resolve=>{
     mode="dlg";
+    el.dlg.classList.add("show");
+    if(!el.dtext.textContent) el.dtext.textContent="What do you do?";
     el.choices.innerHTML="";
     opts.forEach((o,i)=>{
       const b=document.createElement("button");
@@ -1123,6 +1135,7 @@ function typewrite(text, done){
     i++;
     el.dtext.textContent=text.slice(0,i);
     if(i<text.length){
+      if(G && G.fast){ finish(); return; }
       if(!muted && i%2===0) beep(700,.01,"square",.01);
       typewrite._t=setTimeout(tick, 16);
     } else finish();
@@ -1448,6 +1461,7 @@ async function finalBattle(){
 
 function ending(){
   mode="end";
+  el.toast.style.display="none";
   el.endscr.classList.add("show");
   el.hud.classList.add("hidden");
   el.loc.classList.add("hidden");
@@ -1469,27 +1483,28 @@ const ENEMY={
   ember:{name:"Ember",hp:24,atk:9,def:2,spd:7,exp:10,gold:6,spr:"fire",tint:"#e05020"},
   frostling:{name:"Frostling",hp:26,atk:7,def:4,spd:5,exp:10,gold:6,spr:"ice",tint:"#80d0ff"},
   spark:{name:"Spark Imp",hp:18,atk:8,def:1,spd:10,exp:8,gold:5,spr:"fire",tint:"#ffcc40"},
-  icewarden:{name:"Ice Warden",hp:70,atk:12,def:6,spd:6,exp:40,gold:30,spr:"ice",tint:"#a0e0ff"},
-  firewarden:{name:"Fire Warden",hp:70,atk:14,def:4,spd:7,exp:40,gold:30,spr:"fire",tint:"#ff6020"},
-  mallory:{name:"Mallory",hp:80,atk:13,def:5,spd:10,exp:50,gold:40,spr:"mallory",tint:"#201018"},
-  hydra:{name:"Black Knight",hp:120,atk:16,def:7,spd:8,exp:80,gold:60,spr:"hydra",tint:"#100818"},
+  icewarden:{name:"Ice Warden",hp:52,atk:11,def:5,spd:6,exp:40,gold:30,spr:"ice",tint:"#a0e0ff"},
+  firewarden:{name:"Fire Warden",hp:52,atk:12,def:4,spd:7,exp:40,gold:30,spr:"fire",tint:"#ff6020"},
+  mallory:{name:"Mallory",hp:64,atk:12,def:5,spd:10,exp:50,gold:40,spr:"mallory",tint:"#201018"},
+  hydra:{name:"Black Knight",hp:88,atk:14,def:6,spd:8,exp:80,gold:60,spr:"hydra",tint:"#100818"},
   lostkey:{name:"Lost Key",hp:28,atk:10,def:3,spd:8,exp:12,gold:8,spr:"save",tint:"#c9a24a"},
   graypawn:{name:"Gray Pawn",hp:30,atk:11,def:4,spd:6,exp:14,gold:9,spr:"grayk",tint:"#888"},
   garg:{name:"Gargoyle",hp:40,atk:12,def:8,spd:4,exp:18,gold:12,spr:"garg",tint:"#5a6050"},
-  golem:{name:"Golf Golem",hp:110,atk:15,def:10,spd:3,exp:70,gold:50,spr:"golem",tint:"#6a7a50"},
-  grayk:{name:"Gray Knight",hp:140,atk:18,def:8,spd:9,exp:100,gold:80,spr:"grayk",tint:"#909498"},
+  golem:{name:"Golf Golem",hp:90,atk:14,def:8,spd:3,exp:70,gold:50,spr:"golem",tint:"#6a7a50"},
+  grayk:{name:"Gray Knight",hp:100,atk:16,def:7,spd:9,exp:100,gold:80,spr:"grayk",tint:"#909498"},
   doubt:{name:"Scattered Focus",hp:50,atk:10,def:3,spd:6,exp:30,gold:20,spr:"aaron",tint:"#8090a0"},
   darkpawn:{name:"Dark Pawn",hp:34,atk:13,def:4,spd:7,exp:16,gold:10,spr:"mallory",tint:"#301020"},
   fellhound:{name:"Fell Hound",hp:38,atk:15,def:3,spd:11,exp:18,gold:11,spr:"hydra",tint:"#401018"},
   neme:{name:"Nemesis Rook",hp:48,atk:14,def:9,spd:5,exp:22,gold:16,spr:"mallory",tint:"#101018"},
-  mallory2:{name:"Mallory",hp:160,atk:20,def:9,spd:12,exp:120,gold:90,spr:"mallory",tint:"#100808"},
+  mallory2:{name:"Mallory",hp:110,atk:17,def:8,spd:12,exp:120,gold:90,spr:"mallory",tint:"#100808"},
   graypawn2:{name:"Gray Warrior",hp:44,atk:16,def:6,spd:8,exp:20,gold:14,spr:"grayk",tint:"#777"},
   bonesoldier:{name:"Bone Soldier",hp:36,atk:14,def:5,spd:7,exp:18,gold:12,spr:"paladin",tint:"#d0d0c0"},
   umbratum:{name:"Umbratum",hp:90,atk:18,def:6,spd:10,exp:50,gold:30,spr:"queen",tint:"#201830"},
-  temperance:{name:"Temperance",hp:220,atk:22,def:10,spd:11,exp:200,gold:0,spr:"queen",tint:"#c8ccd0"}
+  temperance:{name:"Temperance",hp:150,atk:18,def:8,spd:11,exp:200,gold:0,spr:"queen",tint:"#c8ccd0"}
 };
 function makeEnemy(id){
   const e=ENEMY[id];
+  if(!e) return {id, name:id, hp:20, mhp:20, atk:6, def:2, spd:5, exp:8, gold:4, spr:"grayk", tint:"#888", alive:true};
   return {id, name:e.name, hp:e.hp, mhp:e.hp, atk:e.atk, def:e.def, spd:e.spd, exp:e.exp, gold:e.gold, spr:e.spr, tint:e.tint, alive:true};
 }
 
@@ -1498,7 +1513,7 @@ let B=null, battleResolve=null, bsel=0, bphase="cmd", bmenu="main", bActor=0, bL
 function startBattle(foes, boss){
   return new Promise(resolve=>{
     battleResolve=resolve;
-    B={foes, boss, turn:"party", idx:0, def:new Set()};
+    B={foes, boss, turn:"party", idx:0, def:new Set(), over:false};
     bphase="cmd"; bmenu="main"; bsel=0; bActor=firstLiveParty();
     bLog=foes.length>1? "Enemies draw near!" : foes[0].name+" draws near!";
     mode="battle";
@@ -1549,7 +1564,9 @@ function skillsFor(p){
 }
 
 function battleCmd(which){
+  if(!B || B.over || mode!=="battle") return;
   const p=G.party[bActor];
+  if(!p) return;
   if(bmenu==="main"){
     if(which==="ok"){
       if(bsel===0){ pickFoeThen(t=>dmg(p,t,1)); }
@@ -1589,12 +1606,14 @@ function battleCmd(which){
 
 function pickFoeThen(fn){
   const L=liveFoes();
+  if(!L.length){ winBattle(); return; }
   if(L.length===1){ fn(L[0]); nextActor(); return; }
   bmenu="foe"; bsel=0; B._foeFn=fn;
 }
 
 function nextActor(){
   bmenu="main"; bsel=0;
+  if(!liveFoes().length){ winBattle(); return; }
   let i=bActor+1;
   while(i<G.party.length){
     if(G.party[i].alive && G.party[i].hp>0){ bActor=i; return; }
@@ -1622,6 +1641,8 @@ function enemyTurns(){
 }
 
 function winBattle(){
+  if(!B || B.over) return;
+  B.over=true;
   const exp=B.foes.reduce((s,f)=>s+f.exp,0);
   const gold=B.foes.reduce((s,f)=>s+f.gold,0);
   G.gold+=gold;
@@ -1630,11 +1651,14 @@ function winBattle(){
   bLog="Victory! +"+exp+" EXP  +"+gold+"G";
   const res=battleResolve; battleResolve=null;
   setTimeout(()=>{
-    mode="world"; playMusic(curMap().music||"overworld");
+    if(mode==="battle") mode="world";
+    playMusic(curMap().music||"overworld");
     if(res) res(true);
-  }, 700);
+  }, (G&&G.fast)?40:500);
 }
 function loseBattle(){
+  if(!B || B.over) return;
+  B.over=true;
   sfx("no");
   G.party.forEach(p=>{ p.hp=Math.max(1, Math.floor(p.mhp/2)); p.alive=true; });
   const sa=G.saveAt; warp(sa.map, sa.x, sa.y);
@@ -1644,14 +1668,15 @@ function loseBattle(){
   toast("Defeated... returned to a safe pawn.");
 }
 function endBattle(win, ran){
+  if(B) B.over=true;
   mode="world"; playMusic(curMap().music||"overworld");
   const res=battleResolve; battleResolve=null;
   if(res) res(win);
   if(ran) toast("Ran away!");
 }
 function levelCheck(p){
-  const need=12*p.lv*(p.lv+1);
-  if(p.exp>=need){
+  let guard=0;
+  while(p.exp>=12*p.lv*(p.lv+1) && guard++<20){
     p.lv++; applyStats(p); p.hp=p.mhp; p.mp=p.mmp;
     toast(p.name+" reached LV "+p.lv+"!");
   }
@@ -1759,8 +1784,9 @@ function load(){
 function renderWorld(){
   const m=curMap();
   ctx.fillStyle=m.bg; ctx.fillRect(0,0,VW,VH);
-  const camx=clamp(G.px*TILE+8 - VW/2, 0, m.w*TILE-VW);
-  const camy=clamp(G.py*TILE+8 - VH/2, 0, m.h*TILE-VH);
+  const mw=m.w*TILE, mh=m.h*TILE;
+  const camx=mw<=VW ? -((VW-mw)/2) : clamp(G.px*TILE+8 - VW/2, 0, mw-VW);
+  const camy=mh<=VH ? -((VH-mh)/2) : clamp(G.py*TILE+8 - VH/2, 0, mh-VH);
   const ox=-moving*(mdx)*(TILE/8), oy=-moving*(mdy)*(TILE/8);
   for(let y=0;y<m.h;y++){
     for(let x=0;x<m.w;x++){
@@ -1783,6 +1809,7 @@ function renderWorld(){
 }
 
 function renderBattle(){
+  if(!B) return;
   ctx.fillStyle="#180818"; ctx.fillRect(0,0,VW,VH);
   ctx.fillStyle="#2a1030"; ctx.fillRect(0,110,VW,114);
   // foes
@@ -1804,26 +1831,28 @@ function renderBattle(){
   ctx.fillStyle="#f4e6b8"; ctx.font="8px monospace";
   ctx.fillText(bLog.slice(0,38), 14, 182);
   const p=G.party[bActor];
-  if(bmenu==="main"){
-    const cmds=["FIGHT","SKILL","ITEM","GUARD","RUN"];
-    cmds.forEach((c,i)=>{
-      ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8";
-      ctx.fillText((i===bsel?">":" ")+c, 14+ (i%3)*70, 198+(i>2?10:0));
-    });
-  } else if(bmenu==="skill"){
-    skillsFor(p).forEach((s,i)=>{
-      ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8";
-      ctx.fillText((i===bsel?">":" ")+s.name+" "+s.mp+"mp", 14, 196+i*10);
-    });
-  } else if(bmenu==="item"){
-    const L=usableItems();
-    if(!L.length) ctx.fillText("No items",14,196);
-    L.forEach((s,i)=>{ ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8"; ctx.fillText((i===bsel?">":" ")+s.name,14,196+i*10); });
-  } else if(bmenu==="foe"){
-    liveFoes().forEach((f,i)=>{ ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8"; ctx.fillText((i===bsel?">":" ")+f.name,14,196+i*10); });
+  if(p){
+    if(bmenu==="main"){
+      const cmds=["FIGHT","SKILL","ITEM","GUARD","RUN"];
+      cmds.forEach((c,i)=>{
+        ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8";
+        ctx.fillText((i===bsel?">":" ")+c, 14+ (i%3)*70, 198+(i>2?10:0));
+      });
+    } else if(bmenu==="skill"){
+      skillsFor(p).forEach((s,i)=>{
+        ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8";
+        ctx.fillText((i===bsel?">":" ")+s.name+" "+s.mp+"mp", 14, 196+i*10);
+      });
+    } else if(bmenu==="item"){
+      const L=usableItems();
+      if(!L.length) ctx.fillText("No items",14,196);
+      L.forEach((s,i)=>{ ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8"; ctx.fillText((i===bsel?">":" ")+s.name,14,196+i*10); });
+    } else if(bmenu==="foe"){
+      liveFoes().forEach((f,i)=>{ ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8"; ctx.fillText((i===bsel?">":" ")+f.name,14,196+i*10); });
+    }
+    ctx.fillStyle="#b8c4ff";
+    ctx.fillText(p.name+" HP "+p.hp+"/"+p.mhp+"  MP "+p.mp, 130, 198);
   }
-  ctx.fillStyle="#b8c4ff";
-  ctx.fillText(p.name+" HP "+p.hp+"/"+p.mhp+"  MP "+p.mp, 130, 198);
 }
 
 function renderTitle(){
@@ -1910,6 +1939,7 @@ function beginPlay(){
 }
 
 window.addEventListener("keydown", e=>{
+  if(e.repeat && (e.code==="KeyZ"||e.code==="Enter"||e.code==="Space")) return;
   keys[e.code]=true;
   if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code)) e.preventDefault();
   if(mode==="title"){
@@ -1963,6 +1993,313 @@ document.querySelectorAll("#pad button").forEach(b=>{
 });
 
 cv.addEventListener("click", ()=>{ audio(); if(mode==="world") interact(); });
+el.dlg.addEventListener("click", ()=>{ if(mode==="dlg") onOk(); });
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+async function waitUntil(fn, ms=6000){
+  const t0=Date.now();
+  while(!fn()){
+    if(Date.now()-t0>ms) throw new Error("wait "+ms+"ms");
+    await sleep(16);
+  }
+}
+async function clearDlg(){
+  let n=0;
+  while(mode==="dlg" && n++<100){
+    if(dlgChoices) finishChoose(0);
+    else advanceDlg();
+    await sleep(20);
+  }
+}
+async function waitIdle(){
+  const t0=Date.now();
+  while(Date.now()-t0<15000){
+    if(mode==="battle" && B && !B.over){
+      B.foes.forEach(f=>{ f.hp=0; f.alive=false; });
+      winBattle();
+      await sleep(560);
+      continue;
+    }
+    if(mode==="dlg"){ await clearDlg(); continue; }
+    if(moving){ await sleep(16); continue; }
+    if(mode==="world" && !busy) return;
+    if(mode==="end") return;
+    await sleep(16);
+  }
+  throw new Error("idle timeout mode="+mode+" map="+(G&&G.map)+" @"+(G?G.px+","+G.py:""));
+}
+function bfsTo(tx,ty){
+  const m=curMap();
+  const isWarp=(x,y)=>m.warps.some(w=>w.x===x&&w.y===y);
+  const walk=(x,y)=>{
+    if(x===tx && y===ty) return !SOLID.has(tileAt(x,y)) || tileAt(x,y)==="D";
+    if(isWarp(x,y)) return false;
+    if(npcAt(x,y) && !(x===G.px && y===G.py)) return false;
+    return !SOLID.has(tileAt(x,y));
+  };
+  const q=[[G.px,G.py]], prev={}, k=(x,y)=>x+","+y;
+  prev[k(G.px,G.py)]=null;
+  while(q.length){
+    const [x,y]=q.shift();
+    if(x===tx && y===ty) break;
+    for(const [dx,dy] of [[0,-1],[0,1],[-1,0],[1,0]]){
+      const nx=x+dx, ny=y+dy, id=k(nx,ny);
+      if(id in prev) continue;
+      if(nx<0||ny<0||nx>=m.w||ny>=m.h) continue;
+      if(!walk(nx,ny)) continue;
+      prev[id]=[x,y,dx,dy]; q.push([nx,ny]);
+    }
+  }
+  if(!(k(tx,ty) in prev)) return null;
+  const steps=[]; let cx=tx, cy=ty;
+  while(prev[k(cx,cy)]){
+    const [px,py,dx,dy]=prev[k(cx,cy)];
+    steps.push([dx,dy]); cx=px; cy=py;
+  }
+  steps.reverse(); return steps;
+}
+async function walkTo(tx,ty){
+  const startMap=G.map;
+  if(npcAt(tx,ty)){
+    const adj=[[tx,ty-1],[tx,ty+1],[tx-1,ty],[tx+1,ty]].filter(([x,y])=> (x===G.px&&y===G.py) || walkable(x,y));
+    if(!adj.length) throw new Error("no adj to "+tx+","+ty+" on "+G.map);
+    adj.sort((a,b)=>Math.abs(a[0]-G.px)+Math.abs(a[1]-G.py)-(Math.abs(b[0]-G.px)+Math.abs(b[1]-G.py)));
+    tx=adj[0][0]; ty=adj[0][1];
+  }
+  if(G.px===tx && G.py===ty) return;
+  const steps=bfsTo(tx,ty);
+  if(!steps) throw new Error("no path "+G.map+" "+G.px+","+G.py+" -> "+tx+","+ty);
+  if(!steps.length) throw new Error("empty path "+G.map+" "+G.px+","+G.py+" -> "+tx+","+ty);
+  for(const [dx,dy] of steps){
+    await waitIdle();
+    const fromMap=G.map;
+    if(!tryMove(dx,dy)) throw new Error("blocked "+dx+","+dy+" at "+G.map+" "+G.px+","+G.py);
+    await waitUntil(()=>moving===0, 1500);
+    await waitIdle();
+    if(G.map!==fromMap) return;
+  }
+  if(G.map===startMap && (G.px!==tx || G.py!==ty)){
+    throw new Error("stuck "+G.map+" "+G.px+","+G.py+" want "+tx+","+ty);
+  }
+}
+async function expectMap(id){
+  await waitIdle();
+  if(G.map!==id) throw new Error("expected "+id+" got "+G.map+" @"+G.px+","+G.py);
+}
+async function talkAt(x,y){
+  await walkTo(x,y);
+  await waitIdle();
+  await interact();
+  await waitIdle();
+}
+
+async function runAutotest(){
+  const log=[];
+  const rec=s=>{ log.push(s); console.log("[autotest]", s); };
+  try{
+    muted=true;
+    startNew();
+    await sleep(280);
+    G.noEnc=true;
+    G.fast=true;
+    window.__cqAuto=true;
+    (async function pump(){
+      while(window.__cqAuto){
+        try{
+          if(mode==="dlg"){
+            if(dlgChoices) finishChoose(0);
+            else advanceDlg();
+          } else if(mode==="battle" && B && !B.over){
+            B.foes.forEach(f=>{ f.hp=0; f.alive=false; });
+            winBattle();
+          }
+        }catch(e){}
+        await sleep(8);
+      }
+    })();
+    await waitIdle();
+    rec("start "+G.map);
+    await talkAt(5,6);
+    if(!fl("pkg")) throw new Error("package failed");
+    rec("package");
+    await walkTo(7,11);
+    await waitIdle();
+    rec("map "+G.map);
+    await walkTo(6,9);
+    await waitIdle();
+    rec("street "+G.map);
+    await walkTo(16,9);
+    await waitIdle();
+    rec("school "+G.map);
+    await talkAt(8,6);
+    if(!fl("spike")) throw new Error("spike");
+    rec("spike");
+    await walkTo(0,8);
+    await expectMap("street");
+    await walkTo(12,3);
+    await expectMap("house");
+    await talkAt(7,4);
+    await expectMap("sanctuary");
+    await talkAt(16,3);
+    if(!fl("quests_given")) throw new Error("quests");
+    rec("quests given");
+    await talkAt(8,11);
+    rec("rested");
+    await walkTo(1,10);
+    await waitIdle();
+    rec("trial "+G.map);
+    await talkAt(3,3);
+    await talkAt(10,3);
+    if(!fl("q_ice")||!fl("q_fire")) throw new Error("trial");
+    rec("fire ice");
+    await walkTo(6,18);
+    await waitIdle();
+    await walkTo(14,13);
+    await waitIdle();
+    rec("back "+G.map);
+    await walkTo(6,9);
+    await waitIdle();
+    await walkTo(21,11);
+    await waitIdle();
+    rec("lane "+G.map);
+    await talkAt(6,3);
+    if(!fl("q_elder")) throw new Error("elder");
+    rec("elder");
+    await walkTo(0,5);
+    await waitIdle();
+    await walkTo(16,9);
+    await waitIdle();
+    await walkTo(16,1);
+    await waitIdle();
+    rec("gym "+G.map);
+    await talkAt(7,3);
+    if(!fl("q_race")) throw new Error("race");
+    rec("race");
+    await walkTo(7,10);
+    await waitIdle();
+    await walkTo(10,10);
+    await waitIdle();
+    rec("detention "+G.map);
+    await talkAt(3,3);
+    if(!fl("q_detention")) throw new Error("detention");
+    rec("detention");
+    checkFour();
+    await walkTo(4,6);
+    await waitIdle();
+    await walkTo(16,1);
+    await waitIdle();
+    await talkAt(4,6);
+    rec("mallory "+fl("mallory1"));
+    await walkTo(7,10);
+    await waitIdle();
+    await walkTo(0,8);
+    await waitIdle();
+    await walkTo(12,3);
+    await waitIdle();
+    await talkAt(7,4);
+    rec("sanctuary2 "+G.map);
+    await walkTo(14,10);
+    await waitIdle();
+    rec("hub "+G.map);
+    await walkTo(3,2);
+    await waitIdle();
+    rec("arena "+G.map);
+    await talkAt(7,4);
+    if(!fl("knighted")) throw new Error("knight");
+    rec("knighted rank "+G.rank);
+    await walkTo(7,10);
+    await waitIdle();
+    await walkTo(8,8);
+    await waitIdle();
+    await walkTo(14,13);
+    await waitIdle();
+    await walkTo(7,2);
+    await waitIdle();
+    rec("bedroom? "+G.map);
+    await talkAt(12,4);
+    if(!fl("card")) throw new Error("card");
+    rec("card");
+    await walkTo(7,11);
+    await waitIdle();
+    await talkAt(7,4);
+    await walkTo(24,10);
+    await waitIdle();
+    rec("corridor "+G.map);
+    await talkAt(3,4);
+    await talkAt(12,6);
+    await talkAt(20,2);
+    await talkAt(22,2);
+    if(!fl("phillip_seen")) throw new Error("father");
+    rec("corridor done");
+    await walkTo(1,15);
+    await waitIdle();
+    await walkTo(14,10);
+    await waitIdle();
+    rec("hub2 "+G.map);
+    await talkAt(8,4);
+    if(!fl("nadia_taken")) throw new Error("taken");
+    rec("nadia taken");
+    await walkTo(14,2);
+    await waitIdle();
+    rec("finland "+G.map);
+    await talkAt(8,6);
+    if(!fl("bishop")) throw new Error("bishop");
+    rec("bishop");
+    await walkTo(7,12);
+    await waitIdle();
+    await walkTo(3,6);
+    await waitIdle();
+    rec("stronghold "+G.map);
+    await talkAt(9,8);
+    rec("mallory2 "+fl("mallory2"));
+    await walkTo(4,3);
+    await waitIdle();
+    rec("cell "+G.map);
+    await talkAt(3,2);
+    if(!fl("nadia_join")) throw new Error("nadia");
+    rec("nadia join party "+G.party.length);
+    await walkTo(3,5);
+    await waitIdle();
+    await walkTo(2,14);
+    await waitIdle();
+    await walkTo(14,6);
+    await waitIdle();
+    rec("middlespace "+G.map);
+    await talkAt(4,6);
+    await talkAt(20,6);
+    await talkAt(12,3);
+    if(!fl("three_stones")) throw new Error("stones");
+    rec("stones");
+    await walkTo(12,3);
+    await waitIdle();
+    rec("gray "+G.map);
+    await talkAt(10,4);
+    rec("ending "+fl("ending")+" mode="+mode);
+    if(!fl("ending") && mode!=="end") throw new Error("final boss");
+    rec("PASS");
+    window.__cqAuto=false;
+    window.__testResult={ok:true, log};
+    document.title="AUTOTEST PASS";
+    const d=document.createElement("div");
+    d.id="autotest-result"; d.textContent="PASS "+log.join(" | ");
+    d.style.cssText="position:fixed;left:8px;bottom:8px;z-index:99;background:#041;color:#9f8;font:12px monospace;padding:8px;max-width:90%";
+    document.body.appendChild(d);
+  }catch(err){
+    window.__cqAuto=false;
+    rec("FAIL "+err.message);
+    window.__testResult={ok:false, error:err.message, log, map:G&&G.map, xy:G&&[G.px,G.py], mode, flags:G&&G.flags};
+    document.title="AUTOTEST FAIL: "+err.message;
+    const d=document.createElement("div");
+    d.id="autotest-result"; d.textContent="FAIL "+err.message+" :: "+log.join(" | ");
+    d.style.cssText="position:fixed;left:8px;bottom:8px;z-index:99;background:#400;color:#fbb;font:12px monospace;padding:8px;max-width:90%";
+    document.body.appendChild(d);
+  }
+}
+
+window.__cqDump=()=>({mode, map:G&&G.map, xy:G&&[G.px,G.py], flags:G&&G.flags, party:G&&G.party&&G.party.map(p=>({name:p.name,hp:p.hp,mhp:p.mhp,lv:p.lv})), rank:G&&G.rank, bmenu, bsel, moving});
+playMusic("title");
+requestAnimationFrame(frame);
+if(/\bautotest=1\b/.test(location.search)) setTimeout(runAutotest, 400);
 })();
 </script>
 </body>

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#07080c">
   <title>Shah-Sheh-Rih-Lah — The Seven Scourges</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%2307080c'/%3E%3Cpath d='M18 46V22M28 48V16M38 48V20M48 46c0-8 6-12 10-10' fill='none' stroke='%23d7b56a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@450;600;700&display=swap" rel="stylesheet">
@@ -511,62 +512,62 @@
 
     const POSES = {
       hah: {
-        wrist:[-1.15, 0.18, 0.05],
-        thumb:{splay:0.95,j:[0.25,0.2,0.15]},
-        index:{splay:-0.04,j:[0.08,0.1,0.08]},
-        middle:{splay:0.0,j:[0.08,0.1,0.08]},
-        ring:{splay:0.04,j:[0.1,0.12,0.1]},
-        pinky:{splay:0.08,j:[0.12,0.14,0.1]}
+        wrist:[-1.22, 0.12, 0.04],
+        thumb:{splay:1.15, j:[0.15,0.12,0.1]},
+        index:{splay:-0.03, j:[0.06,0.08,0.06]},
+        middle:{splay:0.0, j:[0.06,0.08,0.06]},
+        ring:{splay:0.03, j:[0.08,0.1,0.08]},
+        pinky:{splay:0.07, j:[0.1,0.12,0.08]}
       },
       shah: {
-        wrist:[-0.42, 0.12, 0.04],
-        thumb:{splay:-0.15,j:[1.05,1.05,0.7]},
-        index:{splay:-0.03,j:[0.06,0.05,0.05]},
-        middle:{splay:0.0,j:[0.06,0.05,0.05]},
-        ring:{splay:0.03,j:[0.08,0.08,0.06]},
-        pinky:{splay:0.2,j:[1.25,1.35,0.85]}
+        wrist:[-0.38, 0.08, 0.06],
+        thumb:{splay:-0.35, j:[1.15,1.1,0.75]},
+        index:{splay:-0.04, j:[0.04,0.04,0.04]},
+        middle:{splay:0.0, j:[0.04,0.04,0.04]},
+        ring:{splay:0.04, j:[0.06,0.06,0.05]},
+        pinky:{splay:0.22, j:[1.35,1.45,1.0]}
       },
       sheh: {
-        wrist:[-0.42, 0.1, 0.02],
-        thumb:{splay:0.15,j:[1.15,1.05,0.7]},
-        index:{splay:-0.02,j:[0.05,0.05,0.05]},
-        middle:{splay:0.03,j:[0.05,0.05,0.05]},
-        ring:{splay:0.14,j:[1.3,1.4,0.9]},
-        pinky:{splay:0.2,j:[1.35,1.4,0.9]}
+        wrist:[-0.38, 0.06, 0.02],
+        thumb:{splay:0.2, j:[1.2,1.1,0.75]},
+        index:{splay:-0.015, j:[0.04,0.04,0.04]},
+        middle:{splay:0.015, j:[0.04,0.04,0.04]},
+        ring:{splay:0.16, j:[1.38,1.48,1.05]},
+        pinky:{splay:0.22, j:[1.4,1.48,1.05]}
       },
       rih: {
-        wrist:[-0.22, 0.2, 1.28],
-        thumb:{splay:1.15,j:[0.12,0.1,0.08]},
-        index:{splay:0.04,j:[1.32,1.42,0.95]},
-        middle:{splay:0.0,j:[1.35,1.45,0.95]},
-        ring:{splay:-0.04,j:[1.3,1.38,0.9]},
-        pinky:{splay:0.42,j:[0.08,0.08,0.08]}
+        wrist:[-0.55, 0.42, 0.92],
+        thumb:{splay:1.55, j:[0.02,0.02,0.02]},
+        index:{splay:0.04, j:[1.58,1.68,1.25]},
+        middle:{splay:0.0, j:[1.6,1.7,1.25]},
+        ring:{splay:-0.04, j:[1.56,1.64,1.2]},
+        pinky:{splay:0.72, j:[0.0,0.0,0.0]}
       },
       lah: {
-        wrist:[-0.42, 0.08, 0.0],
-        thumb:{splay:0.12,j:[1.12,1.0,0.7]},
-        index:{splay:-0.28,j:[0.05,0.05,0.04]},
-        middle:{splay:0.28,j:[0.05,0.05,0.04]},
-        ring:{splay:0.14,j:[1.28,1.38,0.9]},
-        pinky:{splay:0.22,j:[1.32,1.4,0.9]}
+        wrist:[-0.36, 0.04, 0.0],
+        thumb:{splay:0.18, j:[1.18,1.05,0.72]},
+        index:{splay:-0.38, j:[0.04,0.04,0.04]},
+        middle:{splay:0.38, j:[0.04,0.04,0.04]},
+        ring:{splay:0.16, j:[1.36,1.46,1.0]},
+        pinky:{splay:0.24, j:[1.4,1.48,1.05]}
       },
       fist: {
-        wrist:[-0.55, 0.05, 0.25],
-        thumb:{splay:0.35,j:[0.95,0.85,0.55]},
-        index:{splay:0.0,j:[1.32,1.45,1.0]},
-        middle:{splay:0.0,j:[1.35,1.48,1.0]},
-        ring:{splay:0.02,j:[1.3,1.42,1.0]},
-        pinky:{splay:0.06,j:[1.22,1.32,0.9]}
+        wrist:[-0.62, 0.08, 0.28],
+        thumb:{splay:0.4, j:[1.0,0.9,0.6]},
+        index:{splay:0.0, j:[1.38,1.5,1.05]},
+        middle:{splay:0.0, j:[1.4,1.52,1.05]},
+        ring:{splay:0.02, j:[1.36,1.46,1.05]},
+        pinky:{splay:0.08, j:[1.28,1.38,0.95]}
       }
     };
 
     function signSVG(sign) {
-      const common = `fill="none" stroke="#e8d4a4" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"`;
-      if (sign==='shah') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${common} d="M22 50c2-10 4-22 8-30m8 30c0-12 1-24 2-32m10 32c-1-11 0-23 3-31"/><path ${common} d="M18 52c4 8 14 10 22 4"/><path ${common} d="M16 48c8 2 14-6 12-14"/></svg>`;
-      if (sign==='sheh') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${common} d="M28 52c1-12 2-26 3-34m10 34c-1-12 0-26 1-34"/><path ${common} d="M22 50c6 8 18 8 24-2"/><path ${common} d="M20 46c6 0 10-8 8-14"/></svg>`;
-      if (sign==='rih') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${common} d="M36 28c0 8-2 14-8 18"/><path ${common} d="M36 40c2 10 8 16 16 18"/><path ${common} d="M34 22c-1-8 2-12 8-12"/><circle cx="36" cy="36" r="7" ${common}/></svg>`;
-      if (sign==='lah') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${common} d="M26 52c-2-14-6-26-12-34m20 34c2-16 10-26 18-34"/><path ${common} d="M22 50c6 8 18 8 24-1"/><path ${common} d="M20 46c6 0 10-8 8-14"/></svg>`;
-      return `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="24" y="22" width="22" height="28" rx="6" ${common}/><path ${common} d="M46 28c8-2 12 4 10 12"/></svg>`;
+      const s = `fill="none" stroke="#e8d4a4" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"`;
+      if (sign==='shah') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${s} d="M24 56c4-2 20-2 26 2"/><path ${s} d="M28 52V20M36 52V16M44 52V22"/><path ${s} d="M20 50c4 10 14 12 22 4"/><path ${s} d="M18 46c8 1 14-8 11-16"/></svg>`;
+      if (sign==='sheh') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${s} d="M24 56c4-2 18-2 24 2"/><path ${s} d="M32 52V18M40 52V18"/><path ${s} d="M22 50c4 10 14 12 22 4"/><path ${s} d="M20 46c7 0 12-8 10-15"/></svg>`;
+      if (sign==='rih') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${s} d="M36 40c-2 8-8 14-16 16"/><path ${s} d="M36 40c2 10 10 16 18 18"/><path ${s} d="M36 38V16"/><circle cx="36" cy="40" r="6.5" ${s}/></svg>`;
+      if (sign==='lah') return `<svg viewBox="0 0 72 72" aria-hidden="true"><path ${s} d="M24 56c4-2 18-2 24 2"/><path ${s} d="M34 52L22 20M38 52L52 20"/><path ${s} d="M22 50c4 10 14 12 22 4"/><path ${s} d="M20 46c7 0 12-8 10-15"/></svg>`;
+      return `<svg viewBox="0 0 72 72" aria-hidden="true"><rect x="24" y="22" width="22" height="28" rx="7" ${s}/><path ${s} d="M46 28c8-1 12 6 9 13"/></svg>`;
     }
 
     function outcome(a, b) {
@@ -635,21 +636,37 @@
     function createHand(skinHex, cuffHex, isLeft) {
       const THREE = window.THREE;
       const root = new THREE.Group();
-      const skin = new THREE.MeshStandardMaterial({ color:skinHex, roughness:0.52, metalness:0.04 });
+      const skin = new THREE.MeshStandardMaterial({ color:skinHex, roughness:0.48, metalness:0.03, envMapIntensity:0.4 });
       const nailMat = new THREE.MeshStandardMaterial({ color:0xc9b7a6, roughness:0.28, metalness:0.2 });
       const cloth = new THREE.MeshStandardMaterial({ color:cuffHex, roughness:0.78, metalness:0.05 });
       const gold = new THREE.MeshStandardMaterial({ color:0xd4b06a, roughness:0.25, metalness:0.85, emissive:0x3a2a10, emissiveIntensity:0.25 });
 
-      const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.29, 1.55, 16), cloth);
-      sleeve.position.y = -1.28; sleeve.castShadow = true; root.add(sleeve);
-      const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.31, 0.045, 8, 20), gold);
-      cuff.rotation.x = Math.PI/2; cuff.position.y = -0.52; root.add(cuff);
+      const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.26, 1.45, 20), cloth);
+      sleeve.position.y = -1.22; sleeve.castShadow = true; root.add(sleeve);
+      const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.038, 10, 24), gold);
+      cuff.rotation.x = Math.PI/2; cuff.position.y = -0.5; root.add(cuff);
 
       const palm = new THREE.Group(); root.add(palm);
-      const palmMesh = new THREE.Mesh(new THREE.BoxGeometry(0.92, 1.02, 0.3), skin);
-      palmMesh.castShadow = true; palm.add(palmMesh);
-      const heel = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 10), skin);
-      heel.scale.set(1.5, 0.7, 0.85); heel.position.set(0, -0.46, 0.02); palm.add(heel);
+      const palmShape = new THREE.Shape();
+      const pw=0.42, ph=0.48, pr=0.16;
+      palmShape.moveTo(-pw+pr, -ph);
+      palmShape.lineTo(pw-pr, -ph);
+      palmShape.quadraticCurveTo(pw, -ph, pw, -ph+pr);
+      palmShape.lineTo(pw, ph-pr);
+      palmShape.quadraticCurveTo(pw, ph, pw-pr, ph);
+      palmShape.lineTo(-pw+pr, ph);
+      palmShape.quadraticCurveTo(-pw, ph, -pw, ph-pr);
+      palmShape.lineTo(-pw, -ph+pr);
+      palmShape.quadraticCurveTo(-pw, -ph, -pw+pr, -ph);
+      const palmGeo = new THREE.ExtrudeGeometry(palmShape, { depth:0.24, bevelEnabled:true, bevelThickness:0.045, bevelSize:0.045, bevelSegments:3, curveSegments:8 });
+      palmGeo.center();
+      const palmMesh = new THREE.Mesh(palmGeo, skin);
+      palmMesh.castShadow = true; palmMesh.receiveShadow = true;
+      palm.add(palmMesh);
+      const thenar = new THREE.Mesh(new THREE.SphereGeometry(0.2, 14, 12), skin);
+      thenar.scale.set(1.15, 0.85, 0.75); thenar.position.set(-0.28, -0.18, 0.06); palm.add(thenar);
+      const heel = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 12), skin);
+      heel.scale.set(1.55, 0.62, 0.78); heel.position.set(0.02, -0.42, 0.02); palm.add(heel);
 
       function finger(lens, radii, withNail=true) {
         const joints = [];
@@ -658,20 +675,20 @@
         lens.forEach((len, i) => {
           const pivot = parent;
           const r = radii[i];
-          const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 4, 10), skin);
-          mesh.position.y = len/2 + r*0.15;
+          const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(r, Math.max(0.04, len - r*0.15), 8, 16), skin);
+          mesh.position.y = len/2 + r*0.08;
           mesh.castShadow = true;
           pivot.add(mesh);
           if (i===0) {
-            const kn = new THREE.Mesh(new THREE.SphereGeometry(r*1.12, 10, 8), skin);
+            const kn = new THREE.Mesh(new THREE.SphereGeometry(r*0.95, 12, 10), skin);
             kn.position.y = 0; pivot.add(kn);
           }
           const end = new THREE.Group();
-          end.position.y = len + r*0.55;
+          end.position.y = len + r*0.35;
           pivot.add(end);
           if (i===lens.length-1 && withNail) {
-            const n = new THREE.Mesh(new THREE.BoxGeometry(r*1.35, r*0.28, r*0.7), nailMat);
-            n.position.set(0, r*0.2, r*0.55);
+            const n = new THREE.Mesh(new THREE.BoxGeometry(r*1.2, r*0.22, r*0.62), nailMat);
+            n.position.set(0, r*0.12, r*0.48);
             end.add(n);
           }
           joints.push(pivot);
@@ -681,21 +698,21 @@
       }
 
       const layout = {
-        index:  { x:-0.30, z:0.04, lens:[0.38,0.24,0.18], r:[0.095,0.082,0.07] },
-        middle: { x:-0.06, z:0.05, lens:[0.42,0.26,0.19], r:[0.1,0.086,0.072] },
-        ring:   { x:0.18,  z:0.03, lens:[0.38,0.24,0.18], r:[0.092,0.08,0.068] },
-        pinky:  { x:0.40,  z:0.00, lens:[0.30,0.20,0.15], r:[0.078,0.068,0.058] }
+        index:  { x:-0.28, z:0.05, lens:[0.36,0.22,0.17], r:[0.072,0.062,0.05] },
+        middle: { x:-0.05, z:0.06, lens:[0.40,0.24,0.18], r:[0.076,0.064,0.052] },
+        ring:   { x:0.17,  z:0.04, lens:[0.36,0.22,0.17], r:[0.07,0.06,0.048] },
+        pinky:  { x:0.36,  z:0.01, lens:[0.28,0.18,0.14], r:[0.058,0.05,0.042] }
       };
       const fingers = {};
       for (const [name, L] of Object.entries(layout)) {
         const f = finger(L.lens, L.r);
-        f.base.position.set(L.x, 0.52, L.z);
+        f.base.position.set(L.x, 0.46, L.z);
         palm.add(f.base);
         fingers[name] = f;
       }
-      const thumb = finger([0.28,0.22,0.18], [0.1,0.088,0.076]);
-      thumb.base.position.set(-0.46, -0.08, 0.12);
-      thumb.base.rotation.set(0.55, 0.55, 1.05);
+      const thumb = finger([0.26,0.2,0.16], [0.078,0.068,0.056]);
+      thumb.base.position.set(-0.4, -0.12, 0.1);
+      thumb.base.rotation.set(0.62, 0.48, 1.08);
       palm.add(thumb.base);
       fingers.thumb = thumb;
 
@@ -715,8 +732,11 @@
       const names = ['thumb','index','middle','ring','pinky'];
       names.forEach(n => {
         const p = pose[n];
-        f[n].base.rotation.z = n==='thumb' ? f[n].base.rotation.z : p.splay;
-        if (n==='thumb') f[n].base.rotation.y = 0.55 + p.splay*0.2;
+        if (n==='thumb') {
+          f[n].base.rotation.set(0.62, 0.48 + p.splay*0.22, 1.08);
+        } else {
+          f[n].base.rotation.z = p.splay;
+        }
         p.j.forEach((ang, i) => { if (f[n].joints[i]) f[n].joints[i].rotation.x = ang; });
       });
       hand.userData.pose = pose;
@@ -739,8 +759,8 @@
       scene.background = new THREE.Color(0x07080c);
       scene.fog = new THREE.FogExp2(0x0b1018, 0.034);
 
-      const camera = new THREE.PerspectiveCamera(34, innerWidth/innerHeight, 0.1, 80);
-      camera.position.set(0, 2.55, 6.35);
+      const camera = new THREE.PerspectiveCamera(32, innerWidth/innerHeight, 0.1, 80);
+      camera.position.set(0, 2.35, 5.55);
       const camTarget = new THREE.Vector3(0, 1.15, 0);
       const camHome = camera.position.clone();
 
@@ -777,10 +797,10 @@
       );
       inlayDisk.rotation.x = -Math.PI/2; inlayDisk.position.y = 0.795; scene.add(inlayDisk);
 
-      const glyphMat = new THREE.MeshStandardMaterial({ color:0xe8d4a4, emissive:0x5a4818, emissiveIntensity:0.4, metalness:0.4, roughness:0.4 });
+      const glyphMat = new THREE.MeshStandardMaterial({ color:0xd4b06a, emissive:0x5a4818, emissiveIntensity:0.35, metalness:0.8, roughness:0.3 });
       const glyphPos = [[0,0.81,0.55],[0.55,0.81,0], [0,0.81,-0.55],[-0.55,0.81,0]];
-      glyphPos.forEach((p,i)=>{
-        const m = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 10), glyphMat);
+      glyphPos.forEach((p)=>{
+        const m = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.018, 20), glyphMat);
         m.position.set(...p); scene.add(m);
       });
 
@@ -826,24 +846,26 @@
       stack(-1.55, 0.85, 7); stack(1.55, 0.85, 7); stack(0, 1.55, 4);
 
       const youHand = createHand(0xc49b78, 0x2c3a4e, false);
-      youHand.position.set(1.15, 1.55, 2.05);
-      youHand.rotation.set(-0.15, -0.35, 0.15);
+      youHand.position.set(0.92, 1.42, 1.72);
+      youHand.rotation.set(-0.22, -0.42, 0.12);
+      youHand.scale.setScalar(1.12);
       scene.add(youHand);
       const oppHand = createHand(0xb8896e, 0x3a2420, true);
-      oppHand.position.set(-1.15, 1.62, -1.55);
-      oppHand.rotation.set(-0.05, 2.75, 0.05);
+      oppHand.position.set(-0.82, 1.58, -1.15);
+      oppHand.rotation.set(-0.08, 2.82, 0.04);
+      oppHand.scale.setScalar(1.05);
       scene.add(oppHand);
 
       const youFist = createHand(0xc49b78, 0x2c3a4e, true);
-      youFist.position.set(2.05, 1.15, 1.55);
-      youFist.rotation.set(-0.6, -0.5, 0.4);
-      youFist.scale.setScalar(0.72);
+      youFist.position.set(2.35, 0.92, 1.85);
+      youFist.rotation.set(-0.85, -0.55, 0.55);
+      youFist.scale.setScalar(0.55);
       applyPose(youFist, POSES.fist);
       scene.add(youFist);
       const oppFist = createHand(0xb8896e, 0x3a2420, false);
-      oppFist.position.set(-2.05, 1.22, -0.95);
-      oppFist.rotation.set(-0.5, 3.4, -0.3);
-      oppFist.scale.setScalar(0.72);
+      oppFist.position.set(-2.35, 0.98, -0.7);
+      oppFist.rotation.set(-0.7, 3.5, -0.35);
+      oppFist.scale.setScalar(0.55);
       applyPose(oppFist, POSES.fist);
       scene.add(oppFist);
 
@@ -917,7 +939,7 @@
           anim.t = 0; anim.dur = dur;
         },
         punchIn() { punch = 0.18; camHome.z = 5.7; },
-        resetCam() { camHome.set(0, 2.55, 6.35); },
+        resetCam() { camHome.set(0, 2.35, 5.55); },
         flash(color) { scene.fog.color.set(color); setTimeout(()=>scene.fog.color.set(0x0b1018), 180); }
       };
     }
@@ -995,7 +1017,7 @@
       if (['reveal','resolve'].includes(state.phase) || state.busy && state.phase==='throw') return;
       if (state.practice) {
         state.you.throw = sign;
-        world && world.setHands(sign, sign, 0.22);
+        world && world.setHands(sign, sign, 0.16);
         renderHud();
         return;
       }

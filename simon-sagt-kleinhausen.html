@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Simon sagt am Sportplatz Kleinhausen: ein Animationsspiel zum Üben deutscher Befehle (du-, ihr- und Sie-Imperativ).">
+<title>Simon sagt — Sportplatz Kleinhausen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky-top:#8fd4f0;
+  --sky-bot:#e7f6ff;
+  --grass:#4fa35a;
+  --grass-deep:#2f7a3c;
+  --chalk:#f6f0de;
+  --ink:#1c2a33;
+  --ink-soft:#4d5d68;
+  --paper:#fffdf7;
+  --simon:#c62828;
+  --simon-deep:#8e1b1b;
+  --gold:#f0b429;
+  --ok:#1f8a4c;
+  --ok-wash:#e2f6ea;
+  --err:#c62828;
+  --err-wash:#fde8e6;
+  --mira:#1d9a8a;
+  --otto:#e36a3d;
+  --frau:#6b4c9a;
+  --line:#d9cbb0;
+  --shadow:0 10px 30px -18px rgba(28,42,51,.55);
+  --display:"Fredoka","Segoe UI",system-ui,sans-serif;
+  --body:"Nunito",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --radius:18px;
+  --motion:1;
+}
+html[data-contrast="hoch"]{
+  --sky-top:#cfefff; --sky-bot:#ffffff; --grass:#0b5c22; --grass-deep:#063d16;
+  --chalk:#ffffff; --ink:#000; --ink-soft:#000; --paper:#fff;
+  --simon:#9b0000; --gold:#6a4a00; --ok:#00551f; --err:#9b0000;
+  --line:#000; --shadow:0 0 0 2px #000;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{
+  font-family:var(--body);
+  color:var(--ink);
+  background:
+    radial-gradient(900px 420px at 50% -8%, rgba(240,180,41,.28), transparent 60%),
+    linear-gradient(180deg, var(--sky-top), var(--sky-bot) 42%, #d8f0c9 42%, var(--grass) 100%);
+  line-height:1.45;
+  -webkit-text-size-adjust:100%;
+}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.sr,.en{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+body.zeige-en .en{
+  position:static;width:auto;height:auto;margin:0;clip:auto;overflow:visible;white-space:normal;
+  display:block;font-style:italic;font-weight:700;color:var(--ink-soft);font-size:.82em;line-height:1.3;
+}
+.skip{
+  position:absolute;left:-9999px;top:0;z-index:80;
+  background:var(--ink);color:#fff;padding:.7em 1.1em;font-weight:800;text-decoration:none;
+}
+.skip:focus{left:0}
+
+.wrap{max-width:1120px;margin:0 auto;padding:12px 14px 36px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:var(--paper);border:2px solid var(--ink);border-radius:999px;
+  padding:8px 10px 8px 14px;box-shadow:var(--shadow);margin-bottom:14px;
+}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+.brand-mark{width:42px;height:42px;flex:none}
+.brand h1{font-family:var(--display);font-size:1.15rem;letter-spacing:.01em;line-height:1.1}
+.brand .sub{font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.hud{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chip{
+  background:#f3ead4;border:2px solid var(--ink);border-radius:999px;
+  padding:5px 11px;font-weight:800;font-size:.82rem;white-space:nowrap;
+}
+.lives{display:flex;gap:4px;align-items:center}
+.heart{width:16px;height:16px;color:var(--simon)}
+.heart.off{opacity:.22;filter:grayscale(1)}
+.mini{
+  border:2px solid var(--ink);border-radius:999px;padding:6px 11px;
+  font-weight:800;font-size:.78rem;background:var(--paper);
+}
+.mini:hover{background:var(--gold)}
+.mini[aria-pressed="true"]{background:var(--ink);color:var(--chalk)}
+
+/* ---------- screens ---------- */
+.screen{display:none}
+.screen.on{display:block;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.hero{
+  display:grid;grid-template-columns:180px 1fr;gap:18px;align-items:center;
+  background:var(--paper);border:3px solid var(--ink);border-radius:28px;
+  padding:18px 20px;box-shadow:var(--shadow);margin-bottom:16px;
+}
+@media (max-width:700px){.hero{grid-template-columns:1fr;text-align:center}}
+.hero h2{font-family:var(--display);font-size:clamp(1.6rem,4vw,2.4rem);line-height:1.05;margin-bottom:6px}
+.hero p{font-weight:700}
+.hero .en{margin-top:4px}
+
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media (max-width:800px){.modes{grid-template-columns:1fr}}
+.mode{
+  text-align:left;background:var(--paper);border:3px solid var(--ink);border-radius:22px;
+  padding:16px;box-shadow:var(--shadow);min-height:170px;display:flex;flex-direction:column;gap:6px;
+  transition:transform .15s;
+}
+.mode:hover{transform:translateY(-3px)}
+.mode .tag{
+  align-self:flex-start;font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--ink);color:var(--chalk);border-radius:999px;padding:3px 9px;
+}
+.mode h3{font-family:var(--display);font-size:1.25rem}
+.mode p{font-size:.92rem;font-weight:700;color:var(--ink-soft)}
+
+.levels{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
+.lvl{
+  border:3px solid var(--ink);border-radius:16px;padding:10px 14px;background:var(--paper);
+  font-weight:800;min-width:140px;text-align:left;
+}
+.lvl.pick{background:var(--gold);box-shadow:3px 3px 0 var(--ink)}
+.lvl small{display:block;font-size:.75rem;font-weight:700;color:var(--ink-soft)}
+.primary{
+  background:var(--simon);color:#fff;border:3px solid var(--ink);border-radius:999px;
+  padding:12px 22px;font-family:var(--display);font-size:1.05rem;
+  box-shadow:4px 4px 0 var(--ink);
+}
+.primary:hover{transform:translateY(-1px)}
+.primary:disabled{opacity:.45;box-shadow:none;cursor:not-allowed}
+
+/* ---------- playground ---------- */
+.stage-wrap{
+  background:linear-gradient(#7ec8e8 0 58%, #6bbf5c 58% 100%);
+  border:3px solid var(--ink);border-radius:28px;overflow:hidden;
+  box-shadow:var(--shadow);position:relative;min-height:340px;
+}
+.sky{position:absolute;inset:0 0 42% 0;pointer-events:none}
+.sun{
+  position:absolute;top:16px;right:28px;width:64px;height:64px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #fff6c2, #f0b429 58%, #e0891a);
+  box-shadow:0 0 0 8px rgba(240,180,41,.25);
+  animation:spin calc(28s / var(--motion)) linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.cloud{
+  position:absolute;background:#fff;border-radius:40px;opacity:.92;
+  animation:drift calc(var(--t, 22s) / var(--motion)) linear infinite;
+}
+.cloud:before,.cloud:after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud.c1{width:90px;height:28px;top:22px;left:-20%}.cloud.c1:before{width:36px;height:36px;top:-18px;left:18px}.cloud.c1:after{width:28px;height:28px;top:-12px;left:46px;--t:26s}
+.cloud.c2{width:70px;height:22px;top:54px;left:-40%;animation-duration:32s}.cloud.c2:before{width:28px;height:28px;top:-14px;left:12px}.cloud.c2:after{width:22px;height:22px;top:-10px;left:34px}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(1400px)}}
+.field{
+  position:absolute;left:0;right:0;bottom:0;height:46%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 28px, rgba(255,255,255,.08) 28px 30px),
+    linear-gradient(#7ed067, var(--grass-deep));
+}
+.field:before{
+  content:"";position:absolute;left:8%;right:8%;top:18%;bottom:12%;
+  border:3px solid rgba(255,255,255,.55);border-radius:8px;
+}
+.cone{position:absolute;bottom:18%;width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-bottom:28px solid #f06a2a;filter:drop-shadow(0 2px 0 rgba(0,0,0,.2))}
+.cone.l{left:6%}.cone.r{right:6%}
+.school{
+  position:absolute;left:18px;top:38%;width:86px;height:54px;background:#f3d7b0;border:3px solid var(--ink);border-radius:4px 4px 0 0;
+}
+.school:after{content:"";position:absolute;left:-8px;right:-8px;top:-18px;height:22px;background:#c62828;clip-path:polygon(50% 0,100% 100%,0 100%)}
+
+.actors{
+  position:relative;z-index:2;display:flex;justify-content:center;align-items:flex-end;
+  gap:clamp(8px,4vw,48px);min-height:340px;padding:28px 12px 18px;
+}
+.actor{width:min(180px,28vw);text-align:center;transition:transform .35s, opacity .35s}
+.actor.off{opacity:.28;transform:scale(.86) translateY(12px);pointer-events:none}
+.actor .nametag{
+  display:inline-block;margin-top:-6px;background:var(--paper);border:2px solid var(--ink);
+  border-radius:999px;padding:2px 10px;font-weight:800;font-size:.8rem;
+}
+.actor[data-who="mira"]{--shirt:var(--mira);--pants:#1b4d4a;--hair:#3a2416;--skin:#e4b48f;--shoe:#1c2a33}
+.actor[data-who="otto"]{--shirt:var(--otto);--pants:#2b4c7e;--hair:#c9a227;--skin:#f1c39a;--shoe:#5a3317}
+.actor[data-who="frau"]{--shirt:var(--frau);--pants:#2a2144;--hair:#5c5346;--skin:#d7a574;--shoe:#111}
+
+.puppet{width:100%;height:auto;display:block;overflow:visible}
+.puppet .shirt{fill:var(--shirt)}
+.puppet .pants,.puppet .leg-fill{fill:var(--pants)}
+.puppet .skin{fill:var(--skin)}
+.puppet .hair{fill:var(--hair)}
+.puppet .shoe{fill:var(--shoe)}
+.actor[data-who="mira"] .hair-otto,
+.actor[data-who="mira"] .hair-frau,
+.actor[data-who="mira"] .glasses,
+.actor[data-who="otto"] .hair-mira,
+.actor[data-who="otto"] .hair-frau,
+.actor[data-who="otto"] .glasses,
+.actor[data-who="otto"] .bow,
+.actor[data-who="frau"] .hair-mira,
+.actor[data-who="frau"] .hair-otto,
+.actor[data-who="frau"] .bow{display:none}
+
+.figure{transform-origin:80px 250px;transform-box:fill-box}
+.arm,.leg,.head{transform-box:fill-box}
+.arm-l,.arm-r{transform-origin:50% 8%}
+.leg-l,.leg-r{transform-origin:50% 6%}
+.head{transform-origin:50% 80%}
+.lid{transform-origin:center;transform-box:fill-box}
+
+.actor.idle .figure{animation:breathe calc(2.6s / var(--motion)) ease-in-out infinite}
+.actor.idle .lid{animation:blink calc(4.8s / var(--motion)) ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes blink{0%,42%,48%,100%{transform:scaleY(1)}45%{transform:scaleY(.08)}}
+
+.actor.jump .figure{animation:jump .7s cubic-bezier(.2,1.4,.3,1)}
+.actor.jump .shadow{animation:squash .7s ease}
+@keyframes jump{0%,100%{transform:translateY(0)}28%{transform:translateY(-54px)}55%{transform:translateY(-8px)}72%{transform:translateY(-18px)}}
+@keyframes squash{0%,100%{transform:scaleX(1)}28%{transform:scaleX(.55)} }
+
+.actor.wave .arm-r{animation:wave 0.45s ease-in-out 5}
+@keyframes wave{0%,100%{transform:rotate(10deg)}50%{transform:rotate(-78deg)}}
+
+.actor.clap .arm-l{animation:clapL .32s ease-in-out 6}
+.actor.clap .arm-r{animation:clapR .32s ease-in-out 6}
+@keyframes clapL{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(38deg)}}
+@keyframes clapR{0%,100%{transform:rotate(12deg)}50%{transform:rotate(-38deg)}}
+
+.actor.sit .figure{transform:translateY(36px)}
+.actor.sit .leg-l{transform:rotate(62deg)}
+.actor.sit .leg-r{transform:rotate(-62deg)}
+.actor.sit .arm-l{transform:rotate(18deg)}
+.actor.sit .arm-r{transform:rotate(-18deg)}
+
+.actor.turn .figure{animation:turn 1s ease}
+@keyframes turn{0%{transform:scaleX(1)}40%{transform:scaleX(-1)}70%{transform:scaleX(-1)}100%{transform:scaleX(1)}}
+
+.actor.hand .arm-r{transform:rotate(-158deg)}
+.actor.hand .figure{transform:translateY(-2px)}
+
+.actor.quiet .arm-r{transform:rotate(-92deg) translate(6px, -10px)}
+.actor.quiet .mouth{transform:scaleX(.4)}
+.actor.quiet .head{transform:rotate(8deg)}
+
+.actor.run .figure{animation:runlean .4s ease-in-out infinite}
+.actor.run .leg-l{animation:runL .32s linear infinite}
+.actor.run .leg-r{animation:runR .32s linear infinite}
+.actor.run .arm-l{animation:runR .32s linear infinite}
+.actor.run .arm-r{animation:runL .32s linear infinite}
+@keyframes runlean{0%,100%{transform:rotate(-6deg) translateX(0)}50%{transform:rotate(-6deg) translateX(6px)}}
+@keyframes runL{0%,100%{transform:rotate(28deg)}50%{transform:rotate(-32deg)}}
+@keyframes runR{0%,100%{transform:rotate(-28deg)}50%{transform:rotate(32deg)}}
+
+.actor.dance .figure{animation:dance 0.5s ease-in-out 6}
+.actor.dance .arm-l,.actor.dance .arm-r{animation:danceArm .5s ease-in-out 6}
+@keyframes dance{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(8deg) translateY(-16px)}}
+@keyframes danceArm{0%,100%{transform:rotate(-70deg)}50%{transform:rotate(50deg)}}
+
+.actor.come .figure{animation:come .8s ease forwards}
+@keyframes come{from{transform:scale(.72) translateY(18px)}to{transform:scale(1.18) translateY(8px)}}
+
+.actor.laugh .figure{animation:laugh .35s ease-in-out 6}
+.actor.laugh .mouth{transform:scaleY(1.6)}
+@keyframes laugh{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-10px) rotate(3deg)}}
+
+.actor.no .head{animation:no .22s ease-in-out 5}
+@keyframes no{0%,100%{transform:rotate(0)}50%{transform:rotate(-18deg)}}
+
+.actor.confused .head{animation:huh .6s ease 3}
+@keyframes huh{0%,100%{transform:rotate(0)}40%{transform:rotate(16deg)}}
+
+.actor.eyes .lid{transform:scaleY(.08)}
+.actor.eyes .pupil{opacity:0}
+
+.simon-fox{
+  position:absolute;z-index:3;left:10px;bottom:8px;width:92px;
+  filter:drop-shadow(0 4px 0 rgba(0,0,0,.15));
+}
+.simon-fox.talk .jaw{animation:talk .2s ease-in-out infinite}
+@keyframes talk{50%{transform:translateY(3px)}}
+.bubble{
+  position:absolute;z-index:4;left:96px;bottom:78px;max-width:min(420px,70%);
+  background:#fff;border:3px solid var(--ink);border-radius:18px;
+  padding:10px 14px;font-family:var(--display);font-size:1.15rem;line-height:1.2;
+  box-shadow:4px 4px 0 var(--ink);opacity:0;transform:translateY(8px);pointer-events:none;
+  transition:opacity .2s, transform .2s;
+}
+.bubble.on{opacity:1;transform:none}
+.bubble:before{
+  content:"";position:absolute;left:-10px;bottom:16px;width:16px;height:16px;
+  background:#fff;border-left:3px solid var(--ink);border-bottom:3px solid var(--ink);
+  transform:rotate(45deg);
+}
+.bubble .en{margin-top:2px}
+.timer{
+  position:absolute;left:12px;right:12px;top:10px;height:10px;background:rgba(255,255,255,.45);
+  border:2px solid var(--ink);border-radius:999px;overflow:hidden;z-index:5;display:none;
+}
+.timer.on{display:block}
+.timer i{display:block;height:100%;width:100%;background:var(--gold);transform-origin:left center}
+
+/* ---------- play chrome ---------- */
+.play-grid{display:grid;grid-template-columns:1fr 320px;gap:12px;margin-top:12px}
+@media (max-width:900px){.play-grid{grid-template-columns:1fr}}
+.panel{
+  background:var(--paper);border:3px solid var(--ink);border-radius:22px;
+  padding:14px 16px;box-shadow:var(--shadow);
+}
+.mission h3{font-family:var(--display);font-size:1.05rem;margin-bottom:4px}
+.mission .who-pill{
+  display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:.8rem;
+  background:#f3ead4;border:2px solid var(--ink);border-radius:999px;padding:3px 10px;margin:6px 0 10px;
+}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.mira{background:var(--mira)}.dot.otto{background:var(--otto)}.dot.frau{background:var(--frau)}
+.simon-toggle{
+  width:100%;border:3px solid var(--ink);border-radius:16px;padding:10px;
+  font-family:var(--display);font-size:1.15rem;margin-bottom:10px;background:#f6f0de;
+}
+.simon-toggle[aria-pressed="true"]{background:var(--simon);color:#fff}
+.cmds{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cmds.wide{grid-template-columns:repeat(3,1fr)}
+.cmds.listen{grid-template-columns:repeat(4,1fr)}
+@media (max-width:700px){
+  .cmds.wide,.cmds.listen{grid-template-columns:1fr 1fr}
+}
+.cmd .key{display:none;font-size:.68rem;color:var(--ink-soft);font-weight:800}
+.cmds.listen .cmd .key{display:block}
+.cmd{
+  border:3px solid var(--ink);border-radius:14px;padding:10px 8px;background:#fff;
+  font-weight:800;text-align:center;min-height:64px;
+}
+.cmd:hover{background:#fff4cc}
+.cmd .de{font-family:var(--display);font-size:1rem;display:block}
+.cmd.good{background:var(--ok-wash)}
+.cmd.bad{background:var(--err-wash)}
+.feedback{
+  min-height:52px;margin-top:10px;border-radius:12px;padding:8px 10px;font-weight:800;
+}
+.feedback.ok{background:var(--ok-wash);color:var(--ok)}
+.feedback.err{background:var(--err-wash);color:var(--err)}
+.feedback .en{margin-top:2px}
+
+.ref{font-size:.82rem;font-weight:700;overflow-x:auto}
+.ref table{width:100%;border-collapse:collapse;margin-top:8px}
+.ref th,.ref td{border-bottom:1px solid var(--line);padding:5px 4px;text-align:left}
+.ref th{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft)}
+
+.end{
+  text-align:center;background:var(--paper);border:3px solid var(--ink);border-radius:28px;
+  padding:28px 18px;box-shadow:var(--shadow);
+}
+.end h2{font-family:var(--display);font-size:2rem;margin-bottom:8px}
+.end-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+
+.veil{
+  position:fixed;inset:0;background:rgba(18,28,34,.72);display:none;place-items:center;
+  padding:16px;z-index:60;overflow:auto;
+}
+.veil.on{display:grid}
+.modal{
+  background:var(--paper);border:3px solid var(--ink);border-radius:22px;
+  padding:22px;max-width:640px;width:100%;box-shadow:8px 8px 0 var(--ink);
+}
+.modal h2{font-family:var(--display);margin-bottom:8px}
+.modal ul{margin:8px 0 12px 1.1em;font-weight:700}
+.modal li{margin:4px 0}
+
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:70;overflow:hidden}
+.confetti i{position:absolute;top:-12px;width:8px;height:14px;animation:fall 1.8s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:.2}}
+
+html.no-motion, html.no-motion *{animation:none !important;transition:none !important}
+@media (prefers-reduced-motion:reduce){
+  :root{--motion:0.001}
+  *,*::before,*::after{animation-duration:.001s !important;transition-duration:.001s !important}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#haupt">Zum Spiel springen</a>
+
+<div class="wrap" id="haupt">
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
+        <circle cx="32" cy="32" r="30" fill="#c62828"/>
+        <ellipse cx="32" cy="36" rx="16" ry="14" fill="#f4a261"/>
+        <ellipse cx="18" cy="22" rx="8" ry="10" fill="#f4a261"/>
+        <ellipse cx="46" cy="22" rx="8" ry="10" fill="#f4a261"/>
+        <circle cx="26" cy="34" r="3" fill="#1c2a33"/>
+        <circle cx="38" cy="34" r="3" fill="#1c2a33"/>
+        <ellipse cx="32" cy="40" rx="4" ry="3" fill="#e76f51"/>
+        <path d="M24 46 Q32 52 40 46" stroke="#1c2a33" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <h1 lang="de">Simon sagt!</h1>
+        <div class="sub">Sportplatz Kleinhausen</div>
+      </div>
+    </div>
+    <div class="hud" id="hud" hidden>
+      <div class="chip" id="scoreChip">Punkte: 0</div>
+      <div class="chip" id="roundChip">Runde 1</div>
+      <div class="lives" id="lives" aria-label="Leben"></div>
+    </div>
+    <div class="hud" role="group" aria-label="Einstellungen">
+      <button type="button" class="mini" id="btnEn" aria-pressed="true">English</button>
+      <button type="button" class="mini" id="btnAudio" aria-pressed="true">Ton</button>
+      <button type="button" class="mini" id="btnMotion" aria-pressed="true">Animation</button>
+      <button type="button" class="mini" id="btnContrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="mini" id="btnHelp">Hilfe</button>
+    </div>
+  </header>
+
+  <section class="screen on" id="screen-start" aria-labelledby="startTitle">
+    <div class="hero">
+      <svg viewBox="0 0 180 180" role="img" aria-label="Simon der Fuchs winkt">
+        <circle cx="90" cy="90" r="86" fill="#fff3d1"/>
+        <g class="idle-fox" style="transform-origin:90px 140px;animation:breathe 2.4s ease-in-out infinite">
+          <ellipse cx="90" cy="108" rx="48" ry="40" fill="#f4a261"/>
+          <ellipse cx="52" cy="58" rx="22" ry="28" fill="#f4a261"/>
+          <ellipse cx="128" cy="58" rx="22" ry="28" fill="#f4a261"/>
+          <ellipse cx="52" cy="58" rx="10" ry="14" fill="#ffe8d6"/>
+          <ellipse cx="128" cy="58" rx="10" ry="14" fill="#ffe8d6"/>
+          <circle cx="74" cy="100" r="7" fill="#1c2a33"/>
+          <circle cx="106" cy="100" r="7" fill="#1c2a33"/>
+          <ellipse cx="90" cy="116" rx="10" ry="7" fill="#e76f51"/>
+          <path d="M70 130 Q90 146 110 130" stroke="#1c2a33" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <g style="transform-origin:142px 90px;animation:wave 1s ease-in-out infinite">
+            <ellipse cx="150" cy="78" rx="14" ry="10" fill="#f4a261"/>
+          </g>
+          <circle cx="90" cy="28" r="16" fill="#c62828"/>
+          <rect x="82" y="40" width="16" height="10" fill="#c62828"/>
+        </g>
+      </svg>
+      <div>
+        <h2 id="startTitle">Du bist Simon.</h2>
+        <p lang="de">Am Sportplatz Kleinhausen übt die Klasse Befehle. Gib du-, ihr- und Sie-Imperative — und denk an die magischen Worte: <b>Simon sagt</b>.</p>
+        <span class="en">At the Kleinhausen sports field the class is practicing commands. Give informal, plural, and formal imperatives — and remember the magic words: Simon says.</span>
+      </div>
+    </div>
+
+    <p style="font-weight:800;margin:0 4px 8px">Wie willst du spielen?</p>
+    <span class="en" style="margin:-4px 4px 10px">How do you want to play?</span>
+    <div class="modes">
+      <button type="button" class="mode" data-mode="give">
+        <span class="tag">Empfohlen</span>
+        <h3 lang="de">Befehle geben</h3>
+        <p lang="de">Du bist Simon. Baue den richtigen Imperativ und schau zu, wie Mira, Otto und Frau Berg ihn ausführen — oder nicht.</p>
+        <span class="en">You are Simon. Build the right command and watch the characters obey — or freeze.</span>
+      </button>
+      <button type="button" class="mode" data-mode="listen">
+        <span class="tag">Klassisch</span>
+        <h3 lang="de">Simon sagt</h3>
+        <p lang="de">Hör zu und tippe die Aktion — aber nur, wenn Simon es sagt. Tempo und Animationen steigen.</p>
+        <span class="en">Listen and tap the action — but only if Simon says so. Speed and animations ramp up.</span>
+      </button>
+      <button type="button" class="mode" data-mode="free">
+        <span class="tag">Sandbox</span>
+        <h3 lang="de">Freies Spiel</h3>
+        <p lang="de">Probier jeden Befehl aus. Gut zum Vorführen in der Klasse.</p>
+        <span class="en">Try every command. Great for a classroom demo.</span>
+      </button>
+    </div>
+
+    <p style="font-weight:800;margin:4px">Niveau</p>
+    <div class="levels" role="group" aria-label="Niveau">
+      <button type="button" class="lvl pick" data-level="leicht"><b>Leicht · A1</b><small>nur du · mit Hilfe</small></button>
+      <button type="button" class="lvl" data-level="mittel"><b>Mittel · A1/A2</b><small>du + ihr · Tricks</small></button>
+      <button type="button" class="lvl" data-level="schwer"><b>Schwer · A2</b><small>du, ihr, Sie</small></button>
+    </div>
+    <p style="margin:18px 4px 0;font-size:.82rem;font-weight:700;color:var(--ink-soft)">
+      Simon sagt · Sportplatz Kleinhausen · Imperativ: du / ihr / Sie. Eine Datei, keine Cookies — Fortschritt gilt nur für diesen Besuch.
+      <span class="en">A single-file German commands game. Progress is for this visit only.</span>
+    </p>
+  </section>
+
+  <section class="screen" id="screen-play" aria-live="polite">
+    <div class="stage-wrap" id="stage">
+      <div class="sky">
+        <div class="sun" aria-hidden="true"></div>
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+        <div class="school" aria-hidden="true"></div>
+      </div>
+      <div class="field"></div>
+      <span class="cone l"></span><span class="cone r"></span>
+      <div class="timer" id="timer"><i id="timerBar"></i></div>
+      <div class="bubble" id="bubble" lang="de"></div>
+      <svg class="simon-fox" id="fox" viewBox="0 0 90 110" aria-hidden="true">
+        <ellipse cx="46" cy="102" rx="22" ry="6" fill="rgba(0,0,0,.18)"/>
+        <ellipse cx="46" cy="70" rx="28" ry="24" fill="#f4a261"/>
+        <ellipse cx="22" cy="38" rx="12" ry="16" fill="#f4a261"/>
+        <ellipse cx="70" cy="38" rx="12" ry="16" fill="#f4a261"/>
+        <ellipse cx="22" cy="38" rx="5" ry="8" fill="#ffe8d6"/>
+        <ellipse cx="70" cy="38" rx="5" ry="8" fill="#ffe8d6"/>
+        <circle cx="36" cy="66" r="4.5" fill="#1c2a33"/>
+        <circle cx="56" cy="66" r="4.5" fill="#1c2a33"/>
+        <ellipse cx="46" cy="76" rx="6" ry="4.5" fill="#e76f51"/>
+        <path class="jaw" d="M34 86 Q46 96 58 86" stroke="#1c2a33" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="46" cy="18" r="12" fill="#c62828"/>
+        <rect x="40" y="28" width="12" height="8" fill="#c62828"/>
+      </svg>
+      <div class="actors" id="actors"></div>
+    </div>
+
+    <div class="play-grid">
+      <div class="panel">
+        <div class="mission" id="missionBox">
+          <h3 id="missionTitle">Auftrag</h3>
+          <p id="missionText"></p>
+          <div id="whoPick"></div>
+          <div class="who-pill" id="whoPill"></div>
+        </div>
+        <button type="button" class="simon-toggle" id="simonBtn" aria-pressed="false">
+          Simon sagt <span aria-hidden="true">?</span>
+        </button>
+        <div class="cmds" id="cmds" role="group" aria-label="Befehle"></div>
+        <div class="feedback" id="feedback"></div>
+      </div>
+      <aside class="panel ref" id="sideRef">
+        <h3 style="font-family:var(--display);margin-bottom:4px">Imperativ-Spickzettel</h3>
+        <p>du: Stamm + ! · ihr: Stamm + t · Sie: Infinitiv + Sie</p>
+        <span class="en">du: stem + ! · ihr: stem + t · Sie: infinitive + Sie</span>
+        <div id="refTable"></div>
+        <p style="margin-top:10px"><button type="button" class="mini" id="btnQuit">Zurück</button></p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-end">
+    <div class="end">
+      <h2 id="endTitle">Geschafft!</h2>
+      <p id="endText" style="font-weight:800"></p>
+      <span class="en" id="endEn"></span>
+      <div class="end-actions">
+        <button type="button" class="primary" id="btnAgain">Nochmal</button>
+        <button type="button" class="mini" id="btnHome">Zum Start</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="veil" id="helpVeil" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+  <div class="modal">
+    <h2 id="helpTitle">So funktioniert's</h2>
+    <p lang="de">Das Spiel übt den <b>Imperativ</b> — Befehle auf Deutsch.</p>
+    <span class="en">This game practices the German imperative — giving commands.</span>
+    <ul lang="de">
+      <li><b>Befehle geben:</b> Lies den Auftrag. Schalte „Simon sagt“ ein oder aus. Wähle die Form, die zur Person passt.</li>
+      <li>Eine Person → <b>du</b> (Wink!). Zwei / beide → <b>ihr</b> (Winkt!). Frau Berg → <b>Sie</b> (Winken Sie!).</li>
+      <li>Ohne „Simon sagt“ bleiben Mira, Otto und Frau Berg stehen. Mit den Worten führen sie den Befehl aus.</li>
+      <li><b>Simon sagt (klassisch):</b> Tippe die Aktion nur, wenn der Fuchs „Simon sagt“ voranschickt.</li>
+      <li>Trennbare Verben: <i>Steh auf!</i> Reflexiv: <i>Setz dich!</i></li>
+    </ul>
+    <span class="en">One person → du. Two people → ihr. Frau Berg (formal) → Sie. Without “Simon sagt”, nobody moves.</span>
+    <p style="text-align:right;margin-top:12px"><button type="button" class="primary" id="helpClose">Alles klar!</button></p>
+  </div>
+</div>
+<div class="confetti" id="confetti" hidden></div>
+
+<script>
+(function(){
+"use strict";
+
+const BEFEHLE = [
+  {id:"steh", anim:"stand", persist:"stand",
+    du:"Steh auf!", ihr:"Steht auf!", sie:"Stehen Sie auf!",
+    inf:"aufstehen", en:"Stand up!"},
+  {id:"sitz", anim:"sit", persist:"sit",
+    du:"Setz dich!", ihr:"Setzt euch!", sie:"Setzen Sie sich!",
+    inf:"sich setzen", en:"Sit down!"},
+  {id:"spring", anim:"jump", persist:null,
+    du:"Spring!", ihr:"Springt!", sie:"Springen Sie!",
+    inf:"springen", en:"Jump!"},
+  {id:"wink", anim:"wave", persist:null,
+    du:"Wink!", ihr:"Winkt!", sie:"Winken Sie!",
+    inf:"winken", en:"Wave!"},
+  {id:"klatsch", anim:"clap", persist:null,
+    du:"Klatsch!", ihr:"Klatscht!", sie:"Klatschen Sie!",
+    inf:"klatschen", en:"Clap!"},
+  {id:"dreh", anim:"turn", persist:null,
+    du:"Dreh dich um!", ihr:"Dreht euch um!", sie:"Drehen Sie sich um!",
+    inf:"sich umdrehen", en:"Turn around!"},
+  {id:"hand", anim:"hand", persist:"hand",
+    du:"Heb die Hand!", ihr:"Hebt die Hand!", sie:"Heben Sie die Hand!",
+    inf:"die Hand heben", en:"Raise your hand!"},
+  {id:"still", anim:"quiet", persist:"quiet",
+    du:"Sei still!", ihr:"Seid still!", sie:"Seien Sie still!",
+    inf:"still sein", en:"Be quiet!"},
+  {id:"lauf", anim:"run", persist:null,
+    du:"Lauf!", ihr:"Lauft!", sie:"Laufen Sie!",
+    inf:"laufen", en:"Run!"},
+  {id:"tanz", anim:"dance", persist:null,
+    du:"Tanz!", ihr:"Tanzt!", sie:"Tanzen Sie!",
+    inf:"tanzen", en:"Dance!"},
+  {id:"komm", anim:"come", persist:"come",
+    du:"Komm her!", ihr:"Kommt her!", sie:"Kommen Sie her!",
+    inf:"herkommen", en:"Come here!"},
+  {id:"lach", anim:"laugh", persist:null,
+    du:"Lach!", ihr:"Lacht!", sie:"Lachen Sie!",
+    inf:"lachen", en:"Laugh!"}
+];
+
+const WHO = {
+  mira:{name:"Mira", form:"du", color:"mira", hint:"eine Person · du"},
+  otto:{name:"Otto", form:"du", color:"otto", hint:"eine Person · du"},
+  beide:{name:"Mira und Otto", form:"ihr", color:"mira", hint:"zwei Personen · ihr"},
+  frau:{name:"Frau Berg", form:"sie", color:"frau", hint:"formell · Sie"}
+};
+
+const PUPPET = `<svg class="puppet" viewBox="0 0 160 280" aria-hidden="true">
+  <ellipse class="shadow" cx="80" cy="268" rx="40" ry="8" fill="rgba(0,0,0,.22)"/>
+  <g class="figure">
+    <g class="leg leg-l">
+      <rect class="leg-fill" x="52" y="168" width="20" height="74" rx="10"/>
+      <ellipse class="shoe" cx="60" cy="246" rx="16" ry="9"/>
+    </g>
+    <g class="leg leg-r">
+      <rect class="leg-fill" x="88" y="168" width="20" height="74" rx="10"/>
+      <ellipse class="shoe" cx="100" cy="246" rx="16" ry="9"/>
+    </g>
+    <g class="torso">
+      <g class="arm arm-l">
+        <rect class="shirt" x="26" y="100" width="18" height="68" rx="9"/>
+        <circle class="skin" cx="35" cy="172" r="11"/>
+      </g>
+      <g class="arm arm-r">
+        <rect class="shirt" x="116" y="100" width="18" height="68" rx="9"/>
+        <circle class="skin" cx="125" cy="172" r="11"/>
+      </g>
+      <rect class="shirt" x="46" y="94" width="68" height="82" rx="20"/>
+      <rect class="pants" x="50" y="154" width="60" height="28" rx="8"/>
+      <g class="head">
+        <g class="hair hair-mira">
+          <ellipse cx="80" cy="44" rx="40" ry="36" class="hair"/>
+          <path d="M108 58 Q138 86 118 128" fill="none" stroke="var(--hair)" stroke-width="16" stroke-linecap="round"/>
+          <circle class="bow" cx="118" cy="58" r="8" fill="#c62828"/>
+        </g>
+        <g class="hair hair-otto">
+          <path class="hair" d="M42 70 Q40 18 80 16 Q120 18 118 70 Q118 40 96 34 Q80 28 64 34 Q42 40 42 70Z"/>
+          <path class="hair" d="M50 28 L56 8 L64 30 M74 18 L80 2 L86 18 M96 30 L104 8 L110 28" fill="none" stroke="var(--hair)" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <g class="hair hair-frau">
+          <ellipse cx="80" cy="40" rx="38" ry="32" class="hair"/>
+          <circle cx="80" cy="18" r="14" class="hair"/>
+        </g>
+        <circle class="skin" cx="80" cy="62" r="34"/>
+        <g class="eye eye-l">
+          <ellipse cx="66" cy="60" rx="8" ry="9" fill="#fff"/>
+          <circle class="pupil" cx="67" cy="62" r="4" fill="#1c2a33"/>
+          <rect class="lid" x="58" y="50" width="16" height="10" rx="4" fill="var(--skin)"/>
+        </g>
+        <g class="eye eye-r">
+          <ellipse cx="94" cy="60" rx="8" ry="9" fill="#fff"/>
+          <circle class="pupil" cx="95" cy="62" r="4" fill="#1c2a33"/>
+          <rect class="lid" x="86" y="50" width="16" height="10" rx="4" fill="var(--skin)"/>
+        </g>
+        <g class="glasses" stroke="#1c2a33" stroke-width="3" fill="none">
+          <circle cx="66" cy="62" r="12"/><circle cx="94" cy="62" r="12"/>
+          <path d="M78 62 H82 M54 62 L46 66 M106 62 L114 66"/>
+        </g>
+        <ellipse cx="58" cy="74" rx="7" ry="4" fill="#f0a08a" opacity=".75"/>
+        <ellipse cx="102" cy="74" rx="7" ry="4" fill="#f0a08a" opacity=".75"/>
+        <path class="mouth" d="M68 84 Q80 94 92 84" stroke="#8a4a3a" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+      </g>
+    </g>
+  </g>
+</svg>`;
+
+const MISSIONS = {
+  leicht:[
+    {who:"mira", cmd:"wink", simon:true, text:"Sag Mira, sie soll winken."},
+    {who:"otto", cmd:"spring", simon:true, text:"Otto soll springen."},
+    {who:"mira", cmd:"klatsch", simon:true, text:"Mira soll klatschen."},
+    {who:"otto", cmd:"hand", simon:true, text:"Otto soll die Hand heben."},
+    {who:"mira", cmd:"tanz", simon:true, text:"Mira soll tanzen."},
+    {who:"otto", cmd:"lauf", simon:true, text:"Otto soll laufen."},
+    {who:"mira", cmd:"lach", simon:true, text:"Bring Mira zum Lachen."},
+    {who:"otto", cmd:"still", simon:true, text:"Otto soll still sein."},
+    {who:"mira", cmd:"sitz", simon:true, text:"Mira soll sich setzen."},
+    {who:"mira", cmd:"steh", simon:true, text:"Mira sitzt. Sag ihr, sie soll aufstehen.", start:"sit"},
+    {who:"mira", cmd:"spring", simon:false, text:"Trickse Mira: Sie soll NICHT springen."}
+  ],
+  mittel:[
+    {who:"beide", cmd:"klatsch", simon:true, text:"Beide sollen klatschen."},
+    {who:"mira", cmd:"wink", simon:true, text:"Nur Mira soll winken."},
+    {who:"beide", cmd:"spring", simon:true, text:"Mira und Otto sollen springen."},
+    {who:"otto", cmd:"sitz", simon:true, text:"Otto soll sich setzen."},
+    {who:"otto", cmd:"steh", simon:true, text:"Otto sitzt. Er soll aufstehen.", start:"sit"},
+    {who:"beide", cmd:"tanz", simon:true, text:"Beide sollen tanzen."},
+    {who:"beide", cmd:"spring", simon:false, text:"Trick: Beide sollen NICHT springen."},
+    {who:"mira", cmd:"komm", simon:true, text:"Mira soll herkommen."},
+    {who:"beide", cmd:"still", simon:true, text:"Seid still — beide!"},
+    {who:"otto", cmd:"dreh", simon:true, text:"Otto soll sich umdrehen."},
+    {who:"beide", cmd:"hand", simon:true, text:"Beide sollen die Hand heben."},
+    {who:"otto", cmd:"wink", simon:false, text:"Trickse Otto: kein Winken!"},
+    {who:"beide", cmd:"lauf", simon:true, text:"Beide sollen laufen."}
+  ],
+  schwer:[
+    {who:"frau", cmd:"komm", simon:true, text:"Frau Berg soll herkommen."},
+    {who:"mira", cmd:"wink", simon:true, text:"Sag Mira (du), sie soll winken."},
+    {who:"beide", cmd:"klatsch", simon:true, text:"Sag beiden (ihr), sie sollen klatschen."},
+    {who:"frau", cmd:"hand", simon:true, text:"Frau Berg soll die Hand heben."},
+    {who:"otto", cmd:"spring", simon:true, text:"Otto soll springen."},
+    {who:"frau", cmd:"tanz", simon:true, text:"Frau Berg soll tanzen — höflich!"},
+    {who:"beide", cmd:"sitz", simon:true, text:"Beide sollen sich setzen."},
+    {who:"frau", cmd:"still", simon:true, text:"Frau Berg soll still sein."},
+    {who:"frau", cmd:"spring", simon:false, text:"Trick: Frau Berg darf NICHT springen."},
+    {who:"mira", cmd:"lach", simon:true, text:"Mira soll lachen."},
+    {who:"beide", cmd:"dreh", simon:true, text:"Beide sollen sich umdrehen."},
+    {who:"frau", cmd:"lach", simon:true, text:"Frau Berg soll lachen."},
+    {who:"mira", cmd:"lauf", simon:true, text:"Nur Mira soll laufen — nicht Sie-Form!"},
+    {who:"frau", cmd:"wink", simon:true, text:"Winken Sie, Frau Berg!"}
+  ]
+};
+
+const state = {
+  mode:"give",
+  level:"leicht",
+  round:0,
+  score:0,
+  lives:3,
+  simonOn:false,
+  busy:false,
+  listenTimer:null,
+  current:null,
+  poses:{mira:"idle", otto:"idle", frau:"idle"},
+  animTimer:{mira:0, otto:0, frau:0}
+};
+
+const $ = id => document.getElementById(id);
+let audioCtx = null;
+let deVoice = null;
+
+function cmdById(id){ return BEFEHLE.find(b => b.id === id); }
+function formText(cmd, form){ return cmd[form]; }
+
+function targetsOf(who){
+  if (who === "beide") return ["mira","otto"];
+  return [who];
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function showScreen(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+}
+
+function renderActors(){
+  $("actors").innerHTML = ["mira","otto","frau"].map(who => `
+    <div class="actor idle" data-who="${who}" id="actor-${who}">
+      ${PUPPET}
+      <div class="nametag">${WHO[who === "frau" ? "frau" : who].name}</div>
+    </div>`).join("");
+  $("actor-frau").querySelector(".nametag").textContent = "Frau Berg";
+}
+
+function setActorActive(who){
+  const set = new Set(who === "all" ? ["mira","otto","frau"] : targetsOf(who));
+  document.querySelectorAll(".actor").forEach(el => {
+    el.classList.toggle("off", !set.has(el.dataset.who));
+  });
+}
+
+function resetPoses(){
+  document.querySelectorAll(".actor").forEach(el => {
+    el.className = "actor idle";
+    state.poses[el.dataset.who] = "idle";
+  });
+}
+
+function restClass(id){
+  const p = state.poses[id];
+  return p === "sit" ? "sit" : p === "hand" ? "hand" : p === "quiet" ? "quiet" : p === "come" ? "come" : "idle";
+}
+
+function playAnim(who, anim, persist){
+  const ids = who === "all" ? ["mira","otto","frau"] : targetsOf(who);
+  ids.forEach(id => {
+    const el = $("actor-"+id);
+    if (!el) return;
+    clearTimeout(state.animTimer[id]);
+    el.classList.remove("idle","jump","wave","clap","sit","stand","turn","hand","quiet","run","dance","come","laugh","no","confused","eyes");
+    void el.offsetWidth;
+    if (anim === "stand"){
+      el.classList.add("idle");
+      state.poses[id] = "idle";
+      return;
+    }
+    el.classList.add(anim);
+    if (persist){
+      state.poses[id] = persist === "stand" ? "idle" : persist;
+    } else {
+      state.animTimer[id] = window.setTimeout(() => {
+        el.classList.remove(anim);
+        el.classList.add(restClass(id));
+      }, 1400);
+    }
+  });
+}
+
+function refuse(who){
+  playAnim(who, "no", null);
+}
+
+/* ---------- audio ---------- */
+function ctx(){
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function tone(freq, dur, type, gain){
+  if ($("btnAudio").getAttribute("aria-pressed") !== "true") return;
+  try{
+    const c = ctx();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type || "sine";
+    o.frequency.value = freq;
+    g.gain.value = gain || 0.07;
+    o.connect(g); g.connect(c.destination);
+    o.start();
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+    o.stop(c.currentTime + dur);
+  }catch(e){}
+}
+function sfx(kind){
+  if (kind==="ok"){ tone(523,.08); setTimeout(()=>tone(659,.08),80); setTimeout(()=>tone(784,.16),160); }
+  else if (kind==="bad"){ tone(220,.18,"sawtooth",.05); setTimeout(()=>tone(160,.22,"sawtooth",.05),120); }
+  else if (kind==="whistle"){ tone(1400,.09,"triangle",.06); setTimeout(()=>tone(1800,.12,"triangle",.05),100); }
+  else tone(440,.05);
+}
+
+function pickVoice(){
+  if (!window.speechSynthesis) return;
+  const vs = speechSynthesis.getVoices();
+  deVoice = vs.find(v => /de[-_]DE/i.test(v.lang) && /google|natural|premium|anna|katja|hedda|petra/i.test(v.name))
+         || vs.find(v => /^de/i.test(v.lang))
+         || null;
+}
+if (window.speechSynthesis){
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
+
+function speak(text){
+  return new Promise(resolve => {
+    if ($("btnAudio").getAttribute("aria-pressed") !== "true" || !window.speechSynthesis){
+      resolve(); return;
+    }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "de-DE";
+    u.rate = 0.92;
+    u.pitch = 1.05;
+    if (deVoice) u.voice = deVoice;
+    u.onend = resolve;
+    u.onerror = resolve;
+    $("fox").classList.add("talk");
+    speechSynthesis.speak(u);
+    setTimeout(() => $("fox").classList.remove("talk"), Math.min(2400, text.length*80));
+  });
+}
+
+function bubble(de, en){
+  const el = $("bubble");
+  el.innerHTML = de + (en ? `<span class="en">${en}</span>` : "");
+  el.classList.add("on");
+}
+
+function hideBubble(){ $("bubble").classList.remove("on"); }
+
+function feedback(kind, de, en, tip){
+  const el = $("feedback");
+  el.className = "feedback " + kind;
+  el.innerHTML = `<div>${de}</div>${en?`<span class="en">${en}</span>`:""}${tip?`<div style="font-size:.86rem;margin-top:4px">${tip}</div>`:""}`;
+}
+
+function updateHud(){
+  $("scoreChip").textContent = "Punkte: " + state.score;
+  $("roundChip").textContent = "Runde " + Math.max(1, state.round);
+  $("lives").innerHTML = [0,1,2].map(i =>
+    `<svg class="heart${i<state.lives?"":" off"}" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-6.6-4.35-9.3-8.1C.5 9.6 1.7 5.5 5.4 4.4 7.5 3.8 9.5 4.6 12 7c2.5-2.4 4.5-3.2 6.6-2.6 3.7 1.1 4.9 5.2 2.7 8.5C18.6 16.65 12 21 12 21z"/></svg>`
+  ).join("");
+  $("hud").hidden = false;
+}
+
+function grammarTip(cmd, form){
+  const spoken = formText(cmd, form);
+  if (form === "du") return `„${spoken}“ ist der du-Imperativ von <i>${cmd.inf}</i>.`;
+  if (form === "ihr") return `„${spoken}“ ist der ihr-Imperativ (Stamm + t) von <i>${cmd.inf}</i>.`;
+  return `„${spoken}“ ist der Sie-Imperativ: Infinitiv + Sie.`;
+}
+
+/* ---------- command buttons ---------- */
+function optionSet(mission){
+  const right = cmdById(mission.cmd);
+  const form = WHO[mission.who].form;
+  const others = shuffle(BEFEHLE.filter(b => b.id !== right.id)).slice(0,3);
+  let opts = [{cmd:right, form, correct:true}];
+  if (state.level === "leicht"){
+    others.forEach(c => opts.push({cmd:c, form:"du", correct:false}));
+  } else if (state.level === "mittel"){
+    opts.push({cmd:right, form: form==="ihr"?"du":"ihr", correct:false});
+    others.slice(0,2).forEach(c => opts.push({cmd:c, form, correct:false}));
+  } else {
+    ["du","ihr","sie"].filter(f => f !== form).forEach(f => opts.push({cmd:right, form:f, correct:false}));
+    opts.push({cmd:others[0], form, correct:false});
+  }
+  return shuffle(opts).slice(0,4);
+}
+
+function renderCmds(opts, extraClass){
+  $("cmds").className = "cmds" + (extraClass ? " " + extraClass : "");
+  $("cmds").innerHTML = opts.map((o,i) => `
+    <button type="button" class="cmd" data-i="${i}">
+      <span class="key">${i+1}</span>
+      <span class="de" lang="de">${formText(o.cmd, o.form)}</span>
+      <span class="en">${o.cmd.en}</span>
+    </button>`).join("");
+  $("cmds").querySelectorAll(".cmd").forEach(btn => {
+    btn.addEventListener("click", () => onCommand(opts[+btn.dataset.i], btn));
+  });
+}
+
+function renderRef(){
+  $("refTable").innerHTML = `<table><thead><tr><th>Infinitiv</th><th>du</th><th>ihr</th><th>Sie</th></tr></thead><tbody>${
+    BEFEHLE.map(b => `<tr><td>${b.inf}</td><td>${b.du}</td><td>${b.ihr}</td><td>${b.sie}</td></tr>`).join("")
+  }</tbody></table>`;
+}
+
+/* ---------- GIVE MODE ---------- */
+function startGive(){
+  state.mode = "give";
+  state.round = 0;
+  state.score = 0;
+  state.lives = 3;
+  state.busy = false;
+  $("timer").classList.remove("on");
+  $("simonBtn").style.display = "";
+  $("whoPick").innerHTML = "";
+  showScreen("screen-play");
+  renderActors();
+  renderRef();
+  updateHud();
+  nextMission();
+}
+
+function nextMission(){
+  const list = MISSIONS[state.level];
+  if (state.round >= list.length){
+    endGame(true);
+    return;
+  }
+  const m = list[state.round];
+  state.current = m;
+  state.busy = false;
+  state.simonOn = false;
+  $("simonBtn").setAttribute("aria-pressed","false");
+  $("simonBtn").innerHTML = `Simon sagt <span aria-hidden="true">?</span>`;
+  resetPoses();
+  if (m.start){
+    targetsOf(m.who).forEach(id => {
+      const el = $("actor-"+id);
+      if (!el) return;
+      el.classList.remove("idle");
+      el.classList.add(m.start);
+      state.poses[id] = m.start;
+    });
+  }
+  setActorActive(m.who);
+  const w = WHO[m.who];
+  $("missionTitle").textContent = `Auftrag ${state.round+1} / ${list.length}`;
+  $("missionText").innerHTML = `${m.text}<span class="en">${m.simon ? "Include “Simon sagt” so they obey." : "Do NOT say Simon sagt — trick them into staying still."}</span>`;
+  $("whoPill").innerHTML = `<span class="dot ${w.color}"></span> ${w.name} · ${w.hint}`;
+  $("feedback").className = "feedback";
+  $("feedback").textContent = "";
+  hideBubble();
+  renderCmds(optionSet(m));
+  updateHud();
+}
+
+function onCommand(opt, btn){
+  if (state.busy) return;
+  if (state.mode === "listen"){ onListenTap(opt, btn); return; }
+  if (state.mode === "free"){ onFreeTap(opt); return; }
+
+  const m = state.current;
+  const form = WHO[m.who].form;
+  const spoken = (state.simonOn ? "Simon sagt: " : "") + formText(opt.cmd, opt.form);
+  state.busy = true;
+  bubble(spoken, opt.cmd.en);
+  speak(spoken);
+
+  const verbOk = opt.cmd.id === m.cmd && opt.form === form;
+  const simonOk = state.simonOn === m.simon;
+  const obey = state.simonOn;
+
+  if (obey) playAnim(m.who, opt.cmd.anim, opt.cmd.persist);
+  else refuse(m.who);
+
+  window.setTimeout(() => {
+    if (verbOk && simonOk){
+      sfx("ok");
+      state.score += 10 + (m.simon ? 0 : 5);
+      btn.classList.add("good");
+      const extra = m.simon
+        ? "Sie führen den Befehl aus."
+        : "Ohne „Simon sagt“ bleiben sie stehen — perfekter Trick!";
+      feedback("ok", "Richtig!", "Correct!", grammarTip(opt.cmd, form) + " " + extra);
+      state.round++;
+      window.setTimeout(nextMission, 1600);
+    } else {
+      sfx("bad");
+      btn.classList.add("bad");
+      let why = "";
+      let whyEn = "";
+      if (!verbOk && opt.form !== form){
+        why = `Falsche Anrede. ${WHO[m.who].name} braucht die ${form}-Form.`;
+        whyEn = `Wrong address form. Use the ${form} imperative.`;
+      } else if (!verbOk){
+        why = "Das ist der falsche Befehl.";
+        whyEn = "That is the wrong command.";
+      } else if (m.simon && !state.simonOn){
+        why = "Ohne „Simon sagt“ bewegt sich niemand. Schalte den Stempel ein!";
+        whyEn = "Nobody moves without “Simon sagt”. Turn the stamp on!";
+      } else {
+        why = "Das war ein Trick: ohne „Simon sagt“ hätten sie still bleiben sollen.";
+        whyEn = "That was a trick round: they should have stayed still.";
+      }
+      feedback("err", "Noch nicht.", whyEn, why);
+      state.busy = false;
+      window.setTimeout(() => {
+        if (state.mode === "give" && state.current === m){
+          resetPoses();
+          if (m.start){
+            targetsOf(m.who).forEach(id => {
+              const el = $("actor-"+id);
+              if (!el) return;
+              el.classList.remove("idle");
+              el.classList.add(m.start);
+              state.poses[id] = m.start;
+            });
+          }
+          setActorActive(m.who);
+        }
+      }, 700);
+    }
+    hideBubble();
+  }, 1150);
+}
+
+/* ---------- LISTEN MODE ---------- */
+function startListen(){
+  state.mode = "listen";
+  state.round = 0;
+  state.score = 0;
+  state.lives = 3;
+  state.busy = false;
+  showScreen("screen-play");
+  renderActors();
+  renderRef();
+  setActorActive("all");
+  $("simonBtn").style.display = "none";
+  $("whoPick").innerHTML = "";
+  $("timer").classList.add("on");
+  $("missionTitle").textContent = "Hör zu!";
+  $("missionText").innerHTML = `Tippe die Aktion — aber nur, wenn Simon es sagt.<span class="en">Tap the action only if Simon says so.</span>`;
+  $("whoPill").innerHTML = `<span class="dot frau"></span> Alle auf dem Platz`;
+  updateHud();
+  $("cmds").innerHTML = "";
+  window.setTimeout(listenRound, 600);
+}
+
+function listenChoices(must){
+  const rest = shuffle(BEFEHLE.filter(b => b.id !== must.id)).slice(0,7);
+  const opts = shuffle([must, ...rest]).map(cmd => ({
+    cmd,
+    form: cmd.id === must.id ? state.current.form : (state.level === "schwer" ? shuffle(["du","ihr","sie"])[0] : state.current.form),
+    correct: cmd.id === must.id
+  }));
+  renderCmds(opts, "listen");
+  state.listenOpts = opts;
+}
+
+function listenRound(){
+  if (state.lives <= 0){ endGame(false); return; }
+  const max = state.level === "leicht" ? 12 : state.level === "mittel" ? 16 : 20;
+  if (state.round >= max){ endGame(true); return; }
+  state.busy = true;
+  hideBubble();
+  $("feedback").className = "feedback";
+  $("feedback").textContent = "";
+  const cmd = BEFEHLE[Math.floor(Math.random()*BEFEHLE.length)];
+  const form = state.level === "schwer" ? shuffle(["du","ihr","sie"])[0]
+             : state.level === "mittel" ? shuffle(["du","ihr"])[0] : "du";
+  const simon = Math.random() < (state.level === "leicht" ? 0.7 : 0.58);
+  state.current = {cmd:cmd.id, form, simon, who:"all"};
+  const phrase = (simon ? "Simon sagt: " : "") + formText(cmd, form);
+  listenChoices(cmd);
+  sfx("whistle");
+  bubble(phrase, (simon?"Simon says: ":"") + cmd.en);
+  speak(phrase).then(() => {
+    state.busy = false;
+    const ms = Math.max(1400, 4200 - state.round*140);
+    const bar = $("timerBar");
+    bar.style.transition = "none";
+    bar.style.transform = "scaleX(1)";
+    void bar.offsetWidth;
+    bar.style.transition = `transform ${ms}ms linear`;
+    bar.style.transform = "scaleX(0)";
+    clearTimeout(state.listenTimer);
+    state.listenTimer = setTimeout(() => {
+      if (state.mode !== "listen" || state.busy) return;
+      state.busy = true;
+      if (simon){
+        miss("Zu langsam!", "Too slow — Simon did say it.");
+      } else {
+        // correctly did nothing
+        sfx("ok");
+        state.score += 8;
+        state.round++;
+        feedback("ok", "Gut gewartet!", "You waited — they didn't say Simon sagt.");
+        updateHud();
+        setTimeout(listenRound, 800);
+      }
+    }, ms);
+  });
+}
+
+function onListenTap(opt){
+  if (state.busy) return;
+  state.busy = true;
+  clearTimeout(state.listenTimer);
+  const m = state.current;
+  const rightVerb = opt.cmd.id === m.cmd;
+  if (m.simon && rightVerb){
+    sfx("ok");
+    playAnim("all", opt.cmd.anim, opt.cmd.persist);
+    state.score += 10;
+    state.round++;
+    feedback("ok", "Super!", "You followed Simon.", grammarTip(opt.cmd, m.form));
+    updateHud();
+    setTimeout(listenRound, 1300);
+  } else if (!m.simon){
+    playAnim("all", "laugh", null);
+    miss("Simon hat nichts gesagt!", "Simon didn't say it — you moved anyway.");
+  } else {
+    playAnim("all", "confused", null);
+    miss("Falscher Befehl.", "Wrong command.");
+  }
+}
+
+function miss(de, en){
+  sfx("bad");
+  state.lives--;
+  updateHud();
+  feedback("err", de, en);
+  if (state.lives <= 0) setTimeout(() => endGame(false), 900);
+  else { state.round++; setTimeout(listenRound, 1100); }
+}
+
+/* ---------- FREE PLAY ---------- */
+function startFree(){
+  state.mode = "free";
+  state.busy = false;
+  showScreen("screen-play");
+  renderActors();
+  renderRef();
+  setActorActive("all");
+  $("timer").classList.remove("on");
+  $("simonBtn").style.display = "";
+  $("hud").hidden = true;
+  $("missionTitle").textContent = "Freies Spiel";
+  $("missionText").innerHTML = `Wähle, wen du ansprichst, und gib Befehle.<span class="en">Choose who you are talking to, then give commands.</span>`;
+  state.freeWho = "mira";
+  $("whoPill").innerHTML = `<span class="dot mira"></span> Mira · du`;
+  $("whoPick").innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0">
+    ${["mira","otto","beide","frau"].map(w => `<button type="button" class="mini free-who" data-w="${w}">${WHO[w].name}</button>`).join("")}
+  </div>`;
+  $("whoPick").querySelectorAll(".free-who").forEach(b => b.addEventListener("click", () => {
+    state.freeWho = b.dataset.w;
+    setActorActive(state.freeWho);
+    $("whoPill").innerHTML = `<span class="dot ${WHO[state.freeWho].color}"></span> ${WHO[state.freeWho].name} · ${WHO[state.freeWho].hint}`;
+    $("whoPick").querySelectorAll(".free-who").forEach(x => x.style.background = "");
+    b.style.background = "var(--gold)";
+    renderFreeCmds();
+  }));
+  $("whoPick").querySelector(".free-who").style.background = "var(--gold)";
+  renderFreeCmds();
+  $("feedback").className = "feedback";
+  $("feedback").innerHTML = `Mit „Simon sagt“ bewegen sie sich. Ohne die Worte schütteln sie den Kopf.<span class="en">With “Simon sagt” they move. Without those words they shake their heads.</span>`;
+}
+
+function renderFreeCmds(){
+  const form = WHO[state.freeWho].form;
+  renderCmds(BEFEHLE.map(cmd => ({cmd, form, correct:true})), "wide");
+}
+
+function onFreeTap(opt){
+  const spoken = (state.simonOn ? "Simon sagt: " : "") + formText(opt.cmd, opt.form);
+  bubble(spoken, opt.cmd.en);
+  speak(spoken);
+  if (state.simonOn){
+    playAnim(state.freeWho, opt.cmd.anim, opt.cmd.persist);
+    feedback("ok", spoken, opt.cmd.en, grammarTip(opt.cmd, opt.form));
+  } else {
+    refuse(state.freeWho);
+    feedback("err", "Ohne „Simon sagt“ … keine Bewegung!", "No Simon sagt — they stay still.");
+  }
+}
+
+/* ---------- end ---------- */
+function endGame(win){
+  clearTimeout(state.listenTimer);
+  speechSynthesis && speechSynthesis.cancel();
+  showScreen("screen-end");
+  $("hud").hidden = false;
+  if (win){
+    burst();
+    $("endTitle").textContent = "Geschafft!";
+    $("endText").textContent = `Du hast ${state.score} Punkte. Die Klasse auf dem Sportplatz Kleinhausen folgt deinen Befehlen.`;
+    $("endEn").textContent = `You scored ${state.score} points. The Kleinhausen class is following your commands.`;
+  } else {
+    $("endTitle").textContent = "Pause!";
+    $("endText").textContent = `Noch ${state.score} Punkte auf dem Zettel. Nochmal versuchen?`;
+    $("endEn").textContent = `You banked ${state.score} points. Try again?`;
+  }
+}
+
+function burst(){
+  const box = $("confetti");
+  box.hidden = false;
+  box.innerHTML = "";
+  const colors = ["#c62828","#f0b429","#1d9a8a","#6b4c9a","#e36a3d","#fff"];
+  for (let i=0;i<48;i++){
+    const p = document.createElement("i");
+    p.style.left = Math.random()*100+"%";
+    p.style.background = colors[i%colors.length];
+    p.style.animationDelay = (Math.random()*.8)+"s";
+    p.style.transform = `rotate(${Math.random()*360}deg)`;
+    box.appendChild(p);
+  }
+  setTimeout(() => { box.hidden = true; box.innerHTML=""; }, 2400);
+}
+
+/* ---------- settings / start ---------- */
+document.body.classList.add("zeige-en");
+
+$("btnEn").addEventListener("click", () => {
+  const on = $("btnEn").getAttribute("aria-pressed") !== "true";
+  $("btnEn").setAttribute("aria-pressed", String(on));
+  document.body.classList.toggle("zeige-en", on);
+});
+$("btnAudio").addEventListener("click", () => {
+  const on = $("btnAudio").getAttribute("aria-pressed") !== "true";
+  $("btnAudio").setAttribute("aria-pressed", String(on));
+  if (!on && window.speechSynthesis) speechSynthesis.cancel();
+});
+$("btnMotion").addEventListener("click", () => {
+  const on = $("btnMotion").getAttribute("aria-pressed") !== "true";
+  $("btnMotion").setAttribute("aria-pressed", String(on));
+  document.documentElement.classList.toggle("no-motion", !on);
+  document.documentElement.style.setProperty("--motion", on ? "1" : "0.001");
+});
+$("btnContrast").addEventListener("click", () => {
+  const on = $("btnContrast").getAttribute("aria-pressed") !== "true";
+  $("btnContrast").setAttribute("aria-pressed", String(on));
+  document.documentElement.setAttribute("data-contrast", on ? "hoch" : "");
+});
+$("btnHelp").addEventListener("click", () => $("helpVeil").classList.add("on"));
+$("helpClose").addEventListener("click", () => $("helpVeil").classList.remove("on"));
+$("helpVeil").addEventListener("click", e => { if (e.target.id==="helpVeil") $("helpVeil").classList.remove("on"); });
+
+$("simonBtn").addEventListener("click", () => {
+  state.simonOn = !state.simonOn;
+  $("simonBtn").setAttribute("aria-pressed", String(state.simonOn));
+  $("simonBtn").innerHTML = state.simonOn
+    ? `Simon sagt <span aria-hidden="true">✓</span>`
+    : `Simon sagt <span aria-hidden="true">?</span>`;
+  sfx("click");
+});
+
+document.querySelectorAll(".lvl").forEach(btn => btn.addEventListener("click", () => {
+  document.querySelectorAll(".lvl").forEach(b => b.classList.remove("pick"));
+  btn.classList.add("pick");
+  state.level = btn.dataset.level;
+}));
+
+document.querySelectorAll(".mode").forEach(btn => btn.addEventListener("click", () => {
+  const mode = btn.dataset.mode;
+  if (mode === "give") startGive();
+  else if (mode === "listen") startListen();
+  else startFree();
+}));
+
+$("btnQuit").addEventListener("click", () => {
+  clearTimeout(state.listenTimer);
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  $("hud").hidden = true;
+  showScreen("screen-start");
+});
+$("btnHome").addEventListener("click", () => { $("hud").hidden = true; showScreen("screen-start"); });
+$("btnAgain").addEventListener("click", () => {
+  if (state.mode === "listen") startListen();
+  else if (state.mode === "free") startFree();
+  else startGive();
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") $("helpVeil").classList.remove("on");
+  if (state.mode === "listen" && !state.busy && $("screen-play").classList.contains("on")){
+    const n = parseInt(e.key, 10);
+    if (n>=1 && n<=8){
+      const btn = $("cmds").querySelectorAll(".cmd")[n-1];
+      if (btn) btn.click();
+    }
+  }
+});
+
+})();
+</script>
+</body>
+</html>

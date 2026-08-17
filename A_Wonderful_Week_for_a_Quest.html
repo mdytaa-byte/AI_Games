@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>A Wonderful Week for a Quest</title>
-<meta name="description" content="A 16-bit RPG adaptation of Michael D. Young’s comic fantasy of the Beandom.">
+<meta name="description" content="A 16-bit RPG adaptation of Michael D. Young’s A Wonderful Week for a Quest. Book I: Roddy Squires. Book II: Bellissimo and the Oxymorons.">
 <style>
   :root {
     --ink: #0a0714;
@@ -185,7 +185,8 @@
           <div class="sub">A 16-bit love letter to the genre</div>
           <div class="blink" id="press">Press Start / Enter / Tap</div>
           <div class="btns">
-            <button id="btnNew">New Quest</button>
+            <button id="btnNew">Book I</button>
+            <button id="btnBook2">Book II</button>
             <button id="btnCont" class="ghost">Continue</button>
             <button id="btnMute" class="ghost">Sound: On</button>
           </div>
@@ -280,12 +281,38 @@
       skills: ["smash", "block", "peptalk"]
     };
   }
+  function bellHero() {
+    return {
+      id: "bell", name: "Bellissimo",
+      maxHp: 32, hp: 32, maxMp: 18, mp: 18, atk: 8, def: 4, spd: 8,
+      skills: ["slash", "notice", "snack", "naps"]
+    };
+  }
+  function rodHero() {
+    return {
+      id: "roderick", name: "Sir Roderick 3RG",
+      maxHp: 40, hp: 40, maxMp: 6, mp: 6, atk: 10, def: 7, spd: 5,
+      skills: ["charge", "speech", "dadjoke"]
+    };
+  }
+  function elmHero() {
+    return {
+      id: "elm", name: "ELM",
+      maxHp: 24, hp: 24, maxMp: 22, mp: 22, atk: 5, def: 3, spd: 6,
+      skills: ["scheme", "kayak", "nether"]
+    };
+  }
+  function isB2() { return G.day === 2; }
 
   const ITEMS = {
     luna: { name: "Luna Bean", desc: "Tastes terrible. Restores 18 HP.", heal: 18 },
     taco: { name: "Taco Tuesday Leftover", desc: "Bellissimo’s favorite portable snack. Restores 30 HP.", heal: 30 },
     magic: { name: "Magic Bean", desc: "The Beandom’s treasure. Restores 12 MP.", mp: 12 },
-    skip: { name: "Skipping Bean", desc: "A prank bean. Throws an enemy off-beat.", stun: true }
+    skip: { name: "Skipping Bean", desc: "A prank bean. Throws an enemy off-beat.", stun: true },
+    chips: { name: "Sweet-and-Sour Chips", desc: "An edible oxymoron. Do not feed to reasonable giants." },
+    scrum: { name: "Scrumptious Bean", desc: "Roderick named it. The name is doing a lot of work." },
+    garlic: { name: "Count’s Garlic", desc: "A vampire’s favorite. The irony is the point." },
+    onebean: { name: "The One Bean", desc: "Capital letters required. Do not confuse with lunch." }
   };
 
   const SKILLS = {
@@ -296,7 +323,19 @@
     smash: { name: "Whatsit Smash", mp: 3, desc: "Hands too big for the mail slot, perfect for clubs.", dmg: 16 },
     block: { name: "Guard", mp: 0, desc: "Look menacing. Take half damage.", guard: true },
     peptalk: { name: "Supporting Role", mp: 4, desc: "Heal the actual hero.", heal: 16, ally: true },
-    secret: { name: "The Great Secret", mp: 0, desc: "Elisabeth Louisa Meriwether.", special: "elm", all: true }
+    secret: { name: "The Great Secret", mp: 0, desc: "Elisabeth Louisa Meriwether.", special: "elm", all: true },
+    slash: { name: "Un-Distressed Slash", mp: 3, desc: "Swordwork by someone tired of waiting to be rescued.", dmg: 12 },
+    notice: { name: "Notice People", mp: 4, desc: "See the quest standing in front of you.", all: true, confuse: 50, dmg: 6 },
+    snack: { name: "Emergency Taco", mp: 2, desc: "Heal. Then complain about last night.", heal: 14, ally: true },
+    naps: { name: "Strategic Nap", mp: 0, desc: "Look menacing. Take half damage. Dream of sleeping in.", guard: true },
+    charge: { name: "Heroic Charge", mp: 3, desc: "Begin with force. Interpret later, from a tree.", dmg: 15 },
+    speech: { name: "Inspirational Speech", mp: 4, desc: "Heal the actual hero. Mention destiny several times.", heal: 14, ally: true },
+    dadjoke: { name: "Jokes of the Fathers", mp: 0, desc: "Why did the ox cross the road? To get to the other punchline.", special: "ox" },
+    scheme: { name: "Useful Scheme", mp: 4, desc: "A plan that accidentally helps.", dmg: 10, stun: 30 },
+    kayak: { name: "Kayak", mp: 0, desc: "A boat that reads the same backward. Also a boat.", special: "prawn" },
+    nether: { name: "Netherworld Shortcut", mp: 6, desc: "Teleportation with extra paperwork.", dmg: 12 },
+    oxymoron: { name: "Edible Oxymoron", mp: 0, desc: "Sweet-and-sour chips. Scrumptious bean. Food that argues.", special: "lg" },
+    irony: { name: "Handyvamp Irony", mp: 0, desc: "A garlic-loving vegetarian vampire becomes a rabbit.", special: "dead" }
   };
 
   /* ---------- maps ---------- */
@@ -344,8 +383,8 @@ TTTTTTTTTTTTTTTTTTTTTTTT=======T
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ^^TTTT................................^^
 ^^T..T.........=======================^^
-^^TTTT.........=.....................=^^
-^^.............=..............^^^^^..=^^
+^^TTTT...~~~~..=.....................=^^
+^^.......~~~~..=..............^^^^^..=^^
 ^^,,...........=..............^   ^..=^^
 ^^,,,..........=======================^^
 ^^,,...........=......................^^
@@ -357,8 +396,8 @@ TTTTTTTTTTTTTTTTTTTTTTTT=======T
 ^^TTTT.........=======..........AAA...^^
 ^^T..T..........................A A...^^
 ^^TTTT....................X  X..AAA...^^
-^^........................X  X........^^
-^^........................XXXX........^^
+^^..............~~~~......X  X........^^
+^^..............~~~~......XXXX........^^
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 `),
     tower: parseMap(`
@@ -433,6 +472,80 @@ T........~~~~..........T
 T=====S============....T
 T......................T
 TTTTTTTTTTTTTTTTTTTTTTTT
+`),
+    hill: parseMap(`
+TTTTTTTTTTTTTTTTTTTT
+T..................T
+T......,,,,........T
+T....,,,,,,,,......T
+T...,,,,,,,,,,.....T
+T....,,,,,,,,......T
+T......,,,,........T
+T..................T
+T========D=========T
+TTTTTTTTTTTTTTTTTTTT
+`),
+    hornfang: parseMap(`
+TTTTTTTTTTTTTTTT
+T**************T
+T*....**.....**T
+T*.**....**...*T
+T*............*T
+T**.****..**..*T
+T*............*T
+T**************T
+TTTTTTTTTTTTTTTT
+`),
+    lake: parseMap(`
+TTTTTTTTTTTTTTTTTTTT
+T........~~~~......T
+T......~~~~~~~~....T
+T.....~~~~~~~~~~...T
+T====B~~~~~~~~~~...T
+T......~~~~~~~~....T
+T........~~~~......T
+T..................T
+TTTTTTTTTTTTTTTTTTTT
+`),
+    swamp: parseMap(`
+XXXXXXXXXXXXXXXXXXXX
+X~~~~..........~~~~X
+X~~....HHHH......~~X
+X.....H   H........X
+X.....H D H........X
+X..................X
+X........~~~~......X
+X~~~~~~~~~~~~~~~...X
+XXXXXXXXXXXXXXXXXXXX
+`),
+    circus: parseMap(`
+AAAAAAAAAAAAAAAAAAAA
+A..................A
+A..AAAAAAAAAAAAAA..A
+A..A............A..A
+A..A............A..A
+A..A............A..A
+A..AAAAAA  AAAAAA..A
+A........D.........A
+AAAAAAAAAAAAAAAAAAAA
+`),
+    pub: parseMap(`
+################
+#              #
+#   S     F    #
+#              #
+#              #
+#NNNNNNNNNNDNNN#
+################
+`),
+    crater: parseMap(`
+^^^^^^^^^^^^
+^FFFFFFFFFF^
+^F........F^
+^F...P....F^
+^F........F^
+^FFFFFFFFFF^
+^^^^^^^^^^^^
 `)
   };
 
@@ -444,7 +557,14 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     arena: [10, 6],
     cave: [10, 6],
     lair: [7, 5],
-    rally: [6, 8]
+    rally: [6, 8],
+    hill: [10, 7],
+    hornfang: [7, 6],
+    lake: [4, 4],
+    swamp: [8, 6],
+    circus: [10, 7],
+    pub: [8, 4],
+    crater: [5, 4]
   };
 
   const MAPNAME = {
@@ -455,7 +575,14 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     arena: "Dwarven Amphitheater",
     cave: "Goblin Family Cave",
     lair: "ELM’s Former Latrine Lair",
-    rally: "The Rally Hill"
+    rally: "The Rally Hill",
+    hill: "A Suspicious Cilantro Hill",
+    hornfang: "Hornfang Forest (miniature)",
+    lake: "Lake Ekal",
+    swamp: "The Improbable Swamp",
+    circus: "Circus Absurdus",
+    pub: "Goblin Pub (frozen chilly)",
+    crater: "Mount Ominous, Lava Annex"
   };
 
   function tileAt(map, x, y) {
@@ -492,7 +619,12 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       { x: 32, y: 14, to: "arena", tx: 10, ty: 6, need: "quest" },
       { x: 33, y: 11, to: "cave", tx: 10, ty: 6, need: "quest" },
       { x: 27, y: 16, to: "lair", tx: 7, ty: 5 },
-      { x: 25, y: 8, to: "rally", tx: 6, ty: 8, need: "allSecrets" }
+      { x: 25, y: 8, to: "rally", tx: 6, ty: 8, need: "allSecrets" },
+      { x: 3, y: 6, to: "hill", tx: 10, ty: 7, need: "b2prop" },
+      { x: 4, y: 2, to: "hornfang", tx: 7, ty: 6, need: "b2grossina" },
+      { x: 13, y: 4, to: "lake", tx: 3, ty: 5, need: "b2lg" },
+      { x: 18, y: 16, to: "swamp", tx: 8, ty: 6, need: "b2prawn" },
+      { x: 28, y: 7, to: "circus", tx: 10, ty: 5, need: "b2dead" }
     ],
     tower: [{ x: 12, y: 8, to: "world", tx: 28, ty: 6 }],
     forest: [
@@ -504,7 +636,18 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     arena: [{ x: 10, y: 8, to: "world", tx: 29, ty: 15 }, { x: 9, y: 8, to: "world", tx: 29, ty: 15 }],
     cave: [{ x: 13, y: 7, to: "world", tx: 30, ty: 10 }],
     lair: [{ x: 10, y: 6, to: "world", tx: 24, ty: 16 }],
-    rally: [{ x: 2, y: 8, to: "world", tx: 24, ty: 8 }, { x: 1, y: 8, to: "world", tx: 24, ty: 8 }]
+    rally: [{ x: 2, y: 8, to: "world", tx: 24, ty: 8 }, { x: 1, y: 8, to: "world", tx: 24, ty: 8 }],
+    hill: [{ x: 8, y: 8, to: "world", tx: 4, ty: 7 }, { x: 9, y: 8, to: "world", tx: 4, ty: 7 }],
+    hornfang: [{ x: 7, y: 7, to: "world", tx: 5, ty: 3 }, { x: 8, y: 7, to: "world", tx: 5, ty: 3 }],
+    lake: [{ x: 1, y: 4, to: "world", tx: 12, ty: 5 }, { x: 2, y: 4, to: "world", tx: 12, ty: 5 }],
+    swamp: [{ x: 17, y: 7, to: "world", tx: 17, ty: 15 }, { x: 18, y: 7, to: "world", tx: 17, ty: 15 }],
+    circus: [
+      { x: 9, y: 7, to: "world", tx: 27, ty: 8 },
+      { x: 10, y: 7, to: "world", tx: 27, ty: 8 },
+      { x: 4, y: 4, to: "pub", tx: 8, ty: 4, need: "b2oxing" }
+    ],
+    pub: [{ x: 11, y: 5, to: "circus", tx: 5, ty: 4 }],
+    crater: [{ x: 5, y: 5, to: "tower", tx: 7, ty: 7, need: "b2ogeron" }]
   };
 
   function npcsFor() {
@@ -513,8 +656,13 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     if (G.map === "village") {
       list.push(npc(14, 6, "jackdaw", "Jackdaw", talkJackdawVillage));
       list.push(npc(18, 7, "mordeck", "Mordeck", talkMordeck));
-      if (!f.roderickGone) list.push(npc(16, 8, "roderick", "Sir Roderick 3RG", talkRoderick));
-      list.push(npc(22, 14, "bell", "Bellissimo", talkBell));
+      if (isB2()) {
+        if (!f.b2rod) list.push(npc(16, 8, "roderick", "Sir Roderick 3RG", talkRoderick));
+        list.push(npc(11, 8, "squires", "Roddy Squires", talkSquiresB2));
+      } else {
+        if (!f.roderickGone) list.push(npc(16, 8, "roderick", "Sir Roderick 3RG", talkRoderick));
+        list.push(npc(22, 14, "bell", "Bellissimo", talkBell));
+      }
       list.push(npc(7, 7, "ellie", "Ellie", talkEllie));
       list.push(npc(6, 5, "villager", "Bean Farmer", () => say([
         { who: "Farmer", text: "Magic beans are the principal crop. If someone says they couldn’t give a bean, they mean it." },
@@ -523,11 +671,14 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       list.push(npc(25, 11, "villager", "Innkeeper", talkInn));
     }
     if (G.map === "world") {
-      if (!f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
-      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: "NE mountain gap: Jackdaw. Stand in the trees south of the highway: elves. East caves: goblins. SE stone ring: dwarves. Far south hole: ELM. Golden P: rally (later)." }])));
+      if (!isB2() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
+      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB2()
+        ? "West beans: cilantro hill. NW grove: Hornfang. North puddles: Lake Ekal. South muck: swamp. Foot of the mountain: Circus Absurdus."
+        : "NE mountain gap: Jackdaw. Stand in the trees south of the highway: elves. East caves: goblins. SE stone ring: dwarves. Far south hole: ELM. Golden P: rally (later)." }])));
     }
     if (G.map === "tower") {
       list.push(npc(8, 3, "jackdaw", "Jackdaw", talkJackdawTower));
+      if (isB2() && f.b2ogeron && !f.b2bell) list.push(npc(10, 3, "elm", "ELM", talkElmBell));
     }
     if (G.map === "forest") {
       list.push(npc(11, 6, "elf", "Elder Elf", talkElf));
@@ -548,11 +699,44 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       if (f.elmDown && !f.wormDown) list.push(npc(16, 5, "worm", "Wormtoe", talkWorm));
       if (f.saved) list.push(npc(8, 8, "mordeck", "Mordeck", talkEnding));
     }
+    if (G.map === "hill") {
+      list.push(npc(10, 4, "grossina", "Grossina", talkGrossina));
+    }
+    if (G.map === "hornfang") {
+      if (!f.b2lg) list.push(npc(7, 4, "lg", "Little Giant", talkLittleGiant));
+    }
+    if (G.map === "lake") {
+      if (!f.b2prawn) list.push(npc(5, 4, "prawn", "P’R’A’W’’Y’N", talkPrawn));
+      if (!f.b2elm) list.push(npc(3, 5, "elm", "ELM", talkElmLake));
+    }
+    if (G.map === "swamp") {
+      list.push(npc(8, 3, "slad", "Count Slad", talkSlad));
+      if (!f.b2dead) list.push(npc(12, 5, "dead", "The Living Dead", talkLivingDead));
+    }
+    if (G.map === "circus") {
+      if (!f.b2ox) list.push(npc(10, 4, "ox", "Moronic Ox", talkOx));
+      list.push(npc(6, 1, "gob", "Ticket Goblin", () => say([{ who: "Goblin", text: "Shirts and shoes prohibited. Barbarian dress code. The ox has not left its lair in years. Try not to look delicious." }])));
+    }
+    if (G.map === "pub") {
+      list.push(npc(8, 3, "hob", "Barkeep", talkBarkeep));
+      if (!f.b2spoon) list.push(npc(4, 2, "spoon", "Ex-caliper", talkSpoon));
+    }
+    if (G.map === "crater") {
+      if (!f.b2ogeron) list.push(npc(6, 3, "bean", "The One Bean", talkOneBean));
+      else list.push(npc(6, 3, "ogeron", "King Ogeron", talkOgeron));
+    }
     return list;
   }
 
   function npc(x, y, sprite, name, talk) {
     return { x, y, sprite, name, talk };
+  }
+  function give(id) {
+    const it = G.inv.find((i) => i.id === id);
+    if (it) it.n++; else G.inv.push({ id, n: 1 });
+  }
+  function join(member) {
+    if (!G.party.find((p) => p.id === member.id)) G.party.push(member);
   }
 
   function questBang(n) {
@@ -566,6 +750,19 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     if (n.sprite === "hob" && !f.secretM) return true;
     if (n.sprite === "elm" && G.map === "rally" && !f.elmDown) return true;
     if (n.sprite === "worm" && !f.wormDown) return true;
+    if (isB2()) {
+      if (n.sprite === "jackdaw" && G.map === "village" && !f.b2prophecy) return true;
+      if (n.sprite === "roderick" && f.b2prophecy && !f.b2rod) return true;
+      if (n.sprite === "grossina" && !f.b2grossina) return true;
+      if (n.sprite === "lg" && !f.b2lg) return true;
+      if (n.sprite === "prawn" && !f.b2prawn) return true;
+      if (n.sprite === "dead" && !f.b2dead) return true;
+      if (n.sprite === "ox" && !f.b2ox) return true;
+      if (n.sprite === "spoon" && !f.b2spoon) return true;
+      if (n.sprite === "jackdaw" && G.map === "tower" && f.b2bean && !f.b2best) return true;
+      if (n.sprite === "bean" && !f.b2ogeron) return true;
+      if (n.sprite === "elm" && G.map === "tower" && f.b2ogeron && !f.b2bell) return true;
+    }
     return false;
   }
 
@@ -634,6 +831,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   }
 
   function talkJackdawVillage() {
+    if (isB2()) return talkJackdawB2();
     if (G.flags.prophecy) {
       say([
         { who: "Jackdaw", text: "Still here? The prophecy will not fulfill itself, goat boy. Also, stop yawning at my sunrises." },
@@ -658,6 +856,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   }
 
   function talkRoderick() {
+    if (isB2()) return talkRoderickB2();
     if (!G.flags.prophecy) {
       say([{ who: "Sir Roderick 3RG", text: "Do you speak to all heroes like that? Come back when a prophecy is involved. I have damsels to schedule." }]);
       return;
@@ -686,6 +885,13 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   }
 
   function talkMordeck() {
+    if (isB2()) {
+      say([
+        { who: "Mordeck", text: "Taco Tuesday has consequences. I have them on the ledger. Also on the floor." },
+        { who: "Mordeck", text: "If you’re hunting oxymorons, try not to let them eat the inventory. Beans are not a suggestion." }
+      ]);
+      return;
+    }
     say([
       { who: "Mordeck", text: "Last time Jackdaw had big news, his beard broke the kingdom’s length record. Personally, I couldn’t give a bean." },
       { who: "Mordeck", text: "If the river fails, the beanstalks wither, and giants fall out of the sky. Try not to let that happen on a Tuesday." }
@@ -742,6 +948,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   }
 
   function talkJackdawTower() {
+    if (isB2()) return talkJackdawB2Tower();
     if (G.flags.quest) {
       if (G.flags.secretL && G.flags.secretE && G.flags.secretM) {
         say([
@@ -942,6 +1149,357 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     say([{ who: "Mordeck", text: "One statue per world-saving victory. House policy. Now eat something before the elves start a food chant." }]);
   }
 
+  function talkSquiresB2() {
+    say([
+      { who: "Squires", text: "I accidentally saved the kingdom. Then I had tacos. Then I remembered I still have goats." },
+      { who: "Squires", text: "If the prophecy is about a bell this time, that’s you. I am staying near the statue. It doesn’t throw people." }
+    ]);
+  }
+
+  function talkJackdawB2() {
+    if (G.flags.b2prophecy) {
+      say([
+        { who: "Jackdaw", text: "West, through the beans, there is a hill that snores. I ordered a Kleinmacher 2000 for my tower. A bell. Obviously the prophecy means my bell." },
+        { who: "Bellissimo", text: "My friends call me Bell." },
+        { who: "Jackdaw", text: "Coincidence is not a narrative device I respect. Take Roderick. His ego still exceeds the available evidence." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Jackdaw", text: "Do not sit. The Uppercase Prophecy spent last night as a napkin. Hot sauce, guacamole, nacho cheese. I have never been so professionally offended." },
+      { who: "Jackdaw", text: "Your elven sweet-and-sour bottle finished the job. Hidden writing. Reverse side. I hate sequels that were always there." , note: "Hot sauce is not a recognized school of divination. It is, however, effective." },
+      { who: "Jackdaw", text: "“When hordes attack, and flags are furled, a bell must sound to save the world. Moronic oxen must be slain, or all the world will end in pain.”" },
+      { who: "Jackdaw", text: "A bell. I have just the device. The Kleinmacher 2000. Anything over seven feet becomes conveniently pixie-sized." },
+      { who: "Bellissimo", text: "Or it means me. Bell. I have been standing in front of people with a sword for years." },
+      { who: "Jackdaw", text: "We shall see whose interpretation requires less plumbing. Talk to Sir Roderick. Then leave by the south road before the tacos organize a reunion." }
+    ], () => {
+      G.flags.b2prophecy = true;
+      G.quest = "Collect Sir Roderick (ego included). Then find the snoring hill west of the beans.";
+      save();
+    });
+  }
+
+  function talkRoderickB2() {
+    if (G.flags.b2rod) {
+      say([{ who: "Sir Roderick 3RG", text: "I am already in your party. Try to keep up. Destiny has a dress code." }]);
+      return;
+    }
+    if (!G.flags.b2prophecy) {
+      say([{ who: "Sir Roderick 3RG", text: "I do not do taco aftermath. Speak to the wizard first. I require a prophecy before I require a sidekick." }]);
+      return;
+    }
+    say([
+      { who: "Sir Roderick 3RG", text: "Mary Sue Bellmont. You want a quest. I want a quest that notices I am in it." },
+      { who: "Bellissimo", text: "I want recognition, treasure, and the right to sleep in. Also fewer speeches." },
+      { who: "Sir Roderick 3RG", text: "I shall charge first and interpret later. I packed a scrumptious bean. Do not ask why it is named that." },
+      { who: "Jackdaw", text: "His preferred strategy begins with force and continues from a tree.", note: "This has been statistically verified." }
+    ], () => {
+      G.flags.b2rod = true;
+      join(rodHero());
+      give("scrum");
+      G.quest = "Flee the taco fumes west. The hill is not a hill.";
+      save();
+    });
+  }
+
+  function talkGrossina() {
+    if (G.flags.b2grossina) {
+      say([
+        { who: "Grossina", text: "Come back when you know what the Treasure of Ages actually is. I would like a new story. The old dreams are leftovers." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Grossina", text: "Tiny thing in cilantro green—speak in rhyme, or stay unseen." },
+      { who: "Bellissimo", text: "I fled the tacos, I fled the cheese. I only wanted a nap and some peas." },
+      { who: "Grossina", text: "Good enough. You slept in my hair. Most people run. I am Grossina. The other giants walked on. I stayed. I nap. I wait." },
+      { who: "Bellissimo", text: "Yesterday a goat herder tripped on a pebble and saved the river. I am trying to be the person standing in front of the quest this time." },
+      { who: "Grossina", text: "Then fetch the One Bean. Giants warred over it until a wise king cursed it: any giant who touches it becomes a halfling. We value our size. So we sleep." , note: "A curse that threatens dignity will stop a war faster than a curse that threatens death. Giants have priorities." },
+      { who: "Grossina", text: "Little folk can touch it. You must beat the Oxymorons: living contradictions. First, the Little Giant in Hornfang Forest—the northwest grove of miniature trees. Bring another oxymoron." },
+      { who: "Grossina", text: "The Bean may corrupt you. It offers sleep, power, and a throne. I am asking anyway. I am lonely, and you did not run." }
+    ], () => {
+      G.flags.b2grossina = true;
+      G.quest = "Hornfang Forest, northwest grove. The Little Giant wants an oxymoron, not a sword.";
+      save();
+    });
+  }
+
+  function talkLittleGiant() {
+    if (G.flags.b2lg) return;
+    say([
+      { who: "Little Giant", text: "DUNG BEETLES! Best band in the miniature trees. Also I can throw knights. Watch." },
+      { who: "Sir Roderick 3RG", text: "I shall interpret this after I land." },
+      { who: "Little Giant", text: "You like the Beetles too? Fine. I will throw you softer." }
+    ], () => startBattle([enemy("lg")], { canFlee: false, boss: true, heal: true, onWin: () => {
+      say([
+        { who: "Little Giant", text: "Sweet-and-sour chips. Scrumptious bean. Food that argues with itself. I yield. Lake Ekal. Jumbo Shrimp. Bring a palindrome." },
+        { who: "Bellissimo", text: "A palindrome. A word that reads the same backward. Not a sword that reads the same backward." }
+      ], () => {
+        G.flags.b2lg = true;
+        G.quest = "Lake Ekal, north puddles. Jumbo Shrimp. Palindrome required. Do not rename Roderick “Sir Bob.”";
+        save();
+      });
+    }}));
+  }
+
+  function talkElmLake() {
+    if (G.flags.b2elm) {
+      say([{ who: "ELM", text: "Kayak. I solved it. You may thank me with muffins later. I negotiated muffins." }]);
+      return;
+    }
+    say([
+      { who: "ELM", text: "I am not joining a quest. I am preventing a worse sequel. Also the boats here are kayaks." },
+      { who: "Bellissimo", text: "You’re helping." },
+      { who: "ELM", text: "I am being useful on purpose. Do not tell the Viler Villains Society. They revoke schemes for that." }
+    ], () => {
+      G.flags.b2elm = true;
+      join(elmHero());
+      save();
+    });
+  }
+
+  function talkPrawn() {
+    if (G.flags.b2prawn) return;
+    if (!G.flags.b2elm) {
+      say([{ who: "P’R’A’W’’Y’N", text: "THE APOSTROPHES ARE HEIRLOOMS. ALSO YOU HAVE NO PALINDROME. ALSO I AM THE SIZE OF AN ELEPHANT." }]);
+      return;
+    }
+    say([
+      { who: "P’R’A’W’’Y’N", text: "P, apostrophe, R, apostrophe, A—never mind. You may not call me Prawn. You may not call him Sir Bob. That is not a palindrome." },
+      { who: "Sir Roderick 3RG", text: "Madam, I’m Madam—" },
+      { who: "ELM", text: "Stop talking. Look at the boats." }
+    ], () => startBattle([enemy("prawn")], { canFlee: false, boss: true, heal: true, onWin: () => {
+      say([
+        { who: "P’R’A’W’’Y’N", text: "A kayak is a palindrome and also a boat. I hate this lake. Improbable Swamp. Living Dead. Irony." },
+        { who: "ELM", text: "I will invoice you for the vowels." }
+      ], () => {
+        G.flags.b2prawn = true;
+        G.quest = "Improbable Swamp, south muck. The Living Dead wants irony, not grains forever.";
+        save();
+      });
+    }}));
+  }
+
+  function talkSlad() {
+    if (G.flags.b2slad) {
+      say([{ who: "Count Slad", text: "I am a count and poor with numbers. I am a vampire who loves garlic. If that is not irony, I will eat a salad about it." }]);
+      return;
+    }
+    say([
+      { who: "Count Slad", text: "Welcome to Slad Manor. I am Count Slad the Improver. Vegetarian handyvamp. I repair houses. I love garlic. I am terrible at counting, which is awkward." },
+      { who: "Bellissimo", text: "The zombie outside wants grains and brains." },
+      { who: "Count Slad", text: "I already ate garlic. If I transform, I become a giant black rabbit and breathe contradiction. It is a whole thing. Take a bulb. Stand near the Living Dead." }
+    ], () => {
+      G.flags.b2slad = true;
+      give("garlic");
+      save();
+    });
+  }
+
+  function talkLivingDead() {
+    if (G.flags.b2dead) return;
+    if (!G.flags.b2slad) {
+      say([{ who: "The Living Dead", text: "GRAINS! Also brains. I was vegan. Now I am a committee." }]);
+      return;
+    }
+    say([
+      { who: "The Living Dead", text: "GRAINS!" },
+      { who: "Count Slad", text: "Allow me. This will be ironic." }
+    ], () => startBattle([enemy("dead")], { canFlee: false, boss: true, heal: true, onWin: () => {
+      say([
+        { who: "Tombstone", text: "Circus Absurdus, foot of Mount Ominous. Moronic Ox. Tell the jokes of the fathers." },
+        { who: "Bellissimo", text: "Dad jokes. Of course it is dad jokes." }
+      ], () => {
+        G.flags.b2dead = true;
+        G.quest = "Circus Absurdus, mountain foot. Roderick vs the Moronic Ox. Pack father jokes. Then find a spoon.";
+        save();
+      });
+    }}));
+  }
+
+  function talkOx() {
+    if (G.flags.b2ox) return;
+    say([
+      { who: "Announcer", text: "The Moronic Ox returns! Shirts off, shoes off, expectations off!" },
+      { who: "Sir Roderick 3RG", text: "I have a scroll. I have no shirt. I have several regrets." },
+      { who: "Bellissimo", text: "We’ll be in the goblin pub. Try not to die of puns." }
+    ], () => startBattle([enemy("ox")], { canFlee: false, boss: true, heal: true, onWin: () => {
+      say([
+        { who: "Sir Roderick 3RG", text: "Why did the ox cross the arena? To get to the other groan. I am a hero. I would like a shirt." },
+        { who: "Crowd", text: "We came for a bloodbath and received a set." }
+      ], () => {
+        G.flags.b2ox = true;
+        G.flags.b2oxing = true;
+        G.quest = "West inside the circus: goblin pub. Frozen chilly. A spoon in a stone. Do not be reasonable.";
+        save();
+      });
+    }}));
+  }
+
+  function talkBarkeep() {
+    say([
+      { who: "Barkeep", text: "Frozen chilly. You’ll want a utensil of caliber. That silver spoon in the stone has been waiting for someone with worse judgment than a goblin." },
+      { who: "Barkeep", text: G.flags.b2spoon ? "Queen of Cooks, Empress of Kitchencraft, High Duchess of Gastronomy. The titles are complimentary. The chilly is not." : "If it comes out, we kneel. House policy." }
+    ]);
+  }
+
+  function talkSpoon() {
+    if (G.flags.b2fire) return;
+    if (G.flags.b2spoon) {
+      say([
+        { who: "Ex-caliper", text: "Cast it into the fire." },
+        { who: "ELM", text: "I heard ‘cast.’ I am throwing it." }
+      ], () => {
+        G.flags.b2fire = true;
+        G.flags.b2bean = true;
+        give("onebean");
+        G.quest = "Jackdaw’s tower. The One Bean wants water. It wants a BEST spell. Alphabetical, unfortunately.";
+        save();
+        say([
+          { who: "Ex-caliper", text: "Red letters. Goblin. ELM can read them because of course he can." },
+          { who: "ELM", text: "It says you are Beanbearer. The One Bean is yours. Try not to become a tyrant. I already filled that vacancy." },
+          { who: "The One Bean", text: "Hello. I have ambitions. They are larger than my diameter." }
+        ]);
+      });
+      return;
+    }
+    say([
+      { who: "Bellissimo", text: "A spoon in a stone. I need something for the chilly." },
+      { who: "Chorus", text: "Light! Kneeling! Culinary destiny!" },
+      { who: "Barkeep", text: "It was a caliper of caliber. Now it is an ex-caliper. You are Queen of Cooks until further notice." , note: "Goblins take tableware extremely seriously. So should you." }
+    ], () => {
+      G.flags.b2spoon = true;
+      save();
+    });
+  }
+
+  function talkJackdawB2Tower() {
+    if (G.flags.b2bell) {
+      say([{ who: "Jackdaw", text: "Both readings were correct. The bell sounded, and Bell sounded. I hate it when prophecies multitask." }]);
+      return;
+    }
+    if (G.flags.b2ogeron) {
+      say([{ who: "Jackdaw", text: "You are still uncomfortably tall. ELM brought a Netherworld shortcut and my Kleinmacher 2000. Let him ring it." }]);
+      return;
+    }
+    if (G.flags.b2best) {
+      say([{ who: "Jackdaw", text: "The stalk is a house-wide problem. Follow it to the lava. Do not become a queen of anything before lunch." }]);
+      return;
+    }
+    if (!G.flags.b2bean) {
+      say([{ who: "Jackdaw", text: "I am unpacking a bell that shrinks giants. Come back when you have a mythical bean and a reason." }]);
+      return;
+    }
+    say([
+      { who: "Jackdaw", text: "Water did nothing. Of course it did nothing. This is a BEST spell. Blood, Essence, Sweat, Tears. In order. From the Beanbearer. That is you." },
+      { who: "Jackdaw", text: "If you scramble the alphabet I will narrate your failure in iambic disappointment." }
+    ], () => bestPuzzle(0));
+  }
+
+  function bestPuzzle(step) {
+    const opts = [
+      { label: "Blood (a drop from the Beanbearer)", id: 0 },
+      { label: "Essence (breath)", id: 1 },
+      { label: "Sweat (from the brow)", id: 2 },
+      { label: "Tears (Roderick, tell a sad story)", id: 3 }
+    ];
+    const names = ["Blood", "Essence", "Sweat", "Tears"];
+    const ordered = [opts[step], ...opts.filter((o) => o.id !== step)];
+    say([{
+      who: "BEST Spell",
+      text: step === 0 ? "First ingredient?" : step === 1 ? "The sprout doubled. Next?" : step === 2 ? "Taller than Bell. Next?" : "The stalk wants the last letter.",
+      choices: ordered.map((o) => ({
+        label: o.label,
+        fn: () => {
+          if (o.id !== step) {
+            say([{ who: "Jackdaw", text: "Alphabetical. B-E-S-T. I named it so you would not improvise. From the top." }], () => bestPuzzle(0));
+            return;
+          }
+          if (step < 3) {
+            if (step === 3) {}
+            if (step === 2) {
+              say([{ who: "Sir Roderick 3RG", text: "Once I was trapped as a statue. It was very moving. For everyone except me." }], () => bestPuzzle(3));
+              return;
+            }
+            bestPuzzle(step + 1);
+            return;
+          }
+          G.flags.b2best = true;
+          G.flags.b2giant = true;
+          G.quest = "You are a giant. The One Bean wants a queen. Take it to the lava of Mount Ominous instead.";
+          save();
+          say([
+            { who: "Jackdaw", text: "House-wide stalk. Head in the clouds. The ring enlarged you. Try not to step on Beanvale." },
+            { who: "The One Bean", text: "Come to the crater. We should discuss thrones." }
+          ], () => warp("crater", 5, 4));
+        }
+      }))
+    }]);
+  }
+
+  function talkOneBean() {
+    if (G.flags.b2ogeron) return;
+    say([{
+      who: "The One Bean",
+      text: "I can make you queen of the giants. Uninterrupted sleep. Adoration. Control, which I am calling protection. Look at yourself in my gold.",
+      choices: [
+        { label: "Become queen of the giants", fn: () => say([
+          { who: "The One Bean", text: "Excellent. Abandon the shirtless knight and the muffin-villain. Sleep forever." },
+          { who: "Bellissimo", text: "No. I noticed them. That was the whole point." }
+        ], () => talkOneBeanRefuse()) },
+        { label: "Ask for the right to sleep in", fn: () => say([
+          { who: "The One Bean", text: "Sleep is easier when no one else exists. I can arrange that." },
+          { who: "Bellissimo", text: "I want a nap. I do not want a kingdom-shaped pillow." }
+        ], () => talkOneBeanRefuse()) },
+        { label: "Throw the Bean into the lava", fn: () => talkOneBeanRefuse() }
+      ]
+    }]);
+  }
+  function talkOneBeanRefuse() {
+    say([
+      { who: "Bellissimo", text: "Treasure that demands a throne can be dip instead." },
+      { who: "The One Bean", text: "Wait—" }
+    ], () => {
+      G.flags.b2ogeron = true;
+      G.inv = G.inv.filter((i) => i.id !== "onebean");
+      G.quest = "King Ogeron is free. Return to Jackdaw’s tower. A bell still has to sound.";
+      save();
+      say([
+        { who: "King Ogeron", text: "Ten thousand years in a bean. You kneel to no one. Thank you." },
+        { who: "King Ogeron", text: "Behold: One Bean Dip. It does not empty. Hill, Stone, Frost, Magma—bring trees if you need utensils." },
+        { who: "Jackdaw", text: "You did not get a hoard. You got a party platter. Diplomacy has improved.", note: "Every war council should begin with appetizers. I have minutes." }
+      ]);
+    });
+  }
+
+  function talkOgeron() {
+    say([{ who: "King Ogeron", text: "The clans are eating. I am king again. You are a friend to giants. Also still too tall. Find the bell." }]);
+  }
+
+  function talkElmBell() {
+    if (G.flags.b2bell) return;
+    say([
+      { who: "ELM", text: "I taught Jackdaw a Netherworld shortcut. I am ringing his toy. Each peal makes you less of a skyline." },
+      { who: "Bellissimo", text: "A bell must sound. Both of us were right. I hate that." },
+      { who: "Kleinmacher 2000", text: "BONG." }
+    ], () => {
+      G.flags.b2bell = true;
+      G.flags.b2done = true;
+      G.flags.b2giant = false;
+      G.quest = "Sleep in. You earned it. Book III involves wells, which is worse.";
+      save();
+      say([
+        { who: "Jackdaw", text: "And many of them lived reasonably happy for some time thereafter. Again. I am recycling the line until it sticks." },
+        { who: "Jackdaw", text: "Tomorrow: wells. Try not to fall in until I finish this footnote." }
+      ], () => {
+        G.mode = "credits";
+        $("hud").classList.remove("show");
+        $("dialog").classList.remove("show");
+        save();
+      });
+    });
+  }
+
   function updateQuestSecrets() {
     const a = [G.flags.secretL && "Louisa", G.flags.secretE && "Elisabeth", G.flags.secretM && "Meriwether"].filter(Boolean);
     if (a.length === 3) G.quest = "Return to Jackdaw’s tower. The name is complete. (It is a terrible villain name.)";
@@ -959,7 +1517,11 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       hench: { name: "Henchman Applicant", hp: 14, maxHp: 14, atk: 5, def: 1, xp: 6, gold: 5, spr: "hench" },
       champ: { name: "Dwarven Champion", hp: 30, maxHp: 30, atk: 8, def: 3, xp: 30, gold: 25, spr: "champ", boss: true },
       elm: { name: "Lord ELM", hp: 50, maxHp: 50, atk: 8, def: 3, xp: 40, gold: 0, spr: "elm", boss: true },
-      worm: { name: "Wormtoe", hp: 55, maxHp: 55, atk: 10, def: 5, xp: 50, gold: 40, spr: "worm", boss: true }
+      worm: { name: "Wormtoe", hp: 55, maxHp: 55, atk: 10, def: 5, xp: 50, gold: 40, spr: "worm", boss: true },
+      lg: { name: "Little Giant", hp: 40, maxHp: 40, atk: 9, def: 4, xp: 28, gold: 12, spr: "lg", boss: true },
+      prawn: { name: "P’R’A’W’’Y’N", hp: 42, maxHp: 42, atk: 8, def: 3, xp: 30, gold: 14, spr: "prawn", boss: true },
+      dead: { name: "The Living Dead", hp: 44, maxHp: 44, atk: 9, def: 5, xp: 32, gold: 10, spr: "dead", boss: true },
+      ox: { name: "Moronic Ox", hp: 48, maxHp: 48, atk: 10, def: 5, xp: 36, gold: 20, spr: "ox", boss: true }
     };
     return Object.assign({ stun: 0, confuse: 0 }, E[type]);
   }
@@ -1007,6 +1569,10 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       if (b.foes.some((f) => f.spr === "worm" && f.hp > 0)) {
         opts.unshift("Acidentiality");
       }
+      if (b.foes.some((f) => f.spr === "lg" && f.hp > 0)) opts.unshift("Edible Oxymoron");
+      if (b.foes.some((f) => f.spr === "prawn" && f.hp > 0) && G.flags.b2elm) opts.unshift("Kayak");
+      if (b.foes.some((f) => f.spr === "dead" && f.hp > 0) && G.flags.b2slad) opts.unshift("Handyvamp Irony");
+      if (b.foes.some((f) => f.spr === "ox" && f.hp > 0)) opts.unshift("Jokes of the Fathers");
     } else if (b.menu === "skill") {
       const p = G.party[b.i];
       opts = p.skills.map((id) => SKILLS[id].name + " (" + SKILLS[id].mp + " MP)");
@@ -1039,6 +1605,10 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       const c = b.opts[b.sel];
       if (c === "The Great Secret") { b.pending = { type: "skill", id: "secret" }; resolvePlayer(); return; }
       else if (c === "Acidentiality") { b.pending = { type: "skill", id: "accident" }; resolvePlayer(); return; }
+      else if (c === "Edible Oxymoron") { b.pending = { type: "skill", id: "oxymoron" }; resolvePlayer(); return; }
+      else if (c === "Kayak") { b.pending = { type: "skill", id: "kayak" }; resolvePlayer(); return; }
+      else if (c === "Handyvamp Irony") { b.pending = { type: "skill", id: "irony" }; resolvePlayer(); return; }
+      else if (c === "Jokes of the Fathers") { b.pending = { type: "skill", id: "dadjoke" }; resolvePlayer(); return; }
       else if (c === "Attack") {
         b.pending = { type: "atk" };
         b.menu = "target";
@@ -1091,6 +1661,10 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       const f = b.foes[b.target];
       if (f.spr === "elm") { b.log = "Swords bounce off. He flinches at vowels, not steel. Use the Great Secret."; }
       else if (f.spr === "worm") { b.log = "Wormtoe and the pebble only yield to accident. Try Acidentiality."; }
+      else if (f.spr === "lg") { b.log = "He throws you into a tree. Try an oxymoron. Preferably one you can eat."; }
+      else if (f.spr === "prawn") { b.log = "Pointed appendages. No palindrome. Renaming Roderick still does not count."; }
+      else if (f.spr === "dead") { b.log = "Blades, holy water, and reasonable arguments fail. It wants irony."; }
+      else if (f.spr === "ox") { b.log = "The ox is unmoved. It has not heard a father joke yet."; }
       else if (f.evade && Math.random() * 100 < f.evade) { b.log = f.name + " skipped aside. (Skipping beans. It’s a whole thing.)"; }
       else {
         const n = dmg(p.atk, f.def);
@@ -1114,12 +1688,32 @@ TTTTTTTTTTTTTTTTTTTTTTTT
         b.foes.forEach((f) => { f.hp = 0; });
         b.log = "Squires screams, reels, trips over an orc, and lands on the pebble. The river explodes upward.";
         sfx("magic");
+      } else if (act.id === "oxymoron") {
+        b.foes.forEach((f) => { if (f.spr === "lg") f.hp = 0; });
+        b.log = "Sweet-and-sour chips. A scrumptious bean. The Little Giant is defeated by lunch that cannot make up its mind.";
+        sfx("magic");
+      } else if (act.id === "kayak") {
+        b.foes.forEach((f) => { if (f.spr === "prawn") f.hp = 0; });
+        b.log = "Kayak. The word, the boat, the palindrome. P’R’A’W’’Y’N yields, apostrophes rattling.";
+        sfx("magic");
+      } else if (act.id === "irony") {
+        b.foes.forEach((f) => { if (f.spr === "dead") f.hp = 0; });
+        b.log = "Count Slad, garlic-fed, becomes a giant black rabbit and breathes contradiction. The Living Dead sinks, still arguing about grains.";
+        sfx("magic");
+      } else if (act.id === "dadjoke") {
+        b.foes.forEach((f) => { if (f.spr === "ox") f.hp = 0; });
+        b.log = "Why did the ox return to the arena? It heard it was outstanding in its field. The Moronic Ox leaves for professional reasons.";
+        sfx("magic");
       } else {
         const targets = sk.all ? b.foes.filter((f) => f.hp > 0) : [b.foes[b.target]];
         let msg = p.name + " uses " + sk.name + "! ";
         targets.forEach((f) => {
           if (f.spr === "elm" && act.id !== "secret") { msg += "ELM wants a name, not a dance. "; return; }
           if (f.spr === "worm" && act.id !== "accident") { msg += "Not accidental enough. "; return; }
+          if (f.spr === "lg" && act.id !== "oxymoron") { msg += "Thrown into a tree. "; return; }
+          if (f.spr === "prawn" && act.id !== "kayak") { msg += "Not a palindrome. "; return; }
+          if (f.spr === "dead" && act.id !== "irony") { msg += "Still shouting GRAINS. "; return; }
+          if (f.spr === "ox" && act.id !== "dadjoke") { msg += "Unamused. "; return; }
           if (f.evade && Math.random() * 100 < f.evade / 2) { msg += f.name + " hops. "; return; }
           const n = dmg(sk.dmg, f.def);
           f.hp = Math.max(0, f.hp - n);
@@ -1244,11 +1838,22 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     if (t === "beans") say([{ who: "Squires", text: "Magic beans. The land’s greatest treasure. Also breakfast." }]);
     else if (t === "water") say([{ who: "Squires", text: "A river… trickle… glorified puddle. Bellissimo could still drown in drama here." }]);
     else if (t === "statue") say([{ who: "Plaque", text: G.flags.saved ? "Roddy Squires, Sub-Assistant Goat Herder, Hero of Legend. Watch your step." : "Reserved for the next hero. Currently vacant, like Sir Roderick’s self-awareness." }]);
-    else if (t === "fire") say([{ who: "Jackdaw", text: "Do not eat the grottlebeast if it has cooked long enough to taste like chicken. That’s how you get lectures." }]);
+    else if (t === "fire") {
+      if (isB2() && G.map === "pub" && G.flags.b2spoon && !G.flags.b2fire) talkSpoon();
+      else say([{ who: "Jackdaw", text: "Do not eat the grottlebeast if it has cooked long enough to taste like chicken. That’s how you get lectures." }]);
+    }
   }
 
   function tryWarp(w) {
     if (w.need === "grimbleJoin" && !G.flags.rejected) {
+      if (isB2()) {
+        if (!G.flags.b2prophecy) {
+          say([{ who: "Bellissimo", text: "Jackdaw first. If I skip the stained prophecy he will footnote me to death." }]);
+          return;
+        }
+        warp(w.to, w.tx, w.ty);
+        return;
+      }
       say([{ who: "Squires", text: "I should hear the prophecy and talk to Sir Roderick first. Jackdaw gets snippy when you skip setup." }]);
       return;
     }
@@ -1258,6 +1863,10 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       return;
     }
     if (w.need === "grimble" && !G.flags.grimble) {
+      if (isB2()) {
+        warp(w.to, w.tx, w.ty);
+        return;
+      }
       say([{ who: "Narrator", text: "Mount Ominous is no place for a solo goat herder. Find a supporting role first." }]);
       return;
     }
@@ -1267,6 +1876,34 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     }
     if (w.need === "allSecrets" && !(G.flags.secretL && G.flags.secretE && G.flags.secretM && G.flags.finale)) {
       say([{ who: "Soldier", text: "ELM’s rally is gathering. Come back when you know a certain three-part name. And maybe a song." }]);
+      return;
+    }
+    if (w.need === "b2prop" && !G.flags.b2prophecy) {
+      say([{ who: "Bellissimo", text: "That hill can wait until Jackdaw finishes yelling about napkins." }]);
+      return;
+    }
+    if (w.need === "b2grossina" && !G.flags.b2grossina) {
+      say([{ who: "Sign", text: "Hornfang Forest. Miniature trees. Grossina said to hear her story first." }]);
+      return;
+    }
+    if (w.need === "b2lg" && !G.flags.b2lg) {
+      say([{ who: "Ripple", text: "Lake Ekal. The Jumbo Shrimp is not taking visitors until the Little Giant says so." }]);
+      return;
+    }
+    if (w.need === "b2prawn" && !G.flags.b2prawn) {
+      say([{ who: "Mud", text: "The Improbable Swamp refuses to be probable until you have a palindrome victory." }]);
+      return;
+    }
+    if (w.need === "b2dead" && !G.flags.b2dead) {
+      say([{ who: "Barker", text: "Circus Absurdus is closed until the Living Dead finishes its diet argument." }]);
+      return;
+    }
+    if (w.need === "b2oxing" && !G.flags.b2oxing) {
+      say([{ who: "Barkeep", text: "Pub’s for after the ox. House policy. Also the chilly is still frozen." }]);
+      return;
+    }
+    if (w.need === "b2ogeron" && !G.flags.b2ogeron) {
+      say([{ who: "Lava", text: "Finish the conversation. The Bean is still making offers." }]);
       return;
     }
     warp(w.to, w.tx, w.ty);
@@ -1305,7 +1942,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       tryWarp(standing);
     }
     if (!standing) G.warpKey = null;
-    if (["world", "forest"].includes(G.map) && G.flags.quest && !G.flags.saved) {
+    if (["world", "forest", "hornfang", "swamp"].includes(G.map) && ((G.flags.quest && !G.flags.saved) || (isB2() && G.flags.b2grossina && !G.flags.b2done))) {
       if (here.x !== lastTile.x || here.y !== lastTile.y) {
         lastTile = here;
         G.enc += 1;
@@ -1446,11 +2083,46 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     } else if (kind === "bug") {
       col("#3a2a10"); r(px + 5, py + 8, 6, 5);
       col(PAL.gold); r(px + 6, py + 6, 4, 4);
-    } else if (kind === "skip") {
+    }     else if (kind === "skip") {
       col(PAL.gold); r(px + 5, py + 6 + (frame ? -2 : 0), 6, 6);
+    } else if (kind === "grossina") {
+      col("#2a6a32"); r(px + 1, py + 2, 14, 14);
+      col("#3a8a4a"); r(px + 3, py + 4, 10, 8);
+      col("#c8e0a0"); r(px + 4, py + 2, 8, 4);
+      col("#1a3"); r(px + 5, py + 8, 2, 2); r(px + 9, py + 8, 2, 2);
+    } else if (kind === "lg") {
+      col("#6a2a8a"); r(px + 3, py + 6, 10, 10);
+      col("#8a4ab0"); r(px + 1, py + 8, 4, 6); r(px + 11, py + 8, 4, 6);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+    } else if (kind === "prawn") {
+      col("#e08090"); r(px + 2, py + 6, 12, 8);
+      col("#f0a0a8"); r(px + 10, py + 4, 5, 4);
+      col("#c06070"); r(px + 1, py + 8, 3, 2); r(px + 1, py + 11, 3, 2);
+    } else if (kind === "dead") {
+      col("#6a7a5a"); r(px + 4, py + 6, 8, 10);
+      col("#c8d0b0"); r(px + 5, py + 3, 6, 5);
+      col("#3a4"); r(px + 6, py + 6, 2, 1);
+    } else if (kind === "ox") {
+      col("#6a4a28"); r(px + 2, py + 6, 12, 10);
+      col("#3a2818"); r(px + 3, py + 3, 4, 4); r(px + 10, py + 3, 3, 5);
+    } else if (kind === "slad") {
+      col("#14204a"); r(px + 4, py + 8, 8, 7);
+      col("#eee8e0"); r(px + 5, py + 4, 6, 5);
+      col("#112"); r(px + 5, py + 2, 6, 3);
+      col("#c45"); r(px + 7, py + 8, 2, 2);
+    } else if (kind === "spoon") {
+      col("#c8d0d8"); r(px + 7, py + 4, 2, 10);
+      col(PAL.gold); r(px + 5, py + 2, 6, 5);
+    } else if (kind === "bean") {
+      col(PAL.gold); r(px + 5, py + 6, 6, 8);
+      col("#c9962e"); r(px + 6, py + 4, 4, 4);
+    } else if (kind === "ogeron") {
+      col("#4a3a8a"); r(px + 3, py + 8, 10, 8);
+      col(PAL.gold); r(px + 4, py + 1, 8, 4);
+      col("#eee"); r(px + 5, py + 5, 6, 4);
     }
     // eyes
-    if (!["sign", "bug", "skip"].includes(kind)) {
+    if (!["sign", "bug", "skip", "spoon", "bean", "ox"].includes(kind)) {
       col("#112"); r(px + 6, py + 6, 1, 1); r(px + 9, py + 6, 1, 1);
     }
   }
@@ -1461,7 +2133,11 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     G.camY = G.py * T - H / 2 + 8;
     G.camX = Math.max(0, Math.min(m.w * T - W, G.camX));
     G.camY = Math.max(0, Math.min(m.h * T - H, G.camY));
-    const bg = G.map === "tower" ? "#0c1230" : G.map === "cave" || G.map === "lair" ? "#120c14" : G.map === "arena" ? "#3a3428" : "#87b";
+    const bg = G.map === "tower" ? "#0c1230"
+      : (G.map === "cave" || G.map === "lair" || G.map === "pub" || G.map === "swamp" || G.map === "crater") ? "#120c14"
+      : (G.map === "arena" || G.map === "circus") ? "#3a3428"
+      : G.map === "lake" ? "#4a7aaa"
+      : "#87b";
     col(bg); r(0, 0, W, H);
     const x0 = Math.max(0, (G.camX / T) | 0);
     const y0 = Math.max(0, (G.camY / T) | 0);
@@ -1471,10 +2147,15 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       drawTile(tileAt(G.map, x, y), x * T - G.camX, y * T - G.camY, G.t);
     }
     const sprites = npcsFor().map((n) => ({ kind: n.sprite, x: n.x * T - G.camX, y: n.y * T - G.camY, z: n.y, bang: questBang(n) }));
-    sprites.push({ kind: "squires", x: G.px * T - G.camX, y: G.py * T - G.camY, z: G.py, me: true });
-    if (G.party.some((p) => p.id === "grimble") && G.mode === "explore") {
-      const ox = [0, -6, 0, 6][G.dir], oy = [8, 0, -8, 0][G.dir];
-      sprites.push({ kind: "grimble", x: G.px * T - G.camX + ox, y: G.py * T - G.camY + oy, z: G.py - 0.1 });
+    const lead = (G.party[0] && G.party[0].id === "bell") ? "bell" : "squires";
+    sprites.push({ kind: lead, x: G.px * T - G.camX, y: G.py * T - G.camY, z: G.py, me: true });
+    if (G.mode === "explore" && G.party[1]) {
+      const fid = G.party[1].id;
+      const kind = fid === "grimble" ? "grimble" : fid === "roderick" ? "roderick" : fid === "elm" ? "elm" : null;
+      if (kind) {
+        const ox = [0, -6, 0, 6][G.dir], oy = [8, 0, -8, 0][G.dir];
+        sprites.push({ kind, x: G.px * T - G.camX + ox, y: G.py * T - G.camY + oy, z: G.py - 0.1 });
+      }
     }
     sprites.sort((a, b) => a.z - b.z);
     sprites.forEach((s) => {
@@ -1502,7 +2183,27 @@ TTTTTTTTTTTTTTTTTTTTTTTT
 
   function drawCredits(t) {
     col("#0a0714"); r(0, 0, W, H);
-    const lines = [
+    const lines = (isB2() ? [
+      "A WONDERFUL WEEK FOR A QUEST",
+      "Book II  ·  Both an Ox and a Moron…",
+      "",
+      "Adapted from the novel by",
+      "Michael D. Young",
+      "",
+      "Bellissimo     -  un-distressed, napping later",
+      "Sir Roderick 3RG  -  shirtless, punchlined",
+      "ELM            -  muffins, kayaks, bells",
+      "Grossina       -  the hill that listened",
+      "Count Slad     -  handyvamp, bad at counting",
+      "King Ogeron    -  dip diplomat",
+      "",
+      "The One Bean became One Bean Dip.",
+      "And many of them lived",
+      "reasonably happy",
+      "for some time thereafter.",
+      "",
+      "Press Enter"
+    ] : [
       "A WONDERFUL WEEK FOR A QUEST",
       "Book I of the Beandom",
       "",
@@ -1521,7 +2222,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       "for some time thereafter.",
       "",
       "Press Enter"
-    ];
+    ]);
     const start = 18 - Math.max(0, ((t / 8) | 0) - 20);
     lines.forEach((s, i) => {
       const y = start + i * 11;
@@ -1569,10 +2270,13 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     G.mode = "menu";
     $("menu").classList.add("show");
     const body = G.party.map((p) => p.name + "  HP " + p.hp + "/" + p.maxHp + "  MP " + p.mp + "/" + p.maxMp).join("\n");
-    const items = G.inv.length ? G.inv.map((i) => ITEMS[i.id].name + " ×" + i.n).join("\n") : "(empty pockets, full destiny)";
+    const items = G.inv.length ? G.inv.map((i) => ((ITEMS[i.id] && ITEMS[i.id].name) || i.id) + " ×" + i.n).join("\n") : "(empty pockets, full destiny)";
+    const secrets = isB2()
+      ? ["Little Giant", "Jumbo Shrimp", "Living Dead", "Moronic Ox"].filter((_, i) => [G.flags.b2lg, G.flags.b2prawn, G.flags.b2dead, G.flags.b2ox][i]).join(", ")
+      : ["Louisa", "Elisabeth", "Meriwether"].filter((_, i) => [G.flags.secretL, G.flags.secretE, G.flags.secretM][i]).join(", ");
     $("mBody").innerHTML = "<pre style='white-space:pre-wrap;font:inherit'>" +
       body + "\n\nInventory\n" + items + "\n\nQuest\n" + G.quest +
-      "\n\nSecrets: " + ["Louisa", "Elisabeth", "Meriwether"].filter((_, i) => [G.flags.secretL, G.flags.secretE, G.flags.secretM][i]).join(", ") +
+      "\n\n" + (isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
       "\n\nArrows move · Enter talk · Esc menu</pre>";
   }
 
@@ -1616,7 +2320,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   function save() {
     const data = {
       map: G.map, px: G.px, py: G.py, flags: G.flags, gold: G.gold, inv: G.inv,
-      party: G.party, quest: G.quest, dir: G.dir
+      party: G.party, quest: G.quest, dir: G.dir, day: G.day || 1
     };
     localStorage.setItem(SAVE, JSON.stringify(data));
   }
@@ -1625,7 +2329,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     if (!raw) return false;
     try {
       const d = JSON.parse(raw);
-      Object.assign(G, { map: d.map, px: d.px, py: d.py, flags: d.flags, gold: d.gold, inv: d.inv, party: d.party, quest: d.quest, dir: d.dir || 2 });
+      Object.assign(G, { map: d.map, px: d.px, py: d.py, flags: d.flags, gold: d.gold, inv: d.inv, party: d.party, quest: d.quest, dir: d.dir || 2, day: d.day || 1 });
       return true;
     } catch (e) { return false; }
   }
@@ -1648,6 +2352,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     G.party = [hero()];
     G.map = "village";
     G.px = 11.5; G.py = 8.5; G.dir = 2;
+    G.day = 1;
     G.quest = "Hear Jackdaw’s Uppercase Prophecy in Beanvale.";
     G.mode = "explore";
     $("titleui").classList.remove("show");
@@ -1657,6 +2362,26 @@ TTTTTTTTTTTTTTTTTTTTTTTT
       { who: "Jackdaw", text: "Hey, you! I saw you yawn. In this age of computers you still opened a quest. Points for heart, if not for taste in sunrises." },
       { who: "Jackdaw", text: "I’m Jackdaw the Wizard, third cousin to Merlin, narrator, and owner of a beard of Rapunzelic proportions. Do not ask me to cut it." },
       { who: "Jackdaw", text: "That scrawny blonde specimen is Roddy Squires, Sub-Assistant Goat Herder. You. Walk up to me in the square. Use the stick or arrows. Enter to talk." }
+    ]);
+    save();
+  }
+  function startBook2() {
+    audioInit();
+    G.day = 2;
+    G.flags = { saved: true };
+    G.gold = 18;
+    G.inv = [{ id: "luna", n: 2 }, { id: "taco", n: 1 }, { id: "chips", n: 1 }];
+    G.party = [bellHero()];
+    G.map = "village";
+    G.px = 22.5; G.py = 13.5; G.dir = 0;
+    G.quest = "Find Jackdaw. The Uppercase Prophecy has taco stains and a second opinion.";
+    G.mode = "explore";
+    $("titleui").classList.remove("show");
+    hud();
+    say([
+      { who: "Jackdaw", text: "Taco Tuesday is over. The leftovers are not. Someone used the Uppercase Prophecy as a napkin." },
+      { who: "Bellissimo", text: "I am Mary Sue Bellmont. I have a sword, a hangover, and a policy against waiting to be rescued." },
+      { who: "Jackdaw", text: "You. Red dress. Walk to me in the square. Enter to talk. Try not to yawn at my aftermath." }
     ]);
     save();
   }
@@ -1708,6 +2433,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT
   });
 
   $("btnNew").onclick = startNew;
+  $("btnBook2").onclick = startBook2;
   $("btnCont").onclick = continueGame;
   $("btnMute").onclick = toggleMute;
   $("btnSave").onclick = () => { save(); $("mBody").insertAdjacentHTML("afterbegin", "<p style='color:var(--gold)'>Saved in this browser.</p>"); };
@@ -1754,7 +2480,8 @@ TTTTTTTTTTTTTTTTTTTTTTTT
     save,
     load,
     blocked: (x, y) => blocked(G.map, x, y),
-    mapSize: () => ({ w: MAPS[G.map].w, h: MAPS[G.map].h, id: G.map })
+    mapSize: () => ({ w: MAPS[G.map].w, h: MAPS[G.map].h, id: G.map }),
+    startBook2
   };
 })();
 </script>

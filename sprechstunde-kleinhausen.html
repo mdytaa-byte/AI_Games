@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sprechstunde Kleinhausen — Diagnose stellen</title>
+<title lang="de">Sprechstunde Kleinhausen — Diagnose stellen</title>
 <meta name="description" content="Ein deutsches Lernspiel: Als Arzt oder Ärztin befragst du Patientinnen und Patienten und stellst am Ende eine Diagnose.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,7 +20,7 @@
   --kreuz:#B94A3C;
   --messing:#C4A15A;
   --tinte:#17221F;
-  --weich:#4E5E58;
+  --weich:#3A4843;
   --linie:#D2CCC0;
   --ok:#2F7A4E;
   --ok-wash:#E3F2E8;
@@ -59,9 +59,10 @@ body{
 html[data-kontrast="1"] body{background:var(--wand)}
 .en{display:none;font-style:italic;color:var(--weich);font-size:.86em;line-height:1.35;font-weight:400}
 body.en-an .en{display:block}
-button{font-family:inherit;font-size:inherit;cursor:pointer}
+button{font-family:inherit;font-size:inherit;cursor:pointer;min-height:44px}
 :focus-visible{outline:3px solid var(--messing);outline-offset:2px}
 html[data-kontrast="1"] :focus-visible{outline:4px solid #000}
+h2[tabindex="-1"]:focus:not(:focus-visible){outline:none}
 .sr{
   position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
   clip:rect(0 0 0 0);white-space:nowrap;border:0;
@@ -70,7 +71,14 @@ html[data-kontrast="1"] :focus-visible{outline:4px solid #000}
   position:absolute;left:-9999px;top:0;z-index:80;
   background:var(--tanne);color:#fff;padding:.7em 1.1em;text-decoration:none;font-weight:700;
 }
-.skip:focus{left:0}
+.skip:focus{left:0;outline:3px solid var(--messing);outline-offset:2px}
+@media (prefers-contrast:more){
+  :root{--wand:#fff;--wand-tief:#fff;--kittel:#fff;--karte:#fff;--tanne:#000;--tanne-hell:#000;--moos:#003A2F;--kreuz:#9B0000;--messing:#5A4300;--tinte:#000;--weich:#000;--linie:#000;--ok:#00551F;--ok-wash:#fff;--err:#7A0000;--err-wash:#fff;--hint:#fff;--shadow:none}
+}
+@media (forced-colors:active){
+  .btn,.wz,.modus,.frage,.diag,.karte,.sprech,.tab,.blatt{border:2px solid ButtonText}
+  :focus-visible{outline:Highlight solid 3px}
+}
 [hidden]{display:none!important}
 
 /* ---------- top bar ---------- */
@@ -102,6 +110,7 @@ html[data-kontrast="1"] :focus-visible{outline:4px solid #000}
   background:transparent;color:var(--kittel);
   border:1.5px solid rgba(247,244,236,.38);
   border-radius:999px;padding:.35em .8em;font-weight:600;font-size:.82rem;
+  min-height:44px;
 }
 .wz:hover{border-color:var(--messing);color:var(--messing)}
 .wz[aria-pressed="true"]{background:var(--messing);border-color:var(--messing);color:#2A2410}
@@ -125,6 +134,7 @@ html[data-kontrast="1"] :focus-visible{outline:4px solid #000}
 h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .35rem;font-weight:700}
 #play-h{font-family:var(--sans);font-weight:700}
 .lede{max-width:62ch;margin:0 0 1rem;color:var(--weich)}
+.lede b,.lede i{color:var(--tinte)}
 .eyebrow{
   font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
   color:var(--moos);margin:0 0 .2rem;
@@ -167,6 +177,7 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 .modus{
   text-align:left;background:var(--kittel);border:2px solid var(--linie);
   border-radius:12px;padding:1rem;cursor:pointer;font:inherit;color:var(--tinte);
+  min-height:44px;
 }
 .modus:hover{border-color:var(--moos);transform:translateY(-2px)}
 .modus .m-t{font-family:var(--serif);font-size:1.25rem;font-weight:700;display:block}
@@ -220,7 +231,8 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 }
 .blase .wer{font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.65;margin-bottom:.15rem}
 .speak{
-  margin-left:.35rem;border:0;background:transparent;cursor:pointer;font-size:.95rem;padding:0 .15rem;
+  margin-left:.35rem;border:0;background:transparent;cursor:pointer;font-size:.95rem;
+  padding:0;min-width:44px;min-height:44px;vertical-align:middle;
 }
 
 /* clipboard */
@@ -254,6 +266,7 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 .tab{
   background:var(--wand);border:2px solid var(--linie);border-radius:999px;
   padding:.4em .9em;font-weight:700;font-size:.88rem;color:var(--tinte);
+  min-height:44px;
 }
 .tab[aria-selected="true"]{background:var(--tanne);color:var(--kittel);border-color:var(--tanne)}
 .fragen{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.5rem}
@@ -312,43 +325,46 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 .overlay .karte{width:min(680px,100%);margin:auto}
 </style>
 </head>
-<body>
-<a class="skip" href="#inhalt">Zum Spiel springen</a>
-<p id="ansage" class="sr" role="status" aria-live="polite"></p>
+<body lang="de">
+<a class="skip" href="#inhalt" lang="de">Zum Spiel springen</a>
+<a class="skip" href="#einstellungen" lang="de" style="top:2.6em">Zu den Einstellungen springen</a>
+<p id="ansage" class="sr" lang="de" role="status" aria-live="polite" aria-atomic="true"></p>
 
-<header class="top">
+<header class="top" lang="de">
   <div class="top-in">
     <div class="brand">
       <div class="kreuz" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
+        <svg viewBox="0 0 24 24" width="22" height="22" focusable="false" aria-hidden="true"><path fill="currentColor" d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/></svg>
       </div>
       <div>
-        <h1>Sprechstunde Kleinhausen</h1>
-        <small>Praxis am Markt · Diagnose stellen</small>
+        <h1 lang="de">Sprechstunde Kleinhausen</h1>
+        <small lang="de">Praxis am Markt · Diagnose stellen</small>
       </div>
     </div>
-    <div class="werk" role="toolbar" aria-label="Einstellungen">
-      <button class="wz" id="b-en" aria-pressed="false">EN</button>
-      <button class="wz" id="b-laut" aria-pressed="true">Laut lesen</button>
-      <button class="wz" id="b-kontrast" aria-pressed="false">Kontrast</button>
-      <button class="wz" id="b-schrift" aria-pressed="false">Große Schrift</button>
-      <button class="wz" id="b-woerter">Wörter</button>
+    <div class="werk" id="einstellungen" role="toolbar" lang="de" aria-label="Einstellungen">
+      <button type="button" class="wz" id="b-en" aria-pressed="false" aria-label="Englisch einblenden">
+        <span lang="en">EN</span>
+      </button>
+      <button type="button" class="wz" id="b-laut" aria-pressed="true" lang="de">Laut lesen</button>
+      <button type="button" class="wz" id="b-kontrast" aria-pressed="false" lang="de">Kontrast</button>
+      <button type="button" class="wz" id="b-schrift" aria-pressed="false" lang="de">Große Schrift</button>
+      <button type="button" class="wz" id="b-woerter" lang="de" aria-haspopup="dialog" aria-controls="woerter-box">Wörter</button>
     </div>
   </div>
 </header>
 
-<main class="wrap" id="inhalt">
+<main class="wrap" id="inhalt" lang="de">
 
   <!-- START -->
-  <section class="screen on" id="s-start" aria-labelledby="start-h">
+  <section class="screen on" id="s-start" lang="de" aria-labelledby="start-h" aria-hidden="false">
     <div class="hero">
       <div class="karte">
-        <p class="eyebrow">Deutsch A2–B1 · Gesundheit</p>
-        <h2 id="start-h" tabindex="-1">Guten Tag, Doktor!</h2>
-        <p class="lede">Du übernimmst heute die Sprechstunde in der kleinen Praxis am Markt. Patientinnen und Patienten erzählen dir — manchmal klar, manchmal durcheinander —, was ihnen fehlt. Stell Fragen, untersuche, und wähle am Ende eine Diagnose aus der Liste.</p>
-        <p class="en">You are covering clinic hours in the little practice on the market square. Patients tell you different things — sometimes clearly, sometimes in a jumble. Ask questions, examine them, then choose a diagnosis from the list.</p>
-        <p class="lede" style="margin-bottom:0">Sprich mit <b>Sie</b> (formell), außer bei Kindern. Die wichtigen Wörter: <i>wehtun, Fieber, seit wann, Hals, Bauch, Knöchel</i>.</p>
-        <p class="en">Use formal <i>Sie</i> except with children. Key words: to hurt, fever, since when, throat, stomach, ankle.</p>
+        <p class="eyebrow" lang="de">Deutsch A2–B1 · Gesundheit</p>
+        <h2 id="start-h" tabindex="-1" lang="de">Guten Tag, Doktor!</h2>
+        <p class="lede" lang="de">Du übernimmst heute die Sprechstunde in der kleinen Praxis am Markt. Patientinnen und Patienten erzählen dir — manchmal klar, manchmal durcheinander —, was ihnen fehlt. Stell Fragen, untersuche, und wähle am Ende eine Diagnose aus der Liste.</p>
+        <p class="en" lang="en">You are covering clinic hours in the little practice on the market square. Patients tell you different things — sometimes clearly, sometimes in a jumble. Ask questions, examine them, then choose a diagnosis from the list.</p>
+        <p class="lede" lang="de" style="margin-bottom:0">Sprich mit <b lang="de">Sie</b> (formell), außer bei Kindern. Die wichtigen Wörter: <i lang="de">wehtun, Fieber, seit wann, Hals, Bauch, Knöchel</i>.</p>
+        <p class="en" lang="en">Use formal <i lang="de">Sie</i> except with children. Key words: to hurt, fever, since when, throat, stomach, ankle.</p>
       </div>
       <aside class="praxis-schild" aria-hidden="true">
         <div>
@@ -356,7 +372,7 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
           <p class="schild-name">Praxis Dr. Sommer</p>
           <p style="margin:.3rem 0 0;opacity:.85">Sprechstunde 8–12 Uhr<br>Am Markt 4</p>
         </div>
-        <svg viewBox="0 0 280 90" role="img">
+        <svg viewBox="0 0 280 90" focusable="false" aria-hidden="true">
           <rect x="20" y="28" width="240" height="52" rx="4" fill="#F7F4EC"/>
           <rect x="20" y="28" width="240" height="10" fill="#C4A15A"/>
           <rect x="118" y="48" width="44" height="32" fill="#163F38"/>
@@ -367,178 +383,183 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
       </aside>
     </div>
     <div class="karte">
-      <p class="eyebrow">Dienstplan</p>
-      <h2 style="font-size:1.4rem">Wie lang ist deine Sprechstunde?</h2>
-      <div class="modi">
-        <button class="modus" data-n="3">
-          <span class="m-t">Kurze Sprechstunde</span>
-          <span class="m-d">3 Patientinnen und Patienten — gut zum Warmwerden.</span>
-          <span class="en">3 patients — a short shift to warm up.</span>
+      <p class="eyebrow" lang="de">Dienstplan</p>
+      <h2 lang="de" style="font-size:1.4rem">Wie lang ist deine Sprechstunde?</h2>
+      <div class="modi" role="group" lang="de" aria-label="Länge der Sprechstunde">
+        <button type="button" class="modus" data-n="3" lang="de">
+          <span class="m-t" lang="de">Kurze Sprechstunde</span>
+          <span class="m-d" lang="de">3 Patientinnen und Patienten — gut zum Warmwerden.</span>
+          <span class="en" lang="en">3 patients — a short shift to warm up.</span>
         </button>
-        <button class="modus" data-n="6">
-          <span class="m-t">Ganzer Vormittag</span>
-          <span class="m-d">6 Fälle. Nicht jeder sagt dir gleich die Wahrheit — Elke zum Beispiel.</span>
-          <span class="en">6 cases. Not everyone tells you the whole truth straight away.</span>
+        <button type="button" class="modus" data-n="6" lang="de">
+          <span class="m-t" lang="de">Ganzer Vormittag</span>
+          <span class="m-d" lang="de">6 Fälle. Nicht jeder sagt dir gleich die Wahrheit — Elke zum Beispiel.</span>
+          <span class="en" lang="en">6 cases. Not everyone tells you the whole truth straight away.</span>
         </button>
-        <button class="modus" data-n="all">
-          <span class="m-t">Alle Fälle üben</span>
-          <span class="m-d">Alle 9 Patientinnen und Patienten nacheinander.</span>
-          <span class="en">All 9 patients, one after another.</span>
+        <button type="button" class="modus" data-n="all" lang="de">
+          <span class="m-t" lang="de">Alle Fälle üben</span>
+          <span class="m-d" lang="de">Alle 9 Patientinnen und Patienten nacheinander.</span>
+          <span class="en" lang="en">All 9 patients, one after another.</span>
         </button>
       </div>
       <div class="regeln">
         <div class="regel">
-          <h3>1. Fragen</h3>
-          <p>Wo tut es weh? Seit wann? Fieber? Die Antworten kommen auf dein Klemmbrett.</p>
-          <p class="en">Where does it hurt? Since when? Fever? Answers land on your clipboard.</p>
+          <h3 lang="de">1. Fragen</h3>
+          <p lang="de">Wo tut es weh? Seit wann? Fieber? Die Antworten kommen auf dein Klemmbrett.</p>
+          <p class="en" lang="en">Where does it hurt? Since when? Fever? Answers land on your clipboard.</p>
         </div>
         <div class="regel">
-          <h3>2. Untersuchen</h3>
-          <p>Temperatur, Hals, Lunge, Bauch, Fuß, Augen — nicht jede Untersuchung ist nötig.</p>
-          <p class="en">Temperature, throat, lungs, abdomen, foot, eyes — not every exam is needed.</p>
+          <h3 lang="de">2. Untersuchen</h3>
+          <p lang="de">Temperatur, Hals, Lunge, Bauch, Fuß, Augen — nicht jede Untersuchung ist nötig.</p>
+          <p class="en" lang="en">Temperature, throat, lungs, abdomen, foot, eyes — not every exam is needed.</p>
         </div>
         <div class="regel">
-          <h3>3. Diagnose</h3>
-          <p>Wähle aus der Liste. Richtige Diagnose bringt Punkte — besonders, wenn du die wichtigen Hinweise gefunden hast.</p>
-          <p class="en">Choose from the list. A correct diagnosis scores points, especially if you found the key clues.</p>
+          <h3 lang="de">3. Diagnose</h3>
+          <p lang="de">Wähle aus der Liste. Richtige Diagnose bringt Punkte — besonders, wenn du die wichtigen Hinweise gefunden hast.</p>
+          <p class="en" lang="en">Choose from the list. A correct diagnosis scores points, especially if you found the key clues.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- PLAY -->
-  <section class="screen" id="s-play" aria-labelledby="play-h">
+  <section class="screen" id="s-play" lang="de" aria-labelledby="play-h" aria-hidden="true" inert>
     <div class="play">
       <div>
         <div class="sprech">
           <div class="sprech-kopf">
             <div>
-              <h2 class="eyebrow" id="play-h" tabindex="-1" style="margin:0;font-size:.72rem">Sprechzimmer</h2>
-              <div id="fortschritt-text" style="font-weight:700"></div>
+              <h2 class="eyebrow" id="play-h" tabindex="-1" lang="de" style="margin:0;font-size:.72rem">Sprechzimmer</h2>
+              <div id="fortschritt-text" lang="de" style="font-weight:700"></div>
             </div>
             <div class="pips" id="pips" aria-hidden="true"></div>
           </div>
           <div class="patient-row">
-            <div class="portrait" id="portrait"></div>
+            <div class="portrait" id="portrait" aria-hidden="true"></div>
             <div>
-              <div class="akte-mini" id="akte"></div>
-              <p style="margin:.5rem 0 0;font-size:.88rem;color:var(--weich)">Der Patient spricht. Lies genau — nicht jeder Hinweis gehört zur Diagnose.</p>
-              <p class="en">The patient is talking. Read carefully — not every detail belongs to the diagnosis.</p>
+              <div class="akte-mini" id="akte" lang="de"></div>
+              <p lang="de" style="margin:.5rem 0 0;font-size:.88rem;color:var(--weich)">Der Patient spricht. Lies genau — nicht jeder Hinweis gehört zur Diagnose.</p>
+              <p class="en" lang="en">The patient is talking. Read carefully — not every detail belongs to the diagnosis.</p>
             </div>
           </div>
-          <div class="chat" id="chat" aria-live="polite"></div>
+          <div class="chat" id="chat" lang="de" role="log" aria-label="Gespräch" aria-relevant="additions" aria-live="off"></div>
         </div>
 
         <div class="werkzeug">
-          <div class="tabs" role="tablist" aria-label="Aktionen">
-            <button class="tab" role="tab" aria-selected="true" data-tab="fragen" id="tab-fragen">Fragen</button>
-            <button class="tab" role="tab" aria-selected="false" data-tab="untersuchen" id="tab-exam">Untersuchung</button>
+          <div class="tabs" role="tablist" lang="de" aria-label="Fragen oder Untersuchung">
+            <button type="button" class="tab" role="tab" id="tab-fragen" data-tab="fragen" aria-selected="true" aria-controls="aktionen" tabindex="0" lang="de">Fragen</button>
+            <button type="button" class="tab" role="tab" id="tab-exam" data-tab="untersuchen" aria-selected="false" aria-controls="aktionen" tabindex="-1" lang="de">Untersuchung</button>
           </div>
-          <p class="hinweis-fragen" id="tab-hinweis">Frag nach Ort, Zeit und Fieber — dann wird das Bild klarer.</p>
-          <p class="en" id="tab-hinweis-en">Ask about place, time, and fever — then the picture gets clearer.</p>
-          <div id="aktionen" class="fragen"></div>
+          <p class="hinweis-fragen" id="tab-hinweis" lang="de">Frag nach Ort, Zeit und Fieber — dann wird das Bild klarer.</p>
+          <p class="en" id="tab-hinweis-en" lang="en">Ask about place, time, and fever — then the picture gets clearer.</p>
+          <div id="aktionen" class="fragen" role="tabpanel" lang="de" aria-labelledby="tab-fragen"></div>
+          <p id="diag-pflicht" class="hinweis-fragen" lang="de">Die Diagnose ist frei, sobald du drei Fragen oder Untersuchungen gestellt hast.</p>
+          <p class="en" lang="en">You can diagnose after three questions or exams.</p>
           <div class="btn-row">
-            <button class="btn btn-kreuz" id="b-diagnose" disabled title="Mindestens 3 Fragen oder Untersuchungen">Diagnose stellen</button>
-            <button class="btn btn-ghost" id="b-abbruch">Sprechstunde beenden</button>
+            <button type="button" class="btn btn-kreuz" id="b-diagnose" lang="de" disabled aria-describedby="diag-pflicht">Diagnose stellen</button>
+            <button type="button" class="btn btn-ghost" id="b-abbruch" lang="de">Sprechstunde beenden</button>
           </div>
         </div>
       </div>
 
-      <aside class="klemmbrett" aria-labelledby="kb-h">
+      <aside class="klemmbrett" lang="de" aria-labelledby="kb-h">
         <div class="clip" aria-hidden="true"></div>
         <div class="blatt">
-          <h3 id="kb-h">Notizen</h3>
-          <p id="kb-name" style="margin:0 0 .4rem;font-weight:700"></p>
-          <dl id="notizen"></dl>
+          <h3 id="kb-h" lang="de">Notizen</h3>
+          <p id="kb-name" lang="de" style="margin:0 0 .4rem;font-weight:700"></p>
+          <dl id="notizen" lang="de"></dl>
         </div>
       </aside>
     </div>
   </section>
 
   <!-- DIAGNOSE -->
-  <section class="screen" id="s-diag" aria-labelledby="diag-h">
+  <section class="screen" id="s-diag" lang="de" aria-labelledby="diag-h" aria-hidden="true" inert>
     <div class="karte">
-      <p class="eyebrow">Befund</p>
-      <h2 id="diag-h" tabindex="-1">Welche Diagnose stellen Sie?</h2>
-      <p class="lede" id="diag-lede"></p>
-      <p class="en">Choose the illness that fits the clues. Similar illnesses are on the list on purpose.</p>
-      <div class="karte" id="diag-noten" style="background:var(--kittel);margin-bottom:1rem;padding:.9rem 1rem">
-        <p class="eyebrow" style="margin:0 0 .35rem">Dein Klemmbrett</p>
-        <dl id="diag-notizen" style="margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.35rem .8rem;font-size:.92rem"></dl>
+      <p class="eyebrow" lang="de">Befund</p>
+      <h2 id="diag-h" tabindex="-1" lang="de">Welche Diagnose stellen Sie?</h2>
+      <p class="lede" id="diag-lede" lang="de"></p>
+      <p class="en" lang="en">Choose the illness that fits the clues. Similar illnesses are on the list on purpose.</p>
+      <div class="karte" id="diag-noten" lang="de" style="background:var(--kittel);margin-bottom:1rem;padding:.9rem 1rem">
+        <p class="eyebrow" lang="de" style="margin:0 0 .35rem">Dein Klemmbrett</p>
+        <dl id="diag-notizen" lang="de" style="margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.35rem .8rem;font-size:.92rem"></dl>
       </div>
-      <div class="diag-grid" id="diag-grid"></div>
+      <div class="diag-grid" id="diag-grid" role="group" lang="de" aria-label="Mögliche Diagnosen"></div>
       <div class="btn-row">
-        <button class="btn btn-ghost" id="b-zuruck">Zurück zu den Fragen</button>
+        <button type="button" class="btn btn-ghost" id="b-zuruck" lang="de">Zurück zu den Fragen</button>
       </div>
     </div>
   </section>
 
   <!-- RESULT -->
-  <section class="screen" id="s-result" aria-labelledby="res-h">
+  <section class="screen" id="s-result" lang="de" aria-labelledby="res-h" aria-hidden="true" inert>
     <div class="ergebnis">
       <div class="karte">
-        <div id="res-banner" class="banner"></div>
-        <h2 id="res-h" tabindex="-1"></h2>
-        <p id="res-text"></p>
-        <p class="en" id="res-en"></p>
-        <p style="font-weight:700;margin-bottom:.2rem">Wichtige Hinweise</p>
-        <ul class="clue-list" id="res-clues"></ul>
+        <div id="res-banner" class="banner" lang="de" role="status"></div>
+        <h2 id="res-h" tabindex="-1" lang="de"></h2>
+        <p id="res-text" lang="de"></p>
+        <p class="en" id="res-en" lang="en"></p>
+        <p lang="de" style="font-weight:700;margin-bottom:.2rem">Wichtige Hinweise</p>
+        <ul class="clue-list" id="res-clues" lang="de"></ul>
         <div class="btn-row">
-          <button class="btn" id="b-weiter">Nächster Patient</button>
+          <button type="button" class="btn" id="b-weiter" lang="de">Nächster Patient</button>
         </div>
       </div>
-      <div class="rezept" id="rezept"></div>
+      <div class="rezept" id="rezept" lang="de"></div>
     </div>
   </section>
 
   <!-- END -->
-  <section class="screen" id="s-end" aria-labelledby="end-h">
+  <section class="screen" id="s-end" lang="de" aria-labelledby="end-h" aria-hidden="true" inert>
     <div class="karte">
-      <p class="eyebrow">Ende der Sprechstunde</p>
-      <h2 id="end-h" tabindex="-1">Die Praxis schließt.</h2>
-      <p class="ende-zahl" id="end-score"></p>
-      <p id="end-text" class="lede"></p>
-      <p class="en" id="end-en"></p>
-      <table class="bilanz" id="bilanz">
-        <thead><tr><th>Patient</th><th>Deine Diagnose</th><th>Richtig</th><th>Punkte</th></tr></thead>
+      <p class="eyebrow" lang="de">Ende der Sprechstunde</p>
+      <h2 id="end-h" tabindex="-1" lang="de">Die Praxis schließt.</h2>
+      <p class="ende-zahl" id="end-score" lang="de"></p>
+      <p id="end-text" class="lede" lang="de"></p>
+      <p class="en" id="end-en" lang="en"></p>
+      <table class="bilanz" id="bilanz" lang="de">
+        <caption class="sr" lang="de">Ergebnisse der Sprechstunde</caption>
+        <thead><tr><th scope="col" lang="de">Patient</th><th scope="col" lang="de">Deine Diagnose</th><th scope="col" lang="de">Richtig</th><th scope="col" lang="de">Punkte</th></tr></thead>
         <tbody></tbody>
       </table>
       <div class="btn-row">
-        <button class="btn" id="b-nochmal">Neue Sprechstunde</button>
+        <button type="button" class="btn" id="b-nochmal" lang="de">Neue Sprechstunde</button>
       </div>
     </div>
   </section>
 </main>
 
 <div class="overlay" id="woerter-box" hidden>
-  <div class="karte" role="dialog" aria-labelledby="w-h" aria-modal="true">
-    <p class="eyebrow">Wörterliste</p>
-    <h2 id="w-h">In der Arztpraxis</h2>
+  <div class="karte" id="woerter-dialog" role="dialog" aria-labelledby="w-h" aria-modal="true" lang="de" tabindex="-1">
+    <p class="eyebrow" lang="de">Wörterliste</p>
+    <h2 id="w-h" lang="de">In der Arztpraxis</h2>
+    <p lang="de">Deutsche Wörter zuerst, dann die englische Bedeutung.</p>
+    <p class="en" lang="en">German words first, then the English meaning.</p>
     <dl class="woerter">
-      <dt>Was fehlt Ihnen?</dt><dd>What’s wrong? <span class="en">literally “what is missing for you?”</span></dd>
-      <dt>wehtun</dt><dd>to hurt — <i>Der Hals tut mir weh.</i></dd>
-      <dt>seit wann</dt><dd>since when / for how long</dd>
-      <dt>das Fieber</dt><dd>fever — <i>Ich habe Fieber.</i></dd>
-      <dt>der Husten / husten</dt><dd>cough / to cough</dd>
-      <dt>die Nase läuft</dt><dd>the nose is running</dd>
-      <dt>übel / schlecht</dt><dd>nauseous — <i>Mir ist übel.</i></dd>
-      <dt>schlapp</dt><dd>wiped out, washed out</dd>
-      <dt>geschwollen</dt><dd>swollen</dd>
-      <dt>schlucken</dt><dd>to swallow</dd>
-      <dt>jucken</dt><dd>to itch</dd>
-      <dt>die Erkältung</dt><dd>a cold</dd>
-      <dt>die Grippe</dt><dd>the flu</dd>
-      <dt>der Heuschnupfen</dt><dd>hay fever</dd>
-      <dt>die Migräne</dt><dd>migraine</dd>
-      <dt>die Mandelentzündung</dt><dd>tonsillitis</dd>
-      <dt>der Magen-Darm-Infekt</dt><dd>stomach bug</dd>
-      <dt>die Lebensmittelvergiftung</dt><dd>food poisoning</dd>
-      <dt>verstaucht</dt><dd>sprained</dd>
-      <dt>der Hexenschuss</dt><dd>a sudden catch in the lower back</dd>
-      <dt>Gute Besserung!</dt><dd>Get well soon!</dd>
+      <dt lang="de">Was fehlt Ihnen?</dt><dd lang="en">What’s wrong? <span lang="de">Was fehlt Ihnen?</span> is literally “what is missing for you?”</dd>
+      <dt lang="de">wehtun</dt><dd lang="en">to hurt — <i lang="de">Der Hals tut mir weh.</i></dd>
+      <dt lang="de">seit wann</dt><dd lang="en">since when / for how long</dd>
+      <dt lang="de">das Fieber</dt><dd lang="en">fever — <i lang="de">Ich habe Fieber.</i></dd>
+      <dt lang="de">der Husten / husten</dt><dd lang="en">cough / to cough</dd>
+      <dt lang="de">die Nase läuft</dt><dd lang="en">the nose is running</dd>
+      <dt lang="de">übel / schlecht</dt><dd lang="en">nauseous — <i lang="de">Mir ist übel.</i></dd>
+      <dt lang="de">schlapp</dt><dd lang="en">wiped out, washed out</dd>
+      <dt lang="de">geschwollen</dt><dd lang="en">swollen</dd>
+      <dt lang="de">schlucken</dt><dd lang="en">to swallow</dd>
+      <dt lang="de">jucken</dt><dd lang="en">to itch</dd>
+      <dt lang="de">die Erkältung</dt><dd lang="en">a cold</dd>
+      <dt lang="de">die Grippe</dt><dd lang="en">the flu</dd>
+      <dt lang="de">der Heuschnupfen</dt><dd lang="en">hay fever</dd>
+      <dt lang="de">die Migräne</dt><dd lang="en">migraine</dd>
+      <dt lang="de">die Mandelentzündung</dt><dd lang="en">tonsillitis</dd>
+      <dt lang="de">der Magen-Darm-Infekt</dt><dd lang="en">stomach bug</dd>
+      <dt lang="de">die Lebensmittelvergiftung</dt><dd lang="en">food poisoning</dd>
+      <dt lang="de">verstaucht</dt><dd lang="en">sprained</dd>
+      <dt lang="de">der Hexenschuss</dt><dd lang="en">a sudden catch in the lower back</dd>
+      <dt lang="de">Gute Besserung!</dt><dd lang="en">Get well soon!</dd>
     </dl>
     <div class="btn-row">
-      <button class="btn" id="b-woerter-zu">Schließen</button>
+      <button type="button" class="btn" id="b-woerter-zu" lang="de">Schließen</button>
     </div>
   </div>
 </div>
@@ -917,7 +938,7 @@ function portraitSVG(p){
        <path d="M75 92 H85" stroke="#2A3038" stroke-width="2"/>`
     : "";
   const hijabFace = p.haar==="hijab" ? "" : haar;
-  return `<svg viewBox="0 0 160 180" role="img" aria-label="${p.name}">
+  return `<svg viewBox="0 0 160 180" aria-hidden="true" focusable="false">
     <ellipse cx="80" cy="172" rx="54" ry="10" fill="rgba(22,63,56,.12)"/>
     <path d="M42 150 Q80 128 118 150 L130 180 H30Z" fill="${shirt}"/>
     ${p.haar==="hijab"?haar:hijabFace}
@@ -940,7 +961,11 @@ const $ = id => document.getElementById(id);
 function patient(){ return S.queue[S.i]; }
 function txt(item){ return patient().anrede==="du" ? item.du : item.sie; }
 function sagen(de){
-  $("ansage").textContent = de;
+  const live = $("ansage");
+  live.setAttribute("lang", "de");
+  live.textContent = "";
+  void live.offsetWidth;
+  live.textContent = de;
   if(!S.laut || !window.speechSynthesis) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(de);
@@ -951,38 +976,73 @@ function sagen(de){
   speechSynthesis.speak(u);
 }
 function show(id){
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("on"));
-  $(id).classList.add("on");
-  $(id).querySelector("h2")?.focus?.();
+  document.querySelectorAll(".screen").forEach(s => {
+    const on = s.id === id;
+    s.classList.toggle("on", on);
+    s.inert = !on;
+    s.setAttribute("aria-hidden", on ? "false" : "true");
+  });
+  const h = $(id).querySelector("h2[tabindex], h2");
+  if(h) h.focus();
+}
+function setPressed(btn, on){
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
 }
 
 /* settings */
 $("b-en").onclick = function(){
   S.en = !S.en;
   document.body.classList.toggle("en-an", S.en);
-  this.setAttribute("aria-pressed", S.en);
+  setPressed(this, S.en);
+  this.setAttribute("aria-label", S.en ? "Englisch ausblenden" : "Englisch einblenden");
+  if($("s-play").classList.contains("on")) setTab(S.tab);
 };
 $("b-laut").onclick = function(){
   S.laut = !S.laut;
-  this.setAttribute("aria-pressed", S.laut);
+  setPressed(this, S.laut);
   if(!S.laut && window.speechSynthesis) speechSynthesis.cancel();
 };
 $("b-kontrast").onclick = function(){
   S.kontrast = !S.kontrast;
   document.documentElement.setAttribute("data-kontrast", S.kontrast?"1":"0");
-  this.setAttribute("aria-pressed", S.kontrast);
+  setPressed(this, S.kontrast);
 };
 $("b-schrift").onclick = function(){
   S.size = (S.size+1)%3;
   const v = ["","gross","sehr-gross"][S.size];
   document.documentElement.setAttribute("data-size", v);
-  this.setAttribute("aria-pressed", S.size>0);
+  setPressed(this, S.size>0);
 };
-$("b-woerter").onclick = () => { $("woerter-box").hidden = false; $("b-woerter-zu").focus(); };
-$("b-woerter-zu").onclick = () => { $("woerter-box").hidden = true; $("b-woerter").focus(); };
-$("woerter-box").addEventListener("click", e => { if(e.target.id==="woerter-box") $("woerter-box").hidden = true; });
+
+let lastFocus = null;
+function openWoerter(){
+  lastFocus = document.activeElement;
+  $("woerter-box").hidden = false;
+  $("inhalt").inert = true;
+  document.querySelector("header.top").inert = true;
+  ($("woerter-dialog") || $("b-woerter-zu")).focus();
+}
+function closeWoerter(){
+  $("woerter-box").hidden = true;
+  $("inhalt").inert = false;
+  document.querySelector("header.top").inert = false;
+  (lastFocus || $("b-woerter")).focus();
+}
+$("b-woerter").onclick = openWoerter;
+$("b-woerter-zu").onclick = closeWoerter;
+$("woerter-box").addEventListener("click", e => { if(e.target.id==="woerter-box") closeWoerter(); });
+$("woerter-box").addEventListener("keydown", e => {
+  if($("woerter-box").hidden) return;
+  if(e.key === "Tab"){
+    const f = [...$("woerter-box").querySelectorAll("button, [href], [tabindex]:not([tabindex='-1'])")].filter(x => !x.disabled && x.offsetParent !== null);
+    if(!f.length) return;
+    const first = f[0], last = f[f.length-1];
+    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+  }
+});
 document.addEventListener("keydown", e => {
-  if(e.key==="Escape") $("woerter-box").hidden = true;
+  if(e.key==="Escape" && !$("woerter-box").hidden) closeWoerter();
 });
 
 /* start */
@@ -1012,6 +1072,7 @@ function beginConsult(){
   S.tab = "fragen";
   const p = patient();
   show("s-play");
+  $("fortschritt-text").setAttribute("lang", "de");
   $("fortschritt-text").textContent = `Patient ${S.i+1} von ${S.queue.length}`;
   $("pips").innerHTML = S.queue.map((_,i) => {
     const r = S.results[i];
@@ -1019,8 +1080,8 @@ function beginConsult(){
     return `<span class="pip ${cls}"></span>`;
   }).join("");
   $("portrait").innerHTML = portraitSVG(p);
-  $("akte").innerHTML = `<b>${p.name}</b>, ${p.alter}<br>${p.rolle}
-    <span class="en">${p.anrede==="du"?"Use du with this patient.":"Use Sie with this patient."}</span>`;
+  $("akte").innerHTML = `<b lang="de">${p.name}</b>, <span lang="de">${p.alter}</span><br><span lang="de">${p.rolle}</span>
+    <span class="en" lang="en">${p.anrede==="du"?"Use du with this patient.":"Use Sie with this patient."}</span>`;
   $("kb-name").textContent = p.name;
   renderNotes();
   $("chat").innerHTML = "";
@@ -1032,16 +1093,39 @@ function beginConsult(){
   sagen(p.eintritt.de);
   setTab("fragen");
   $("b-diagnose").disabled = true;
+  $("b-diagnose").setAttribute("aria-describedby", "diag-pflicht");
 }
 
 function addChat(who, name, de, en){
   const div = document.createElement("div");
   div.className = "blase "+who;
-  const btn = who==="p"
-    ? `<button class="speak" type="button" aria-label="Vorlesen">🔊</button>` : "";
-  div.innerHTML = `<div class="wer">${name}${btn}</div><div>${de}</div>${en?`<div class="en">${en}</div>`:""}`;
-  const b = div.querySelector(".speak");
-  if(b) b.onclick = () => sagen(de);
+  div.setAttribute("lang", "de");
+  const wer = document.createElement("div");
+  wer.className = "wer";
+  wer.setAttribute("lang", "de");
+  wer.textContent = who==="a" ? "Sie" : name;
+  if(who==="p"){
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "speak";
+    b.setAttribute("lang", "de");
+    b.setAttribute("aria-label", "Antwort auf Deutsch vorlesen: "+name);
+    b.textContent = "🔊";
+    b.onclick = () => sagen(de);
+    wer.appendChild(document.createTextNode(" "));
+    wer.appendChild(b);
+  }
+  const p = document.createElement("div");
+  p.setAttribute("lang", "de");
+  p.textContent = de;
+  div.append(wer, p);
+  if(en){
+    const pe = document.createElement("div");
+    pe.className = "en";
+    pe.setAttribute("lang", "en");
+    pe.textContent = en;
+    div.append(pe);
+  }
   $("chat").appendChild(div);
   $("chat").scrollTop = $("chat").scrollHeight;
 }
@@ -1056,42 +1140,70 @@ function renderNotes(){
   };
   const keys = Object.keys(S.notes);
   if(!keys.length){
-    $("notizen").innerHTML = `<dd class="leer">Noch leer — stell Fragen.</dd><dd class="en">Still empty — ask questions.</dd>`;
+    $("notizen").innerHTML = `<dd class="leer" lang="de">Noch leer — stell Fragen.</dd><dd class="en" lang="en">Still empty — ask questions.</dd>`;
     return;
   }
-  $("notizen").innerHTML = keys.map(k => `<dt>${labels[k]||k}</dt><dd>${S.notes[k]}</dd>`).join("");
+  $("notizen").innerHTML = keys.map(k => `<dt lang="de">${labels[k]||k}</dt><dd lang="de">${S.notes[k]}</dd>`).join("");
 }
 
 function setTab(tab){
   S.tab = tab;
-  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.tab===tab));
+  document.querySelectorAll(".tab").forEach(t => {
+    const on = t.dataset.tab===tab;
+    t.setAttribute("aria-selected", on ? "true" : "false");
+    t.tabIndex = on ? 0 : -1;
+  });
+  $("aktionen").setAttribute("aria-labelledby", tab==="fragen" ? "tab-fragen" : "tab-exam");
   if(tab==="fragen"){
+    $("tab-hinweis").setAttribute("lang", "de");
+    $("tab-hinweis-en").setAttribute("lang", "en");
     $("tab-hinweis").textContent = "Frag nach Ort, Zeit und Fieber — dann wird das Bild klarer.";
     $("tab-hinweis-en").textContent = "Ask about place, time, and fever — then the picture gets clearer.";
     $("aktionen").innerHTML = "";
     FRAGEN.forEach(f => {
       const b = document.createElement("button");
+      b.type = "button";
       b.className = "frage";
       b.disabled = S.asked.has("q-"+f.id);
-      b.innerHTML = `<span class="qde">${txt(f)}</span><span class="en">${f.en}</span>`;
+      b.setAttribute("lang", "de");
+      const asked = S.asked.has("q-"+f.id);
+      b.setAttribute("aria-label", txt(f) + (asked ? " (bereits gefragt)" : "") + (S.en ? ". " + f.en : ""));
+      b.innerHTML = `<span class="qde" lang="de">${txt(f)}</span><span class="en" lang="en">${f.en}</span>`;
       b.onclick = () => ask("q-"+f.id, f, patient().antworten[f.id]);
       $("aktionen").appendChild(b);
     });
   } else {
+    $("tab-hinweis").setAttribute("lang", "de");
+    $("tab-hinweis-en").setAttribute("lang", "en");
     $("tab-hinweis").textContent = "Nicht jede Untersuchung ist nötig. Wähle, was zum Bericht passt.";
     $("tab-hinweis-en").textContent = "Not every exam is needed. Choose what fits the story.";
     $("aktionen").innerHTML = "";
     EXAMS.forEach(f => {
       const b = document.createElement("button");
+      b.type = "button";
       b.className = "frage";
       b.disabled = S.asked.has("e-"+f.id);
-      b.innerHTML = `<span class="qde">${txt(f)}</span><span class="en">${f.en}</span>`;
+      b.setAttribute("lang", "de");
+      const asked = S.asked.has("e-"+f.id);
+      b.setAttribute("aria-label", txt(f) + (asked ? " (bereits gemacht)" : "") + (S.en ? ". " + f.en : ""));
+      b.innerHTML = `<span class="qde" lang="de">${txt(f)}</span><span class="en" lang="en">${f.en}</span>`;
       b.onclick = () => ask("e-"+f.id, f, patient().untersuchungen[f.id]);
       $("aktionen").appendChild(b);
     });
   }
 }
 document.querySelectorAll(".tab").forEach(t => t.onclick = () => setTab(t.dataset.tab));
+document.querySelector(".tabs").addEventListener("keydown", e => {
+  if(e.key!=="ArrowRight" && e.key!=="ArrowLeft" && e.key!=="Home" && e.key!=="End") return;
+  e.preventDefault();
+  const tabs = [...document.querySelectorAll(".tab")];
+  let i = tabs.findIndex(t => t.getAttribute("aria-selected")==="true");
+  if(e.key==="Home") i = 0;
+  else if(e.key==="End") i = tabs.length-1;
+  else i = e.key==="ArrowRight" ? (i+1)%tabs.length : (i-1+tabs.length)%tabs.length;
+  setTab(tabs[i].dataset.tab);
+  tabs[i].focus();
+});
 
 function ask(key, frage, antwort){
   if(S.asked.has(key) || !antwort) return;
@@ -1103,7 +1215,10 @@ function ask(key, frage, antwort){
   sagen(antwort.de);
   setTab(S.tab);
   const n = [...S.asked].filter(x => x.startsWith("q-")||x.startsWith("e-")).length;
-  if(n>=3) $("b-diagnose").disabled = false;
+  if(n>=3){
+    $("b-diagnose").disabled = false;
+    $("b-diagnose").removeAttribute("aria-describedby");
+  }
 }
 
 $("b-diagnose").onclick = openDiagnose;
@@ -1115,14 +1230,18 @@ $("b-nochmal").onclick = () => show("s-start");
 function openDiagnose(){
   const p = patient();
   show("s-diag");
+  $("diag-lede").setAttribute("lang", "de");
   $("diag-lede").textContent = `Sie haben ${S.asked.size} Hinweise gesammelt. Was hat ${p.name}?`;
   $("diag-notizen").innerHTML = $("notizen").innerHTML;
   const grid = $("diag-grid");
   grid.innerHTML = "";
   DIAGNOSEN.forEach(d => {
     const b = document.createElement("button");
+    b.type = "button";
     b.className = "diag";
-    b.innerHTML = `<span class="dn">${d.de}</span><span class="dk">${d.kurz}</span><span class="en">${d.en} — ${d.enKurz}</span>`;
+    b.setAttribute("lang", "de");
+    b.setAttribute("aria-label", d.de + ". " + d.kurz + (S.en ? " " + d.en + ". " + d.enKurz : ""));
+    b.innerHTML = `<span class="dn" lang="de">${d.de}</span><span class="dk" lang="de">${d.kurz}</span><span class="en" lang="en">${d.en} — ${d.enKurz}</span>`;
     b.onclick = () => judge(d.id);
     grid.appendChild(b);
   });
@@ -1142,6 +1261,10 @@ function judge(id){
   const ban = $("res-banner");
   ban.className = "banner "+(ok?"ok":"nein");
   ban.textContent = ok ? "Richtige Diagnose!" : `Leider nicht. Richtig ist: ${right}.`;
+  $("res-banner").setAttribute("lang", "de");
+  $("res-h").setAttribute("lang", "de");
+  $("res-text").setAttribute("lang", "de");
+  $("res-en").setAttribute("lang", "en");
   $("res-h").textContent = ok ? `${p.name} hat ${right}.` : `Nicht ${name}.`;
   $("res-text").textContent = p.begruendung.de + `  (+${pts} Punkte)`;
   $("res-en").textContent = p.begruendung.en;
@@ -1149,15 +1272,16 @@ function judge(id){
     const f = FRAGEN.find(x=>x.id===k) || EXAMS.find(x=>x.id===k);
     const got = found.includes(k);
     const label = f ? txt(f) : k;
-    return `<li>${got?"✓":"○"} ${label}</li>`;
+    return `<li lang="de"><span aria-hidden="true">${got?"✓":"○"}</span> <span class="sr" lang="de">${got?"gefunden:":"nicht gefragt:"}</span> ${label}</li>`;
   }).join("");
-  $("rezept").innerHTML = `<div class="rh">Praxis Dr. Sommer · Rezept</div>
-    <h3>${p.name}</h3>
-    <p><b>Diagnose:</b> ${right}</p>
-    <p>${p.rezept.de}</p>
-    <p class="en">${p.rezept.en}</p>
-    <p style="margin-top:1rem;font-style:italic">Gute Besserung!</p>`;
+  $("rezept").innerHTML = `<div class="rh" lang="de">Praxis Dr. Sommer · Rezept</div>
+    <h3 lang="de">${p.name}</h3>
+    <p lang="de"><b lang="de">Diagnose:</b> <span lang="de">${right}</span></p>
+    <p lang="de">${p.rezept.de}</p>
+    <p class="en" lang="en">${p.rezept.en}</p>
+    <p lang="de" style="margin-top:1rem;font-style:italic">Gute Besserung!</p>`;
   sagen(ok ? `Richtige Diagnose. ${p.name} hat ${right}.` : `Leider falsch. ${p.name} hat ${right}.`);
+  $("b-weiter").setAttribute("lang", "de");
   $("b-weiter").textContent = S.i < S.queue.length-1 ? "Nächster Patient" : "Sprechstunde auswerten";
 }
 
@@ -1169,6 +1293,9 @@ function endShift(){
   if(window.speechSynthesis) speechSynthesis.cancel();
   show("s-end");
   const nOk = S.results.filter(r=>r.ok).length;
+  $("end-score").setAttribute("lang", "de");
+  $("end-text").setAttribute("lang", "de");
+  $("end-en").setAttribute("lang", "en");
   $("end-score").textContent = S.score + " Punkte";
   $("end-text").textContent = nOk===S.results.length && S.results.length
     ? "Alle Diagnosen stimmen. Die Gemeinde Kleinhausen ist in guten Händen."
@@ -1177,8 +1304,8 @@ function endShift(){
     ? "Every diagnosis was right. Kleinhausen is in good hands."
     : `${nOk} of ${S.results.length} diagnoses correct. Next shift: ask a little more precisely.`;
   $("bilanz").querySelector("tbody").innerHTML = S.results.map(r =>
-    `<tr><td>${r.name}</td><td>${r.guess}</td><td class="${r.ok?"gut":"schlecht"}">${r.ok?"richtig":r.right}</td><td>${r.pts}</td></tr>`
-  ).join("") || `<tr><td colspan="4">Keine Fälle abgeschlossen.</td></tr>`;
+    `<tr lang="de"><td lang="de">${r.name}</td><td lang="de">${r.guess}</td><td class="${r.ok?"gut":"schlecht"}" lang="de">${r.ok?"richtig":r.right}</td><td lang="de">${r.pts}</td></tr>`
+  ).join("") || `<tr><td colspan="4" lang="de">Keine Fälle abgeschlossen.</td></tr>`;
 }
 
 if(window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};

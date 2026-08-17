@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-spots="an">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Versteck dich! — Präpositionen &amp; Befehle in Kleinhausen</title>
-<meta name="description" content="Ein Versteckspiel für Deutschlernende: Befehle verstehen, Präpositionen und Positionen üben. Wer den Hinweisen folgt, wird nicht gefunden.">
+<title lang="de">Versteck dich! — Präpositionen &amp; Befehle in Kleinhausen</title>
+<meta name="description" lang="de" content="Ein Versteckspiel für Deutschlernende: Befehle verstehen, Präpositionen und Positionen üben. Wer den Hinweisen folgt, wird nicht gefunden.">
 <style>
 /* ============================================================
    VERSTECK DICH · KLEINHAUSEN
@@ -100,7 +100,7 @@ html[data-contrast="hoch"] .brand .sub{color:#fff;}
 .set-btn{
   font:inherit;font-size:.8em;background:transparent;color:var(--papier);
   border:2px solid #5d7364;border-radius:999px;padding:.3em .85em;cursor:pointer;
-  display:inline-flex;align-items:center;gap:.4em;
+  display:inline-flex;align-items:center;gap:.4em;min-height:44px;
 }
 .set-btn:hover{border-color:var(--gold);}
 .set-btn[aria-pressed="true"]{background:var(--gold);color:var(--nadel);border-color:var(--gold);font-weight:700;}
@@ -112,6 +112,7 @@ html[data-contrast="hoch"] .brand .sub{color:#fff;}
 .screen.on{display:block;}
 h2{font-family:var(--serif);font-size:1.75em;line-height:1.2;margin:0 0 .35em;font-weight:700;}
 h2:focus{outline:none;}
+h2:focus-visible{outline:4px solid var(--gold);outline-offset:3px;}
 h3{font-family:var(--serif);font-size:1.18em;margin:1.3em 0 .45em;}
 .eyebrow{
   font-family:var(--mono);font-size:.72em;letter-spacing:.18em;text-transform:uppercase;
@@ -187,6 +188,7 @@ kbd{
 .speak-btn{
   font:inherit;font-size:.82em;font-weight:700;margin-top:.45em;cursor:pointer;
   background:var(--papier-2);border:2px solid var(--nadel);border-radius:999px;padding:.25em .8em;
+  min-height:44px;
 }
 
 /* ----- scene ----- */
@@ -245,7 +247,9 @@ html[data-motion="aus"] .max.laufen, html[data-motion="aus"] .max.stoppen{animat
 .ort-btn{
   font:inherit;font-size:.88em;font-weight:700;cursor:pointer;
   background:#fff;border:2px solid var(--nadel);border-radius:999px;padding:.4em .8em;
+  min-height:44px;
 }
+.ort-btn .gloss{ display:block; font-weight:600; font-size:.82em; }
 .ort-btn:hover{background:var(--gold);}
 .ort-btn.ziel-ok{background:var(--ok-wasch);border-color:var(--ok);}
 .ort-btn.ziel-bad{background:var(--ziegel-wasch);border-color:var(--ziegel);}
@@ -262,6 +266,7 @@ html[data-motion="aus"] .max.laufen, html[data-motion="aus"] .max.stoppen{animat
 .wahl button{
   font:inherit;text-align:left;cursor:pointer;padding:.7em .9em;
   background:var(--papier-2);border:2px solid var(--nadel);border-radius:10px;
+  min-height:44px;
 }
 .wahl button:hover{background:#fff;}
 .wahl button.richtig{background:var(--ok-wasch);border-color:var(--ok);}
@@ -300,113 +305,141 @@ html[data-motion="aus"] *{
 }
 </style>
 </head>
-<body>
-<a class="skip" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+<body lang="de">
+<a class="skip" href="#hauptinhalt" lang="de">Zum Hauptinhalt springen <span class="sr-only gloss" lang="en">Skip to main content</span></a>
 
 <div class="topbar">
   <div class="topbar-in">
     <div class="brand">
-      <h1>Versteck dich!</h1>
-      <span class="sub">Kleinhausen · Präpositionen &amp; Befehle</span>
+      <h1 lang="de" translate="no">Versteck dich!</h1>
+      <span class="sub" lang="de">Kleinhausen · Präpositionen &amp; Befehle</span>
     </div>
-    <div class="settings" role="group" aria-label="Einstellungen / Settings">
-      <button type="button" class="set-btn" id="s-en" aria-pressed="true"><span class="dot" aria-hidden="true"></span>English</button>
-      <button type="button" class="set-btn" id="s-audio" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Vorlesen</button>
-      <button type="button" class="set-btn" id="s-spots" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Orte zeigen</button>
-      <button type="button" class="set-btn" id="s-motion" aria-pressed="true"><span class="dot" aria-hidden="true"></span>Animation</button>
-      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Kontrast</button>
-      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    <div class="settings" role="group" lang="de" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true" lang="en">
+        <span class="dot" aria-hidden="true"></span>English
+      </button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">
+        <span class="dot" aria-hidden="true"></span><span lang="de">Vorlesen</span>
+        <span class="sr-only gloss" lang="en">Read aloud</span>
+      </button>
+      <button type="button" class="set-btn" id="s-spots" aria-pressed="true">
+        <span class="dot" aria-hidden="true"></span><span lang="de">Orte zeigen</span>
+        <span class="sr-only gloss" lang="en">Show place labels</span>
+      </button>
+      <button type="button" class="set-btn" id="s-motion" aria-pressed="true">
+        <span class="dot" aria-hidden="true"></span><span lang="de">Animation</span>
+        <span class="sr-only gloss" lang="en">Motion</span>
+      </button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">
+        <span class="dot" aria-hidden="true"></span><span lang="de">Kontrast</span>
+        <span class="sr-only gloss" lang="en">High contrast</span>
+      </button>
+      <button type="button" class="set-btn" id="s-size" aria-label="Schriftgröße: normal">
+        <span lang="de" data-size-label>Schrift: A</span>
+        <span class="sr-only gloss" lang="en">Text size</span>
+      </button>
     </div>
   </div>
 </div>
 
-<main class="wrap" id="hauptinhalt">
+<main class="wrap" id="hauptinhalt" lang="de">
 
-  <section class="screen on" id="screen-start" aria-labelledby="h-start">
+  <section class="screen on" id="screen-start" aria-labelledby="h-start" lang="de">
     <p class="eyebrow">Versteckspiel · Deutsch als Fremdsprache</p>
     <h2 id="h-start" tabindex="-1">Max zählt. Mia flüstert. Du versteckst dich.</h2>
-    <p class="lede">Samstagnachmittag in Kleinhausen, im Haus von Oma Helga. Max ist der Sucher: <em>Augen zu!</em> Deine Cousine Mia flüstert dir deutsche <strong>Befehle</strong> zu. Folge den Hinweisen und versteck dich an einem guten Ort – dann findet Max dich nicht. Ignorierst du die Präposition oder versteckst du dich dort, wo man dich sieht, bist du <strong>gefunden</strong>.
-      <span class="en gloss">Saturday in Kleinhausen. Follow Mia’s German commands. Hide in a good spot and Max will miss you. Ignore the hint or hide in a visible place and you will be found.</span></p>
+    <p class="lede">Samstagnachmittag in Kleinhausen, im Haus von Oma Helga. Max ist der Sucher: <em lang="de" translate="no">Augen zu!</em> Deine Cousine Mia flüstert dir deutsche <strong lang="de" translate="no">Befehle</strong> zu. Folge den Hinweisen und versteck dich an einem guten Ort – dann findet Max dich nicht. Ignorierst du die Präposition oder versteckst du dich dort, wo man dich sieht, bist du <strong lang="de" translate="no">gefunden</strong>.
+      <span class="en gloss" lang="en">Saturday in Kleinhausen. Follow Mia’s German commands. Hide in a good spot and Max will miss you. Ignore the hint or hide in a visible place and you will be found.</span></p>
 
     <div class="karten" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
       <div class="karte" style="cursor:default">
-        <p class="nr">Befehle</p>
-        <h3>Imperativ</h3>
-        <p class="meta">Versteck dich! Geh! Kriech! Lauf! Bleib still! Schau nicht!</p>
+        <p class="nr" lang="de" translate="no">Befehle</p>
+        <h3 lang="de">Imperativ</h3>
+        <p class="meta" lang="de" translate="no">Versteck dich! Geh! Kriech! Lauf! Bleib still! Schau nicht!</p>
+        <p class="en gloss" lang="en">Commands: Hide! Go! Crawl! Run! Stay still! Don’t look!</p>
       </div>
       <div class="karte" style="cursor:default">
-        <p class="nr">Wohin?</p>
-        <h3>Akkusativ</h3>
-        <p class="meta">Bewegung: hinter <em>das</em> Sofa, unter <em>den</em> Tisch, in <em>den</em> Schrank.</p>
+        <p class="nr" lang="de" translate="no">Wohin?</p>
+        <h3 lang="de">Akkusativ</h3>
+        <p class="meta" lang="de" translate="no">Bewegung: hinter <em>das</em> Sofa, unter <em>den</em> Tisch, in <em>den</em> Schrank.</p>
+        <p class="en gloss" lang="en">Where to? Accusative for movement.</p>
       </div>
       <div class="karte" style="cursor:default">
-        <p class="nr">Wo?</p>
-        <h3>Dativ</h3>
-        <p class="meta">Position: hinter <em>dem</em> Sofa, unter <em>dem</em> Tisch, in <em>dem</em> Schrank.</p>
+        <p class="nr" lang="de" translate="no">Wo?</p>
+        <h3 lang="de">Dativ</h3>
+        <p class="meta" lang="de" translate="no">Position: hinter <em>dem</em> Sofa, unter <em>dem</em> Tisch, in <em>dem</em> Schrank.</p>
+        <p class="en gloss" lang="en">Where? Dative for location.</p>
       </div>
     </div>
 
-    <h3>So spielst du</h3>
+    <h3 lang="de">So spielst du</h3>
     <ol class="lede">
-      <li>Lies (oder hör) Mias Befehl. Die Präposition sagt dir, <em>wohin</em>. <span class="en gloss">The preposition tells you where to go.</span></li>
-      <li>Klicke im Bild auf den Ort – oder auf die Ortsleiste darunter. <span class="en gloss">Click the hiding place in the picture or the list.</span></li>
-      <li>Gute, versteckte Orte + richtiger Hinweis = Max geht vorbei. Sonst: <em>Gefunden!</em> <span class="en gloss">A good hidden spot plus the right hint means Max walks past.</span></li>
-      <li>Danach: <em>Wo bist du?</em> – wähle den Dativ. <span class="en gloss">Then choose the dative phrase for where you are.</span></li>
+      <li>Lies (oder hör) Mias Befehl. Die Präposition sagt dir, <em lang="de" translate="no">wohin</em>. <span class="en gloss" lang="en">The preposition tells you where to go.</span></li>
+      <li>Klicke im Bild auf den Ort – oder auf die Ortsleiste darunter. <span class="en gloss" lang="en">Click the hiding place in the picture or the list.</span></li>
+      <li>Gute, versteckte Orte + richtiger Hinweis = Max geht vorbei. Sonst: <em lang="de" translate="no">Gefunden!</em> <span class="en gloss" lang="en">A good hidden spot plus the right hint means Max walks past.</span></li>
+      <li>Danach: <em lang="de" translate="no">Wo bist du?</em> – wähle den Dativ. <span class="en gloss" lang="en">Then choose the dative phrase for where you are.</span></li>
     </ol>
 
     <div class="btn-row">
-      <button type="button" class="btn" id="btn-folgen">Folgen auswählen</button>
-      <button type="button" class="btn btn-ghost" id="btn-alle">Alle Folgen am Stück spielen</button>
+      <button type="button" class="btn" id="btn-folgen">Folgen auswählen <span class="sr-only gloss" lang="en">Choose episodes</span></button>
+      <button type="button" class="btn btn-ghost" id="btn-alle">Alle Folgen am Stück spielen <span class="sr-only gloss" lang="en">Play all episodes in a row</span></button>
     </div>
 
     <details>
-      <summary>Wechselpräpositionen: Wo? und Wohin? <span class="en gloss">Two-way prepositions</span></summary>
+      <summary>Wechselpräpositionen: <span lang="de" translate="no">Wo?</span> und <span lang="de" translate="no">Wohin?</span> <span class="en gloss" lang="en">Two-way prepositions</span></summary>
       <table class="gram">
-        <caption class="sr-only">Präpositionen mit Dativ und Akkusativ</caption>
-        <thead><tr><th>Präposition</th><th>Wo? (Dativ)</th><th>Wohin? (Akkusativ)</th><th>Englisch</th></tr></thead>
+        <caption class="sr-only"><span lang="de">Präpositionen mit Dativ und Akkusativ</span> <span class="en gloss" lang="en">Prepositions with dative and accusative</span></caption>
+        <thead>
+          <tr>
+            <th scope="col" lang="de">Präposition</th>
+            <th scope="col" lang="de" translate="no">Wo? (Dativ)</th>
+            <th scope="col" lang="de" translate="no">Wohin? (Akkusativ)</th>
+            <th scope="col" lang="de">Englisch <span class="en gloss" lang="en">English</span></th>
+          </tr>
+        </thead>
         <tbody>
-          <tr><td>hinter</td><td>hinter dem Sofa</td><td>hinter das Sofa</td><td>behind</td></tr>
-          <tr><td>unter</td><td>unter dem Tisch</td><td>unter den Tisch</td><td>under</td></tr>
-          <tr><td>in</td><td>in dem Schrank / im Schrank</td><td>in den Schrank</td><td>in</td></tr>
-          <tr><td>auf</td><td>auf dem Sessel</td><td>auf den Sessel</td><td>on</td></tr>
-          <tr><td>vor</td><td>vor der Tür</td><td>vor die Tür</td><td>in front of</td></tr>
-          <tr><td>neben</td><td>neben dem Fenster</td><td>neben das Fenster</td><td>next to</td></tr>
-          <tr><td>zwischen</td><td>zwischen den Vorhängen</td><td>zwischen die Vorhänge</td><td>between</td></tr>
+          <tr><td lang="de" translate="no">hinter</td><td lang="de" translate="no">hinter dem Sofa</td><td lang="de" translate="no">hinter das Sofa</td><td lang="en">behind</td></tr>
+          <tr><td lang="de" translate="no">unter</td><td lang="de" translate="no">unter dem Tisch</td><td lang="de" translate="no">unter den Tisch</td><td lang="en">under</td></tr>
+          <tr><td lang="de" translate="no">in</td><td lang="de" translate="no">in dem Schrank / im Schrank</td><td lang="de" translate="no">in den Schrank</td><td lang="en">in</td></tr>
+          <tr><td lang="de" translate="no">auf</td><td lang="de" translate="no">auf dem Sessel</td><td lang="de" translate="no">auf den Sessel</td><td lang="en">on</td></tr>
+          <tr><td lang="de" translate="no">vor</td><td lang="de" translate="no">vor der Tür</td><td lang="de" translate="no">vor die Tür</td><td lang="en">in front of</td></tr>
+          <tr><td lang="de" translate="no">neben</td><td lang="de" translate="no">neben dem Fenster</td><td lang="de" translate="no">neben das Fenster</td><td lang="en">next to</td></tr>
+          <tr><td lang="de" translate="no">zwischen</td><td lang="de" translate="no">zwischen den Vorhängen</td><td lang="de" translate="no">zwischen die Vorhänge</td><td lang="en">between</td></tr>
         </tbody>
       </table>
-      <p>Sichtbare Orte sind schlechte Verstecke: <strong>vor der Tür</strong>, <strong>auf dem Sessel</strong>, <strong>neben dem Fenster</strong>, <strong>auf der Schaukel</strong>, <strong>vor dem Zaun</strong>. Mia warnt dich oft mit <em>nicht</em>.</p>
+      <p>Sichtbare Orte sind schlechte Verstecke: <strong lang="de" translate="no">vor der Tür</strong>, <strong lang="de" translate="no">auf dem Sessel</strong>, <strong lang="de" translate="no">neben dem Fenster</strong>, <strong lang="de" translate="no">auf der Schaukel</strong>, <strong lang="de" translate="no">vor dem Zaun</strong>. Mia warnt dich oft mit <em lang="de" translate="no">nicht</em>.
+        <span class="en gloss" lang="en">Visible places are bad hides. Mia often warns you with “nicht” (not).</span></p>
     </details>
 
     <details>
-      <summary>Tastatur und Barrierefreiheit <span class="en gloss">Keyboard &amp; accessibility</span></summary>
+      <summary>Tastatur und Barrierefreiheit <span class="en gloss" lang="en">Keyboard and accessibility</span></summary>
       <ul>
-        <li><kbd>Tab</kbd> bewegt den Fokus. <kbd>1</kbd>–<kbd>8</kbd> wählen einen Ort in der Leiste.</li>
-        <li>Jedes Versteck hat einen Namen als Text. Das Bild ist zusätzlich, nicht die einzige Information.</li>
-        <li><strong>Orte zeigen</strong> lässt die Labels im Bild immer sichtbar.</li>
-        <li><strong>Vorlesen</strong> spricht Befehle auf Deutsch (wenn eine de-Stimme vorhanden ist).</li>
-        <li><strong>Animation</strong> und <strong>Kontrast</strong> und <strong>Schrift</strong> wie in den anderen Kleinhausen-Spielen.</li>
+        <li><kbd>Tab</kbd> bewegt den Fokus. <kbd>1</kbd>–<kbd>8</kbd> wählen einen Ort in der Leiste. <span class="en gloss" lang="en">Tab moves focus. Keys 1–8 pick a place from the list.</span></li>
+        <li>Jedes Versteck hat einen Namen als Text. Das Bild ist zusätzlich, nicht die einzige Information. <span class="en gloss" lang="en">Every hiding place is also named in text. The picture is extra, not the only information.</span></li>
+        <li><strong lang="de">Orte zeigen</strong> lässt die Labels im Bild immer sichtbar. <span class="en gloss" lang="en">“Show places” keeps picture labels visible.</span></li>
+        <li><strong lang="de">Vorlesen</strong> spricht Befehle auf Deutsch (wenn eine de-Stimme vorhanden ist). <span class="en gloss" lang="en">Read-aloud speaks commands in German if your device has a German voice.</span></li>
+        <li><strong lang="de">Animation</strong>, <strong lang="de">Kontrast</strong> und <strong lang="de">Schrift</strong> wie in den anderen Kleinhausen-Spielen. <span class="en gloss" lang="en">Motion, contrast, and text size match the other Kleinhausen games.</span></li>
       </ul>
     </details>
   </section>
 
-  <section class="screen" id="screen-episodes" aria-labelledby="h-eps">
+  <section class="screen" id="screen-episodes" aria-labelledby="h-eps" lang="de">
     <p class="eyebrow">Drei Folgen · Wohnzimmer, Warnungen, Garten</p>
     <h2 id="h-eps" tabindex="-1">Welche Folge möchtest du spielen?</h2>
-    <p class="lede">Die Folgen werden schwerer. In jeder Runde kann Max dich finden – dann gibt es null Punkte fürs Verstecken, aber du darfst die Wo?-Frage trotzdem beantworten.
-      <span class="en gloss">Episodes get harder. Getting found scores 0 for that hide, but you can still answer the location question.</span></p>
+    <p class="lede">Die Folgen werden schwerer. In jeder Runde kann Max dich finden – dann gibt es null Punkte fürs Verstecken, aber du darfst die <span lang="de" translate="no">Wo?</span>-Frage trotzdem beantworten.
+      <span class="en gloss" lang="en">Episodes get harder. Getting found scores 0 for that hide, but you can still answer the location question.</span></p>
     <div class="karten" id="ep-liste"></div>
     <div class="btn-row">
-      <button type="button" class="btn btn-ghost" id="btn-zurueck-start">Zurück zum Anfang</button>
-      <button type="button" class="btn" id="btn-alle-2">Alle Folgen am Stück spielen</button>
-      <button type="button" class="btn btn-ghost" id="btn-zum-ergebnis" hidden>Ergebnis und Code ansehen</button>
+      <button type="button" class="btn btn-ghost" id="btn-zurueck-start">Zurück zum Anfang <span class="sr-only gloss" lang="en">Back to the start</span></button>
+      <button type="button" class="btn" id="btn-alle-2">Alle Folgen am Stück spielen <span class="sr-only gloss" lang="en">Play all episodes in a row</span></button>
+      <button type="button" class="btn btn-ghost" id="btn-zum-ergebnis" hidden>Ergebnis und Code ansehen <span class="sr-only gloss" lang="en">View results and code</span></button>
     </div>
   </section>
 
-  <section class="screen" id="screen-play" aria-labelledby="h-play">
+  <section class="screen" id="screen-play" aria-labelledby="h-play" lang="de">
     <div class="hud">
       <div>
         <p class="eyebrow" id="folge-label">Folge</p>
-        <h2 id="h-play" tabindex="-1">Versteck dich!</h2>
+        <h2 id="h-play" tabindex="-1" lang="de" translate="no">Versteck dich!</h2>
         <p class="lede" id="szene-intro" style="margin:0;max-width:52ch"></p>
       </div>
       <div>
@@ -426,85 +459,90 @@ html[data-motion="aus"] *{
         <path d="M24 50 Q38 68 52 52" fill="#3d6b48" stroke="#18291f" stroke-width="2"/>
       </svg>
       <div class="bubble">
-        <p class="wer" id="wer-label">Mia flüstert</p>
-        <p class="befehl" id="befehl-text" lang="de"></p>
+        <p class="wer" id="wer-label" lang="de">Mia flüstert</p>
+        <p class="befehl" id="befehl-text" lang="de" translate="no"></p>
         <p class="en gloss" id="befehl-en" lang="en"></p>
-        <p><button type="button" class="speak-btn" id="btn-sprich">Befehl vorlesen</button></p>
+        <p><button type="button" class="speak-btn" id="btn-sprich" lang="de">Befehl vorlesen <span class="sr-only gloss" lang="en">Read the command aloud</span></button></p>
       </div>
     </div>
 
-    <div id="befehl-wahl" class="wahl" hidden></div>
+    <div id="befehl-wahl" class="wahl" hidden role="group" lang="de" aria-label="Befehle"></div>
 
-    <div class="szene-box" id="szene-box">
+    <div class="szene-box" id="szene-box" role="group" lang="de" aria-label="Szene zum Verstecken">
       <div id="szene-wohnzimmer"></div>
       <div id="szene-garten" hidden></div>
-      <div class="zaehl" id="zaehl" hidden>
+      <div class="zaehl" id="zaehl" hidden role="status" aria-live="polite" aria-atomic="true" lang="de">
         <div>
-          <p class="eyebrow" style="color:#e2b441">Max</p>
-          <p style="margin:0;font-weight:800">Augen zu! Ich zähle!</p>
+          <p class="eyebrow" style="color:#e2b441" lang="de">Max</p>
+          <p style="margin:0;font-weight:800" lang="de" translate="no">Augen zu! Ich zähle!</p>
           <p class="zahl" id="zaehl-zahl">1</p>
-          <p id="zaehl-sub">Eins …</p>
+          <p id="zaehl-sub" lang="de" translate="no">Eins …</p>
+          <p class="en gloss" lang="en">Eyes closed! I’m counting!</p>
         </div>
       </div>
-      <div class="max" id="max" hidden></div>
-      <p class="stempel sicher" id="stempel" hidden>SICHER!</p>
+      <div class="max" id="max" hidden aria-hidden="true"></div>
+      <p class="stempel sicher" id="stempel" hidden aria-hidden="true">SICHER!</p>
     </div>
-    <p class="sr-only" id="ort-hilfe">Wähle ein Versteck. Tasten 1 bis 8 wählen in der Ortsleiste.</p>
-    <div class="ort-leiste" id="ort-leiste" role="group" aria-labelledby="ort-hilfe"></div>
+    <h3 class="eyebrow" id="ort-hilfe" style="margin:.4rem 0 .35rem">Orte zum Verstecken <span class="en gloss" lang="en">Places to hide</span></h3>
+    <p class="sr-only" lang="de">Wähle ein Versteck. Tasten 1 bis 8 wählen in der Ortsleiste. <span class="en gloss" lang="en">Choose a hiding place. Keys 1 to 8 select from the list.</span></p>
+    <div class="ort-leiste" id="ort-leiste" role="group" lang="de" aria-labelledby="ort-hilfe"></div>
 
-    <div class="feedback" id="feedback" hidden tabindex="-1"></div>
-    <div id="wo-box" hidden>
-      <p class="eyebrow" id="wo-eyebrow">Wo bist du?</p>
-      <p class="befehl" id="wo-frage" style="font-size:1.1em"></p>
+    <div class="feedback" id="feedback" hidden tabindex="-1" lang="de" role="status" aria-live="polite"></div>
+    <div id="wo-box" hidden lang="de">
+      <p class="eyebrow" id="wo-eyebrow" lang="de" translate="no">Wo bist du?</p>
+      <p class="befehl" id="wo-frage" lang="de" translate="no" style="font-size:1.1em"></p>
       <p class="en gloss" id="wo-en" lang="en"></p>
-      <div class="wahl" id="wo-opts"></div>
-      <p id="wo-fb"></p>
+      <div class="wahl" id="wo-opts" role="group" lang="de" aria-label="Antworten"></div>
+      <p id="wo-fb" lang="de" role="status" aria-live="polite"></p>
     </div>
 
     <div class="btn-row">
-      <button type="button" class="btn" id="btn-weiter" hidden>Weiter</button>
-      <button type="button" class="btn btn-ghost" id="btn-abbrechen">Folge verlassen</button>
+      <button type="button" class="btn" id="btn-weiter" hidden>Weiter <span class="sr-only gloss" lang="en">Continue</span></button>
+      <button type="button" class="btn btn-ghost" id="btn-abbrechen">Folge verlassen <span class="sr-only gloss" lang="en">Leave this episode</span></button>
     </div>
-    <p class="status-bar" id="status" role="status" aria-live="polite"></p>
+    <p class="status-bar" id="status" role="status" aria-live="polite" aria-atomic="true" lang="de"></p>
   </section>
 
-  <section class="screen" id="screen-summary" aria-labelledby="h-sum">
+  <section class="screen" id="screen-summary" aria-labelledby="h-sum" lang="de">
     <p class="eyebrow">Ergebnis</p>
     <h2 id="h-sum" tabindex="-1">Das Spiel ist aus!</h2>
-    <p class="lede" id="sum-text"></p>
+    <p class="lede" id="sum-text" lang="de"></p>
     <table class="tabelle" id="sum-tabelle">
-      <caption>Deine Punkte pro Folge</caption>
-      <thead><tr><th scope="col">Folge</th><th scope="col">Thema</th><th scope="col">Punkte</th><th scope="col">Prozent</th></tr></thead>
+      <caption lang="de">Deine Punkte pro Folge <span class="en gloss" lang="en">Your points per episode</span></caption>
+      <thead><tr><th scope="col" lang="de">Folge</th><th scope="col" lang="de">Thema</th><th scope="col" lang="de">Punkte</th><th scope="col" lang="de">Prozent</th></tr></thead>
       <tbody id="sum-body"></tbody>
       <tfoot id="sum-foot"></tfoot>
     </table>
     <div class="name-feld">
-      <label for="name-in">Dein Name (für den Abgabecode) <span class="en gloss">Your name, for the Canvas submission code</span></label>
-      <input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname">
+      <label for="name-in">Dein Name (für den Abgabecode) <span class="en gloss" lang="en">Your name, for the Canvas submission code</span></label>
+      <input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname" lang="de">
     </div>
     <div class="code-box">
-      <p><strong>Dein Abgabecode</strong> <span class="en gloss" style="color:#c9d6c4">Your submission code</span></p>
-      <code class="code-val" id="code-val">Bitte gib zuerst deinen Namen ein.</code>
-      <p>Kopiere diesen Code in die Canvas-Aufgabe. Der Code gehört zu deinem Namen. Am besten den Knopf <em>Code kopieren</em> nutzen, nicht abtippen.</p>
-      <p><button type="button" class="btn" id="btn-copy" style="background:var(--gold)">Code kopieren</button></p>
+      <p><strong lang="de">Dein Abgabecode</strong> <span class="en gloss" lang="en" style="color:#c9d6c4">Your submission code</span></p>
+      <code class="code-val" id="code-val" lang="de" aria-live="polite">Bitte gib zuerst deinen Namen ein.</code>
+      <p lang="de">Kopiere diesen Code in die Canvas-Aufgabe. Der Code gehört zu deinem Namen. Am besten den Knopf <em lang="de">Code kopieren</em> nutzen, nicht abtippen.
+        <span class="en gloss" lang="en">Copy this code into the Canvas assignment. Use the copy button rather than typing it.</span></p>
+      <p><button type="button" class="btn" id="btn-copy" style="background:var(--gold)"><span id="btn-copy-label" lang="de">Code kopieren</span> <span class="sr-only gloss" lang="en">Copy code</span></button></p>
     </div>
     <div class="btn-row">
-      <button type="button" class="btn" id="btn-nochmal">Weitere Folge spielen</button>
-      <button type="button" class="btn btn-ghost" id="btn-neustart">Alles zurücksetzen</button>
+      <button type="button" class="btn" id="btn-nochmal">Weitere Folge spielen <span class="sr-only gloss" lang="en">Play another episode</span></button>
+      <button type="button" class="btn btn-ghost" id="btn-neustart">Alles zurücksetzen <span class="sr-only gloss" lang="en">Reset everything</span></button>
     </div>
     <details id="lehrer">
-      <summary>Für Lehrkräfte: Code prüfen <span class="en gloss">For teachers: verify a code</span></summary>
-      <p>Gib den Namen der Lernenden und den abgegebenen Code ein.</p>
-      <p class="name-feld"><label for="v-name">Name</label><input type="text" id="v-name" spellcheck="false"></p>
-      <p class="name-feld"><label for="v-code">Code</label><input type="text" id="v-code" spellcheck="false"></p>
-      <p><button type="button" class="btn" id="btn-verify">Prüfen</button></p>
-      <p id="v-out" role="status" aria-live="polite"></p>
+      <summary>Für Lehrkräfte: Code prüfen <span class="en gloss" lang="en">For teachers: verify a code</span></summary>
+      <p lang="de">Gib den Namen der Lernenden und den abgegebenen Code ein.
+        <span class="en gloss" lang="en">Enter the learner’s name and the submitted code.</span></p>
+      <p class="name-feld"><label for="v-name" lang="de">Name</label><input type="text" id="v-name" spellcheck="false" autocomplete="name" lang="de"></p>
+      <p class="name-feld"><label for="v-code" lang="en">Code</label><input type="text" id="v-code" spellcheck="false" lang="en" inputmode="text" autocapitalize="characters"></p>
+      <p><button type="button" class="btn" id="btn-verify">Prüfen <span class="sr-only gloss" lang="en">Check</span></button></p>
+      <p id="v-out" role="status" aria-live="polite" lang="de"></p>
     </details>
   </section>
 </main>
 
-<footer class="wrap">
-  <p>Versteck dich! Kleinhausen · Wortschatz: Wechselpräpositionen, Positionen, Imperativ. Eine Datei, keine Cookies – Fortschritt gilt nur für diesen Besuch.</p>
+<footer class="wrap" lang="de">
+  <p>Versteck dich! Kleinhausen · Wortschatz: Wechselpräpositionen, Positionen, Imperativ. Eine Datei, keine Cookies – Fortschritt gilt nur für diesen Besuch.
+    <span class="en gloss" lang="en">Vocabulary: two-way prepositions, positions, imperative. One file, no cookies — progress lasts only for this visit.</span></p>
 </footer>
 
 <script>
@@ -786,7 +824,7 @@ FOLGEN.forEach(f=>{
    2. SVG-SZENEN
    ============================================================ */
 const SVG_WOHN = `
-<svg viewBox="0 0 1000 540" role="img" aria-label="Wohnzimmer: Tür, Sessel, Sofa, Tisch, Vorhänge, Fenster, Pflanze, Schrank">
+<svg viewBox="0 0 1000 540" aria-hidden="true" focusable="false">
   <rect width="1000" height="540" fill="#f0e0c4"/>
   <rect y="330" width="1000" height="210" fill="#c9a36a"/>
   <g stroke="#7a5130" stroke-width="2" opacity=".35">
@@ -832,7 +870,7 @@ const SVG_WOHN = `
 </svg>`;
 
 const SVG_GARTEN = `
-<svg viewBox="0 0 1000 540" role="img" aria-label="Garten: Baum, Bank, Büsche, Brunnen, Schaukel, Tonne, Hütte, Zaun">
+<svg viewBox="0 0 1000 540" aria-hidden="true" focusable="false">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#8eb8d0"/><stop offset="1" stop-color="#cfe6c8"/>
@@ -895,7 +933,7 @@ const SVG_MAX = `
    3. ZUSTAND
    ============================================================ */
 const S = {
-  englisch:true, audio:false, motion:true, kontrast:false, size:0, spots:false,
+  englisch:true, audio:false, motion:true, kontrast:false, size:0, spots:true,
   modus:"einzeln", folgeIdx:0, rundeIdx:0,
   phase:"hide", // hide | wo | done
   gefunden:false, hidePunkte:0, woPunkte:0, befehlPunkte:0,
@@ -925,7 +963,13 @@ function zeigeScreen(id){
   window.scrollTo({top:0, behavior:S.motion?"smooth":"auto"});
 }
 function glossUpdate(){
-  document.querySelectorAll(".gloss").forEach(el=>{ el.hidden = !S.englisch; });
+  document.querySelectorAll(".gloss").forEach(el=>{
+    el.hidden = !S.englisch;
+    if(el.getAttribute("lang") !== "en") el.setAttribute("lang","en");
+  });
+  const en = $("befehl-en");
+  if(en && S.englisch && en.textContent.trim()) $("befehl-text").setAttribute("aria-describedby","befehl-en");
+  else $("befehl-text").removeAttribute("aria-describedby");
 }
 function setToggle(btn,on){ btn.setAttribute("aria-pressed", on?"true":"false"); }
 
@@ -956,14 +1000,22 @@ $("s-contrast").addEventListener("click", ()=>{
 $("s-size").addEventListener("click", ()=>{
   S.size = (S.size+1)%3;
   const namen=["normal","gross","sehr-gross"], labels=["A","A+","A++"];
+  const woerter=["normal","groß","sehr groß"];
   document.documentElement.setAttribute("data-size", namen[S.size]);
-  $("s-size").textContent = "Schrift: "+labels[S.size];
-  sagen("Schriftgröße: "+["normal","groß","sehr groß"][S.size]+".");
+  const vis = $("s-size").querySelector("[data-size-label]");
+  if(vis) vis.textContent = "Schrift: "+labels[S.size];
+  $("s-size").setAttribute("aria-label", "Schriftgröße: "+woerter[S.size]);
+  sagen("Schriftgröße: "+woerter[S.size]+".");
 });
 if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
   S.motion = false; setToggle($("s-motion"), false);
   document.documentElement.setAttribute("data-motion","aus");
 }
+if(window.matchMedia && window.matchMedia("(prefers-contrast: more)").matches){
+  S.kontrast = true; setToggle($("s-contrast"), true);
+  document.documentElement.setAttribute("data-contrast","hoch");
+}
+document.documentElement.setAttribute("data-spots", S.spots ? "an" : "aus");
 
 /* ============================================================
    4. FOLGENLISTE
@@ -973,10 +1025,12 @@ function baueFolgenliste(){
   FOLGEN.forEach((f,i)=>{
     const e = S.ergebnisse[f.nr];
     const b = document.createElement("button");
-    b.type="button"; b.className="karte";
-    b.innerHTML = '<p class="nr">Folge '+f.nr+'</p><h3>'+esc(f.titel)+'</h3>'+
-      '<p class="meta">'+esc(f.thema)+'</p>'+
-      (e ? '<p class="score">'+e.punkte+' / '+e.max+' Punkte</p>' : '<p class="score">Noch nicht gespielt</p>');
+    b.type="button"; b.className="karte"; b.lang="de";
+    b.innerHTML = '<p class="nr" lang="de">Folge '+f.nr+'</p><h3 lang="de" translate="no">'+esc(f.titel)+'</h3>'+
+      '<p class="meta" lang="de">'+esc(f.thema)+'</p>'+
+      '<p class="en gloss" lang="en">'+esc(f.introEn)+'</p>'+
+      (e ? '<p class="score" lang="de">'+e.punkte+' / '+e.max+' Punkte</p>' :
+        '<p class="score" lang="de">Noch nicht gespielt <span class="en gloss" lang="en">Not played yet</span></p>');
     b.addEventListener("click", ()=>{ S.modus="einzeln"; starteFolge(i); });
     box.appendChild(b);
   });
@@ -999,7 +1053,9 @@ function starteRunde(){
 
   $("folge-label").textContent = "Folge "+f.nr+" · "+f.titel;
   $("h-play").textContent = f.titel;
-  $("szene-intro").innerHTML = S.rundeIdx===0 ? (esc(f.intro)+(S.englisch?' <span class="en gloss">'+esc(f.introEn)+'</span>':'')) : "";
+  $("szene-intro").innerHTML = S.rundeIdx===0
+    ? '<span lang="de">'+esc(f.intro)+'</span> <span class="en gloss" lang="en">'+esc(f.introEn)+'</span>'
+    : "";
   $("runde-label").textContent = "Runde "+(S.rundeIdx+1)+" von "+f.runden.length;
   $("pips").innerHTML = f.runden.map((_,i)=>'<span class="pip'+(i===S.rundeIdx?' now':'')+(i<S.rundeIdx?' ok':'')+'"></span>').join("");
 
@@ -1017,7 +1073,8 @@ function starteRunde(){
     $("befehl-wahl").hidden = false;
     r.optionen.forEach(o=>{
       const b = document.createElement("button");
-      b.type="button"; b.textContent = o.t;
+      b.type="button"; b.lang="de"; b.setAttribute("translate","no");
+      b.textContent = o.t;
       b.addEventListener("click", ()=>waehleBefehl(o,b,r));
       $("befehl-wahl").appendChild(b);
     });
@@ -1103,19 +1160,26 @@ function baueSzene(name){
     const hs = document.createElement("button");
     hs.type="button"; hs.className="hotspot"; hs.dataset.id=id;
     hs.setAttribute("style", s.style);
-    hs.setAttribute("aria-label", s.wo+" ("+s.label+")");
-    hs.innerHTML = '<span class="tag">'+esc(s.wo)+'</span>';
+    hs.lang = "de";
+    hs.setAttribute("translate","no");
+    hs.innerHTML = '<span class="tag" lang="de" translate="no">'+esc(s.wo)+'</span>'+
+      '<span class="sr-only gloss" lang="en">'+esc(s.en)+'</span>';
     hs.addEventListener("click", ()=>verstecke(id));
     box.appendChild(hs);
 
     const chip = document.createElement("button");
     chip.type="button"; chip.className="ort-btn"; chip.dataset.id=id;
-    chip.innerHTML = '<span aria-hidden="true">'+(i+1)+' · </span>'+esc(s.wo);
-    chip.setAttribute("aria-label", s.wo + (S.englisch? ", "+s.en : ""));
+    chip.lang = "de";
+    chip.setAttribute("translate","no");
+    chip.innerHTML = '<span aria-hidden="true">'+(i+1)+' · </span>'+
+      '<span lang="de" translate="no">'+esc(s.wo)+'</span>'+
+      ' <span class="en gloss" lang="en">'+esc(s.en)+'</span>';
     chip.addEventListener("click", ()=>verstecke(id));
     leiste.appendChild(chip);
   });
   $("max").innerHTML = SVG_MAX;
+  $("szene-box").setAttribute("aria-label", name==="garten" ? "Garten: Orte zum Verstecken" : "Wohnzimmer: Orte zum Verstecken");
+  glossUpdate();
 }
 
 function setOrteAktiv(an){
@@ -1139,25 +1203,25 @@ function verstecke(id){
     sicher = true;
     S.hidePunkte = 10;
     titel = "Max geht vorbei.";
-    grund = "Du bist <strong>"+esc(spot.wo)+"</strong>. Das Versteck ist gut – und du hast Mias Befehl befolgt.";
+    grund = "Du bist <strong lang=\"de\" translate=\"no\">"+esc(spot.wo)+"</strong>. Das Versteck ist gut – und du hast Mias Befehl befolgt.";
     art = "ok";
   }else if(r.warnung && id===r.warnung){
     sicher = false;
     S.hidePunkte = 0;
     titel = "Gefunden!";
-    grund = "Mia hat gesagt: <em>nicht</em> "+esc(spot.wohin)+". <strong>"+esc(spot.wo)+"</strong> ist kein gutes Versteck – man sieht dich.";
+    grund = "Mia hat gesagt: <em lang=\"de\" translate=\"no\">nicht</em> <span lang=\"de\" translate=\"no\">"+esc(spot.wohin)+"</span>. <strong lang=\"de\" translate=\"no\">"+esc(spot.wo)+"</strong> ist kein gutes Versteck – man sieht dich.";
     art = "bad";
   }else if(!spot.gut){
     sicher = false;
     S.hidePunkte = 0;
     titel = "Gefunden!";
-    grund = "Du bist <strong>"+esc(spot.wo)+"</strong>. Das ist zu offen. Mia wollte: <strong>"+esc(ziel.wohin)+"</strong>.";
+    grund = "Du bist <strong lang=\"de\" translate=\"no\">"+esc(spot.wo)+"</strong>. Das ist zu offen. Mia wollte: <strong lang=\"de\" translate=\"no\">"+esc(ziel.wohin)+"</strong>.";
     art = "bad";
   }else{
     sicher = false;
     S.hidePunkte = 0;
     titel = "Gefunden!";
-    grund = "Gutes Versteck, aber der falsche Ort. Du bist <strong>"+esc(spot.wo)+"</strong>. Der Befehl war: <strong>"+esc(ziel.wohin)+"</strong> / <strong>"+esc(ziel.wo)+"</strong>.";
+    grund = "Gutes Versteck, aber der falsche Ort. Du bist <strong lang=\"de\" translate=\"no\">"+esc(spot.wo)+"</strong>. Der Befehl war: <strong lang=\"de\" translate=\"no\">"+esc(ziel.wohin)+"</strong> / <strong lang=\"de\" translate=\"no\">"+esc(ziel.wo)+"</strong>.";
     art = "bad";
   }
   S.gefunden = !sicher;
@@ -1182,12 +1246,12 @@ function zeigeHideFeedback(titel, grund, art, r, spot, ziel){
   const fb = $("feedback");
   fb.hidden = false; fb.className = "feedback "+art; fb.tabIndex = -1;
   const extra = S.gefunden
-    ? "<p>Merke: Folge dem Befehl genau. Gute Orte helfen nur, wenn sie auch der richtige Ort sind.</p>"
-    : "<p>Max hat dich nicht gesehen. Bleib still – und prüfe jetzt, <em>wo</em> du bist.</p>";
-  fb.innerHTML = "<h3>"+titel+"</h3><p>"+grund+"</p>"+
-    (S.englisch ? '<p class="en gloss" lang="en">'+(S.gefunden
+    ? "<p lang=\"de\">Merke: Folge dem Befehl genau. Gute Orte helfen nur, wenn sie auch der richtige Ort sind.</p>"
+    : "<p lang=\"de\">Max hat dich nicht gesehen. Bleib still – und prüfe jetzt, <em lang=\"de\" translate=\"no\">wo</em> du bist.</p>";
+  fb.innerHTML = "<h3 lang=\"de\">"+titel+"</h3><p lang=\"de\">"+grund+"</p>"+
+    '<p class="en gloss" lang="en">'+(S.gefunden
       ? "You were found. Follow the exact command; a good hide still fails if it is the wrong place."
-      : "You were not found. Now check the dative phrase for where you are.")+"</p>" : "")+
+      : "You were not found. Now check the dative phrase for where you are.")+"</p>"+
     extra;
   glossUpdate();
   fb.focus();
@@ -1198,9 +1262,11 @@ function zeigeHideFeedback(titel, grund, art, r, spot, ziel){
 function zeigeWo(r){
   $("wo-box").hidden = false;
   if(S.gefunden){
+    $("wo-eyebrow").textContent = "Wo sollst du sein?";
     $("wo-frage").textContent = "Wo sollst du sein?";
     $("wo-en").textContent = "Where should you be? (Mia’s hiding place, not the spot where you were found.)";
   }else{
+    $("wo-eyebrow").textContent = "Wo bist du?";
     $("wo-frage").textContent = r.woFrage;
     $("wo-en").textContent = r.woEn || "";
   }
@@ -1208,7 +1274,8 @@ function zeigeWo(r){
   const box = $("wo-opts"); box.innerHTML = "";
   r.woOptionen.forEach(o=>{
     const b = document.createElement("button");
-    b.type="button"; b.textContent = o.t;
+    b.type="button"; b.lang="de"; b.setAttribute("translate","no");
+    b.textContent = o.t;
     b.addEventListener("click", ()=>pruefeWo(o,b,r));
     box.appendChild(b);
   });
@@ -1222,12 +1289,12 @@ function pruefeWo(o, btn, r){
   if(o.ok){
     btn.classList.add("richtig");
     S.woPunkte = 5;
-    $("wo-fb").innerHTML = "<strong>Richtig.</strong> Wo? nimmt den Dativ.";
+    $("wo-fb").innerHTML = "<strong lang=\"de\">Richtig.</strong> <span lang=\"de\" translate=\"no\">Wo?</span> nimmt den Dativ. <span class=\"en gloss\" lang=\"en\">“Where?” takes the dative.</span>";
   }else{
     btn.classList.add("falsch");
     S.woPunkte = 0;
     const richtig = r.woOptionen.find(x=>x.ok);
-    $("wo-fb").innerHTML = "<strong>Nicht ganz.</strong> "+esc(o.warum||"")+" Richtig: <em>"+esc(richtig.t)+"</em>.";
+    $("wo-fb").innerHTML = "<strong lang=\"de\">Nicht ganz.</strong> <span lang=\"de\">"+esc(o.warum||"")+"</span> Richtig: <em lang=\"de\" translate=\"no\">"+esc(richtig.t)+"</em>. <span class=\"en gloss\" lang=\"en\">Not quite.</span>";
   }
   const rundenPkt = S.hidePunkte + S.woPunkte + S.befehlPunkte;
   S.folgePunkte += rundenPkt;
@@ -1297,9 +1364,11 @@ function baueCode(name){
 function codeAktualisieren(){
   const name = $("name-in").value;
   const el = $("code-val");
-  if(!name.trim()){ el.textContent = "Bitte gib zuerst deinen Namen ein."; return; }
+  if(!name.trim()){ el.lang = "de"; el.textContent = "Bitte gib zuerst deinen Namen ein."; return; }
   const c = baueCode(name);
-  el.textContent = c ? c.code : "Spiele zuerst eine Folge.";
+  if(!c){ el.lang = "de"; el.textContent = "Spiele zuerst eine Folge."; return; }
+  el.lang = "en";
+  el.textContent = c.code;
 }
 function zeigeErgebnis(){
   const eintraege = Object.keys(S.ergebnisse).map(Number).sort((a,b)=>a-b);
@@ -1330,15 +1399,16 @@ function zeigeErgebnis(){
 $("name-in").addEventListener("input", codeAktualisieren);
 $("btn-copy").addEventListener("click", async ()=>{
   const t = $("code-val").textContent;
+  const lab = $("btn-copy-label");
   if(!/^VS-\d+-\d+-\d+-[0-9A-F]{8}$/.test(t)){ sagen("Es gibt noch keinen Code."); return; }
   try{
     await navigator.clipboard.writeText(t);
-    $("btn-copy").textContent = "Code kopiert";
-    setTimeout(()=>{ $("btn-copy").textContent = "Code kopieren"; }, 2200);
+    if(lab) lab.textContent = "Code kopiert";
+    setTimeout(()=>{ if(lab) lab.textContent = "Code kopieren"; }, 2200);
   }catch(e){
     const rg = document.createRange(); rg.selectNodeContents($("code-val"));
     const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rg);
-    $("btn-copy").textContent = "Markiert – bitte mit Strg+C kopieren";
+    if(lab) lab.textContent = "Markiert – bitte mit Strg+C kopieren";
   }
 });
 $("btn-verify").addEventListener("click", ()=>{

@@ -264,7 +264,8 @@
     camX: 0, camY: 0,
     t: 0,
     mute: false,
-    footnote: null
+    footnote: null,
+    creditT: 0
   };
 
   function hero() {
@@ -383,7 +384,7 @@ TTTTTTTTTTTTTTTTTTTTTTTT=======T
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ^^TTTT................................^^
 ^^T..T.........=======================^^
-^^TTTT...~~~~..=.....................=^^
+^^TT.T...~~~~..=.....................=^^
 ^^.......~~~~..=..............^^^^^..=^^
 ^^,,...........=..............^   ^..=^^
 ^^,,,..........=======================^^
@@ -623,8 +624,8 @@ AAAAAAAAAAAAAAAAAAAA
       { x: 3, y: 6, to: "hill", tx: 10, ty: 7, need: "b2prop" },
       { x: 4, y: 2, to: "hornfang", tx: 7, ty: 6, need: "b2grossina" },
       { x: 13, y: 4, to: "lake", tx: 3, ty: 5, need: "b2lg" },
-      { x: 18, y: 16, to: "swamp", tx: 8, ty: 6, need: "b2prawn" },
-      { x: 28, y: 7, to: "circus", tx: 10, ty: 5, need: "b2dead" }
+      { x: 15, y: 16, to: "swamp", tx: 8, ty: 6, need: "b2prawn" },
+      { x: 29, y: 5, to: "circus", tx: 10, ty: 5, need: "b2dead" }
     ],
     tower: [{ x: 12, y: 8, to: "world", tx: 28, ty: 6 }],
     forest: [
@@ -638,7 +639,7 @@ AAAAAAAAAAAAAAAAAAAA
     lair: [{ x: 10, y: 6, to: "world", tx: 24, ty: 16 }],
     rally: [{ x: 2, y: 8, to: "world", tx: 24, ty: 8 }, { x: 1, y: 8, to: "world", tx: 24, ty: 8 }],
     hill: [{ x: 8, y: 8, to: "world", tx: 4, ty: 7 }, { x: 9, y: 8, to: "world", tx: 4, ty: 7 }],
-    hornfang: [{ x: 7, y: 7, to: "world", tx: 5, ty: 3 }, { x: 8, y: 7, to: "world", tx: 5, ty: 3 }],
+    hornfang: [{ x: 7, y: 7, to: "world", tx: 4, ty: 4 }, { x: 8, y: 7, to: "world", tx: 4, ty: 4 }],
     lake: [{ x: 1, y: 4, to: "world", tx: 12, ty: 5 }, { x: 2, y: 4, to: "world", tx: 12, ty: 5 }],
     swamp: [{ x: 17, y: 7, to: "world", tx: 17, ty: 15 }, { x: 18, y: 7, to: "world", tx: 17, ty: 15 }],
     circus: [
@@ -673,7 +674,7 @@ AAAAAAAAAAAAAAAAAAAA
     if (G.map === "world") {
       if (!isB2() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
       list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB2()
-        ? "West beans: cilantro hill. NW grove: Hornfang. North puddles: Lake Ekal. South muck: swamp. Foot of the mountain: Circus Absurdus."
+        ? "West beans: cilantro hill. NW grove: Hornfang. North puddles: Lake Ekal. South muck: swamp. Mountain foot (west of the gap): Circus Absurdus."
         : "NE mountain gap: Jackdaw. Stand in the trees south of the highway: elves. East caves: goblins. SE stone ring: dwarves. Far south hole: ELM. Golden P: rally (later)." }])));
     }
     if (G.map === "tower") {
@@ -719,7 +720,7 @@ AAAAAAAAAAAAAAAAAAAA
     }
     if (G.map === "pub") {
       list.push(npc(8, 3, "hob", "Barkeep", talkBarkeep));
-      if (!f.b2spoon) list.push(npc(4, 2, "spoon", "Ex-caliper", talkSpoon));
+      if (!f.b2fire) list.push(npc(4, 2, "spoon", "Ex-caliper", talkSpoon));
     }
     if (G.map === "crater") {
       if (!f.b2ogeron) list.push(npc(6, 3, "bean", "The One Bean", talkOneBean));
@@ -1138,6 +1139,7 @@ AAAAAAAAAAAAAAAAAAAA
       ], () => {
         G.flags.credits = true;
         G.mode = "credits";
+        G.creditT = 0;
         $("hud").classList.remove("show");
         $("dialog").classList.remove("show");
         save();
@@ -1344,31 +1346,25 @@ AAAAAAAAAAAAAAAAAAAA
   }
 
   function talkSpoon() {
-    if (G.flags.b2fire) return;
-    if (G.flags.b2spoon) {
-      say([
-        { who: "Ex-caliper", text: "Cast it into the fire." },
-        { who: "ELM", text: "I heard ‘cast.’ I am throwing it." }
-      ], () => {
-        G.flags.b2fire = true;
-        G.flags.b2bean = true;
-        give("onebean");
-        G.quest = "Jackdaw’s tower. The One Bean wants water. It wants a BEST spell. Alphabetical, unfortunately.";
-        save();
-        say([
-          { who: "Ex-caliper", text: "Red letters. Goblin. ELM can read them because of course he can." },
-          { who: "ELM", text: "It says you are Beanbearer. The One Bean is yours. Try not to become a tyrant. I already filled that vacancy." },
-          { who: "The One Bean", text: "Hello. I have ambitions. They are larger than my diameter." }
-        ]);
-      });
+    if (G.flags.b2fire) {
+      say([{ who: "The One Bean", text: "I am still here. Jackdaw’s tower. Bring a wizard who enjoys acronyms." }]);
       return;
     }
     say([
       { who: "Bellissimo", text: "A spoon in a stone. I need something for the chilly." },
       { who: "Chorus", text: "Light! Kneeling! Culinary destiny!" },
-      { who: "Barkeep", text: "It was a caliper of caliber. Now it is an ex-caliper. You are Queen of Cooks until further notice." , note: "Goblins take tableware extremely seriously. So should you." }
+      { who: "Barkeep", text: "It was a caliper of caliber. Now it is an ex-caliper. You are Queen of Cooks until further notice." , note: "Goblins take tableware extremely seriously. So should you." },
+      { who: "Ex-caliper", text: "Cast it into the fire." },
+      { who: "ELM", text: "I heard ‘cast.’ I am throwing it." },
+      { who: "Ex-caliper", text: "Red letters. Goblin. ELM can read them because of course he can." },
+      { who: "ELM", text: "It says you are Beanbearer. The One Bean is yours. Try not to become a tyrant. I already filled that vacancy." },
+      { who: "The One Bean", text: "Hello. I have ambitions. They are larger than my diameter." }
     ], () => {
       G.flags.b2spoon = true;
+      G.flags.b2fire = true;
+      G.flags.b2bean = true;
+      give("onebean");
+      G.quest = "Jackdaw’s tower. The One Bean wants water. It wants a BEST spell. Alphabetical, unfortunately.";
       save();
     });
   }
@@ -1493,6 +1489,7 @@ AAAAAAAAAAAAAAAAAAAA
         { who: "Jackdaw", text: "Tomorrow: wells. Try not to fall in until I finish this footnote." }
       ], () => {
         G.mode = "credits";
+        G.creditT = 0;
         $("hud").classList.remove("show");
         $("dialog").classList.remove("show");
         save();
@@ -2223,7 +2220,7 @@ AAAAAAAAAAAAAAAAAAAA
       "",
       "Press Enter"
     ]);
-    const start = 18 - Math.max(0, ((t / 8) | 0) - 20);
+    const start = 18 - Math.max(0, ((G.creditT / 8) | 0) - 20);
     lines.forEach((s, i) => {
       const y = start + i * 11;
       if (y < 8 || y > 216) return;
@@ -2463,7 +2460,7 @@ AAAAAAAAAAAAAAAAAAAA
       if (dx || dy) tryMove(dx, dy);
     }
     if (G.mode === "title") drawTitle(G.t);
-    else if (G.mode === "credits") drawCredits(G.t);
+    else if (G.mode === "credits") { G.creditT++; drawCredits(G.creditT); }
     else if (G.mode === "battle") { drawBattleBack(); }
     else drawMap();
     music();

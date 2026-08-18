@@ -125,6 +125,7 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
     <p style="margin-top:8px">You are Xandir, a Watcher sentenced to serve as Destroying Angel until the End of Time. Walk the maps, speak with every soul, and fight when darkness bars the way.</p>
     <p style="margin-top:8px">Ambrosia restores the body. Serche water restores the spirit. Manna is the coin of both Heaven and Nod.</p>
     <p style="margin-top:8px">The tale follows the trilogy: Pompeii and the Fortuna house; Jarom and Clara against Beelzebub; Olympus, Cain, and the All-Seeing Eye.</p>
+    <p style="margin-top:8px">Isda the Whisperer waits in the Cherub Fortress. Speak to her more than once to take the side roads the books remember: Nod, the Forgotten Tower, the Vault of Avarice, London, Blacker Forest, and Nineveh.</p>
     <button class="back" id="btnHowBack">Back</button>
   </div>
   <div id="end" class="screen hidden">
@@ -192,9 +193,13 @@ const SKILLS={
 const ITEMS={
   cake:{name:"Ambrosia Cake",heal:60,price:20,desc:"Restores 60 HP."},
   feast:{name:"Ambrosia Feast",healAll:true,heal:80,price:90,desc:"Restores 80 HP to all."},
-  water:{name:"Serche Water",mp:40,price:25,desc:"Restores 40 MP."},
-  diamond:{name:"Death Diamond",dmg:90,price:120,desc:"Cuts a foe for 90."},
-  wish:{name:"Wishbone",rnd:true,price:15,desc:"Judy would rather you not ask."}
+  water:{name:"Serche Water",mp:40,price:25,desc:"Restores 40 MP. Named for a city that sank toward the Jaws."},
+  diamond:{name:"Death Diamond",dmg:90,price:120,desc:"Cuts a foe for 90. The Den of Thieves still trades in these."},
+  wish:{name:"Wishbone",rnd:true,price:15,desc:"Judy would rather you not ask."},
+  harp:{name:"Jubal's Strain",mpAll:35,price:0,desc:"Let the music take you away. Restores 35 MP to all."},
+  flask:{name:"Antidote Flask",heal:45,mp:15,price:40,desc:"Jertel arranged it. Restores 45 HP and 15 MP."},
+  fruit:{name:"Death Fruit",dmg:140,price:0,desc:"Green, rotting, almost finished. The counterfeit tree's work."},
+  link:{name:"Chain Link",price:0,desc:"One of eleven. Forged to hold the Prince when Heaven cast him down."}
 };
 
 const HERODEF={
@@ -234,7 +239,15 @@ const ENEMIES={
   ridnax:{name:"Ridnax",hp:170,atk:23,def:11,spd:13,exp:180,manna:110,el:"dark",pal:"#602848",boss:1},
   cain:{name:"Cain · Master Mahan",hp:200,atk:24,def:14,spd:10,exp:220,manna:140,el:"dark",pal:"#403028",boss:1},
   lucifer:{name:"Son of the Morning",hp:260,atk:26,def:14,spd:14,exp:400,manna:0,el:"holy",pal:"#f0e8c0",boss:1},
-  vesuvius:{name:"Cataclysm",hp:52,atk:12,def:5,spd:8,exp:60,manna:40,el:"fire",pal:"#c04020",boss:1}
+  vesuvius:{name:"Cataclysm",hp:52,atk:12,def:5,spd:8,exp:60,manna:40,el:"fire",pal:"#c04020",boss:1},
+  ganosh:{name:"Ganosh",hp:150,atk:21,def:12,spd:8,exp:130,manna:80,el:"phys",pal:"#3a6840",boss:1},
+  infernis:{name:"Infernis",hp:130,atk:19,def:9,spd:11,exp:120,manna:75,el:"fire",pal:"#a04828",boss:1},
+  beelzebub:{name:"Beelzebub",hp:155,atk:22,def:10,spd:13,exp:150,manna:95,el:"dark",pal:"#304820",boss:1},
+  azazel:{name:"Azazel",hp:180,atk:23,def:12,spd:12,exp:170,manna:100,el:"holy",pal:"#7060a0",boss:1},
+  tree:{name:"Tree of Death",hp:190,atk:20,def:16,spd:6,exp:180,manna:90,el:"dark",pal:"#203818",boss:1},
+  war:{name:"War",hp:50,atk:18,def:8,spd:10,exp:24,manna:16,el:"phys",pal:"#a03030"},
+  famine:{name:"Famine",hp:42,atk:14,def:5,spd:8,exp:20,manna:14,el:"dark",pal:"#706040"},
+  pest:{name:"Pestilence",hp:46,atk:16,def:6,spd:12,exp:22,manna:16,el:"dark",pal:"#387048"}
 };
 
 const MAPS={};
@@ -307,7 +320,7 @@ M("fortuna","Fortuna House",[],0,{floor:"#c8a878",wall:"#6a4030",dec:"#a05040",b
 #......@.........#
 #................#
 ##################
-`,{npcs:[{id:"eden",x:6,y:6,spr:"eden",name:"Eden"},{id:"judy",x:12,y:5,spr:"judy",name:"Judy"},{id:"daren",x:10,y:3,spr:"daren",name:"Daren"}],
+`,{npcs:[{id:"eden",x:6,y:6,spr:"eden",name:"Eden"},{id:"judy",x:12,y:5,spr:"judy",name:"Judy"},{id:"daren",x:10,y:3,spr:"daren",name:"Daren"},{id:"westover",x:3,y:7,spr:"human",name:"Michael Westover"},{id:"thief",x:14,y:7,spr:"human",name:"Den Runner"}],
   warps:[{x:8,y:9,to:"nyc",tx:3,ty:5}]});
 
 M("forest","The Giant Wood",["thorn","thorn","wretch"],0.07,{floor:"#2a4a28",wall:"#143018",dec:"#1a3820",bg:"#0c2010"},`
@@ -367,7 +380,7 @@ M("hell","A Cold Day in Hell",["flame","pool","ach"],0.07,{floor:"#4a2020",wall:
 #......................#
 #@.....................#
 ########################
-`,{npcs:[{id:"tobias",x:11,y:4,spr:"tobias",name:"Tobias"},{id:"johannes",x:18,y:7,spr:"old",name:"Johannes"},{id:"spark",x:6,y:11,spr:"boss",name:"Sparkslinger"},{id:"ashb",x:20,y:11,spr:"boss",name:"Ashbreather"}],
+`,{npcs:[{id:"tobias",x:11,y:4,spr:"tobias",name:"Tobias"},{id:"johannes",x:18,y:7,spr:"old",name:"Johannes"},{id:"ganosh",x:11,y:3,spr:"giant",name:"Ganosh"},{id:"spark",x:6,y:11,spr:"boss",name:"Sparkslinger"},{id:"ashb",x:20,y:11,spr:"boss",name:"Ashbreather"}],
   warps:[{x:1,y:13,to:"tunnels",tx:25,ty:1},{x:22,y:13,to:"fortress",tx:10,ty:11,need:"reborn"}]});
 
 M("fortress","The Cherub Fortress",[],0,{floor:"#d8d0b0",wall:"#a09060",dec:"#f0e080",bg:"#4868a0"},`
@@ -384,7 +397,7 @@ M("fortress","The Cherub Fortress",[],0,{floor:"#d8d0b0",wall:"#a09060",dec:"#f0
 #....H...@....H......#
 #....................#
 ######################
-`,{npcs:[{id:"clara",x:8,y:6,spr:"clara",name:"Clara"},{id:"shop",x:16,y:5,spr:"human",name:"Manna Keeper"},{id:"judy2",x:4,y:9,spr:"judy",name:"Judy"},{id:"rest",x:16,y:9,spr:"seraph",name:"Cherub Healer"}],
+`,{npcs:[{id:"clara",x:8,y:6,spr:"clara",name:"Clara"},{id:"shop",x:16,y:5,spr:"human",name:"Manna Keeper"},{id:"judy2",x:4,y:9,spr:"judy",name:"Judy"},{id:"rest",x:16,y:9,spr:"seraph",name:"Cherub Healer"},{id:"isda",x:12,y:7,spr:"judy",name:"Isda"}],
   warps:[{x:1,y:6,to:"rome",tx:2,ty:8,need:"claraJoined"},{x:20,y:6,to:"olympus",tx:20,ty:9,need:"jenningsDown"},{x:10,y:1,to:"cainhall",tx:9,ty:10,need:"armor3"}]});
 
 M("rome","Rome Away from Rome",["legion","horse","legion"],0.07,{floor:"#b09070",wall:"#704030",dec:"#c04020",bg:"#402010"},`
@@ -420,7 +433,7 @@ M("olympus","Olympus Mons, 2020",["oly","oly","horse"],0.06,{floor:"#88b868",wal
 #T,,,,,,,,,,,,,,,,,,,,,,T#
 #TTTT,,,,,,,,,,,,,,,,TTTT#
 ##########################
-`,{npcs:[{id:"ares",x:7,y:4,spr:"ares",name:"Ares"},{id:"zeus",x:19,y:4,spr:"seraph",name:"Zeus"},{id:"xandir2",x:12,y:8,spr:"xandir",name:"Xandir"},{id:"armor",x:6,y:10,spr:"chest",name:"Belt of Truth"},{id:"armor2",x:19,y:9,spr:"chest",name:"Breastplate"},{id:"armor3",x:12,y:11,spr:"chest",name:"Shield of Faith"}],
+`,{npcs:[{id:"ares",x:7,y:4,spr:"ares",name:"Ares"},{id:"zeus",x:19,y:4,spr:"seraph",name:"Zeus"},{id:"xandir2",x:12,y:8,spr:"xandir",name:"Xandir"},{id:"hermes",x:16,y:7,spr:"human",name:"Hermes"},{id:"armor",x:6,y:10,spr:"chest",name:"Belt of Truth"},{id:"armor2",x:19,y:9,spr:"chest",name:"Breastplate"},{id:"armor3",x:12,y:11,spr:"chest",name:"Shield of Faith"}],
   warps:[{x:2,y:8,to:"fortress",tx:19,ty:6}]});
 
 M("cainhall","Throne of Master Mahan",["marked","ach","snake"],0.07,{floor:"#2a2018",wall:"#181410",dec:"#603018",bg:"#0c0808"},`
@@ -461,8 +474,111 @@ M("tartarus","Tartarus / The Eye",["snake","eye","marked"],0.08,{floor:"#1a1830"
 #........................#.#
 #@.......................+.#
 ############################
-`,{npcs:[{id:"druiel",x:14,y:1,spr:"seraph",name:"Druiel"},{id:"lucifer",x:24,y:17,spr:"lucifer",name:"Lucifer"}],
+`,{npcs:[{id:"druiel",x:14,y:1,spr:"seraph",name:"Druiel"},{id:"lucifer",x:24,y:17,spr:"lucifer",name:"Lucifer"},{id:"esther",x:20,y:6,spr:"human",name:"Esther"},{id:"japeth",x:22,y:11,spr:"old",name:"Japeth"}],
   warps:[{x:1,y:18,to:"cainhall",tx:2,ty:8}]});
+
+M("nod","The Land of Nod",[],0,{floor:"#c8b890",wall:"#6a5038",dec:"#f0e080",bg:"#3a2a18"},`
+##################
+#TTTT............#
+#T...............#
+#....HHHH........#
+#....H..H...++...#
+#................#
+#=======.........#
+#................#
+#....CCCC........#
+#................#
+#......@.........#
+##################
+`,{npcs:[{id:"echo",x:6,y:4,spr:"jarom",name:"A Lullaby"},{id:"cola",x:12,y:4,spr:"chest",name:"Cola Cache"}],
+  warps:[{x:16,y:10,to:"fortress",tx:10,ty:11}]});
+
+M("tower","The Forgotten Tower",["ach","marked","ach"],0.06,{floor:"#3a3428",wall:"#1c1810",dec:"#8a4030",bg:"#100c08"},`
+####################
+#..................#
+#..####......####..#
+#..#++#......#..#..#
+#..#..#......#..#..#
+#..#.##......##.#..#
+#..................#
+#========..========#
+#..................#
+#....HHHHHHHH......#
+#....H......H......#
+#....H...@..H......#
+#..................#
+####################
+`,{npcs:[{id:"infernis",x:4,y:3,spr:"boss",name:"Infernis"},{id:"mark",x:15,y:3,spr:"chest",name:"Mark of Cain"}],
+  warps:[{x:1,y:7,to:"fortress",tx:10,ty:11}]});
+
+M("vault","Vault of Avarice",["suit","wretch","ach"],0.07,{floor:"#4a3a28",wall:"#2a2018",dec:"#c8a040",bg:"#140c08"},`
+####################
+#..................#
+#.####........####.#
+#.#..#........#++#.#
+#.#..##########..#.#
+#.#..............#.#
+#.####.########..#.#
+#......#......#..#.#
+#.####.#.####.#..#.#
+#.#....#.#..#.#..#.#
+#.#.####.#..#.####.#
+#@.................#
+####################
+`,{npcs:[{id:"prisoner",x:15,y:3,spr:"old",name:"Johannes"},{id:"avarice",x:8,y:1,spr:"chest",name:"Avarice Cache"}],
+  warps:[{x:18,y:11,to:"fortress",tx:10,ty:11}]});
+
+M("london","London Falling",["imp","horse","legion"],0.07,{floor:"#3a3a48",wall:"#2a2a38",dec:"#c04040",bg:"#12121c"},`
+##########################
+#BBBBBB##BBBB##BBBBBBBBBB#
+#B....B##B..B##B........B#
+#B....B##B..B##B........B#
+#BB==BB##B==B##BB======BB#
+#........................#
+#....^^^^..........TTTT..#
+#........................#
+#=======............=====#
+#BB==BB##BB==BB##BB======#
+#B....B##B....B##B......B#
+#............@...........#
+#BBBBBB##BBBBBB##BBBBBBBB#
+##########################
+`,{npcs:[{id:"queen",x:18,y:6,spr:"judy",name:"Queen of Light"},{id:"beelzebub",x:8,y:7,spr:"boss",name:"Beelzebub"}],
+  warps:[{x:1,y:11,to:"fortress",tx:10,ty:11}]});
+
+M("blacker","Blacker Forest",["thorn","wretch","snake"],0.07,{floor:"#1a2a18",wall:"#0c180c",dec:"#244028",bg:"#081008"},`
+########################
+#TTTTTTTTTTTTTTTTTTTTTT#
+#T....................T#
+#T.TT...TT....TT...TT.T#
+#T....................T#
+#TTTT....TTTT....TTTT.T#
+#T....................T#
+#T.....TTT......@.....T#
+#T....................T#
+#TTTT....====....TTTT.T#
+#T....................T#
+#T....CCCC............T#
+#TTTTTTTTTTTTTTTTTTTTTT#
+########################
+`,{npcs:[{id:"wilhelm",x:6,y:7,spr:"old",name:"Wilhelm"},{id:"jakob",x:10,y:7,spr:"old",name:"Jakob"},{id:"azazel",x:12,y:11,spr:"boss",name:"Azazel"}],
+  warps:[{x:2,y:8,to:"fortress",tx:10,ty:11}]});
+
+M("nineveh","Nineveh Sands",["snake","marked","flame"],0.07,{floor:"#c8b070",wall:"#8a7040",dec:"#203818",bg:"#c8a060"},`
+######################
+#....................#
+#....^^^^............#
+#....................#
+#=======.............#
+#....................#
+#..........CCCC......#
+#....................#
+#....................#
+#......@.............#
+#~~~~..........~~~~..#
+######################
+`,{npcs:[{id:"smargad",x:8,y:6,spr:"giant",name:"Smargad"},{id:"tree",x:15,y:7,spr:"boss",name:"Tree of Death"}],
+  warps:[{x:1,y:9,to:"fortress",tx:10,ty:11}]});
 
 const SOLID=new Set("#TBPHC^~+");
 
@@ -492,15 +608,19 @@ function blankFlags(){
     return {sentenced:false,pompeiiDone:false,metJarom:false,metEden:false,yeartiJoined:false,
     dusteaterDown:false,sparkDown:false,ashbDown:false,reborn:false,claraJoined:false,judyJoined:false,
     jenningsDown:false,horsemenDown:false,aresDown:false,armor:0,armor3:false,arm0:false,arm1:false,arm2:false,
-    cainDown:false,ridnaxDown:false,chain:false,luciferDown:false,xandirJoined:false};
+    cainDown:false,ridnaxDown:false,chain:false,luciferDown:false,xandirJoined:false,
+    ganoshDown:false,johannesFree:false,johannesHint:false,infernisDown:false,towerDone:false,vaultDone:false,
+    estherHelped:false,japethFree:false,wilhelmMet:false,wilhelmLink:false,azazelDown:false,queenMet:false,londonDone:false,
+    beelzebubDown:false,links:0,treeDown:false,nodVisited:false,isdaMet:false,westoverMet:false,thiefMet:false,
+    hermesMet:false,markSeen:false,colaTaken:false,avariceTaken:false};
 }
 
 function newState(act){
   const s={
     act:act||1, map:"heaven", x:9, y:9, facing:"up", moving:false, t:0, fromX:9, fromY:9, toX:9, toY:9,
-    manna:30, items:{cake:3,water:2,feast:0,diamond:0,wish:1},
+    manna:30, items:{cake:3,water:2,feast:0,diamond:0,wish:1,harp:0,flask:0,fruit:0,link:0},
     party:["xandir"], heroes:{xandir:heroInst("xandir",1)}, flags:blankFlags(),
-    chests:{}, steps:0
+    chests:{}, steps:0, lore:[]
   };
   if(act>=2){
     s.act=2; s.map="fortress"; s.x=10; s.y=11; s.party=["jarom","clara"];
@@ -508,7 +628,8 @@ function newState(act){
     s.flags.sentenced=s.flags.pompeiiDone=s.flags.metJarom=s.flags.metEden=true;
     s.flags.yeartiJoined=s.flags.dusteaterDown=s.flags.sparkDown=s.flags.ashbDown=s.flags.reborn=true;
     s.flags.claraJoined=true;
-    s.manna=180; s.items={cake:6,water:4,feast:1,diamond:1,wish:1};
+    s.manna=180; s.items={cake:6,water:4,feast:1,diamond:1,wish:1,harp:0,flask:1,fruit:0,link:0};
+    s.lore=[{t:"The Red Moon",b:"Xandir's immortality unraveled. Two gray lines marked a child's chest. Jertel kept Judy's promise."}];
   }
   if(act>=3){
     s.act=3; s.map="cainhall"; s.x=9; s.y=10;
@@ -519,6 +640,8 @@ function newState(act){
     s.flags.armor=3; s.flags.armor3=true; s.flags.xandirJoined=true;
     s.heroes.xandir.skills=["slash","drink","vesuvius","hurricane","seven"];
     s.manna=300;
+    s.flags.johannesHint=true;
+    s.lore.push({t:"Armor of God",b:"Belt, breastplate, shield. Cain's hall would receive them."});
   }
   return s;
 }
@@ -526,7 +649,26 @@ function newState(act){
 function lead(){return state.heroes[state.party[0]];}
 function map(){return MAPS[state.map];}
 function tile(x,y){const m=map(); if(y<0||x<0||y>=m.h||x>=m.w) return "#"; return m.tiles[y][x];}
-function npcAt(x,y){return (map().npcs||[]).find(n=>n.x===x&&n.y===y && !n.gone);}
+function npcAt(x,y){return (map().npcs||[]).find(n=>n.x===x&&n.y===y && !npcHidden(n));}
+function npcHidden(n){
+  if(!n||n.gone) return true;
+  const F=state.flags||{};
+  if(n.id==="dusteater"&&F.dusteaterDown) return true;
+  if(n.id==="spark"&&F.sparkDown && state.map!=="fortuna") return true;
+  if(n.id==="ashb"&&F.ashbDown) return true;
+  if(n.id==="jennings"&&F.jenningsDown) return true;
+  if(n.id==="horsemen"&&F.horsemenDown) return true;
+  if(n.id==="ridnax"&&F.ridnaxDown) return true;
+  if(n.id==="lucifer"&&F.luciferDown) return true;
+  if(n.id==="ganosh"&&F.ganoshDown) return true;
+  if(n.id==="infernis"&&F.infernisDown) return true;
+  if(n.id==="azazel"&&F.azazelDown) return true;
+  if(n.id==="beelzebub"&&F.beelzebubDown) return true;
+  if(n.id==="tree"&&F.treeDown) return true;
+  if(n.id==="japeth"&&F.japethFree) return true;
+  if(n.id==="prisoner"&&F.johannesFree) return true;
+  return false;
+}
 function blocked(x,y){
   const t=tile(x,y);
   if(SOLID.has(t) && t!=="+") return true;
@@ -539,6 +681,20 @@ function join(id,lv){
   if(!state.heroes[id]) state.heroes[id]=heroInst(id,lv||lead().lv);
   if(!state.party.includes(id) && state.party.length<4) state.party.push(id);
   return state.party.includes(id);
+}
+
+function addItem(id,n){ state.items[id]=(state.items[id]||0)+(n||1); }
+function hasItem(id){ return (state.items[id]||0)>0; }
+function addLore(title,body){
+  if(!state.lore) state.lore=[];
+  if(state.lore.some(l=>l.t===title)) return;
+  state.lore.push({t:title,b:body});
+  toast("Chronicle: "+title);
+}
+function giveLink(){
+  state.flags.links=(state.flags.links||0)+1;
+  addItem("link");
+  toast("Chain links: "+state.flags.links+"/3");
 }
 
 function toast(msg){els.toast.textContent=msg; els.toast.classList.add("show"); toastT=2.2;}
@@ -580,7 +736,7 @@ function startGame(act){
       {n:"The Columns",t:"Silence."},
       {n:"",t:"Twin shafts of light leave two slender swords. They fasten about Xandir's waist. He falls."},
       {n:"Xandir",t:"The End of Time. We shall see about that."}
-    ],()=>{state.flags.sentenced=true; warp("pompeii",18,7);});
+    ],()=>{state.flags.sentenced=true; addLore("The Sentence","Xandir abetted Azazel and the Watchers. Heaven named him Destroying Angel until the End of Time."); warp("pompeii",18,7);});
   } else {
     mode="explore";
     toast(act===2?"Act II — The Last Kingdom":"Act III — The Last Dawn");
@@ -679,6 +835,7 @@ function script(id){
         {n:"Xandir",t:"Forgive me."}
       ], ["vesuvius"], ()=>{
         F.pompeiiDone=true;
+        addLore("Pompeii","Their time was up. Xandir drove an ebony sword into the earth, and the mountain answered.");
         queueDialog([
           {n:"Xandir",t:"Even from the sky, he looks back once. Then 2012 takes him."},
           {n:"",t:"A rooftop. A city that does not yet know it is doomed."}
@@ -688,7 +845,7 @@ function script(id){
     case "citizen":
       return F.pompeiiDone?[{n:"Shade",t:"We were not ready."}]:[{n:"Pompeian",t:"The mountain has been restless. The bakers still open at dawn."}];
     case "jarom":
-      if(!F.metJarom){F.metJarom=true; join("jarom",lead().lv); return [
+      if(!F.metJarom){F.metJarom=true; join("jarom",lead().lv); addLore("Big Halo","Heaven filed the paperwork. A cherub named Jarom would babysit the Destroying Angel."); return [
         {n:"Jarom",t:"Confirmed, Big Halo—wait. You're not Clara. You're... taller than the last Destroying Angel I was told to babysit."},
         {n:"Xandir",t:"I don't need a cherub on my shoulder."},
         {n:"Jarom",t:"Too late. Heaven filed the paperwork. I'm Jarom. They call me Big Halo when they're trying to be cute."},
@@ -703,6 +860,7 @@ function script(id){
         {n:"Xandir",t:"There is a demon in your house, Mrs. Fortuna. I have met his kind before."},
         {n:"Eden",t:"If you're another of Judy's pranks, I'm not in the mood."}];
     case "judy":
+      if(F.westoverMet) return [{n:"Judy",t:"Westover saw the burns on Daren's hands. Jertel was already watching me then. I just didn't have the word for it."}];
       return [{n:"Judy",t:"I told her not to move back in. Midnight's gone and there's still no Daren. If you can do something, do it. I'll keep the coffee on."}];
     case "daren":
       if(!F.sparkDown) return fight(
@@ -720,11 +878,16 @@ function script(id){
         {n:"Yearti",t:"Sneak up? I wouldn't dream of it. Come. Tubal's roads remember the Watchers."},
         {n:"",t:"Yearti joined the party. The northern tunnels unseal."}
       ];}
-      return [{n:"Yearti",t:"Two peaks over from Eden, later. For now: the dark."}];
+      return [{n:"Yearti",t:"Two peaks over from Eden, in the Himalayas. They've got chocolate there. Dangerous things, five-year-olds with that much power—but that's Ridnax's lecture, not mine."}];
     case "jubal":
-      return [{n:"Jubal",t:"Good day, little cherub—and you, fallen arrow. I am Jubal. I must apologize for my brother. He is prone to outbursts by nature."},
-        {n:"Jarom",t:"I slept well. I don't remember the last time."},
-        {n:"Jubal",t:"Music does that. Dusteater waits where the stone tastes of graves. Master Mahan's servant has grown less subtle."}];
+      if(!hasItem("harp")){
+        return after([
+          {n:"Jubal",t:"Good day, little cherub—and you, fallen arrow. I am Jubal, son of the great Master Mahan. I must apologize for my brother. He is prone to outbursts by nature."},
+          {n:"Jarom",t:"I slept well. I don't remember the last time."},
+          {n:"Jubal",t:"Music does that. Let the music take you away. Dusteater waits where the stone tastes of graves."}
+        ], ()=>{ addItem("harp"); addLore("Jubal's Strain","Tubal's brother plays a harp that can wake a giant or put a cherub to sleep. Master Mahan's blood is complicated."); });
+      }
+      return [{n:"Jubal",t:"Keep the harp. If Tubal raises his ax, a chord is still faster than a lecture."}];
     case "tubal":
       return [{n:"Tubal",t:"These roads were cut when the world was younger. Keep your swords sheathed unless the dust itself stands up."}];
     case "dusteater":
@@ -738,7 +901,10 @@ function script(id){
         {n:"Xandir",t:"I didn't go to Elysian University."},
         {n:"Tobias",t:"Then drink slowly."}];
     case "johannes":
-      return [{n:"Johannes",t:"Yes. My name is Johannes. I have been waiting for you for some time. We should not talk here. But since you insist: Sparkslinger first. Ashbreather after. Then you will not be immortal anymore."}];
+      if(!F.johannesHint){ F.johannesHint=true; addLore("Johannes","An old man in Hell who has been waiting. The Vault of Avarice still holds him—or will."); }
+      return [{n:"Johannes",t:"Yes. My name is Johannes. I have been waiting for you for some time. We should not talk here."},
+        {n:"Johannes",t:"Sparkslinger first. Ashbreather after. Then you will not be immortal anymore."},
+        {n:"Johannes",t:"When you can walk as a mortal, find me in the Vault of Avarice. Ask Isda. Whisperers do not even have to whisper."}];
     case "spark":
       if(!F.sparkDown) return fight(
         [{n:"Sparkslinger",t:"Nothing much to report but that I was successful."}],
@@ -759,6 +925,8 @@ function script(id){
             {n:"Jarom",t:"Just Clara then. My little light."},
             {n:"",t:"Years thin like mist. The Cherub Fortress remembers its own."}
           ],()=>{
+            F.reborn=true;
+            addLore("The Red Moon","Immortality folded into an X on a child's chest. Jertel kept Judy's watch. Clara would be raised as Little Light.");
             state.act=2;
             if(!state.heroes.jarom) join("jarom",10);
             if(!state.heroes.clara) join("clara",10);
@@ -772,15 +940,17 @@ function script(id){
       );
       return [{n:"",t:"Ash, and a red moon somewhere above."}];
     case "clara":
-      if(!F.claraJoined){F.claraJoined=true; join("clara",lead().lv); return [
+      if(!F.claraJoined){F.claraJoined=true; join("clara",lead().lv); addLore("Little Light","Plan Jericho. Colas. A cherub who promised no one else could hear them."); return [
         {n:"Clara",t:"Confirmed, Big Halo. Beelzebub is not in this chariot. He must be flying toward you. I was thinking attack plan Jericho. You copy?"},
         {n:"Jarom",t:"Clara, I promise no one else can hear us. You don't have to use the ridiculous code speak. I never should have let you watch those mortal movies."},
         {n:"Clara",t:"Don't worry. We'll swat the Lord of the Flies and head back to the Fortress. I drank through all the colas."},
         {n:"",t:"Clara joined the party. Rome's gate opens west."}
       ];}
-      return [{n:"Clara",t:"An extinguisher doesn't fear the fire. Jennings first. Then Olympus. Then whatever Cain calls a throne."}];
+      return [{n:"Clara",t:"An extinguisher doesn't fear the fire. Jennings first. Then Olympus. Then whatever Cain calls a throne. I drank through all the colas."}];
     case "shop":
       return shopTalk();
+    case "isda":
+      return isdaTalk();
     case "judy2":
       if(!F.judyJoined){F.judyJoined=true; join("judy",lead().lv); return [
         {n:"Judy",t:"You remember when I told Eden I'd be her guardian angel? After I finished my last assignment, they agreed."},
@@ -788,7 +958,7 @@ function script(id){
         {n:"Judy",t:"A police officer, a hobo, and the creative application of a wishbone. Don't ask. I'm coming with you."},
         {n:"",t:"Judy joined the party."}
       ];}
-      return [{n:"Judy",t:"Jennings was elected president, and things are looking bleak. Try to keep Eden's boy in one piece."}];
+      return [{n:"Judy",t:"Jennings was elected president, and things are looking bleak. Jertel still looks after my best interests. Try to keep Eden's boy in one piece."}];
     case "jennings":
       if(!F.jenningsDown) return fight(
         [{n:"Jennings",t:"I didn't order any room service. Perhaps you couldn't read the do-not-disturb sign."},{n:"Clara",t:"President Jennings. Or should I say Puppet President Jennings?"},{n:"Jennings",t:"Leave, or suffer."}],
@@ -799,8 +969,8 @@ function script(id){
       return [{n:"Nero's Echo",t:"Fiddling is underrated. Bring marshmallows next time."}];
     case "horsemen":
       if(!F.horsemenDown) return fight(
-        [{n:"Pale Rider",t:"Weeping, wailing, gnashing of teeth. Four horses. One road."}],
-        ["horse","horse","legion"], ()=>{F.horsemenDown=true; queueDialog([{n:"",t:"The Horsemen scatter. Jennings no longer has their escort."}]);}
+        [{n:"War",t:"Weeping, wailing, gnashing of teeth."},{n:"Famine",t:"Four horses."},{n:"Pestilence",t:"One road."},{n:"Death",t:"I will wait. I always do."}],
+        ["war","famine","pest"], ()=>{F.horsemenDown=true; addLore("Four Horsemen","War, Famine, and Pestilence rode for Jennings. Death waited, as Death does."); queueDialog([{n:"Death",t:"Hoofprints are a kind of scripture. Jennings no longer has their escort."}]);}
       );
       return [{n:"",t:"Hoofprints, and nothing else."}];
     case "ares":
@@ -834,17 +1004,18 @@ function script(id){
     case "ridnax":
       if(!F.ridnaxDown) return fight(
         [{n:"Ridnax",t:"Dangerous things happen when you give a child that much power."}],
-        ["ridnax"], ()=>{F.ridnaxDown=true; queueDialog([{n:"The Prince",t:"I wouldn't shed a tear for Ridnax. He set the stage nicely. The first act, if you will."},{n:"Cain",t:"My only regret is that I left his brother alive."}]);}
+        ["ridnax"], ()=>{F.ridnaxDown=true; addLore("Ridnax","Dangerous things happen when you give a five-year-old that much power. Cain's only regret was leaving the brother alive."); queueDialog([{n:"The Prince",t:"I wouldn't shed a tear for Ridnax. He set the stage nicely. The first act, if you will."},{n:"Cain",t:"My only regret is that I left his brother alive."}]);}
       );
       return [{n:"",t:"The first act is over."}];
     case "prince":
       return [{n:"The Prince",t:"I am the Son of the Morning. Worship me."},{n:"Cain",t:"..."},{n:"The Prince",t:"You can let me in of your own accord, or I can kick down the door."}];
     case "druiel":
-      if(!F.chain){F.chain=true; state.items.diamond=(state.items.diamond||0)+1;
+        if(!F.chain){F.chain=true; state.items.diamond=(state.items.diamond||0)+1;
         const joined=join("yearti",lead().lv);
         state.heroes.xandir && (state.heroes.xandir.skills=["slash","drink","vesuvius","hurricane","seven"]);
+        addLore("Druiel's Chain","Forged to hold the Prince of Darkness as he was cast from the Heavens. Eleven links, if you count as Watchers count.");
         return [{n:"Druiel",t:"A chain? Is there an anchor to go with it?"},
-          {n:"Druiel",t:"This is no ordinary chain. It was forged to hold the Prince of Darkness as he was cast from the Heavens."},
+          {n:"Druiel",t:"This is no ordinary chain. It was forged to hold the Prince of Darkness as he was cast from the Heavens. Eleven links, if you count as Watchers count."},
           {n:"Xandir",t:"Then we take it to the Eye."},
           {n:"",t:joined?"The Binding Chain is yours. Sevenfold is remembered. Yearti finds you in the dark.":"The Binding Chain is yours. Sevenfold is remembered. Yearti is near, but four is a crowd."}];}
       return [{n:"Druiel",t:"Shut the Eye. Do not look too long into it."}];
@@ -857,12 +1028,172 @@ function script(id){
         );
       }
       return [{n:"",t:"The Eye is shut."}];
+    case "westover":
+      if(!F.westoverMet){
+        F.westoverMet=true;
+        addItem("flask");
+        addLore("Westover","Michael Westover locked the blinds and named the burns on Daren's arms. Judy already knew a snake when she saw one.");
+        return [
+          {n:"Westover",t:"The nameplate still says Michael Westover. Daren would leave the room to take his calls. He never told me he spoke another language."},
+          {n:"Westover",t:"Surely you noticed the burn marks? Hands, arms, even the lab coat singed."},
+          {n:"Judy",t:"Jertel was already watching. This flask is his arrangement, not mine."},
+          {n:"",t:"Received an Antidote Flask."}
+        ];
+      }
+      return [{n:"Westover",t:"Most of the stuff downstairs would be fatal if he'd been infected. I'm as much in the dark as you are."}];
+    case "thief":
+      if(!F.thiefMet){
+        F.thiefMet=true;
+        addLore("Den of Thieves","Hell sorts its suburbs by crime. After the Lower Court comes the Den, then the Bed of Iniquity, then the Dome of Death.");
+      }
+      if(hasItem("diamond") && !F.vaultDone){
+        return [{n:"Den Runner",t:"A Death Diamond. The Den still honors those. Johannes isn't in Hell's tea room forever—the Vault of Avarice sits above Serche's bowels. Ask the Whisperer."}];
+      }
+      return [{n:"Den Runner",t:"Buy a Death Diamond if you want the Den to talk. Petty criminals live in the Lower Court. We live further in."}];
+    case "ganosh":
+      if(!F.ganoshDown) return fight([
+        {n:"Xandir",t:"Well, well, well. Ganosh, I really did not think I'd ever see you again."},
+        {n:"Ganosh",t:"You'll be pleased to know I hold no ill will. One eye ruby, one obsidian—observant as ever."},
+        {n:"Ganosh",t:"It wasn't originally called Atlantis. The original name was Serche, and since I'm an old timer, I prefer to use it."},
+        {n:"Xandir",t:"For your information, I didn't exactly go to Elysian University."},
+        {n:"Ganosh",t:"In my book, Xandir, anger is a virtue. Follow me, and I will erase all of your doubts."}
+      ], ["ganosh"], ()=>{
+        F.ganoshDown=true; giveLink();
+        addLore("Serche","A city so corrupt it sank toward the Jaws of Hell—the opposite of Hennoch. Ganosh still prefers the old name to Atlantis.");
+        queueDialog([{n:"Ganosh",t:"The fruit will cause violent illness, but not its desired death. That attempt was lost."},{n:"",t:"A chain link remains in his green tunic."}]);
+      });
+      return [{n:"",t:"Auburn hair on the stone. The pool still sparkles like a lie."}];
+    case "hermes":
+      if(!F.hermesMet){
+        F.hermesMet=true;
+        addLore("Hermes","The messenger still trots Olympus. No winged sandals. He remembers Azazel, and a Watcher who became an Archangel of the same name.");
+        return [
+          {n:"Xandir",t:"I don't believe it. You're Hermes!"},
+          {n:"Judy",t:"If you're Hermes, where are those fancy sandals?"},
+          {n:"Hermes",t:"Perhaps not so well-informed as you imagined. Zeus, Hera, and I are only twelve self-styled gods. Have you heard of Azazel and his Watchers?"},
+          {n:"Hermes",t:"You mean the Archangel of the same name? The one who was cast out with Azazel? That would explain much."}
+        ];
+      }
+      return [{n:"Hermes",t:"Mars is a desolate rock. I laugh myself tired at anyone who calls this Olympus and means the other one."}];
+    case "echo":
+      F.nodVisited=true;
+      addLore("Nod","Clara grew too large for the cave. Jarom hummed a lullaby that was not quite heavenly.");
+      return [{n:"A Lullaby",t:"In Nod, Jarom hums a lullaby that is not quite heavenly. Clara is already too large for the cave."},
+        {n:"Clara",t:"Little Light reporting. Colas first. Destiny second."},
+        {n:"Jarom",t:"Clara, I promise no one else can hear us. You don't have to use the ridiculous code speak."}];
+    case "cola":
+      if(F.colaTaken) return [{n:"",t:"Sticky rings where the bottles were."}];
+      F.colaTaken=true; addItem("cake"); addItem("water");
+      return [{n:"",t:"Clara drank through all the colas. Two consolation cakes remain, and a flask of Serche water nobody should name out loud."}];
+    case "infernis":
+      if(!F.infernisDown) return fight([
+        {n:"Infernis",t:"Infernis. Though I am confused, oh giant, how you found this tower."},
+        {n:"Clara",t:"You were great once. Talk."},
+        {n:"Infernis",t:"Ridnax seeks to erase all memory of the Mark. We will enter Serche by taking the ferry through the Styx—I remember now how I tricked you last time."}
+      ], ["infernis"], ()=>{
+        F.infernisDown=true; F.towerDone=true; giveLink();
+        addLore("Infernis","A lesser demon who remembered the ferry. Ridnax wanted the Mark of Cain forgotten.");
+        queueDialog([{n:"Infernis",t:"The collar still burns. Take the link. Leave me the circle."}]);
+      });
+      return [{n:"",t:"A scorch mark in the shape of a cringe."}];
+    case "mark":
+      if(F.markSeen) return [{n:"",t:"The symbols of the Mark of Cain are already burned into memory."}];
+      F.markSeen=true; F.towerDone=true;
+      addLore("Mark of Cain","Once bestowed, the Mark opens doors the righteous were never meant to knock on.");
+      return [{n:"",t:"Symbols curl like green script. Now that you bear the Mark of Cain—or remember its shape—the Tower will not bar you again."}];
+    case "prisoner":
+      if(F.johannesFree) return [{n:"",t:"The cell is open. Johannes is no longer a guest of Avarice."}];
+      F.johannesFree=true; F.vaultDone=true; F.johannesHint=true;
+      addItem("feast"); addItem("diamond");
+      addLore("Vault of Avarice","They breached the Vault to free Johannes. Serche had already fallen; the old man had not.");
+      return [{n:"Johannes",t:"Serche has fallen, but I do not see—ah. You came the Whisperer's way."},
+        {n:"Johannes",t:"The king of Serche was obsessed with finding and using what should not be used. Take what Avarice can spare."},
+        {n:"",t:"Johannes walks free. An Ambrosia Feast and a Death Diamond change pockets."}];
+    case "avarice":
+      if(F.avariceTaken) return [{n:"",t:"The chest is a mouth that has already spoken."}];
+      F.avariceTaken=true; addItem("diamond"); state.manna+=80;
+      return [{n:"",t:"Coin and a Death Diamond, still cold from Serche."}];
+    case "queen":
+      F.queenMet=true; F.londonDone=true;
+      addLore("Queen of Light","London falling, and a queen who would not dim. She named Beelzebub without flinching.");
+      return [{n:"Queen of Light",t:"London is falling, and I will not dim for flies."},
+        {n:"Queen of Light",t:"Jennings was only a puppet. The Lord of the Flies kept a true shape for cities that still had palaces."},
+        {n:"Clara",t:"Then we swat him properly."}];
+    case "beelzebub":
+      if(!F.beelzebubDown) return fight(
+        [{n:"Beelzebub",t:"Confirmed, Big Halo? No. This chariot is mine."},{n:"Clara",t:"I was thinking attack plan Jericho."},{n:"Jarom",t:"You don't have to use the ridiculous code speak."}],
+        ["beelzebub"], ()=>{
+          F.beelzebubDown=true; F.londonDone=true; giveLink();
+          addLore("Lord of the Flies","Beelzebub's true form outlived the puppet president. Jericho, for once, was the right name.");
+          queueDialog([{n:"",t:"The flies scatter over the Thames. A chain link remains in the ash."}]);
+        }
+      );
+      return [{n:"",t:"A bright mark, and no president left to wear it."}];
+    case "wilhelm":
+      F.wilhelmMet=true;
+      if(F.azazelDown && !F.wilhelmLink){
+        F.wilhelmLink=true;
+        giveLink();
+        addLore("The Grimm Watchers","Wilhelm and Jakob met a lost mother in the woods. She named her sons after them. The boys shared the stories with the world.");
+        return [{n:"Wilhelm",t:"This Chain once held the Prince of Darkness. Take a link. We have our own gold."},
+          {n:"Wilhelm",t:"No one has much time for stories anymore. That's a shame. They really are a treasure."}];
+      }
+      return [{n:"Wilhelm",t:"I am Jakob's brother. Yes, those Grimm names. We met their pregnant mother in the woods and saved her when she was lost."},
+        {n:"Wilhelm",t:"How long has it been since you've seen Azazel? He keeps to the cave. Blue gem or crimson—the forest remembers both."}];
+    case "jakob":
+      F.wilhelmMet=true;
+      addLore("The Grimm Watchers","Wilhelm and Jakob met a lost mother in the woods. She named her sons after them. The boys shared the stories with the world.");
+      return [{n:"Jakob",t:"I am Jakob and this is Wilhelm. Both voices older than the faces. Like claws on dry bark."},
+        {n:"Jakob",t:"I hate to disappoint, but I've already got a chain. Yours once held the Prince. His still hunts Watchers."}];
+    case "azazel":
+      if(!F.azazelDown) return fight(
+        [{n:"Azazel",t:"You did knowingly abet me, Xandir. Heaven called it a sentence. I called it a beginning."},
+         {n:"The Columns",t:"Along with your fellow Watchers you revealed Heaven's secrets to humankind."},
+         {n:"Azazel",t:"And the Giants were born. You still carry the swords they gave you for that crime."}],
+        ["azazel"], ()=>{
+          F.azazelDown=true;
+          addLore("Azazel","The rogue angel Heaven named in Xandir's sentence still walked Blacker Forest, where Watchers tell stories that became Grimm.");
+          queueDialog([{n:"Azazel",t:"Tell Wilhelm the hunt is over. He never believed in endings."}]);
+        }
+      );
+      return [{n:"",t:"The cave smells of old stories."}];
+    case "smargad":
+      addLore("Smargad","Cain would provide fruit of the Tree of Death. Demons and possessed world leaders were invited to the tasting.");
+      return [{n:"Smargad",t:"I'm not sure, great one. All I know is this: Cain promised the fruit, and the leaders of the world would come possessed, or not at all."},
+        {n:"Clara",t:"The Tree still stands."},
+        {n:"Smargad",t:"It would be foolish to taste it. I can help you with that. I know I can."}];
+    case "tree":
+      if(!F.treeDown) return fight(
+        [{n:"",t:"Black bark. Leafless branches like an arthritic hand. A scant number of green, rotting fruits."},
+         {n:"Ganosh",t:"Everything has its opposite. Even this tree."}],
+        ["tree"], ()=>{
+          F.treeDown=true; addItem("fruit",2);
+          addLore("Tree of Death","A grotesque parody of Eden's tree. Its fruit was meant to strip immortality from angels. It was never quite finished.");
+          queueDialog([{n:"",t:"Two Death Fruits, still warm with almost-purpose."}]);
+        }
+      );
+      return [{n:"",t:"The counterfeit tree is timber."}];
+    case "esther":
+      F.estherHelped=true;
+      addLore("Esther","Japeth is held on the third floor below the main floor, in a cell marked forty-two. Esther lives in the fourth district, barracks 15.");
+      return [{n:"Esther",t:"His name is Japeth, and mine is Esther. Cell forty-two. I bribed a guard to learn that much."},
+        {n:"Clara",t:"We'll do our best, Esther. But we need to go if we don't want to be late for our shift."},
+        {n:"Esther",t:"Thank you. You are Heaven-sent. If you can, please let me know. Fourth district, barracks 15."}];
+    case "japeth":
+      if(!F.estherHelped) return [{n:"Japeth",t:"..."},{n:"",t:"A prisoner too afraid to speak. Someone on the main floor is still asking after him."}];
+      if(!F.japethFree){
+        F.japethFree=true; addItem("flask"); state.manna+=40;
+        return [{n:"Clara",t:"Is your name Japeth?"},
+          {n:"Japeth",t:"Esther sent you. Then I am not forgotten."},
+          {n:"",t:"Japeth walks as far as Tartarus allows. An Antidote Flask changes hands."}];
+      }
+      return [{n:"Japeth",t:"Tell Esther I heard her. That is enough for a man in cell forty-two."}];
   }
   return [{n:"",t:"..."}];
 }
 
 function shopTalk(){
-  const wares=[{id:"cake",price:20},{id:"water",price:25},{id:"feast",price:90},{id:"diamond",price:120}];
+  const wares=[{id:"cake",price:20},{id:"water",price:25},{id:"flask",price:40},{id:"feast",price:90},{id:"diamond",price:120}];
   const w=wares[(state._shop||0)%wares.length];
   state._shop=(state._shop||0)+1;
   if(state.manna>=w.price){
@@ -871,6 +1202,42 @@ function shopTalk(){
     return [{n:"Manna Keeper",t:"Manna only. No credit in Heaven or Nod."},{n:"Manna Keeper",t:"Sold "+ITEMS[w.id].name+" for "+w.price+". You have "+state.manna+" manna. Speak again for the next ware."}];
   }
   return [{n:"Manna Keeper",t:ITEMS[w.id].name+" costs "+w.price+". You have only "+state.manna+" manna."}];
+}
+
+function isdaDests(){
+  const f=state.flags, d=[];
+  d.push({name:"the Cherub Fortress",to:"fortress",tx:10,ty:11});
+  if(f.reborn) d.push({name:"the Land of Nod",to:"nod",tx:4,ty:10});
+  if(f.claraJoined) d.push({name:"the Forgotten Tower",to:"tower",tx:5,ty:12});
+  if(f.johannesHint||f.infernisDown||f.thiefMet) d.push({name:"the Vault of Avarice",to:"vault",tx:3,ty:10});
+  if(f.jenningsDown) d.push({name:"London, falling",to:"london",tx:5,ty:11});
+  if(f.xandirJoined||state.act>=3) d.push({name:"Blacker Forest",to:"blacker",tx:4,ty:8});
+  if(f.londonDone||f.queenMet||f.ganoshDown) d.push({name:"the sands of Nineveh",to:"nineveh",tx:6,ty:10});
+  return d;
+}
+
+function isdaTalk(){
+  const F=state.flags;
+  if(!F.isdaMet){
+    F.isdaMet=true;
+    addLore("The Whisperer","I'm Isda. And I am here because of you. Whisperers don't even have to whisper.");
+    return [
+      {n:"Isda",t:"I'm Isda. And I am here because of you."},
+      {n:"Xandir",t:"Wait a minute. What's your name? Why didn't I see you before?"},
+      {n:"Isda",t:"I do not usually get the big picture. I'm a Whisperer. Speak again, and I will open a road the Seraphs would rather stay shut."}
+    ];
+  }
+  const d=isdaDests();
+  const w=d[(state._way||0)%d.length];
+  state._way=(state._way||0)+1;
+  return after(
+    [{n:"Isda",t:"Then whisper me something. Do you think the End is really coming?"},
+     {n:"Isda",t:"Even that will pass. I know a road to "+w.name+"."}],
+    ()=>{
+      if(w.to===state.map) toast("You are already here.");
+      else warp(w.to,w.tx,w.ty);
+    }
+  );
 }
 
 function ending(){
@@ -925,6 +1292,12 @@ function startBattle(ids,onWin){
   state.party.forEach(id=>{const h=state.heroes[id]; if(h.hp<=0) h.hp=Math.max(1,Math.floor(h.maxHp*0.3)); h.alive=h.hp>0; h.defending=false;});
   const foes=ids.map(cloneEnemy).filter(Boolean);
   if(!foes.length){ toast("Nothing answers."); return; }
+  if(foes.some(e=>e.sid==="lucifer") && (state.flags.links||0)>=3){
+    toast("Druiel's chain tightens!");
+    foes.forEach(e=>{
+      if(e.sid==="lucifer"){ e.def=Math.max(4,e.def-8); e.maxHp=Math.max(80,e.maxHp-80); e.hp=e.maxHp; }
+    });
+  }
   battle={enemies:foes, heroes:state.party.map(id=>state.heroes[id]),
     queue:[], sel:0, menu:"main", target:0, log:"A presence bars the way!", onWin:onWin||null, flash:0};
   buildQueue();
@@ -1025,7 +1398,7 @@ function heroCommand(which){
       battle.item=list[battle.sel].id;
       const it=ITEMS[battle.item];
       if(it.dmg){battle.menu="target"; battle.target=firstLive("e");}
-      else if(it.healAll||it.rnd){ resolveHero(); return; }
+      else if(it.healAll||it.rnd||it.mpAll){ resolveHero(); return; }
       else {battle.menu="targetH"; battle.target=0;}
     }
   } else if(battle.menu==="target"){
@@ -1057,6 +1430,7 @@ function resolveHero(){
     if(it.heal){tgt.hp=Math.min(tgt.maxHp,tgt.hp+it.heal); battle.log=tgt.name+" eats "+it.name+".";}
     if(it.healAll){battle.heroes.forEach(x=>{if(x.hp>0)x.hp=Math.min(x.maxHp,x.hp+it.heal);}); battle.log="The feast is shared.";}
     if(it.mp){tgt.mp=Math.min(tgt.maxMp,tgt.mp+it.mp); battle.log=tgt.name+" drinks Serche.";}
+    if(it.mpAll){battle.heroes.forEach(x=>{if(x.hp>0)x.mp=Math.min(x.maxMp,x.mp+it.mpAll);}); battle.log="Let the music take you away.";}
     if(it.dmg){const e=battle.enemies[battle.target]||alive("e")[0]; if(e){e.hp=Math.max(0,e.hp-it.dmg); battle.log="The diamond bites "+e.name+"!";}}
     if(it.rnd){const k=Math.random(); if(k<.5){h.hp=Math.min(h.maxHp,h.hp+40); battle.log="The wishbone blesses.";} else {alive("e").forEach(e=>e.hp=Math.max(0,e.hp-25)); battle.log="The wishbone... interprets Judy."}}
     state.items[battle.item]--; sfx("heal");
@@ -1152,7 +1526,7 @@ function openMenu(){
 }
 function closeMenu(){show(els.menu,false); if(mode==="menu") mode="explore";}
 function paintMenu(){
-  const tabs=["Party","Items","Quest","Save","Close"];
+  const tabs=["Party","Items","Quest","Lore","Save","Close"];
   els.menuTabs.innerHTML=tabs.map((t,i)=>`<button class="${i===menuTab?"on":""}">${t}</button>`).join("");
   let b="";
   if(menuTab===0){
@@ -1165,41 +1539,79 @@ function paintMenu(){
     b=list.map((it,i)=>(i===menuSel?"▶ ":"  ")+it.name+" x"+it.n+"<br><span style='color:#aaa'>"+it.desc+"</span>").join("<br><br>")||"Empty pockets.";
     b+=`<br><br>Manna: ${state.manna}<br><span style="color:#e4c56a">← → choose · Z uses</span>`;
   } else if(menuTab===2){
-    const F=state.flags;
-    const q=[];
-    if(!F.pompeiiDone) q.push("The High Seraph waits on the ridge of Pompeii.");
-    else if(!F.metJarom) q.push("A cherub is supposed to find you in New York.");
-    else if(!F.yeartiJoined) q.push("Seek Absalom and Yearti in the Giant Wood.");
-    else if(!F.dusteaterDown) q.push("Dusteater hunts in Tubal's Tunnels.");
-    else if(!F.ashbDown) q.push("Tea with Tobias. Then Sparkslinger and Ashbreather.");
-    else if(!F.claraJoined) q.push("Clara is waiting in the Cherub Fortress.");
-    else if(!F.jenningsDown) q.push("Swat the Lord of the Flies in Rome.");
-    else if(!F.xandirJoined) q.push("Xandir is destroying grass on Olympus Mons.");
-    else if(F.armor<3) q.push("Assemble the Armor of God ("+F.armor+"/3).");
-    else if(!F.cainDown) q.push("Master Mahan holds court in Nod.");
-    else if(!F.chain) q.push("Druiel keeps a chain in Tartarus.");
-    else if(!F.luciferDown) q.push("Shut the All-Seeing Eye.");
-    else q.push("The End of Time is not yet written.");
-    b="<b style='color:#e4c56a'>CURRENT DUTY</b><br>"+q[0]+"<br><br>Act "+state.act+" — "+map().name;
+    b=questLog();
   } else if(menuTab===3){
+    const L=state.lore||[];
+    if(!L.length) b="No chronicles found yet. Speak with everyone. Isda keeps roads the Seraphs would rather stay shut.";
+    else {
+      if(menuSel>=L.length) menuSel=0;
+      const e=L[menuSel];
+      b="<b style='color:#e4c56a'>CHRONICLE "+(menuSel+1)+"/"+L.length+"</b><br>"+e.t+"<br><br>"+e.b+"<br><br><span style='color:#aaa'>← → page</span>";
+    }
+  } else if(menuTab===4){
     b="Z : Save the chronicle.<br>Progress is kept in this browser.";
   } else b="Z : Return to the field.";
   els.menuBody.innerHTML=b;
 }
+
+function questLog(){
+  const F=state.flags;
+  const q=[];
+  if(!F.pompeiiDone) q.push("The High Seraph waits on the ridge of Pompeii.");
+  else if(!F.metJarom) q.push("A cherub is supposed to find you in New York.");
+  else if(!F.yeartiJoined) q.push("Seek Absalom and Yearti in the Giant Wood.");
+  else if(!F.dusteaterDown) q.push("Dusteater hunts in Tubal's Tunnels.");
+  else if(!F.ashbDown) q.push("Tea with Tobias. Then Sparkslinger and Ashbreather.");
+  else if(!F.claraJoined) q.push("Clara is waiting in the Cherub Fortress.");
+  else if(!F.jenningsDown) q.push("Swat the Lord of the Flies in Rome.");
+  else if(!F.xandirJoined) q.push("Xandir is destroying grass on Olympus Mons.");
+  else if(F.armor<3) q.push("Assemble the Armor of God ("+F.armor+"/3).");
+  else if(!F.cainDown) q.push("Master Mahan holds court in Nod.");
+  else if(!F.chain) q.push("Druiel keeps a chain in Tartarus.");
+  else if(!F.luciferDown) q.push("Shut the All-Seeing Eye."+(F.links>=3?" Druiel's extra links will tighten it.":""));
+  else q.push("The End of Time is not yet written.");
+  let b="<b style='color:#e4c56a'>CURRENT DUTY</b><br>"+q[0]+"<br><br>Act "+state.act+" — "+map().name;
+  const s=[];
+  if(F.reborn && !F.isdaMet) s.push("Isda the Whisperer waits in the Fortress.");
+  if(F.sparkDown && !F.westoverMet) s.push("Fortuna: Westover still has an office and a locked door.");
+  if(F.sparkDown && !F.thiefMet) s.push("Fortuna: a Den runner wants Death Diamonds.");
+  if(F.ashbDown && !F.ganoshDown) s.push("Hell: Ganosh (ruby eye, obsidian eye) still prefers the name Serche.");
+  if(F.johannesHint && !F.johannesFree) s.push("Free Johannes from the Vault of Avarice.");
+  if(F.claraJoined && !F.infernisDown) s.push("The Forgotten Tower still holds Infernis.");
+  if(F.jenningsDown && !F.beelzebubDown) s.push("London is falling. Seek the Queen of Light.");
+  if((F.xandirJoined||state.act>=3) && !F.azazelDown) s.push("Blacker Forest: Wilhelm and Jakob hunt Azazel.");
+  if(F.estherHelped && !F.japethFree) s.push("Tartarus cell 42: Japeth still waits.");
+  if(F.cainDown && !F.estherHelped) s.push("A woman on Tartarus's upper floor is asking after a prisoner.");
+  if((F.links||0)<3 && (F.reborn||state.act>=2)) s.push("Collect chain links ("+(F.links||0)+"/3). They weaken the Prince.");
+  if((F.londonDone||F.ganoshDown) && !F.treeDown) s.push("Nineveh: Smargad's Tree of Death still stands.");
+  if(s.length){
+    b+="<br><br><b style='color:#e4c56a'>SIDE PATHS</b><br>"+s.map(x=>"• "+x).join("<br>");
+  }
+  if(state.lore&&state.lore.length){
+    b+="<br><br><b style='color:#e4c56a'>CHRONICLES</b><br>"+state.lore.map(l=>"• "+l.t).join("<br>");
+  }
+  return b;
+}
 function menuInput(which){
   const list=itemList();
+  const lore=state.lore||[];
   if(menuTab===1 && list.length && (which==="left"||which==="right")){
     if(which==="left") menuSel=(menuSel+list.length-1)%list.length;
     else menuSel=(menuSel+1)%list.length;
     paintMenu(); sfx("menu"); return;
   }
+  if(menuTab===3 && lore.length && (which==="left"||which==="right")){
+    if(which==="left") menuSel=(menuSel+lore.length-1)%lore.length;
+    else menuSel=(menuSel+1)%lore.length;
+    paintMenu(); sfx("menu"); return;
+  }
   if(menuTab===1 && which==="ok" && list.length){ useFieldItem(list[menuSel].id); paintMenu(); return; }
-  if(which==="up"){menuTab=(menuTab+4)%5; menuSel=0; paintMenu(); sfx("menu");}
-  if(which==="down"){menuTab=(menuTab+1)%5; menuSel=0; paintMenu(); sfx("menu");}
+  if(which==="up"){menuTab=(menuTab+5)%6; menuSel=0; paintMenu(); sfx("menu");}
+  if(which==="down"){menuTab=(menuTab+1)%6; menuSel=0; paintMenu(); sfx("menu");}
   if(which==="cancel") closeMenu();
   if(which==="ok"){
-    if(menuTab===3){save(); toast("Chronicle saved."); sfx("ok");}
-    if(menuTab===4) closeMenu();
+    if(menuTab===4){save(); toast("Chronicle saved."); sfx("ok");}
+    if(menuTab===5) closeMenu();
   }
 }
 
@@ -1208,13 +1620,15 @@ function useFieldItem(id){
   const wounded=state.party.map(i=>state.heroes[i]).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0];
   if(it.heal){wounded.hp=Math.min(wounded.maxHp,wounded.hp+it.heal); toast(wounded.name+" recovers.");}
   else if(it.healAll){state.party.forEach(i=>{const h=state.heroes[i]; h.hp=Math.min(h.maxHp,h.hp+it.heal);}); toast("The feast is shared.");}
+  else if(it.mpAll){state.party.forEach(i=>{const h=state.heroes[i]; h.mp=Math.min(h.maxMp,h.mp+it.mpAll);}); toast("Let the music take you away.");}
   else if(it.mp){wounded.mp=Math.min(wounded.maxMp,wounded.mp+it.mp); toast(wounded.name+" drinks.");}
-  else {toast("Save that for battle."); return;}
+  else {toast(id==="link"?"The links are not for the living to spend.":"Save that for battle."); return;}
+  if(it.mp && it.heal){wounded.mp=Math.min(wounded.maxMp,wounded.mp+it.mp);}
   state.items[id]--; sfx("heal"); renderHUD();
 }
 
 function save(){try{localStorage.setItem(SAVE,JSON.stringify(state)); $("btnContinue").disabled=false;}catch(e){toast("Cannot save.");}}
-function load(){try{const r=localStorage.getItem(SAVE); if(!r) return false; state=JSON.parse(r); state.flags=Object.assign(blankFlags(),state.flags||{}); state.moving=false; state.t=0; return true;}catch(e){return false;}}
+function load(){try{const r=localStorage.getItem(SAVE); if(!r) return false; state=JSON.parse(r); state.flags=Object.assign(blankFlags(),state.flags||{}); state.moving=false; state.t=0; if(!state.lore) state.lore=[]; if(!state.items) state.items={}; return true;}catch(e){return false;}}
 
 function renderHUD(){
   if(!state||mode==="title") {show(els.hud,false); return;}
@@ -1301,14 +1715,7 @@ function drawWorld(){
   }
   const sprs=[];
   (m.npcs||[]).forEach(n=>{
-    if(n.gone) return;
-    if(n.id==="dusteater"&&state.flags.dusteaterDown) return;
-    if(n.id==="spark"&&state.flags.sparkDown && state.map!=="fortuna") return;
-    if(n.id==="ashb"&&state.flags.ashbDown) return;
-    if(n.id==="jennings"&&state.flags.jenningsDown) return;
-    if(n.id==="horsemen"&&state.flags.horsemenDown) return;
-    if(n.id==="ridnax"&&state.flags.ridnaxDown) return;
-    if(n.id==="lucifer"&&state.flags.luciferDown) return;
+    if(npcHidden(n)) return;
     sprs.push({y:n.y, draw:()=>{
       const p=px(n.x,n.y);
       if(n.spr==="pillar"||n.spr==="chest"){
@@ -1448,12 +1855,15 @@ els.menuTabs.addEventListener("click",e=>{
 
 window.TLA={
   noEnc:false,
+  maps:MAPS,
+  isdaDests,
   snap(){
     return {mode, map:state&&state.map, x:state&&state.x, y:state&&state.y, party:state&&state.party.slice(),
       flags:state&&Object.assign({},state.flags), manna:state&&state.manna,
       hp:state&&state.party.map(id=>({id,hp:state.heroes[id].hp,lv:state.heroes[id].lv})),
       dialog:mode==="dialog"&&dialogQ[dialogI]?{n:dialogQ[dialogI].n,t:dialogQ[dialogI].t,i:dialogI,len:dialogQ.length}:null,
-      battle:battle&&{log:battle.log,over:!!battle.over,menu:battle.menu,ehp:battle.enemies.map(e=>e.hp),hhp:battle.heroes.map(h=>h.hp)}};
+      battle:battle&&{log:battle.log,over:!!battle.over,menu:battle.menu,ehp:battle.enemies.map(e=>e.hp),hhp:battle.heroes.map(h=>h.hp)},
+      lore:state&&(state.lore||[]).map(l=>l.t)};
   },
   warp, startGame,
   flag(k,v){ if(state) state.flags[k]=v; },

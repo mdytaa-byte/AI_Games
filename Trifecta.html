@@ -87,6 +87,8 @@
     .tile:hover{filter:brightness(1.12)}
     @keyframes legalPulse{50%{stroke:#fff4bb;filter:drop-shadow(0 0 10px #eac55a)}}
     .keep-label{fill:#dcc58e;font:700 12px Outfit,sans-serif;letter-spacing:.12em;text-transform:uppercase;text-anchor:middle;paint-order:stroke;stroke:#090909;stroke-width:3px}
+    #keeps,#ghosts,.piece-art{pointer-events:none}
+    .piece-hit{pointer-events:auto;cursor:pointer}
     .piece{cursor:pointer;transition:filter var(--ease),transform .35s ease}
     .piece:hover,.piece:focus{filter:brightness(1.18) drop-shadow(0 0 10px currentColor);outline:none}
     .piece.selected{filter:brightness(1.28) drop-shadow(0 0 14px currentColor)}
@@ -283,7 +285,7 @@
         <li>Light and dark triangular tiles alternate. Ordinary steps always change color. Sight leaps two links and therefore stays on the same color—until the Fowl changes aspect.</li>
         <li>Every cell of a multi-space piece must fit on empty tiles. Larger creatures may also rotate sixty degrees around one of their vertices.</li>
         <li>After acting, your adjacent pieces exert surrounding pressure. Mage Fowl require two pressure to capture, Mage Beasts three, Mage Bears four, and the Mage Gigas five. Strength counts as two pressure; the Gigas counts as three.</li>
-        <li>Keeps are sacred. No army may rest on a keep. Moving any part of a piece into a rival keep wins immediately. The only approach to a corner keep is its single gate tile—unless a Sight Fowl leaps the last two links.</li>
+        <li>Keeps are sacred. No army may rest on a keep. If any part of a piece reaches a rival keep—or stands adjacent and storms the gate—that faction wins immediately. Sight Fowl may also leap the last two links.</li>
         <li>Capture every rival piece to eliminate that faction. The last faction standing also wins.</li>
       </ol>
       <div class="legend">
@@ -291,7 +293,7 @@
         <div><strong>➶ Swiftness</strong><small>May travel through up to two linked, empty spaces in one move. Mage Beasts are born with this hunt.</small></div>
         <div><strong>◉ Sight</strong><small>May leap directly to an empty space exactly two links away, ignoring the tile between—the assassin’s path into a keep.</small></div>
       </div>
-      <p><strong>Armies:</strong> Each faction commands five one-space Mage Fowl, one two-space Mage Beast (Swiftness), and one three-space Mage Bear (Strength). The unique six-space Mage Gigas begins unbound in the center as three hovering sections. Surround it with five pressure to take command; another faction may later seize it. Because it hovers, the Gigas may fly one or two lattice steps and land on any empty matching footprint, passing over intervening creatures.</p>
+      <p><strong>Armies:</strong> Each faction commands five one-space Mage Fowl, one two-space Mage Beast (Swiftness), and one three-space Mage Bear (Strength). The unique Mage Gigas begins unbound in the center as three hovering sections. Surround it with five pressure to take command; another faction may later seize it. Because it hovers, the Gigas may fly one or two lattice steps, rotate like other large creatures, and land on any empty matching footprint, passing over intervening creatures.</p>
     </div>
   </div>
   <div class="toast" id="toast" role="status"></div>
@@ -308,7 +310,7 @@
     const state={
       pieces:[],turn:'blue',round:1,selected:null,legal:[],legalMoves:[],
       winner:null,mode:'solo',human:'blue',difficulty:'adept',busy:false,
-      logs:[],defeated:new Set(),showThreats:true,prevXY:{}
+      logs:[],defeated:new Set(),showThreats:true,prevXY:{},aiSeq:0,silent:false
     };
 
     const $=s=>document.querySelector(s);
@@ -481,6 +483,14 @@
         moves.push({type,id:p.id,cells:cellsNext,dest:cellsNext[0],note});
       };
 
+      const addAssault=()=>{
+        ORDER.forEach(f=>{
+          if(f===p.f) return;
+          const k=keepAt[f];
+          if(cur.some(id=>nbr(id).includes(k))) push('move',[k],'assault');
+        });
+      };
+
       if(p.type==='mage'){
         if(p.aspect==='swiftness'){
           const first=nbr(p.pos).filter(n=>!occupied(p).has(n));
@@ -491,6 +501,7 @@
         }else{
           nbr(p.pos).forEach(n=>push('move',[n]));
         }
+        addAssault();
         return moves;
       }
 
@@ -501,7 +512,7 @@
         const next=translateCells(cur,dr,dc);
         if(next.every(id=>cells[id])) push('move',next);
       }
-      if(p.type!=='gigas'){
+      if(p.type==='gigas'||p.type==='behemoth'||p.type==='creature'){
         const pivots=new Set(); cur.forEach(id=>cells[id].verts.forEach(v=>pivots.add(v)));
         pivots.forEach(pivot=>{
           [1,2,4,5].forEach(k=>{
@@ -510,6 +521,7 @@
           });
         });
       }
+      addAssault();
       return moves;
     }
 
@@ -518,16 +530,16 @@
       const beast=(f,id,cells)=>({id,f,type:'creature',aspect:'swiftness',pos:cells[0],cells});
       const bear=(f,id,cells)=>({id,f,type:'behemoth',aspect:'strength',pos:cells[0],cells});
       state.pieces=[
-        fowl('red','r1','D1-0','strength'), fowl('red','r2','U1-0','sight'), fowl('red','r3','D2-0','swiftness'),
+        fowl('red','r1','D1-0','strength'), fowl('red','r2','U1-0','sight'), fowl('red','r3','U3-0','swiftness'),
         fowl('red','r4','U2-0','strength'), fowl('red','r5','U2-1','sight'),
         beast('red','r6',['U2-2','D2-1']), bear('red','r7',['U3-1','D3-1','U3-2']),
-        fowl('blue','b1','D8-0','strength'), fowl('blue','b2','U8-1','sight'), fowl('blue','b3','U7-1','swiftness'),
+        fowl('blue','b1','D8-0','strength'), fowl('blue','b2','U8-1','sight'), fowl('blue','b3','U7-2','swiftness'),
         fowl('blue','b4','D7-0','strength'), fowl('blue','b5','D7-1','sight'),
         beast('blue','b6',['U8-2','D8-1']), bear('blue','b7',['U6-0','D6-0','U6-1']),
         fowl('yellow','y1','D8-7','strength'), fowl('yellow','y2','U8-7','sight'), fowl('yellow','y3','U7-6','swiftness'),
         fowl('yellow','y4','D7-6','strength'), fowl('yellow','y5','U7-5','sight'),
         beast('yellow','y6',['U8-6','D8-6']), bear('yellow','y7',['U6-6','D6-5','U6-5']),
-        {id:'gigas',f:'neutral',type:'gigas',aspect:'trinity',pos:'U6-3',cells:['U6-3','U5-3','U5-2','D6-3','D6-2','D5-2']}
+        {id:'gigas',f:'neutral',type:'gigas',aspect:'trinity',pos:'U5-2',cells:['U5-2','D5-2','U5-3']}
       ];
       const used=new Set();
       state.pieces.forEach(p=>{
@@ -542,7 +554,7 @@
 
     function creatureArt(g,p,cx,cy,color){
       const s=p.type==='gigas'?1.15:p.type==='behemoth'?1.05:p.type==='creature'?0.95:0.82;
-      const body=svg('g',{transform:`translate(${cx},${cy}) scale(${s})`});
+      const body=svg('g',{class:'piece-art',transform:`translate(${cx},${cy}) scale(${s})`});
       if(p.type==='gigas'){
         const secs=[[-22,-8,COLORS.red],[-2,10,COLORS.blue],[20,-6,COLORS.yellow]];
         secs.forEach(([x,y,tint],i)=>{
@@ -575,6 +587,7 @@
     }
 
     function render(){
+      if(state.silent) return;
       piecesG.innerHTML=''; ghostsG.innerHTML='';
       const legalCells=new Set(state.legal);
       $$('.tile').forEach(n=>{
@@ -607,8 +620,8 @@
         if(occ.length>1){
           for(let i=0;i<occ.length;i++) for(let j=i+1;j<occ.length;j++){
             if(nbr(cellsOf(p)[i]).includes(cellsOf(p)[j])){
-              g.append(svg('line',{x1:occ[i].cx,y1:occ[i].cy,x2:occ[j].cx,y2:occ[j].cy,stroke:'#08090b','stroke-width':16,'stroke-linecap':'round'}));
-              g.append(svg('line',{x1:occ[i].cx,y1:occ[i].cy,x2:occ[j].cx,y2:occ[j].cy,stroke:pieceColor,'stroke-width':11,'stroke-linecap':'round',opacity:.9}));
+              g.append(svg('line',{x1:occ[i].cx,y1:occ[i].cy,x2:occ[j].cx,y2:occ[j].cy,stroke:'#08090b','stroke-width':16,'stroke-linecap':'round',class:'piece-art'}));
+              g.append(svg('line',{x1:occ[i].cx,y1:occ[i].cy,x2:occ[j].cx,y2:occ[j].cy,stroke:pieceColor,'stroke-width':11,'stroke-linecap':'round',opacity:.9,class:'piece-art'}));
             }
           }
         }
@@ -618,13 +631,14 @@
             fill:isGigas?'#11141ccc':COLORS[p.f]+'55',
             stroke:isGigas?'#d4b15a':COLORS[p.f],
             'stroke-width':state.selected===p.id?2.6:1.6,
-            opacity:.88
+            opacity:.88,
+            class:'piece-hit'
           }));
         });
         creatureArt(g,p,cx,cy,isGigas?undefined:COLORS[p.f]);
-        const ring=svg('circle',{cx,cy,r:isGigas?28:p.type==='mage'?16:22,fill:'none',stroke:'#f4df9b','stroke-width':1.4,opacity:.45});
+        const ring=svg('circle',{cx,cy,r:isGigas?28:p.type==='mage'?16:22,fill:'none',stroke:'#f4df9b','stroke-width':1.4,opacity:.45,class:'piece-art'});
         g.append(ring);
-        const glyph=svg('text',{x:cx,y:cy+28,class:'pressure-badge'});
+        const glyph=svg('text',{x:cx,y:cy+28,class:'pressure-badge piece-art'});
         glyph.textContent=isGigas?(p.f==='neutral'?'△':'◆'):(p.aspect==='strength'?'◆':p.aspect==='swiftness'?'➶':'◉');
         g.append(glyph);
         if(state.showThreats&&p.f!==state.turn){
@@ -632,7 +646,7 @@
           const best=Math.max(0,...pr);
           if(best){
             const need=defenseValue(p);
-            const badge=svg('text',{x:cx,y:cy-30,class:'pressure-badge'});
+            const badge=svg('text',{x:cx,y:cy-30,class:'pressure-badge piece-art'});
             badge.textContent=`${best}/${need}`;
             badge.setAttribute('fill',best>=need?'#e15447':'#f1dfb8');
             g.append(badge);
@@ -662,9 +676,9 @@
         b.disabled=!sel||sel.type!=='mage'||!isHumanTurn()||state.busy||!!state.winner;
         b.classList.toggle('active',sel?.aspect===b.dataset.aspect);
       });
-      $('#rotateBtn').disabled=!sel||sel.type==='mage'||sel.type==='gigas'||!isHumanTurn()||state.busy||!!state.winner||!state.legalMoves.some(m=>m.type==='rotate');
-      $('#instruction').textContent=state.winner?`${NAMES[state.winner]} controls the chamber.`:state.busy?'The rival masters consider the board…':!isHumanTurn()?'The rival master is moving…':sel?`${pieceName(sel)} selected. Choose a glowing tile${sel.type==='mage'?' or change its aspect.':sel.type==='gigas'?'.':', or rotate it.'}`:'Select one of your pieces.';
-      $('#inspect').textContent=sel?`${pieceName(sel)} · ${cellsOf(sel).length} space${cellsOf(sel).length>1?'s':''} · ${cap(sel.aspect)} · pressure ${pressureValue(sel)} · armor ${defenseValue(sel)} · ${state.legalMoves.filter(m=>m.type==='move').length} marches, ${state.legalMoves.filter(m=>m.type==='rotate').length} rotations.`:'Light tiles are ivory; dark tiles are obsidian. Sight stays on one color. The gate beside each keep is the ordinary path in.';
+      $('#rotateBtn').disabled=!sel||sel.type==='mage'||!isHumanTurn()||state.busy||!!state.winner||!state.legalMoves.some(m=>m.type==='rotate');
+      $('#instruction').textContent=state.winner?`${NAMES[state.winner]} controls the chamber.`:state.busy?'The rival masters consider the board…':!isHumanTurn()?'The rival master is moving…':sel?`${pieceName(sel)} selected. Choose a glowing tile${sel.type==='mage'?' or change its aspect.':', or rotate it.'}`:'Select one of your pieces.';
+      $('#inspect').textContent=sel?`${pieceName(sel)} · ${cellsOf(sel).length} space${cellsOf(sel).length>1?'s':''} · ${cap(sel.aspect)} · pressure ${pressureValue(sel)} · armor ${defenseValue(sel)} · ${state.legalMoves.filter(m=>m.type==='move').length} march${state.legalMoves.filter(m=>m.type==='move').length===1?'':'es'}, ${state.legalMoves.filter(m=>m.type==='rotate').length} rotation${state.legalMoves.filter(m=>m.type==='rotate').length===1?'':'s'}.`:'Light tiles are ivory; dark tiles are obsidian. Sight stays on one color. The gate beside each keep is the ordinary path in.';
       const gigas=state.pieces.find(p=>p.type==='gigas');
       $('#players').innerHTML=ORDER.map(f=>`<div class="player-row ${state.turn===f?'current':''} ${state.defeated.has(f)?'defeated':''}"><i class="faction-dot" style="background:${COLORS[f]};color:${COLORS[f]}"></i><span>${NAMES[f]}${state.mode==='solo'&&f===state.human?' · You':''}</span><span class="piece-count">${state.pieces.filter(p=>p.f===f).length} pieces</span></div>`).join('')+`<div class="player-row"><i class="faction-dot" style="background:linear-gradient(90deg,#e15447,#4e88e1,#f1bc32)"></i><span>Mage Gigas</span><span class="piece-count">${gigas? (gigas.f==='neutral'?'Unbound':NAMES[gigas.f]):'—'}</span></div>`;
       $('#log').innerHTML=state.logs.slice(0,8).map(x=>`<div>${x}</div>`).join('');
@@ -685,11 +699,23 @@
     }
 
     function onTile(id){
-      if(!state.selected||state.busy||state.winner) return;
+      if(state.busy||state.winner||!isHumanTurn()) return;
+      if(!state.selected){
+        const occupant=pieceAt(id);
+        if(occupant&&occupant.f===state.turn) selectPiece(occupant.id);
+        return;
+      }
       const p=state.pieces.find(x=>x.id===state.selected);
       if(p&&cellsOf(p).includes(id)&&p.f===state.turn) return;
+      const occupant=pieceAt(id);
+      if(occupant&&occupant.f===state.turn&&occupant.id!==state.selected){
+        selectPiece(occupant.id); return;
+      }
       const candidates=state.legalMoves.filter(m=>m.cells.includes(id));
-      if(!candidates.length) return;
+      if(!candidates.length){
+        state.selected=null; state.legal=[]; state.legalMoves=[]; render();
+        return;
+      }
       const c=cells[id];
       candidates.sort((a,b)=>{
         const ca=a.cells.reduce((s,x)=>s+Math.hypot(cells[x].cx-c.cx,cells[x].cy-c.cy),0);
@@ -719,13 +745,14 @@
       }else{
         const from=cellsOf(p).join(' · ');
         p.cells=[...a.cells]; p.pos=a.cells[0];
-        log(`${NAMES[p.f]} ${pieceName(p)} ${a.type==='rotate'?'pivots':'advances'} ${from} → ${a.cells.join(' · ')}.`);
         const rival=rivalKeepHit(a.cells,p);
-        if(rival){
+        if(a.note==='assault'||rival){
+          const fallen=rival||ORDER.find(f=>a.cells.includes(keepAt[f]));
+          log(`${NAMES[p.f]} ${pieceName(p)} storms the ${NAMES[fallen]} Keep and wins!`);
           state.winner=p.f;
-          log(`${NAMES[p.f]} enters the ${NAMES[rival]} Keep and wins!`);
           celebrate(); render(); return;
         }
+        log(`${NAMES[p.f]} ${pieceName(p)} ${a.type==='rotate'?'pivots':'advances'} ${from} → ${a.cells.join(' · ')}.`);
       }
       afterAction(p);
     }
@@ -812,7 +839,8 @@
         return sum+(worst>0?(x.type==='gigas'?80:x.type==='behemoth'?40:18):0);
       },0);
       s-=myDanger;
-      const keepDists=moved.map(id=>Math.min(...ORDER.filter(f=>f!==p.f&&!state.defeated.has(f)).map(f=>distance(id,keepAt[f]))));
+      const rivals=ORDER.filter(f=>f!==p.f&&!state.defeated.has(f));
+      const keepDists=moved.map(id=>rivals.length?Math.min(...rivals.map(f=>distance(id,keepAt[f]))):9);
       s+=(14-Math.min(...keepDists))*(state.difficulty==='master'?7:3.5);
       const myGate=nbr(keepAt[p.f])[0];
       if(myGate&&pieceAt(myGate)?.f===p.f) s+=12;
@@ -835,9 +863,11 @@
     }
 
     function queueAI(){
+      const seq=++state.aiSeq;
       state.busy=true; render();
       const delay=state.difficulty==='master'?520:state.difficulty==='adept'?380:260;
       setTimeout(()=>{
+        if(seq!==state.aiSeq||state.winner) return;
         const acts=allActions(state.turn);
         if(!acts.length){
           log(`${NAMES[state.turn]} has no legal action.`);
@@ -848,11 +878,13 @@
         let chosen;
         if(state.difficulty==='novice') chosen=acts[Math.floor(Math.random()*acts.length)];
         else chosen=acts.map(a=>[a,scoreAction(a)]).sort((x,y)=>y[1]-x[1])[0][0];
+        if(seq!==state.aiSeq||state.winner) return;
         state.busy=false; takeAction(chosen);
       },delay);
     }
 
     function newGame(){
+      state.aiSeq++;
       state.mode=$('#mode').value;
       state.human=$('#faction').value;
       state.difficulty=$('#difficulty').value;
@@ -866,10 +898,10 @@
       if(!isHumanTurn()) queueAI();
     }
 
-    function log(s){state.logs.unshift(s);}
+    function log(s){if(!state.silent) state.logs.unshift(s);}
     function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
     let toastTimer;
-    function toast(s){const t=$('#toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);}
+    function toast(s){if(state.silent) return; const t=$('#toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);}
     function celebrate(){toast(`${NAMES[state.winner]} claims victory!`);}
 
     $('#newBtn').onclick=()=>$('#setupModal').classList.remove('hidden');
@@ -886,6 +918,54 @@
       if((e.key==='r'||e.key==='R')&&!state.busy) rotateSelected();
     });
 
+    function boardInvariant(){
+      const used=new Set();
+      for(const p of state.pieces){
+        const ids=cellsOf(p);
+        if(ids.some(id=>!cells[id])) return 'invalid cell '+p.id;
+        if(ids.some(id=>id===keepAt[p.f])) return 'occupies own keep '+p.id;
+        if(ids.length>1){
+          const set=new Set(ids);
+          if(!ids.every(id=>nbr(id).some(n=>set.has(n)))) return 'disconnected '+p.id;
+        }
+        for(const id of ids){
+          if(used.has(id)) return 'overlap '+id;
+          used.add(id);
+        }
+      }
+      return null;
+    }
+
+    function simulateRandomMatch(seed, maxTurns=220){
+      let s=seed;
+      const rnd=()=>{s=(s*1664525+1013904223)>>>0; return s/4294967296;};
+      state.mode='local'; state.winner=null; state.defeated=new Set(); state.round=1;
+      state.turn='red'; state.busy=false; state.selected=null; state.legal=[]; state.legalMoves=[];
+      state.silent=true;
+      resetPieces();
+      let turns=0, captures=0;
+      try{
+        while(!state.winner && turns<maxTurns){
+          const acts=allActions(state.turn);
+          if(!acts.length){
+            const skipped=state.turn;
+            advanceTurn();
+            if(state.turn===skipped) break;
+            turns++; continue;
+          }
+          const wins=acts.filter(a=>a.note==='assault'||(a.cells&&ORDER.some(f=>f!==state.turn&&a.cells.includes(keepAt[f]))));
+          const a=wins.length?wins[0]:acts[Math.floor(rnd()*acts.length)];
+          const before=state.pieces.length;
+          takeAction(a);
+          if(state.pieces.length<before) captures++;
+          const inv=boardInvariant();
+          if(inv) return {ok:false, error:inv, turns, winner:state.winner};
+          turns++;
+        }
+        return {ok:true, turns, winner:state.winner, captures, round:state.round};
+      }finally{ state.silent=false; }
+    }
+
     function runSelfTest(){
       const fails=[];
       const ok=(cond,msg)=>{if(!cond) fails.push(msg);};
@@ -895,37 +975,76 @@
       ok(nbr(`U${N-1}-${N-1}`).join()===`D${N-1}-${N-2}`,'dorian keep gate');
       cellList.forEach(c=>nbr(c.id).forEach(n=>ok(nbr(n).includes(c.id),`asymmetric ${c.id} / ${n}`)));
       resetPieces();
-      const used=new Set();
-      state.pieces.forEach(p=>{
-        const ids=cellsOf(p);
-        ok(ids.every(id=>cells[id]), `${p.id} has invalid cells`);
-        ok(ids.every(id=>!isKeep(id)), `${p.id} started on a keep`);
-        ids.forEach(id=>{ok(!used.has(id),`overlap ${id}`); used.add(id);});
-        if(ids.length>1){
-          const set=new Set(ids);
-          ok(ids.every(id=>nbr(id).some(n=>set.has(n))), `${p.id} is disconnected`);
-        }
+      ok(!boardInvariant(), boardInvariant()||'opening invariant');
+      state.pieces.filter(p=>p.f!=='neutral').forEach(p=>{
+        ok(legalMovesFor(p).length>0, `${p.id} has a physical move`);
       });
       const fowl=state.pieces.find(p=>p.id==='b2');
-      const sightMoves=legalMovesFor(Object.assign({},fowl,{aspect:'sight'}));
+      const sightMoves=legalMovesFor({...fowl, aspect:'sight', cells:[...fowl.cells]});
       ok(sightMoves.every(m=>m.cells.every(id=>cells[id].light===cells[fowl.pos].light)),'sight stays on color');
-      const red=state.pieces.find(p=>p.id==='r1');
-      ok(legalMovesFor(red).length>0,'ember fowl has a move');
-      state.pieces.filter(p=>p.f!=='neutral').forEach(p=>{
-        const acts=legalMovesFor(p).length+(p.type==='mage'?2:0);
-        ok(acts>0, `${p.id} can act`);
-      });
       const gigas=state.pieces.find(p=>p.type==='gigas');
+      ok(gigas.cells.length===3,'gigas is three sections');
       ok(legalMovesFor(gigas).length>0,'gigas can hover');
       ok(defenseValue(gigas)===5 && pressureValue(gigas)===3,'gigas combat values');
+
+      const saved=[...state.pieces];
+      state.pieces=[
+        {id:'atk1',f:'blue',type:'mage',aspect:'strength',pos:'U1-0',cells:['U1-0']},
+        {id:'atk2',f:'blue',type:'mage',aspect:'strength',pos:'U1-1',cells:['U1-1']},
+        {id:'vic',f:'red',type:'mage',aspect:'swiftness',pos:'D1-0',cells:['D1-0']}
+      ];
+      state.turn='blue';
+      ok(pressureAgainst(state.pieces[2],'blue')>=2,'two strength fowl surround a gate fowl');
+      resolveCaptures('blue');
+      ok(!state.pieces.some(p=>p.id==='vic'),'surround capture removes the victim');
+
+      state.pieces=[
+        {id:'scout',f:'blue',type:'mage',aspect:'strength',pos:'D1-0',cells:['D1-0']},
+        {id:'g',f:'neutral',type:'gigas',aspect:'trinity',pos:'U5-2',cells:['U5-2','D5-2','U5-3']}
+      ];
+      const storm=legalMovesFor(state.pieces[0]);
+      ok(storm.some(m=>m.cells.includes('U0-0')),'gate fowl can enter ember keep');
+      const bear={id:'br',f:'blue',type:'behemoth',aspect:'strength',pos:'U1-0',cells:['U1-0','D1-0','U1-1']};
+      state.pieces=[bear];
+      ok(legalMovesFor(bear).some(m=>m.cells.includes('U0-0')),'three-space piece can rotate or step into a keep');
+
+      state.pieces=saved; state.defeated=new Set(); state.winner=null;
+      const games=[];
+      for(let i=0;i<6;i++){
+        const g=simulateRandomMatch(1000+i*17);
+        games.push(g);
+        ok(g.ok, `sim ${i}: ${g.error||'ok'}`);
+      }
+      ok(games.some(g=>g.winner),'at least one simulated match produces a winner');
+
+      resetPieces();
+      render();
+      const tile=document.querySelector('.tile[data-id="U4-2"]');
+      if(tile){
+        const r=tile.getBoundingClientRect();
+        const hit=document.elementFromPoint(r.left+r.width/2, r.top+r.height/2);
+        ok(hit&&(hit.classList.contains('tile')||hit.closest&&hit.closest('.tile')), 'empty tile is clickable');
+      }
+      const keepTile=document.querySelector('.tile[data-id="U0-0"]');
+      if(keepTile){
+        const r=keepTile.getBoundingClientRect();
+        const hit=document.elementFromPoint(r.left+r.width/2, r.top+r.height/2);
+        const okKeep=hit&&(hit.getAttribute('data-id')==='U0-0'||hit.closest?.('.tile')?.getAttribute('data-id')==='U0-0');
+        ok(okKeep, `keep tile click hits keep, got ${hit&&hit.tagName}`);
+      }
       return fails;
     }
+
+    window.Trifecta={
+      state, legalMovesFor, takeAction, allActions, selectPiece, onTile, newGame, resetPieces,
+      cells, keepAt, cellsOf, pieceAt, nbr, boardInvariant
+    };
 
     drawStatic();
     resetPieces();
     log('The board awaits your command.');
     render();
-    if(/[?&]test=1\b/.test(location.search)){
+    if(/[?&](?:test|playtest)=1\b/.test(location.search)){
       const fails=runSelfTest();
       document.title=fails.length?`FAIL ${fails.length}`:'PASS';
       document.body.dataset.test=fails.length?fails.join(' | '):'ok';

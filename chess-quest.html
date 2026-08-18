@@ -96,9 +96,9 @@ button{font-family:inherit;cursor:pointer}
         <p>Arrow keys / WASD — walk</p>
         <p>Z / Enter — talk, confirm, attack</p>
         <p>X / Shift — cancel</p>
-        <p>C / Esc — menu (save, items, quests)</p>
+        <p>C / Esc — menu (save, items, quests, lore)</p>
         <p>On a phone, use the d-pad and A / B.</p>
-        <p style="margin-top:10px;color:#e6c86a">You are Heinrich “Rich” Witz, a Paladin pawn in an ancient war of order and chaos. Complete the five books of the Chess Quest: Pawn, Knight, Rook, Bishop, and Sovereign.</p>
+        <p style="margin-top:10px;color:#e6c86a">You are Heinrich “Rich” Witz, a Paladin pawn in an ancient war of order and chaos. Complete the five books of the Chess Quest: Pawn, Knight, Rook, Bishop, and Sovereign. Optional side paths (spelling bee, fairgrounds, Duel of Sixty-four, Master Gigas, Sand-lantis) add items and lore from the novels.</p>
         <p style="margin-top:10px"><button class="gold" id="helpBack" style="background:#101850;color:#e6c86a;border:2px solid #e6c86a;padding:8px 10px;font-size:7px">BACK</button></p>
       </div>
       <div id="credits">
@@ -109,7 +109,7 @@ button{font-family:inherit;cursor:pointer}
         <p>Book III — Rook: Revenge</p>
         <p>Book IV — Bishop: Betrayal</p>
         <p>Book V — Sovereigns: Song</p>
-        <p style="margin-top:10px;color:#b8c4ff">Rich Witz receives a chess set and learns he is heir to the Paladins, knights of order. With his guide Aaron he faces Nemesis knights, the Gray Queen Temperance, and the Corridor of Keys — where his father vanished.</p>
+        <p style="margin-top:10px;color:#b8c4ff">Rich Witz receives a chess set and learns he is heir to the Paladins, knights of order. With his guide Aaron he faces Nemesis knights, the Gray Queen Temperance, and the Corridor of Keys — where his father vanished. Palad and Nemes, thirteen seats at one table, three stones, and the Sovereign Song.</p>
         <p style="margin-top:10px">Fan adaptation for play. Story, characters, and setting belong to their author.</p>
         <p style="margin-top:10px"><button id="credBack" style="background:#101850;color:#e6c86a;border:2px solid #e6c86a;padding:8px 10px;font-size:7px">BACK</button></p>
       </div>
@@ -251,11 +251,13 @@ function applyStats(p){
   const L=p.lv;
   if(p.role==="rich"){
     const r=G.rank||0;
-    p.mhp=26+6*L+r*8; p.mmp=10+3*L+r*4; p.atk=7+2*L+r*2; p.def=4+L+r; p.spd=6+L;
+    p.mhp=26+6*L+r*8; p.mmp=10+3*L+r*4; p.atk=7+2*L+r*2+(G.keys&&G.keys.clairvoyance?2:0); p.def=4+L+r+(G.keys&&G.keys.amulet?2:0)+(G.keys&&G.keys.locket?2:0); p.spd=6+L;
   } else if(p.role==="aaron"){
     p.mhp=22+4*L; p.mmp=16+5*L; p.atk=5+L; p.def=3+L; p.spd=7+L;
-  } else {
+  } else if(p.role==="nadia"){
     p.mhp=24+5*L; p.mmp=12+4*L; p.atk=8+2*L; p.def=4+L; p.spd=8+L;
+  } else {
+    p.mhp=22+5*L; p.mmp=14+4*L; p.atk=6+2*L; p.def=4+L; p.spd=9+L;
   }
   if(p.hp>p.mhp) p.hp=p.mhp;
   if(p.mp>p.mmp) p.mp=p.mmp;
@@ -267,18 +269,22 @@ function fresh(){
   const rich=newHero("rich","Rich","rich");
   const aaron=newHero("aaron","Aaron","aaron");
   const nadia=newHero("nadia","Nadia","nadia");
+  const angela=newHero("angela","Angela","angela");
   G={
     map:"bedroom", px:8, py:8, dir:2, gold:20,
     rank:0, steps:0, flags:{}, items:{potion:5, ether:2, hi:1, phoenix:1, ration:1},
-    keys:{}, party:[rich,aaron], bench:nadia, chests:{},
-    saveAt:{map:"bedroom",x:8,y:8}, noEnc:false
+    keys:{}, party:[rich,aaron], bench:nadia, benchA:angela, chests:{},
+    saveAt:{map:"bedroom",x:8,y:8}, noEnc:false, journal:[]
   };
-  healFull(rich); healFull(aaron); healFull(nadia);
-  nadia.hp=nadia.mhp;
+  healFull(rich); healFull(aaron); healFull(nadia); healFull(angela);
 }
 
 function fl(k){return !!G.flags[k]}
 function setf(k,v){G.flags[k]=v!==false}
+function jot(line){
+  if(!G.journal) G.journal=[];
+  if(!G.journal.includes(line)) G.journal.push(line);
+}
 
 /* ---------- maps ---------- */
 const MAPS={};
@@ -315,7 +321,15 @@ defMap("bedroom",{
     {x:5,y:6,spr:"box",name:"Package", vis:()=>!fl("pkg"),
       talk:async()=>{ await openPackage(); }},
     {x:9,y:4,spr:"aaron",name:"Aaron", vis:()=>fl("pkg"),
-      talk:async()=>{ await aaronTalk(); }}
+      talk:async()=>{ await aaronTalk(); }},
+    {x:2,y:3,spr:"binoc",name:"Binoculars", talk:async()=>binocTalk()},
+    {x:11,y:6,spr:"box",name:"Silver Box", vis:()=>fl("pkg"), talk:async()=>silverBoxTalk()},
+    {x:11,y:8,spr:"box",name:"Black Box", vis:()=>fl("pkg")&&fl("sanctuary")&&!fl("blackpawn"),
+      talk:async()=>blackBoxTalk()},
+    {x:14,y:2,spr:"hydra",name:"Hydra Model", vis:()=>fl("hydra"), talk:async()=>{
+      await say("","A painted hydra from the Model of Evil. Lemonade, of all things, once spoiled its defenses.");
+      jot("The hydra helm is more than a costume. Nemesis knights wear living chaos.");
+    }}
   ]
 });
 
@@ -374,7 +388,8 @@ defMap("street",{
     {x:6,y:6,spr:"axle",name:"Axel", talk:async()=>axelTalk()},
     {x:4,y:10,spr:"kid",name:"Neighbor", talk:async()=>{
       await say("Kid","Rich Witz? The chess nerd? Cool package, I guess.");
-    }}
+    }},
+    {x:9,y:10,spr:"mail",name:"Mailman", talk:async()=>mailTalk()}
   ]
 });
 
@@ -401,7 +416,7 @@ defMap("school",{
   name:"Lincoln High", bg:"#5a5340", music:"overworld",
   rows:[
     "####################",
-    "#]]]]........]].D..#",
+    "#]]]]...D....]].D..#",
     "#..................#",
     "#..................#",
     "#..................#",
@@ -415,13 +430,14 @@ defMap("school",{
   ],
   warps:[
     {x:0,y:8,to:"street",tx:14,ty:11},
+    {x:8,y:1,to:"classroom",tx:7,ty:7},
     {x:16,y:1,to:"gym",tx:6,ty:8},
     {x:10,y:10,to:"detention",tx:4,ty:6, need:"detention_open"}
   ],
   npcs:[
     {x:8,y:6,spr:"spike",name:"Spike", vis:()=>!fl("spike"), talk:async()=>spikeTalk()},
     {x:14,y:5,spr:"nadia",name:"Nadia", talk:async()=>nadiaSchool()},
-    {x:5,y:9,spr:"angela",name:"Angela", talk:async()=>angelaTalk()},
+    {x:5,y:9,spr:"angela",name:"Angela", vis:()=>!fl("angela_join"), talk:async()=>angelaTalk()},
     {x:12,y:3,spr:"joe",name:"Joe", talk:async()=>{
       await say("Joe","Heiny. Nice glasses. Want me to break them in?");
     }},
@@ -502,7 +518,10 @@ defMap("sanctuary",{
     {x:16,y:3,spr:"arlenen",name:"Arlenen", talk:async()=>arlenenTalk()},
     {x:6,y:6,spr:"paladin",name:"Sir Karsten", talk:async()=>{
       await say("Sir Karsten","The empty chair was your grandfather's. Order remembers its kings.");
+      await say("Sir Karsten","Thirteen knights once sat this table. Palad first. The rest of us keep the files honest.");
     }},
+    {x:10,y:6,spr:"palad",name:"Palad", vis:()=>fl("knighted"), talk:async()=>paladTalk()},
+    {x:18,y:6,spr:"lectern",name:"Quest Log", talk:async()=>lecternTalk()},
     {x:20,y:8,spr:"shop",name:"Quartermaster", talk:async()=>shopTalk()},
     {x:8,y:11,spr:"save",name:"White Pawn", talk:async()=>restTalk()}
   ]
@@ -513,11 +532,11 @@ defMap("hub",{
   rows:[
     "##################",
     "#................#",
-    "#..D..........D..#",
+    "#..D....D.....D..#",
     "#................#",
     "#................#",
     "#................#",
-    "#..D..........D..#",
+    "#..D....D.....D..#",
     "#................#",
     "#........D.......#",
     "##################"
@@ -525,8 +544,10 @@ defMap("hub",{
   warps:[
     {x:8,y:8,to:"sanctuary",tx:14,ty:11},
     {x:3,y:2,to:"arena",tx:6,ty:10, need:"four"},
+    {x:8,y:2,to:"fairgrounds",tx:9,ty:8, need:"four"},
     {x:14,y:2,to:"finland",tx:5,ty:12, need:"nadia_taken"},
     {x:3,y:6,to:"stronghold",tx:2,ty:14, need:"bishop"},
+    {x:8,y:6,to:"stlouis",tx:9,ty:7, need:"mist"},
     {x:14,y:6,to:"middlespace",tx:12,ty:20, need:"mist"}
   ],
   npcs:[
@@ -686,14 +707,15 @@ defMap("middlespace",{
     "#.......................#",
     "#.......................#",
     "#.......................#",
-    "#.......................#",
+    "#.D.....................#",
     "#.......................#",
     "#...........D...........#",
     "#########################"
   ],
   warps:[
     {x:12,y:20,to:"hub",tx:14,ty:6},
-    {x:12,y:3,to:"grayrealm",tx:10,ty:16, need:"three_stones"}
+    {x:12,y:3,to:"grayrealm",tx:10,ty:16, need:"three_stones"},
+    {x:2,y:18,to:"sandlantis",tx:6,ty:10}
   ],
   npcs:[
     {x:12,y:11,spr:"snow",name:"Snowman", talk:async()=>snowTalk()},
@@ -729,7 +751,8 @@ defMap("grayrealm",{
   warps:[{x:10,y:16,to:"middlespace",tx:12,ty:4}],
   enc:{rate:20, foes:["graypawn","bonesoldier","umbratum"]},
   npcs:[
-    {x:10,y:4,spr:"queen",name:"Temperance", vis:()=>!fl("ending"), talk:async()=>finalBattle()}
+    {x:10,y:4,spr:"queen",name:"Temperance", vis:()=>!fl("ending"), talk:async()=>finalBattle()},
+    {x:3,y:13,spr:"lance",name:"Lancelot", vis:()=>fl("angela_join")||fl("mist"), talk:async()=>lanceTalk()}
   ]
 });
 
@@ -751,21 +774,171 @@ function generateCorridor(){
       "#.......................#",
       "#.......................#",
       "#.......................#",
-      "#.......................#",
+      "#.......D...............#",
       "#D......................#",
       "#########################"
     ],
-    warps:[{x:1,y:15,to:"sanctuary",tx:24,ty:10}],
+    warps:[
+      {x:1,y:15,to:"sanctuary",tx:24,ty:10},
+      {x:8,y:14,to:"duel64",tx:8,ty:10, need:"knighted"}
+    ],
     enc:{rate:22, foes:["lostkey","graypawn","garg"]},
     npcs:[
       {x:3,y:4,spr:"garg",name:"Gargoyle Twins", vis:()=>!fl("gargoyles"), talk:async()=>gargFight()},
       {x:12,y:6,spr:"golem",name:"Golf Golem", vis:()=>!fl("golem"), talk:async()=>golemFight()},
       {x:20,y:2,spr:"grayk",name:"Gray Knight", vis:()=>!fl("grayknight"), talk:async()=>grayFight()},
-      {x:22,y:2,spr:"phillip",name:"Phillip", vis:()=>fl("grayknight")&&!fl("phillip_seen"), talk:async()=>fatherTalk()}
+      {x:22,y:2,spr:"phillip",name:"Phillip", vis:()=>fl("grayknight")&&!fl("phillip_seen"), talk:async()=>fatherTalk()},
+      {x:8,y:10,spr:"gigas",name:"Hall of Gigas", talk:async()=>{
+        await say("Aaron","A Master Gigas keeps a true skeleton key. Three of them oversee the maze.");
+        warp("gigahall",7,12);
+      }}
     ]
   });
 }
 generateCorridor();
+
+defMap("classroom",{
+  name:"Lincoln Auditorium", bg:"#4a4030", music:"overworld",
+  rows:[
+    "##############",
+    "#............#",
+    "#............#",
+    "#.[.[.[.[.[..#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#......D.....#",
+    "##############"
+  ],
+  warps:[{x:7,y:8,to:"school",tx:8,ty:2}],
+  npcs:[
+    {x:7,y:2,spr:"teacher",name:"Bee Judge", talk:async()=>spellingBee()},
+    {x:3,y:5,spr:"nadia",name:"Nadia", vis:()=>fl("bee")&&!fl("nadia_taken"), talk:async()=>{
+      await say("Nadia","Don't look so shocked. I can spell. I just don't advertise it next to you.");
+    }}
+  ]
+});
+
+defMap("fairgrounds",{
+  name:"County Fairgrounds", bg:"#3c7a40", music:"overworld",
+  rows:[
+    "##################",
+    "#,,,,,,,,,,,,,,,,#",
+    "#,,,,HHHH,,,,,,,,#",
+    "#,,,,H,,H,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#,,,,SSS,,,,,,,,,#",
+    "#,,,,S,S,========#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#........D.......#",
+    "##################"
+  ],
+  warps:[{x:9,y:9,to:"hub",tx:8,ty:3}],
+  npcs:[
+    {x:6,y:3,spr:"hydra",name:"Model of Evil", talk:async()=>fairHydraTalk()},
+    {x:12,y:5,spr:"teacher",name:"Miss Spelling", vis:()=>!fl("misspell"), talk:async()=>misspellFight()},
+    {x:4,y:7,spr:"kid",name:"Vendor", talk:async()=>{
+      await say("Vendor","Hydra models, lemonade, and a spelling-bee trophy that isn't yours yet.");
+      if(!G.items.ration) { G.items.ration=(G.items.ration||0)+1; await say("","A paper cup of fair lemonade. Somehow it smells like a weakness."); }
+    }}
+  ]
+});
+
+defMap("duel64",{
+  name:"Duel of Sixty-four", bg:"#2a2038", music:"battle",
+  rows:[
+    "##################",
+    "#-+-+-+-+-+-+-+-+#",
+    "#+-+-+-+-+-+-+-+-#",
+    "#-+-+-+-+-+-+-+-+#",
+    "#+-+-+-+-+-+-+-+-#",
+    "#-+-+-+-+-+-+-+-+#",
+    "#+-+-+-+-+-+-+-+-#",
+    "#-+-+-+-+-+-+-+-+#",
+    "#+-+-+-+-+-+-+-+-#",
+    "#................#",
+    "#........D.......#",
+    "##################"
+  ],
+  warps:[{x:9,y:10,to:"corridor",tx:8,ty:13}],
+  npcs:[
+    {x:9,y:3,spr:"palad",name:"Palad", talk:async()=>duelPaladTalk()},
+    {x:4,y:5,spr:"mallory",name:"Mallory", vis:()=>fl("mallory1")&&!fl("duel64"), talk:async()=>duelMallory()}
+  ]
+});
+
+defMap("gigahall",{
+  name:"Hall of the Master Gigas", bg:"#1a1810", music:"dark", dark:true,
+  rows:[
+    "################",
+    "#..............#",
+    "#..####..####..#",
+    "#..............#",
+    "#..............#",
+    "#......@.......#",
+    "#..............#",
+    "#..............#",
+    "#..####..####..#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#.......D......#",
+    "################"
+  ],
+  warps:[{x:8,y:12,to:"corridor",tx:8,ty:11}],
+  enc:{rate:18, foes:["gigantaur","lostkey"]},
+  npcs:[
+    {x:8,y:5,spr:"gigas",name:"Master Gigas", vis:()=>!fl("gigas"), talk:async()=>gigasFight()}
+  ]
+});
+
+defMap("sandlantis",{
+  name:"Sand-lantis", bg:"#c2a060", music:"sanctuary",
+  rows:[
+    "################",
+    "#**************#",
+    "#****....******#",
+    "#****.@..******#",
+    "#****....******#",
+    "#**************#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#......D.......#",
+    "################"
+  ],
+  warps:[{x:7,y:10,to:"middlespace",tx:3,ty:18}],
+  enc:{rate:22, foes:["ember","lostkey"]},
+  npcs:[
+    {x:7,y:3,spr:"stone",name:"Buried Locket", vis:()=>!fl("locket"), talk:async()=>locketTalk()},
+    {x:4,y:7,spr:"angela",name:"Angela", vis:()=>fl("mist")&&!fl("angela_join"), talk:async()=>angelaTalk()}
+  ]
+});
+
+defMap("stlouis",{
+  name:"St. Louis Mists", bg:"#6a7080", music:"gray",
+  rows:[
+    "##################",
+    "#,,,,,,,,,,,,,,,,#",
+    "#,,,,SSSS,,,,,,,,#",
+    "#,,,,S,,S,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#========,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#........D.......#",
+    "##################"
+  ],
+  warps:[{x:9,y:8,to:"hub",tx:8,ty:5}],
+  enc:{rate:20, foes:["graypawn","fellchariot"]},
+  npcs:[
+    {x:6,y:3,spr:"paint",name:"Museum of Modern Terrors", talk:async()=>museumTalk()},
+    {x:12,y:6,spr:"angela",name:"Angela", vis:()=>fl("mist")&&!fl("angela_join"), talk:async()=>angelaTalk()}
+  ]
+});
 
 /* ---------- drawing ---------- */
 function palRect(x,y,w,h,c){ctx.fillStyle=c; ctx.fillRect(x|0,y|0,w,h)}
@@ -971,6 +1144,24 @@ function drawChar(kind, x, y, frame, dir){
     case "queen":
       body("#909498","#c8ccd0","#d0d4d8"); palRect(x+4,y+1,8,4,"#e8e8ea"); palRect(x+6,y+0,4,3,"#b0b4b8");
       break;
+    case "palad":
+      body("#e6c86a","#f4e6b8","#e8e0d0"); palRect(x+5,y+1,6,3,"#ffd24a"); palRect(x+4,y+8,8,2,"#fff8e0");
+      break;
+    case "lectern":
+      palRect(x+3,y+6,10,9,"#6a4420"); palRect(x+4,y+3,8,5,"#d8c090"); palRect(x+5,y+4,6,2,"#3a70c0");
+      break;
+    case "binoc":
+      palRect(x+3,y+7,4,4,"#3a3a48"); palRect(x+9,y+7,4,4,"#3a3a48"); palRect(x+6,y+8,4,2,"#c9a24a");
+      break;
+    case "mail":
+      body("#2a4a8a","#303850","#3a2818"); palRect(x+10,y+8,5,6,"#8a3030");
+      break;
+    case "gigas":
+      palRect(x+2,y+2,12,14,"#5a6a48"); palRect(x+4,y+5,8,4,"#202018"); palRect(x+6,y+1,4,4,"#8aaa40");
+      break;
+    case "lance":
+      body("#d8dce8","#3a70c0","#c8a060"); palRect(x+4,y+1,8,4,"#e6c86a"); palRect(x+3,y+8,10,2,"#e6c86a");
+      break;
     default:
       body("#888","#444","#222");
   }
@@ -1020,6 +1211,7 @@ function afterStep(){
         card:"The Corridor wants something lost and found. Check the chest in your bedroom.",
         knighted:"The gates open after you are knighted.",
         four:"Complete the four quests first.",
+        knighted:"A paladin's rank opens this door.",
         nadia_taken:"No call to Finland yet. Speak with Aaron at the gates.",
         bishop:"Jan must finish your bishop's test.",
         mist:"The Middlespace opens when Nadia is free and the gray mist falls.",
@@ -1031,7 +1223,7 @@ function afterStep(){
     warp(w.to,w.tx,w.ty);
     return;
   }
-  if(m.enc && !G.noEnc && (m.id==="trial"||m.id==="corridor"||m.id==="stronghold"||m.id==="grayrealm")){
+  if(m.enc && !G.noEnc && ["trial","corridor","stronghold","grayrealm","gigahall","stlouis","sandlantis"].includes(m.id)){
     if(G.steps%m.enc.rate===0 && Math.random()<0.4){
       const id=m.enc.foes[rand(0,m.enc.foes.length-1)];
       startBattle([makeEnemy(id)], false);
@@ -1161,9 +1353,11 @@ function advanceDlg(){
 /* ---------- story ---------- */
 async function openPackage(){
   setf("pkg");
+  jot("Day eleven. The yellow box arrived. Two knights, packing peanuts, and a summons.");
   await say("Rich","Eleven days. The website lied. But the yellow box is finally mine.");
   await say("","Two knights spill from the packing peanuts — one silver, one black.");
-  await say("","The white pawn your grandmother left you begins to glow.");
+  await say("","Beside them, a smaller silver case. Inside: a hand-carved white pawn. The letters HWW are etched in the base.");
+  await say("","Grandmother's script on a slip of paper. The pawn begins to glow.");
   await say("Aaron","Easy, Heinrich. Try not to drop me. I am Aaron, and I have been waiting in that pawn longer than is polite.");
   await say("Aaron","You are a Paladin — a knight of order. The set was not a toy. It was a summons.");
   await say("Aaron","Speak with your mother. Then school. The first trials never wait for summer to end.");
@@ -1181,18 +1375,24 @@ async function aaronTalk(){
 }
 
 async function helenaTalk(){
-  if(!fl("pkg")) await say("Helena","Eat something, Rich. I... I'm tired.");
-  else if(!fl("sanctuary")) await say("Helena","Your father was declared missing in Iraq. Minerva was the last person who understood.");
-  else if(!fl("bishop")) await say("Helena","I am a bishop of the Paladins. I put broken things back in order. Including, someday, this family.");
-  else await say("Helena","Go. I'll keep the house standing. That is a kind of quest too.");
+  if(!fl("pkg")) await say("Helena","Eat something, Rich. I tried a new stroganoff. Don't make a face until you've finished it.");
+  else if(!fl("sanctuary")){
+    await say("Helena","Your father was declared missing in Iraq. Minerva was the last person who understood.");
+    await say("Helena","Mutti hasn't been herself. Finish your dinner. Then we keep this house standing.");
+  } else if(!fl("bishop")){
+    await say("Helena","I am a bishop of the Paladins. I put broken things back in order. Including, someday, this family.");
+    if(G.keys.locket) await say("Helena","You found my locket. The Homeland still remembers both families.");
+  } else await say("Helena","Go. I'll keep the house standing. That is a kind of quest too.");
 }
 
 async function enterPainting(){
   if(fl("sanctuary")){ warp("sanctuary",14,12); return; }
   await say("Minerva","Welcome, Heinrich. We expected you'd make your way here eventually.");
   await say("Minerva","This is the Paladin Sanctuary. Knights of order. Your grandfather's chair is empty. Your father's is empty. Yours is not.");
+  await say("Minerva","Thirteen seats. One table. Palad sat first. Virtue is our armor — if we drop it, Nemesis picks us off for free.");
   await say("Aaron","Told you the painting was a door.");
   setf("sanctuary");
+  jot("The painting downstairs is a door. Minerva leads the Paladins from an empty king's chair.");
   G.saveAt={map:"sanctuary",x:8,y:11};
   warp("sanctuary",14,12);
 }
@@ -1220,7 +1420,9 @@ async function arlenenTalk(){
     await say("Arlenen","Long ago mankind was given three stones — sunstone, moonstone, starstone — to keep the day, the tides, the seasons.");
     await say("Arlenen","Paladins keep order. Nemesis knights keep chaos. You will walk between them.");
     await say("Arlenen","Four quests, pawn: master fire and ice in the western trial. Respect an elder on Elder Lane. Win the gym race. Aid the damsel in detention.");
+    await say("Arlenen","Pride slammed the door yesterday. Humility opens it. And Heinrich — your strength is your behavior. Live loosely, and you fall as easy prey.");
     setf("quests_given");
+    jot("Four quests: fire and ice, an elder, a gym race, detention.");
     toast("Four quests added");
   } else if(!fl("four")){
     const n=[fl("q_fire")&&fl("q_ice"),fl("q_elder"),fl("q_race"),fl("q_detention")].filter(Boolean).length;
@@ -1241,6 +1443,7 @@ function checkFour(){
 async function restTalk(){
   G.party.forEach(healFull);
   if(G.bench) healFull(G.bench);
+  if(G.benchA) healFull(G.benchA);
   G.saveAt={map:G.map,x:G.px,y:G.py};
   save();
   await say("","The white pawn shines. HP and MP restored. Progress recorded.");
@@ -1299,13 +1502,30 @@ async function raceTalk(){
 
 async function nadiaSchool(){
   if(!fl("q_detention")) await say("Nadia","Move it, Heiny. Some of us have a reputation to maintain.");
-  else if(!fl("nadia_taken")) await say("Nadia","Don't make a thing of detention. I didn't need saving. But... thanks.");
-  else await say("Nadia","If Mallory thinks I'll wear all black forever, she can eat a rook.");
+  else if(!fl("nadia_taken")){
+    await say("Nadia","Don't make a thing of detention. I didn't need saving. But... thanks.");
+    if(fl("bee")) await say("Nadia","And don't tell Joe I spelled labyrinth right. I have a brand.");
+  } else await say("Nadia","If Mallory thinks I'll wear all black forever, she can eat a rook.");
 }
 
 async function angelaTalk(){
+  if(fl("angela_join")){
+    await say("Angela","I'm with you. Stutter-step, water balloons, and looking where the mist is thin.");
+    return;
+  }
   await say("Angela","H-hey Rich. I'm fine. The water balloons missed, mostly. Are you okay?");
-  if(fl("mist")) await say("Angela","The mist over the city... it feels like the maze. I can help in the Middlespace.");
+  if(fl("bee")) await say("Angela","You spelled labyrinth. I heard it from the hall. That's... really you.");
+  if(fl("mist") && G.benchA){
+    await say("Angela","The mist over the city... it feels like the maze. I can help in the Middlespace.");
+    const i=await choose(["Come with us","Stay safe"]);
+    if(i===1){ await say("Angela","I'll be at Lincoln, or in the mists. Call if the board tilts."); return; }
+    G.benchA.lv=G.party[0].lv;
+    applyStats(G.benchA); healFull(G.benchA);
+    G.party.push(G.benchA); G.benchA=null;
+    setf("angela_join");
+    jot("Angela joined. A new Paladin — water balloons and all.");
+    await say("","Angela joins the party.");
+  }
 }
 
 async function detentionTalk(){
@@ -1335,6 +1555,7 @@ async function malloryFight(){
     setf("mallory1");
     await say("Mallory","A pawn that bites. Fine. Next time I bring a hydra.");
     await say("Aaron","Nemesis blood. Daughter of Nemes. Remember her face.");
+    jot("Mallory of the Nemesis line. Cute chess club. Wrong side of the board.");
   }
 }
 
@@ -1347,6 +1568,7 @@ async function hydraFight(){
     await say("Minerva","I knight you Paladin. Rise, Sir Rich.");
     G.rank=Math.max(G.rank,1); setf("knighted"); setf("rook_gate");
     G.party.forEach(p=>{p.lv++; applyStats(p); healFull(p);});
+    jot("Sir Heinrich the Paladin. The hydra helm came off. The Corridor will open.");
     await say("","Rank up: KNIGHT. The Corridor of Keys will open to a paladin.");
     await say("Aaron","Your father is inside. Bring the baseball card — lost, then found.");
   }
@@ -1362,6 +1584,7 @@ async function aaronHub(){
     await say("Messenger","The Gray Knight says the world will not end in light or darkness. Everything will end in gray.");
     await say("Aaron","Nadia was taken to the Stronghold. Mallory offered her both bloodlines.");
     await say("Aaron","Finland first. Your mother will teach you the bishop's order. Then we storm the black stones.");
+    jot("Nadia taken. Both bloodlines. Finland, then the Stronghold.");
   } else await say("Aaron","I'm still your guide. Even when the board gets ugly.");
 }
 
@@ -1384,11 +1607,12 @@ async function grayFight(){
 }
 async function fatherTalk(){
   setf("phillip_seen");
-  await say("Phillip","Heinrich. You shouldn't have come. I'm in check, not captured. There's a difference.");
-  await say("Phillip","Take the skeleton key. Get out. Tell Helena I kept my rank.");
-  G.keys.skeleton=true;
-  await say("","You obtain the Skeleton Key.");
-  await say("Phillip","Go. A rook covers the king. That's all I can do from here.");
+    await say("Phillip","Heinrich. You shouldn't have come. I'm in check, not captured. There's a difference.");
+    await say("Phillip","Take the skeleton key. Get out. Tell Helena I kept my rank.");
+    G.keys.skeleton=true;
+    jot("Phillip Witz — a rook covering his king from inside the Corridor.");
+    await say("","You obtain the Skeleton Key.");
+    await say("Phillip","Go. A rook covers the king. That's all I can do from here.");
 }
 
 async function janTalk(){
@@ -1401,6 +1625,7 @@ async function janTalk(){
     setf("finland"); G.rank=Math.max(G.rank,3); setf("bishop");
     G.party.forEach(p=>{p.lv++; applyStats(p); healFull(p);});
     await say("Helena","A bishop brings order. Fire collapses. Rivers calm. That is our work.");
+    jot("Bishop's test: imagination is a Paladin muscle. The stone fit.");
     await say("","Rank up: BISHOP. The Stronghold will open.");
   }
 }
@@ -1424,12 +1649,15 @@ async function rescueNadia(){
   G.party.push(G.bench); G.bench=null;
   setf("mist");
   await say("","Nadia Petrenko joins the party.");
+  jot("Nadia refused chaos. The gray mist is already over St. Louis.");
   await say("Aaron","The mists are already over St. Louis. Middlespace next. Three stones. Then Temperance.");
+  await say("Aaron","If you have time — the museum in the mist, Sand-lantis in the white, Angela if she'll come.");
 }
 
 async function snowTalk(){
   await say("Snowman","Welcome to the Middlespace. Think a bridge, and a bridge is. Order-energy is thick as cream.");
   await say("Snowman","Sun, moon, star. Palad had the first. The Gray Queen wants all three silent.");
+  await say("Snowman","West, if you wander: dunes that remember the Homeland. Angela named them Sand-lantis, and the name stuck.");
   if(fl("sunstone")&&fl("moonstone")&&fl("starstone")){
     setf("three_stones");
     await say("Snowman","The north pedestal is a door now. Temperance is already singing the quiet song.");
@@ -1466,13 +1694,154 @@ function ending(){
   el.hud.classList.add("hidden");
   el.loc.classList.add("hidden");
   el.endtxt.innerHTML=
-    "<p>Phillip walks out of the last door of the Corridor. Helena stops shaking.</p>"+
-    "<p>Minerva sets a fifth chair at the table. Nadia refuses to wear only black. Mallory refuses to wear only white.</p>"+
+    "<p>Phillip walks out of the last door of the Corridor. Helena stops shaking. The stroganoff can wait.</p>"+
+    "<p>Minerva sets a fifth chair at the table of thirteen. Nadia refuses to wear only black. Mallory refuses to wear only white.</p>"+
+    "<p>Angela keeps a water balloon in her pack, just in case. Lancelot claims the next flight is his treat.</p>"+
     "<p>Aaron yawns, which is his way of saying he is proud.</p>"+
-    "<p style='margin-top:10px;color:#e6c86a'>Sir Rich Witz — Paladin King.</p>"+
+    "<p style='margin-top:10px;color:#e6c86a'>Sir Rich Witz — Paladin King. Palad's gift still hums behind his eyes.</p>"+
+    "<p>The Sovereign Song is not silence. It is everyone on the same rank.</p>"+
     "<p>The next move is waiting. It always is.</p>"+
     "<p style='margin-top:10px'>Based on Paladin: Pawn, Nemesis: Knight, Rook: Revenge, Bishop: Betrayal, and Sovereigns: Song by Michael D. Young.</p>";
   playMusic("sanctuary");
+}
+
+async function binocTalk(){
+  await say("","Your binoculars still smell like window glass and impatience. Day eleven. White-and-blue truck. Fragile. Yours.");
+  jot("You watched the mail truck with binoculars until the yellow box was yours.");
+}
+async function silverBoxTalk(){
+  await say("","The silver case. A white pawn, initials HWW. Heinrich Wulfrich Witz — and every Heinrich before you.");
+  await say("Aaron","I fit rather well, if I do say so. Don't put me back in velvet. It itches.");
+  G.keys.hww=true;
+}
+async function blackBoxTalk(){
+  await say("","The second box your grandmother left. It would not open. It does now.");
+  const i=await choose(["Open the black box","Leave it"]);
+  if(i===1) return;
+  const won=await startBattle([makeEnemy("blackpawn")], true);
+  if(won){
+    setf("blackpawn");
+    G.keys.amulet=true;
+    applyStats(G.party[0]);
+    jot("The black pawn was a challenge-box. Paladin's amulet now sits over your heart.");
+    await say("","A paladin amulet rests in the velvet. Defense settles into your bones.");
+  }
+}
+async function mailTalk(){
+  if(!fl("pkg")) await say("Mailman","Package for Witz. Fragile. Don't snatch.");
+  else await say("Mailman","You already grabbed it out of my hand. Website said seven to ten. I don't make the weather.");
+}
+async function lecternTalk(){
+  await say("","A lectern of quest names. Fire. Ice. Elder. Race. Damsel. Corridor. Bishop. Stronghold. Song.");
+  if(fl("quests_given") && !fl("four")){
+    const n=[fl("q_fire")&&fl("q_ice"),fl("q_elder"),fl("q_race"),fl("q_detention")].filter(Boolean).length;
+    await say("", n+"/4 of Arlenen's first list. Humility first.");
+  } else if(G.journal && G.journal.length){
+    await say("", G.journal[G.journal.length-1]);
+  }
+}
+async function paladTalk(){
+  await say("Palad","I sat the first of thirteen chairs. You carry my line, Heinrich, and a rarer blessing besides.");
+  await say("Palad","Virtue is the Paladin's strength. Drop it, and Nemesis spends no swords.");
+  if(!G.keys.clairvoyance){
+    await say("Palad","If you would see a move ahead, meet me on the board of sixty-four, in the Corridor.");
+  } else {
+    await say("Palad","Clairvoyance is not cheating. It is listening to the file before the piece arrives.");
+  }
+  jot("Palad himself still walks the sanctuary when a knight is willing to look.");
+}
+async function spellingBee(){
+  if(fl("bee")){
+    await say("Judge","Labyrinth. You spelled it. Some of us are still recovering.");
+    return;
+  }
+  await say("Judge","Lincoln High Spelling Bee. French has already claimed rendezvous. Your word is older.");
+  await say("Judge","A maze of doors. Keys for each. Your father's image sits at a long table.");
+  const i=await choose(["Labyrinth","Labrynth","Liberinth"]);
+  if(i!==0){
+    await say("Judge","Incorrect. Sit down, Witz.");
+    return;
+  }
+  await say("Judge","L-A-B-Y-R-I-N-T-H. Correct.");
+  const won=await startBattle([makeEnemy("misspell")], true);
+  if(won){
+    setf("bee");
+    G.gold+=25; G.items.ether=(G.items.ether||0)+1;
+    jot("Spelling bee: labyrinth. The word that boiled. Nadia pretended not to notice.");
+    await say("","The auditorium claps, mostly. You pocket an ether and a little pride.");
+  }
+}
+async function fairHydraTalk(){
+  await say("","The Model of Evil: three painted necks, a helm you have seen on a living knight.");
+  await say("Aaron","Lemonade once ruined a hydra's day. Do not tell the quartermaster. He prices by myth.");
+  setf("fair");
+  jot("County fair: Model of Evil. Hydras are not only stories.");
+}
+async function misspellFight(){
+  await say("Miss Spelling","Rendez-vous is two words in my country. Sit down.");
+  const won=await startBattle([makeEnemy("misspell")], true);
+  if(won){
+    setf("misspell");
+    G.gold+=20;
+    await say("Miss Spelling","Fine. Labyrinth has a y. I always forget the y.");
+  }
+}
+async function duelPaladTalk(){
+  if(G.keys.clairvoyance){
+    await say("Palad","Sixty-four squares. You already see two moves out. Do not waste them on pride.");
+    return;
+  }
+  await say("Palad","This is the Duel of Sixty-four. I used it to teach kings to listen.");
+  const i=await choose(["Accept Palad's sight","Not yet"]);
+  if(i===1) return;
+  const won=await startBattle([makeEnemy("doubt"), makeEnemy("graypawn")], true);
+  if(won){
+    G.keys.clairvoyance=true;
+    applyStats(G.party[0]);
+    jot("Palad's clairvoyance: danger hums a half-move early.");
+    await say("Palad","See the fork before it is played. This gift has not been held since I held it.");
+    await say("","Clairvoyance settles behind your eyes. Attack rises.");
+  }
+}
+async function duelMallory(){
+  await say("Mallory","Spelling bee, tournament, now sixty-four. I wanted a tiebreaker, Richie.");
+  const won=await startBattle([makeEnemy("mallory"), makeEnemy("ember")], true);
+  if(won){
+    setf("duel64");
+    jot("Duel of Sixty-four: Mallory changed shape. Stone-skin held.");
+    await say("Mallory","You turned into a statue. Rude. Fine — keep your squares.");
+  }
+}
+async function gigasFight(){
+  await say("Aaron","Master Gigas. It grows to the ceiling. The skeleton key on its belt opens any door — even the lock that holds it together.");
+  const won=await startBattle([makeEnemy("gigas"), makeEnemy("gigantaur")], true);
+  if(won){
+    setf("gigas");
+    G.keys.skeleton=true;
+    G.gold+=80;
+    jot("A Master Gigas fell. The skeleton key on its belt is yours to copy.");
+    await say("","The giant unlocks. A skeleton key, bone in a glass tube, is yours.");
+  }
+}
+async function locketTalk(){
+  await say("","Dunes that remember the first headquarters of Palad and Nemes. Angela called it Sand-lantis.");
+  await say("","A locket in the sand: Helena, younger, and Phillip's arm around her.");
+  G.keys.locket=true; setf("locket");
+  applyStats(G.party[0]);
+  jot("Lost locket of the Homeland. Both families started here.");
+  await say("","You pocket the lost locket. Defense settles, like a house that will not fall.");
+}
+async function museumTalk(){
+  await say("","Museum of Modern Terrors. The placard wanted Museum of Modern Art. The mist disagreed.");
+  await say("","Gray exhibits: a corridor door that leads nowhere, a hydra neck in a vitrine, a chess table with thirteen chairs.");
+  setf("museum");
+  jot("St. Louis: the mist turned MoMA into a museum of terrors. Temperance is already cataloguing the world.");
+}
+async function lanceTalk(){
+  await say("Lancelot","I sat Arthur's table. I have slept since. The Paladins woke every old knight they could find.");
+  await say("Lancelot","Pawns and bishops on the diagonal. Knights in an L. Queens from anywhere. Tell your friends.");
+  if(fl("angela_join")) await say("Lancelot","Your Angela saved me once already. I am in her debt. The next lance is mine to throw.");
+  jot("Lancelot of the Round Table flies for the Paladins now.");
 }
 
 /* ---------- battle ---------- */
@@ -1500,7 +1869,12 @@ const ENEMY={
   graypawn2:{name:"Gray Warrior",hp:44,atk:16,def:6,spd:8,exp:20,gold:14,spr:"grayk",tint:"#777"},
   bonesoldier:{name:"Bone Soldier",hp:36,atk:14,def:5,spd:7,exp:18,gold:12,spr:"paladin",tint:"#d0d0c0"},
   umbratum:{name:"Umbratum",hp:90,atk:18,def:6,spd:10,exp:50,gold:30,spr:"queen",tint:"#201830"},
-  temperance:{name:"Temperance",hp:150,atk:18,def:8,spd:11,exp:200,gold:0,spr:"queen",tint:"#c8ccd0"}
+  temperance:{name:"Temperance",hp:150,atk:18,def:8,spd:11,exp:200,gold:0,spr:"queen",tint:"#c8ccd0"},
+  gigantaur:{name:"Gigantaur",hp:55,atk:16,def:10,spd:4,exp:28,gold:18,spr:"golem",tint:"#6a7a50"},
+  blackpawn:{name:"Black Pawn Spirit",hp:48,atk:12,def:6,spd:7,exp:36,gold:24,spr:"save",tint:"#201018"},
+  misspell:{name:"Miss Spelling",hp:36,atk:10,def:3,spd:9,exp:22,gold:16,spr:"teacher",tint:"#7050a0"},
+  fellchariot:{name:"Fell Chariot",hp:70,atk:17,def:7,spd:12,exp:40,gold:28,spr:"hydra",tint:"#401018"},
+  gigas:{name:"Master Gigas",hp:130,atk:18,def:12,spd:5,exp:140,gold:90,spr:"gigas",tint:"#5a6a48"}
 };
 function makeEnemy(id){
   const e=ENEMY[id];
@@ -1540,7 +1914,13 @@ const SKILLS={
   nadia:[
     {name:"Knuckle", mp:0, minRank:0, desc:"Sandwich", fn:(u,t)=>dmg(u,t,1.1)},
     {name:"Dual Lineage", mp:8, minRank:0, desc:"Both bloods", fn:(u,t)=>dmg(u,t,1.6)},
-    {name:"Queen Guard", mp:10, minRank:0, desc:"Cover Rich", fn:()=>{ B.def.add("rich"); bLog="Nadia covers Rich."; return true; }}
+    {name:"Queen Guard", mp:10, minRank:0, desc:"Cover Rich", fn:()=>{ B.def.add("rich"); bLog="Nadia covers Rich."; return true; }},
+    {name:"Water Globes", mp:7, minRank:0, desc:"Balloon volley", fn:(u)=>{ liveFoes().forEach(t=>dmg(u,t,0.75)); return true; }}
+  ],
+  angela:[
+    {name:"Stutter-step", mp:0, minRank:0, desc:"Sidestep hit", fn:(u,t)=>dmg(u,t,1.05)},
+    {name:"Water Balloon", mp:5, minRank:0, desc:"Fairgrounds special", fn:(u,t)=>dmg(u,t,1.35)},
+    {name:"Keen Sight", mp:8, minRank:0, desc:"Spot the thin mist", fn:(u)=>{ const a=G.party.reduce((b,p)=>p.hp<b.hp?p:b); heal(a, 18+u.lv*2); return true; }}
   ]
 };
 
@@ -1701,7 +2081,7 @@ function useItem(id, target){
 
 /* ---------- menu ---------- */
 let msel=0;
-const MITEMS=["PARTY","ITEMS","QUESTS","SAVE","SOUND","CLOSE"];
+const MITEMS=["PARTY","ITEMS","QUESTS","LORE","SAVE","SOUND","CLOSE"];
 function openMenu(){
   if(mode!=="world") return;
   mode="menu"; msel=0;
@@ -1725,22 +2105,27 @@ function renderMenu(){
     p.innerHTML=G.party.map(h=>`<div><b style="color:#e6c86a">${h.name}</b> LV${h.lv} ${h.role==="rich"?RANK_NAME[G.rank]:""}<br>HP ${h.hp}/${h.mhp}  MP ${h.mp}/${h.mmp}<br>ATK ${h.atk} DEF ${h.def}</div>`).join("<hr style='border-color:#e6c86a44'>")+`<div style="margin-top:8px">GOLD ${G.gold}</div>`;
   } else if(msel===1){
     const its=usableItems();
+    const KEYN={card:"Mickey Mantle card",skeleton:"Skeleton Key",crystal:"Banishing crystal",
+      sunstone:"Sunstone",moonstone:"Moonstone",starstone:"Starstone",
+      clairvoyance:"Palad's sight",amulet:"Paladin amulet",locket:"Lost locket",hww:"HWW white pawn"};
     p.innerHTML=(its.length?its.map(i=>i.name).join("<br>"):"No items.")+"<br><br>KEY:<br>"+
-      Object.keys(G.keys).filter(k=>G.keys[k]).join("<br>");
+      (Object.keys(G.keys).filter(k=>G.keys[k]).map(k=>KEYN[k]||k).join("<br>")||"—");
   } else if(msel===2){
     p.innerHTML=questText();
   } else if(msel===3){
-    p.innerHTML="Z to save at this square.<br>White pawns in the Sanctuary also save and heal.";
+    p.innerHTML=loreText();
   } else if(msel===4){
+    p.innerHTML="Z to save at this square.<br>White pawns in the Sanctuary also save and heal.";
+  } else if(msel===5){
     p.innerHTML="Sound is "+(muted?"OFF":"ON")+". Z to toggle.";
   } else {
     p.innerHTML="Close menu.";
   }
 }
 function menuAct(){
-  if(msel===3){ save(); toast("Saved."); }
-  if(msel===4){ muted=!muted; toast(muted?"Sound off":"Sound on"); renderMenu(); }
-  if(msel===5) closeMenu();
+  if(msel===4){ save(); toast("Saved."); }
+  if(msel===5){ muted=!muted; toast(muted?"Sound off":"Sound on"); renderMenu(); }
+  if(msel===6) closeMenu();
 }
 function questText(){
   const lines=[];
@@ -1764,7 +2149,35 @@ function questText(){
   else if(!fl("three_stones")) lines.push("• Middlespace: claim Sun, Moon, and Star stones.");
   else if(!fl("ending")) lines.push("• Face Temperance, the Gray Queen.");
   else lines.push("• Checkmate. The next move is yours.");
+  if(fl("four") && !fl("fair")) lines.push("• Optional: fairgrounds (north gate).");
+  if(fl("knighted") && !G.keys.clairvoyance) lines.push("• Optional: Duel of Sixty-four (Corridor).");
+  if(fl("card") && !fl("gigas")) lines.push("• Optional: Hall of Gigas (Corridor).");
+  if(fl("mist") && !fl("museum")) lines.push("• Optional: St. Louis mists (center gate).");
+  if(fl("mist") && !fl("locket")) lines.push("• Optional: Sand-lantis (Middlespace west).");
+  if(fl("mist") && !fl("angela_join")) lines.push("• Optional: ask Angela to join.");
   return lines.join("<br>");
+}
+function loreText(){
+  const bits=["THE BOARD"];
+  bits.push("Paladins keep order. Nemesis keeps chaos. Gray would starve both.");
+  if(fl("pkg")) bits.push("HWW: grandmother's white pawn. Aaron was waiting inside.");
+  if(fl("sanctuary")) bits.push("Thirteen knights, one table. Palad sat first.");
+  if(fl("bee")) bits.push("Labyrinth — the word that showed Phillip at the long table.");
+  if(fl("knighted")) bits.push("Sir Heinrich Wulfrich Witz. Hydra helm, lemonade, and a living chaos-knight.");
+  if(fl("rook")) bits.push("A rook is a wall. Castling covers the ones you love.");
+  if(fl("phillip_seen")) bits.push("Corridor of Keys: doors beyond counting. Phillip is in check, not captured.");
+  if(G.keys.clairvoyance) bits.push("Palad's clairvoyance: a blessing unheld since Palad himself.");
+  if(fl("bishop")) bits.push("A bishop restores order. Imagination is a Paladin muscle.");
+  if(fl("nadia_join")) bits.push("Nadia Petrenko: Paladin and Nemesis blood. She told chaos to prune itself.");
+  if(fl("locket")) bits.push("Sand-lantis / the Homeland: first headquarters of both families.");
+  if(fl("museum")) bits.push("The mist catalogued St. Louis. MoMA became Modern Terrors.");
+  if(fl("angela_join")) bits.push("Angela: stutter-step, water balloons, and a new Paladin's sight.");
+  if(fl("gigas")) bits.push("Three Master Gigas keep skeleton keys and grow to the ceiling.");
+  if(G.journal && G.journal.length){
+    bits.push("","JOURNAL");
+    G.journal.slice(-8).forEach(j=>bits.push("• "+j));
+  }
+  return bits.join("<br>");
 }
 
 function save(){
@@ -1776,6 +2189,13 @@ function load(){
     if(!s) return false;
     G=JSON.parse(s);
     if(!G.party) return false;
+    if(!G.journal) G.journal=[];
+    if(!G.keys) G.keys={};
+    if(!G.flags) G.flags={};
+    if(!G.party.find(p=>p.role==="angela") && !G.benchA){
+      G.benchA=newHero("angela","Angela","angela");
+      healFull(G.benchA);
+    }
     return true;
   }catch(e){ return false; }
 }
@@ -1823,7 +2243,7 @@ function renderBattle(){
     ctx.fillStyle="#d4453a"; ctx.fillRect(8,22+i*22,80*(f.hp/f.mhp),5);
   });
   G.party.forEach((p,i)=>{
-    drawChar(p.role==="rich"?"rich":p.role, 24+i*22, 128+i*6, 0, 3);
+    drawChar(p.role==="rich"?"rich":p.role, 18+i*20, 128+i*5, 0, 3);
   });
   // command window
   palRect(8,168,240,50,"#101850");

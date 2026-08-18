@@ -4,12 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#07080c">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
   <title>Shah-Sheh-Rih-Lah — The Seven Scourges</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%2307080c'/%3E%3Cpath d='M18 46V22M28 48V16M38 48V20M48 46c0-8 6-12 10-10' fill='none' stroke='%23d7b56a' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@450;600;700&display=swap" rel="stylesheet">
-  <script src="./vendor/three.min.js"></script>
+  <script src="./vendor/three.min.js?v=ssrl3"></script>
   <style>
     :root{
       --ink:#07080c; --panel:#10131ae8; --gold:#d7b56a; --bright:#f3ddaa; --muted:#b7a88a;
@@ -160,7 +162,7 @@
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
   </style>
 </head>
-<body>
+<body data-ssrl-build="playtest-fix-2">
   <div id="view" aria-hidden="true"></div>
   <div class="vignette"></div>
   <div class="grain"></div>
@@ -1637,9 +1639,9 @@
         renderHud();
         toast(`${state.p2.name}: choose in private, then clench.`);
       };
-      $('#wager').oninput = () => { state.you.wager = +$('#wager').value; renderHud(); };
-      $('#wagerMinus').onclick = () => { state.you.wager = clamp(state.you.wager-1,1,+ $('#wager').max); renderHud(); };
-      $('#wagerPlus').onclick = () => { state.you.wager = clamp(state.you.wager+1,1,+ $('#wager').max); renderHud(); };
+      $('#wager').oninput = () => { if ($('#wager').disabled) return; state.you.wager = +$('#wager').value; renderHud(); };
+      $('#wagerMinus').onclick = () => { if ($('#wager').disabled) return; state.you.wager = clamp(state.you.wager-1,1,+ $('#wager').max); renderHud(); };
+      $('#wagerPlus').onclick = () => { if ($('#wager').disabled) return; state.you.wager = clamp(state.you.wager+1,1,+ $('#wager').max); renderHud(); };
       $('#readyBtn').onclick = () => {
         audio.resume();
         if (state.practice) { runPracticeChant(); return; }
@@ -1670,17 +1672,30 @@
       state.busy = true;
       renderHud();
       const pool = throwSigns();
-      if (!pool.includes(state.you.throw)) state.you.throw = pool[0];
+      if (!pool.includes(state.you.throw)) {
+        state.you.throw = pool[0];
+        renderHud();
+      }
+      const chosen = state.you.throw;
       const seq = chantBeats();
       for (const s of seq) {
         if (stale(seqId)) return;
         setChant(s); world && world.setHands(s,s, s==='ehl'||s==='akh'?0.32:0.22); audio.beat(s); await sleep(560);
       }
       if (stale(seqId)) return;
-      setChant(null);
-      world && world.setHands(state.you.throw, state.you.throw, 0.1);
+      const lastName = seq[seq.length-1];
+      const lastEl = $(`#chantLine [data-s="${lastName}"]`);
+      $$('#chantLine .syllable').forEach(el=>el.classList.remove('on'));
+      if (lastEl) { lastEl.classList.add('throw'); lastEl.textContent = 'THROW'; }
+      const thrown = pool.includes(state.you.throw) ? state.you.throw : chosen;
+      world && world.setHands(thrown, thrown, 0.1);
       audio.beat('throw');
-      $('#resultBanner').textContent = `Silent throw: ${SIGN_META[state.you.throw].name}`;
+      await sleep(280);
+      if (stale(seqId)) return;
+      if (lastEl) { lastEl.textContent = SIGN_META[lastName].name; lastEl.classList.remove('throw'); }
+      setChant(null);
+      $('#resultBanner').textContent = `Silent throw: ${SIGN_META[thrown].name}`;
+      state.you.throw = thrown;
       state.busy = false;
       renderHud();
     }

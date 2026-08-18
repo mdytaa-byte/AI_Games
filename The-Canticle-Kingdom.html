@@ -102,8 +102,10 @@
       text-shadow: 4px 4px #3a2208, 0 0 18px #e6c86a88;
     }
     .title-panel .sub { font-size: 9px; color: var(--ice); margin-bottom: 18px; line-height: 1.7; }
-    .title-actions { display: grid; gap: 10px; width: 280px; margin: 0 auto; }
+    .title-actions { display: grid; gap: 10px; width: 320px; margin: 0 auto; }
     .title-btn { padding: 12px 10px; }
+    #hud { max-width: 640px; flex-wrap: wrap; }
+    .hud-card { min-width: 140px; }
     #cinematic, #ending {
       display: grid; place-items: center; text-align: center; padding: 40px;
       background: #05060c;
@@ -180,9 +182,10 @@
       <div class="title-panel">
         <canvas id="titleArt" width="420" height="150"></canvas>
         <h1>THE CANTICLE<br>KINGDOM</h1>
-        <div class="sub">A 16-bit role-playing game after the novel by Michael D. Young<br>Two worlds. One music box. A kingdom in peril.</div>
+        <div class="sub">A 16-bit role-playing game after the novels by Michael D. Young<br>Book I: The Canticle Kingdom · Book II: The Frozen Globe</div>
         <div class="title-actions">
-          <button class="title-btn" id="newGameBtn">New Game</button>
+          <button class="title-btn" id="newGameBtn">Book I: New Game</button>
+          <button class="title-btn" id="book2Btn">Book II: The Frozen Globe</button>
           <button class="title-btn" id="continueBtn" disabled>Continue</button>
           <button class="title-btn" id="optionsBtn">Options</button>
         </div>
@@ -232,7 +235,8 @@
         <canvas id="endArt" width="420" height="180" style="width:420px;height:180px;image-rendering:pixelated;margin-bottom:18px"></canvas>
         <h2 id="endTitle" style="font-size:16px;color:var(--gold)"></h2>
         <p id="endBody" style="font-size:10px;line-height:1.85;max-width:640px;color:#efe4c4"></p>
-        <button class="title-btn" id="endTitleBtn" style="margin-top:22px">Return to Title</button>
+        <button class="title-btn" id="endBook2Btn" style="margin-top:22px">Begin The Frozen Globe</button>
+        <button class="title-btn" id="endTitleBtn" style="margin-top:12px">Return to Title</button>
       </div>
     </div>
   </div>
@@ -267,7 +271,8 @@
     inventory: { porridge: 1, ribbon: 0, sword: 0, amulet: 0, sausage: 0, draught: 1, score: 0, coins: 0 },
     party: [],
     quest: "wake",
-    playtime: 0
+    playtime: 0,
+    book: 1
   };
 
   const HEROES = {
@@ -285,6 +290,21 @@
       id: "siegfried", name: "Siegfried", color: "#d8c27a",
       maxHp: 68, maxMp: 28, atk: 12, mag: 14, def: 9, spd: 6,
       bio: "Knight of Lady Ellis and wizard of weaponry. One arm. Ancient armor. Unbroken will."
+    },
+    nachtigal: {
+      id: "nachtigal", name: "Nachtigal", color: "#8ad4c8",
+      maxHp: 48, maxMp: 32, atk: 7, mag: 15, def: 5, spd: 10,
+      bio: "A healer of Burgenring. Dark eyes, jingling charms, and no patience for lingering wounds."
+    },
+    bruno: {
+      id: "bruno", name: "Bruno", color: "#a05050",
+      maxHp: 52, maxMp: 22, atk: 11, mag: 12, def: 6, spd: 8,
+      bio: "The village bully, now tasting dark magic in the Frozen Mountain. Still loud. Still learning."
+    },
+    richard: {
+      id: "richard", name: "Richard", color: "#c8b898",
+      maxHp: 40, maxMp: 24, atk: 6, mag: 16, def: 4, spd: 5,
+      bio: "Johann's grandfather. An old man with a clear staff he barely understands — and a reason to use it."
     }
   };
 
@@ -296,7 +316,11 @@
     sword: { name: "Scrap sword", key: true, desc: "Forged from pilfered shop metal. To Johann it is Excalibur." },
     amulet: { name: "Cursed amulet", key: true, desc: "A multifaceted jewel on a thin golden chain." },
     score: { name: "Heart Song score", key: true, desc: "Muster: EIN LIED DES HERZENS. Es lebe die Musik!" },
-    coins: { name: "Strange coins", key: true, desc: "Gold from the Many-Named One. It does not feel honest." }
+    coins: { name: "Strange coins", key: true, desc: "Gold from the Many-Named One. It does not feel honest." },
+    globe: { name: "Frozen Globe", key: true, desc: "A glass sphere that holds winter itself. Stolen from the Müller bakery ruins." },
+    staff: { name: "Clear staff", key: true, desc: "Axertes's gift. The Many-Named One is afraid of it." },
+    charm: { name: "Nachtigal charm", heal: 28, mp: 12, desc: "A jingling vial of mountain medicine." },
+    cocoa: { name: "Christmas cocoa", heal: 20, desc: "Molly's holiday cocoa. It tastes like a world that still believes." }
   };
 
   const CANTICLES = {
@@ -305,7 +329,11 @@
     ribbon: { name: "Ribbon Shot", mp: 3, pow: 13, who: ["brigitta"], desc: "A sling stone whistling true." },
     woods: { name: "Dunkel Call", mp: 5, pow: 10, slow: true, who: ["brigitta"], desc: "The forest answers in snow and thorns." },
     arrow: { name: "Weaponry Arrow", mp: 6, pow: 22, who: ["siegfried"], desc: "An arrow loosed from an invisible bow." },
-    pulse: { name: "Warding Pulse", mp: 8, pow: 14, all: true, who: ["siegfried"], desc: "Blue force that turns a falling tree aside." }
+    pulse: { name: "Warding Pulse", mp: 8, pow: 14, all: true, who: ["siegfried"], desc: "Blue force that turns a falling tree aside." },
+    thaw: { name: "Thaw", mp: 6, heal: 28, all: true, who: ["nachtigal"], desc: "Warmth poured into frozen bones." },
+    scry: { name: "Water Scry", mp: 5, pow: 12, slow: true, who: ["nachtigal"], desc: "A glowing pool that finds the weak point." },
+    roar: { name: "Dark Cry", mp: 7, pow: 20, all: true, who: ["bruno"], desc: "Bruno's impression of the Drevinwyrm — too convincing." },
+    staffc: { name: "Clear Staff", mp: 8, pow: 26, who: ["richard"], desc: "The rod flies, strikes, and snaps back to the hand." }
   };
 
   const ENEMIES = {
@@ -318,7 +346,11 @@
     eagle: { name: "Eagle Ape", hp: 28, atk: 9, def: 3, spd: 12, xp: 15, gold: 6, tint: "#8a6a3a" },
     lost: { name: "Lost Struggle", hp: 24, atk: 8, def: 2, spd: 6, xp: 12, gold: 2, tint: "#6a3040" },
     servant: { name: "Stone Servant", hp: 34, atk: 11, def: 6, spd: 4, xp: 18, gold: 7, tint: "#9aa3ad" },
-    many: { name: "The Many-Named One", hp: 140, atk: 14, def: 6, spd: 8, xp: 80, gold: 0, tint: "#2a1028", boss: true }
+    many: { name: "The Many-Named One", hp: 140, atk: 14, def: 6, spd: 8, xp: 80, gold: 0, tint: "#2a1028", boss: true },
+    ice: { name: "Ice Shade", hp: 32, atk: 10, def: 3, spd: 8, xp: 14, gold: 5, tint: "#8ab4d8" },
+    sentry: { name: "Stone Sentry", hp: 48, atk: 13, def: 8, spd: 4, xp: 22, gold: 8, tint: "#9aa8b8" },
+    wyrm: { name: "Drevinwyrm", hp: 168, atk: 16, def: 7, spd: 7, xp: 90, gold: 20, tint: "#4a6a48", boss: true },
+    many2: { name: "The Many-Named One", hp: 180, atk: 16, def: 7, spd: 9, xp: 100, gold: 0, tint: "#1a0818", boss: true }
   };
 
   const QUEST_TEXT = {
@@ -339,7 +371,20 @@
     castle: "The queen is failing. Speak with Rufus, then Queen Ellis.",
     between: "Enter the Space Between and learn what the music box truly is.",
     many: "Face the Many-Named One before the last bell falls silent.",
-    done: "The song is not yet finished."
+    done: "The song is not yet finished.",
+    visitor: "Karsten is waiting in the workshop. Hear why Jorgen has not come home.",
+    vault: "Karsten hid the music box the way Brutus did. Look in the closet.",
+    follow: "Karsten has gone after Jorgen. Promise or not — you will not stay put.",
+    kausen: "Jonathan Kausen knows the road to Wiesbaden and Berlin.",
+    berlin: "The Müller bakery is a ruin. Find what was taken — and who took it.",
+    molly: "Little Molly Rupert still believes in Christmas. Ask her about the globe.",
+    mountain: "Ride Sledge to the Frozen Mountain and the Kingdom of Burgenring.",
+    healer: "Find Nachtigal the healer in the caves. The mountain is going mad.",
+    sentries: "The stone sentries bar the inner shafts. They do not sleep.",
+    wyrm: "The Drevinwyrm is no children's tale. Follow Witter's water-scry.",
+    staffq: "Richard's task: a clear staff, and a dark house in East Berlin.",
+    dark: "Confront the Many-Named One before he takes the Frozen Globe home.",
+    done2: "The second movement is finished. The Centerspace is still singing."
   };
 
   const CHAR = {
@@ -347,9 +392,9 @@
     "C": 10, "R": 11, "H": 12, "W": 13, "r": 14, "A": 15, "F": 16,
     "B": 17, "t": 18, "D": 19, "S": 20, "%": 21, "@": 22, "*": 23,
     "b": 24, "c": 25, "f": 26, "u": 27, "/": 28, "o": 29, "Y": 30,
-    "G": 31, "k": 32
+    "G": 31, "k": 32, "I": 33, "X": 35, "m": 36, "i": 37, "E": 38, "z": 39
   };
-  const SOLID = new Set([5, 6, 7, 10, 11, 12, 13, 20, 26, 30, 32]);
+  const SOLID = new Set([5, 6, 7, 10, 11, 12, 13, 20, 26, 30, 32, 33, 36, 38, 39]);
 
   const MAPS = {};
   function addMap(id, spec) {
@@ -742,6 +787,240 @@ HHHHHHHHHHHHHHHH
     exits: [{ x: 6, y: 7, to: "labyrinth", tx: 16, ty: 9 }]
   });
 
+  addMap("karsten", {
+    name: "Karsten's Workshop", music: "home", start: [8, 4],
+    rows: `
+WWWWWWWWWWWWWWWW
+W======tt======W
+W==============W
+W========r=====W
+W==A=======F===W
+W==============W
+W=======D======W
+WWWWWWWWWWWWWWWW
+`,
+    npcs: [
+      { id: "karsten_npc", x: 10, y: 3, sprite: "karsten", name: "Karsten" },
+      { id: "bowl2", x: 8, y: 1, sprite: "bowl", name: "Breakfast" },
+      { id: "closet2", x: 2, y: 4, sprite: "door", name: "Back closet" }
+    ],
+    exits: [{ x: 8, y: 6, to: "idar", tx: 7, ty: 8 }]
+  });
+
+  addMap("kvault", {
+    name: "Karsten's Hidden Room", music: "secret", start: [4, 3],
+    rows: `
+WWWWWWWWWW
+W%%%%%%%%W
+W%%ttG%%%W
+W%%%%%%%%W
+W%%%%D%%%W
+WWWWWWWWWW
+`,
+    npcs: [
+      { id: "musicbox_k", x: 2, y: 3, sprite: "musicbox", name: "Music box" },
+      { id: "globe_mark", x: 7, y: 2, sprite: "globe", name: "Empty pedestal" }
+    ],
+    exits: [{ x: 5, y: 4, to: "karsten", tx: 3, ty: 4 }]
+  });
+
+  addMap("idar", {
+    name: "Idar-Oberstein, 1948", music: "village", start: [7, 8],
+    rows: `
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,TTTT,,,,,,,,TTTT,,,,
+,,,,T,,T,,,,,,,,T,,T,,,,
+,,,,TTTT,,,,,,,,TTTT,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,####........####,,,,
+,,,,#==#........#==#,,,,
+,,,,#==DppppppppD==#,,,,
+,,,,####........####,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,
+.....ooooooooooooooo....
+.....o.............o....
+.....oooooooooooDooo....
+`,
+    npcs: [
+      { id: "kausen", x: 12, y: 9, sprite: "kausen", name: "Jonathan Kausen" },
+      { id: "idar_sign", x: 16, y: 11, sprite: "sign", name: "Road sign" }
+    ],
+    exits: [
+      { x: 7, y: 7, to: "karsten", tx: 8, ty: 5 },
+      { x: 16, y: 12, to: "berlin", tx: 8, ty: 11 }
+    ]
+  });
+
+  addMap("berlin", {
+    name: "Berlin Ruins, 1948", music: "berlin", start: [8, 12],
+    rows: `
+EEEEEEEEEEEEEEEEEEEE
+EXXXXXXX,,,,XXXXXXXE
+EX,,XXXX,,,,XXXX,,XE
+EX,,,,,,,,,,,,,,XXXE
+EX,,,EEEEEEEEE,,,XXE
+EX,,,E=======E,,,,,E
+EX,,,E=======E,,,,,E
+EX,,,EEEE=EEEE,,,,,E
+EXXXXXXX,X,XXXXXXXXE
+E,,,,,,,,,,,,,,,,,,E
+EooooooooooooooooooE
+Eo................oE
+EooooooooooooDoooooE
+EEEEEEEEEEEEEEEEEEEE
+`,
+    npcs: [
+      { id: "bakery", x: 10, y: 6, sprite: "globe", name: "Müller bakery" },
+      { id: "molly_npc", x: 6, y: 10, sprite: "molly", name: "Molly Rupert" },
+      { id: "berlin_thief", x: 14, y: 4, sprite: "hood", name: "Hooded figure" },
+      { id: "loft_stairs", x: 5, y: 10, sprite: "door", name: "Loft stairs" }
+    ],
+    exits: [
+      { x: 13, y: 12, to: "idar", tx: 16, ty: 11 },
+      { x: 16, y: 9, to: "eastberlin", tx: 5, ty: 5 }
+    ],
+    encounters: ["ice", "shade"]
+  });
+
+  addMap("loft", {
+    name: "Molly's Christmas Loft", music: "christmas", start: [5, 4],
+    rows: `
+WWWWWWWWWWW
+W====tt===W
+W=========W
+W==B======W
+W=========W
+W=========W
+W====D====W
+WWWWWWWWWWW
+`,
+    npcs: [
+      { id: "molly_loft", x: 3, y: 3, sprite: "molly", name: "Molly" },
+      { id: "hats", x: 7, y: 2, sprite: "chest", name: "Holiday hats" },
+      { id: "sledge", x: 8, y: 4, sprite: "sledge", name: "Sledge" },
+      { id: "figurines", x: 5, y: 2, sprite: "score", name: "Tiny figures" }
+    ],
+    exits: [{ x: 5, y: 6, to: "berlin", tx: 8, ty: 8 }]
+  });
+
+  addMap("mountain", {
+    name: "The Frozen Mountain", music: "ice", start: [4, 11],
+    rows: `
+mmmmmmmmmmmmmmmmmmmm
+miiiiiiIIiiiiiiiiiim
+miiiIIiiiiiIIiiiiiim
+miiiiiiiiiiiiiiiiiim
+miiIIiiiiiiIIiiiiiim
+miiiiiizzziiiiiiiiim
+miiiiiiizziiiiiiiiim
+miiiIIiiiiiiiiiiiiim
+miiiiiiiIIiiiiiiiiim
+miiiiiiiiiiiiiiiiiim
+miiiiiiiiiiiiiiiiiim
+m,,,,,,,,,,,,,,,,,,m
+m,,,,,,,D,,,,,,,,,,m
+mmmmmmmmmmmmmmmmmmmm
+`,
+    npcs: [
+      { id: "falls_sign", x: 10, y: 5, sprite: "sign", name: "Frozen Falls" },
+      { id: "mountain_sentry", x: 12, y: 8, sprite: "statue", name: "Stone sentry" }
+    ],
+    exits: [
+      { x: 8, y: 12, to: "berlin", tx: 16, ty: 9 },
+      { x: 10, y: 4, to: "caves", tx: 3, ty: 10 }
+    ],
+    encounters: ["ice", "wolf"]
+  });
+
+  addMap("caves", {
+    name: "Kingdom of Burgenring", music: "labyrinth", start: [3, 10],
+    rows: `
+####################
+#%%%%%%%%%%%%%%%%%%#
+#%##%%%%##%%%%##%%%#
+#%%%%%%%%%%%%%%%%%%#
+#%##%%%%i%%%%%%%%%%#
+#%%%%%%%%i%%%%%%%%%#
+#%##%%%%##%%%%##%%%#
+#%%%%%%%%%%%%%%%%%%#
+#%%%%%%%~~%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%%%%%%#
+####################
+`,
+    npcs: [
+      { id: "witter", x: 8, y: 8, sprite: "witter", name: "Witter" },
+      { id: "nachtigal_npc", x: 14, y: 4, sprite: "nachtigal", name: "Nachtigal" },
+      { id: "lillis", x: 5, y: 3, sprite: "lillis", name: "Lillis" },
+      { id: "bruno_dark", x: 16, y: 7, sprite: "bruno", name: "Bruno" }
+    ],
+    exits: [
+      { x: 2, y: 10, to: "mountain", tx: 10, ty: 5 },
+      { x: 17, y: 3, to: "prison", tx: 4, ty: 5 },
+      { x: 17, y: 9, to: "wyrmlair", tx: 4, ty: 6 }
+    ],
+    encounters: ["ice", "sentry", "lost"]
+  });
+
+  addMap("prison", {
+    name: "Shattered Prison", music: "secret", start: [4, 5],
+    rows: `
+WWWWWWWWWWWW
+W%%%%tt%%%%W
+W%%%%%%%%%%W
+W%%%%c%%%%%W
+W%%%%%%%%%%W
+W%%%%%%%%%%W
+W%%%%D%%%%%W
+WWWWWWWWWWWW
+`,
+    npcs: [
+      { id: "drevin", x: 6, y: 3, sprite: "queen", name: "King Drevin" },
+      { id: "axertes", x: 3, y: 2, sprite: "axertes", name: "Axertes" }
+    ],
+    exits: [{ x: 5, y: 6, to: "caves", tx: 16, ty: 4 }]
+  });
+
+  addMap("wyrmlair", {
+    name: "Drevinwyrm Shaft", music: "boss", start: [4, 6],
+    rows: `
+################
+#iiiiiiiiiiiiii#
+#ii##iiiiii##ii#
+#iiiiiiiiiiiiii#
+#iiiiiiiiiiiiii#
+#iiiiiiiiiiiiii#
+#ii##iiiiii##ii#
+#iiiiiiiiiiiiii#
+#iiiiiiiiiiiiii#
+################
+`,
+    npcs: [
+      { id: "wyrm_boss", x: 8, y: 4, sprite: "wyrm", name: "Drevinwyrm" }
+    ],
+    exits: [{ x: 3, y: 8, to: "caves", tx: 16, ty: 9 }]
+  });
+
+  addMap("eastberlin", {
+    name: "East Berlin, 1948", music: "berlin", start: [5, 5],
+    rows: `
+EEEEEEEEEEEE
+E==========E
+E====tt====E
+E==========E
+E=====@====E
+E==========E
+E=====D====E
+EEEEEEEEEEEE
+`,
+    npcs: [
+      { id: "richard_east", x: 3, y: 3, sprite: "richard", name: "Grandfather" },
+      { id: "molly_east", x: 8, y: 3, sprite: "molly", name: "Molly" },
+      { id: "many_house", x: 6, y: 4, sprite: "hood", name: "Dark figure" }
+    ],
+    exits: [{ x: 6, y: 6, to: "berlin", tx: 16, ty: 9 }]
+  });
+
   function member(id) {
     const base = HEROES[id];
     return { ...base, hp: base.maxHp, mp: base.maxMp, alive: true };
@@ -756,6 +1035,13 @@ HHHHHHHHHHHHHHHH
     if (n.id === "brutus" && flag("brutus_left") && !flag("brutus_hurt")) return false;
     if (n.id === "brutusbed" && !flag("brutus_hurt")) return false;
     if (n.id === "siegfried" && state.map === "cottage" && !flag("snake_gone") && !hasHero("siegfried")) return false;
+    if (n.id === "karsten_npc" && flag("karsten_gone")) return false;
+    if (n.id === "nachtigal_npc" && hasHero("nachtigal")) return false;
+    if (n.id === "bruno_dark" && hasHero("bruno")) return false;
+    if (n.id === "richard_east" && hasHero("richard")) return false;
+    if (n.id === "wyrm_boss" && flag("wyrm_down")) return false;
+    if (n.id === "many_house" && flag("won2")) return false;
+    if (n.id === "berlin_thief" && flag("bakery_cleared")) return false;
     return true;
   }
 
@@ -767,14 +1053,33 @@ HHHHHHHHHHHHHHHH
     });
   }
 
-  function resetGame() {
+  function blankInv() {
+    return { porridge: 0, ribbon: 0, sword: 0, amulet: 0, sausage: 0, draught: 0, score: 0, coins: 0, globe: 0, staff: 0, charm: 0, cocoa: 0 };
+  }
+  function resetGame(book = 1) {
     HEROES.johann.atk = 8;
+    if (book === 2) {
+      HEROES.johann.atk = 11;
+      const party = [member("johann"), member("brigitta"), member("siegfried")];
+      party.forEach((p) => {
+        p.maxHp += 16; p.hp = p.maxHp;
+        p.maxMp += 8; p.mp = p.maxMp;
+        p.atk += 3; p.def += 2;
+      });
+      Object.assign(state, {
+        map: "karsten", x: 8 * TILE, y: 4 * TILE, dir: "down",
+        flags: { won: true }, gold: 18,
+        inventory: { ...blankInv(), porridge: 1, sausage: 2, draught: 2, sword: 1, ribbon: 1, score: 1 },
+        party, quest: "visitor", playtime: 0, book: 2
+      });
+      return;
+    }
     Object.assign(state, {
       map: "home", x: 9 * TILE, y: 4 * TILE, dir: "down",
       flags: {}, gold: 4,
-      inventory: { porridge: 1, ribbon: 0, sword: 0, amulet: 0, sausage: 0, draught: 1, score: 0, coins: 0 },
+      inventory: { ...blankInv(), porridge: 1, draught: 1 },
       party: [member("johann")],
-      quest: "wake", playtime: 0
+      quest: "wake", playtime: 0, book: 1
     });
   }
 
@@ -792,6 +1097,8 @@ HHHHHHHHHHHHHHHH
       const raw = JSON.parse(localStorage.getItem(SAVE_KEY));
       if (!raw) return false;
       Object.assign(state, raw);
+      state.book = raw.book || 1;
+      state.inventory = { ...blankInv(), ...(raw.inventory || {}) };
       return true;
     } catch { return false; }
   }
@@ -901,6 +1208,32 @@ HHHHHHHHHHHHHHHH
     sprites.shadow = makeSpr(16, 24, (g) => { pix(g, 4, 2, "#1a1028", 8, 20); });
     sprites.jorgen = makeSpr(16, 24, (g) => person(g, { hair: "#2a2018", shirt: "#4a3a28", pants: "#2a2418", extra: (g) => pix(g, 4, 6, "#3a2a20", 8, 4) }));
     sprites.karsten = makeSpr(16, 24, (g) => person(g, { hair: "#c8b090", shirt: "#5a4a38", pants: "#3a3028" }));
+    sprites.nachtigal = makeSpr(16, 24, (g) => person(g, {
+      hair: "#1a1210", shirt: "#2a5a58", pants: "#1a3030",
+      extra: (g) => { pix(g, 3, 10, "#c9a24a", 2, 2); pix(g, 11, 10, "#c9a24a", 2, 2); }
+    }));
+    sprites.molly = makeSpr(16, 24, (g) => person(g, {
+      hair: "#c9a24a", skin: "#f3d0b0", shirt: "#c45a6a", pants: "#3a2430",
+      extra: (g) => pix(g, 4, 3, "#e8d080", 8, 2)
+    }));
+    sprites.witter = makeSpr(16, 24, (g) => person(g, { hair: "#6a5030", shirt: "#3a5a78", pants: "#2a3040" }));
+    sprites.lillis = makeSpr(16, 24, (g) => person(g, { hair: "#e8d8b0", shirt: "#d8c8e8", pants: "#4a3a58" }));
+    sprites.kausen = makeSpr(16, 24, (g) => person(g, { hair: "#4a3a28", shirt: "#3a3a48", pants: "#2a2a30" }));
+    sprites.axertes = makeSpr(16, 24, (g) => {
+      pix(g, 4, 2, "#f4f0e0", 8, 18);
+      pix(g, 5, 6, "#fff8c8", 6, 5);
+      pix(g, 6, 5, "#c9a24a", 1, 1); pix(g, 9, 5, "#c9a24a", 1, 1);
+    });
+    sprites.globe = makeSpr(16, 16, (g) => {
+      pix(g, 4, 4, "#8ec8e8", 8, 8); pix(g, 6, 6, "#e8f6ff", 3, 3); pix(g, 5, 12, "#c9a24a", 6, 2);
+    });
+    sprites.sledge = makeSpr(16, 16, (g) => {
+      pix(g, 2, 8, "#8a4a22", 12, 4); pix(g, 1, 10, "#c9a24a", 14, 2); pix(g, 3, 6, "#e8e8f0", 4, 4);
+    });
+    sprites.wyrm = makeSpr(16, 24, (g) => {
+      pix(g, 4, 4, "#4a6a48", 8, 16); pix(g, 2, 2, "#5a8a58", 5, 6); pix(g, 9, 2, "#5a8a58", 5, 6); pix(g, 5, 0, "#6a9a68", 6, 5);
+      pix(g, 3, 4, "#1a2018", 2, 1); pix(g, 11, 4, "#1a2018", 2, 1);
+    });
   }
 
   const tileCache = {};
@@ -979,6 +1312,18 @@ HHHHHHHHHHHHHHHH
       fill("#161022"); pix(g, 6, 6, "#f0e070", 4, 4);
     } else if (id === 32) {
       fill("#4a3828");
+    } else if (id === 33) {
+      fill("#b8d8f0"); pix(g, 0, 0, "#8ab8d8", 16, 2); pix(g, 6, 0, "#e8f4ff", 4, 16);
+    } else if (id === 35) {
+      fill("#6a6058"); pix(g, 3, 5, "#4a443c", 6, 4); pix(g, 9, 9, "#8a8078", 5, 3);
+    } else if (id === 36) {
+      fill("#6a7380"); pix(g, 0, 0, "#4a5060", 16, 3); pix(g, 8, 0, "#8a93a0", 2, 16);
+    } else if (id === 37) {
+      fill("#c8e4f8"); pix(g, 4, 8, "#e8f4ff", 8, 2); pix(g, 10, 3, "#a8d0e8", 2, 2);
+    } else if (id === 38) {
+      fill("#3a3430"); pix(g, 0, 0, "#2a2420", 16, 2); pix(g, 7, 0, "#5a5048", 2, 16);
+    } else if (id === 39) {
+      fill("#8ab8d0"); pix(g, 0, 6, "#c8e0f0", 16, 3); pix(g, 4, 2, "#e8f4ff", 6, 2);
     } else fill("#203040");
   }
 
@@ -1010,7 +1355,10 @@ HHHHHHHHHHHHHHHH
     labyrinth: { bpm: 70, notes: [[0, 196], [2, 233], [4, 246], [6, 185], [8, 174]] },
     between: { bpm: 60, notes: [[0, 1046], [3, 1174], [6, 1318], [9, 1046]] },
     battle: { bpm: 140, notes: [[0, 392], [0.5, 523], [1, 392], [1.5, 587], [2, 392], [3, 330]] },
-    boss: { bpm: 120, notes: [[0, 155], [1, 185], [2, 196], [3, 233], [4, 185], [5, 155]] }
+    boss: { bpm: 120, notes: [[0, 155], [1, 185], [2, 196], [3, 233], [4, 185], [5, 155]] },
+    ice: { bpm: 72, notes: [[0, 523], [2, 494], [4, 440], [6, 392], [8, 440], [10, 523]] },
+    berlin: { bpm: 96, notes: [[0, 196], [1, 247], [2, 220], [3, 196], [4, 165], [6, 185], [8, 196]] },
+    christmas: { bpm: 100, notes: [[0, 392], [1, 523], [2, 659], [3, 784], [4, 659], [5, 523], [6, 587], [8, 392]] }
   };
   function stopMusic() { clearTimeout(musicTimer); musicTimer = 0; }
   function startMusic(name) {
@@ -1055,7 +1403,7 @@ HHHHHHHHHHHHHHHH
         MP ${p.mp}/${p.maxMp}
         <div class="mpbar"><i style="width:${Math.max(0, p.mp / p.maxMp * 100)}%"></i></div>
       </div>`).join("");
-    $("questChip").innerHTML = `<b>${currentMap().name}</b><br>${QUEST_TEXT[state.quest]}`;
+    $("questChip").innerHTML = `<b>${currentMap().name}</b><br>${QUEST_TEXT[state.quest] || ""}`;
   }
 
   function say(name, text, choices) {
@@ -1106,6 +1454,21 @@ HHHHHHHHHHHHHHHH
       body: "Lightning tears through a chamber window. Queen Ellis wakes clutching her chest. Rufus offers Cornelius's draught. It does nothing. “In a matter of days I will be gone,” she whispers. Far below the gleaming towers, a blacksmith's apprentice sleeps through the storm.",
       art: "castle" }
   ];
+  const PROLOGUE2 = [
+    { kicker: "Munich, Germany · January 1st, 1947", title: "The Visitor",
+      body: "A low voice, like a bass note from a pipe organ: “I have been known by… many.” Vlad tears the brown paper from a Rasputin scroll and finds his pockets empty. The Many-Named One does not wait. Fire answers the broken bargain.",
+      art: "munich" },
+    { kicker: "Idar-Oberstein · 1948", title: "Karsten's Visitor",
+      body: "Eight years after the first movement, Johann and Brigitta sit in Karsten Müller's workshop. Jorgen has not come home. Karsten still hides the music box the way Brutus did — a craftsman worth his salt needs a place for his really important works.",
+      art: "workshop" },
+    { kicker: "Berlin", title: "The Frozen Globe",
+      body: "In the ruined Müller bakery a glass sphere holds winter itself. Christmas still finds Molly Rupert. A sleigh named Sledge can outrun an airlift. Under Frozen Mountain, Burgenring remembers a king trapped in a monster of many heads.",
+      art: "globeart" },
+    { kicker: "East Berlin · 1948", title: "Richard's Task",
+      body: "Grandfather Richard is given a clear staff he barely understands. The Many-Named One is afraid of it. Two worlds remain tangled. The second movement is about to begin.",
+      art: "berlinart" }
+  ];
+  let cineList = PROLOGUE;
 
   function drawCine(kind, canvasId = "cineArt") {
     const g = $(canvasId).getContext("2d");
@@ -1131,6 +1494,26 @@ HHHHHHHHHHHHHHHH
       g.fillStyle = "#3a5088"; g.fillRect(142, 28, 52, 16); g.fillRect(226, 28, 52, 16); g.fillRect(174, 42, 72, 16);
       g.fillStyle = "#c9a24a"; g.fillRect(206, 10, 6, 22);
       g.fillStyle = "#9ad4ff"; g.fillRect(160, 70, 8, 10); g.fillRect(252, 70, 8, 10); g.fillRect(198, 80, 8, 10);
+    } else if (kind === "munich") {
+      g.fillStyle = "#0a1220"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#e8eef6"; for (let i = 0; i < 18; i++) g.fillRect(12 + i * 22, 8 + (i % 5) * 6, 3, 3);
+      g.fillStyle = "#3a2418"; g.fillRect(40, 90, 340, 70);
+      g.fillStyle = "#e07030"; g.fillRect(180, 70, 50, 50);
+      g.drawImage(sprites.hood, 200, 50);
+      g.drawImage(sprites.town, 120, 80);
+    } else if (kind === "globeart") {
+      g.fillStyle = "#1a3048"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#8ec8e8"; g.fillRect(176, 50, 68, 68);
+      g.fillStyle = "#e8f6ff"; g.fillRect(190, 62, 24, 24);
+      g.fillStyle = "#c9a24a"; g.fillRect(188, 118, 44, 8);
+      g.drawImage(sprites.molly, 90, 90);
+      g.drawImage(sprites.sledge, 300, 110);
+    } else if (kind === "berlinart") {
+      g.fillStyle = "#1a1814"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#3a3430"; g.fillRect(40, 40, 80, 120); g.fillRect(160, 20, 70, 140); g.fillRect(300, 50, 90, 110);
+      g.fillStyle = "#e8e8f0"; g.fillRect(248, 70, 6, 70);
+      g.drawImage(sprites.richard, 230, 90);
+      g.drawImage(sprites.hood, 160, 80);
     } else if (kind === "end") {
       g.fillStyle = "#1a3060"; g.fillRect(0, 0, 420, 180);
       g.fillStyle = "#0e1a38"; g.fillRect(0, 130, 420, 50);
@@ -1141,22 +1524,34 @@ HHHHHHHHHHHHHHHH
       g.drawImage(sprites.johann, 118, 100);
       g.drawImage(sprites.brigitta, 258, 100);
       g.drawImage(sprites.siegfried, 188, 90);
+    } else if (kind === "end2") {
+      g.fillStyle = "#f4f6ff"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#d8e4f8"; g.fillRect(0, 130, 420, 50);
+      g.fillStyle = "#e8eef6"; g.fillRect(40, 40, 28, 90); g.fillRect(90, 20, 40, 110); g.fillRect(300, 30, 50, 100);
+      g.drawImage(sprites.axertes, 188, 50);
+      g.drawImage(sprites.richard, 230, 90);
+      g.drawImage(sprites.globe, 120, 110);
+      g.drawImage(sprites.johann, 70, 100);
+      g.drawImage(sprites.molly, 310, 100);
     }
   }
-  function showPrologue(i = 0) {
+  function showCine(list, i = 0) {
+    cineList = list;
     cineIndex = i;
     mode = "cine";
     $("title").classList.add("hidden");
     $("cinematic").classList.remove("hidden");
-    const s = PROLOGUE[i];
+    const s = cineList[i];
     $("cineKicker").textContent = s.kicker;
     $("cineTitle").textContent = s.title;
     $("cineBody").textContent = s.body;
     drawCine(s.art);
     startMusic(i < 2 ? "secret" : i === 3 ? "castle" : "title");
   }
+  function showPrologue(i = 0) { showCine(PROLOGUE, i); }
+  function showPrologue2(i = 0) { showCine(PROLOGUE2, i); }
   function advanceCine() {
-    if (cineIndex < PROLOGUE.length - 1) showPrologue(cineIndex + 1);
+    if (cineIndex < cineList.length - 1) showCine(cineList, cineIndex + 1);
     else beginExplore();
   }
 
@@ -1166,13 +1561,17 @@ HHHHHHHHHHHHHHHH
     $("ending").classList.add("hidden");
     $("pause").classList.add("hidden");
     mode = "explore";
-    if (!fromSave) {
-      resetGame();
-      save(true);
-    }
+    if (!fromSave) save(true);
     startMusic(currentMap().music);
     renderHud();
-    if (!fromSave && !flag("intro")) {
+    if (!fromSave && state.book === 2 && !flag("intro2")) {
+      setFlag("intro2");
+      story([
+        ["Karsten", "The only thing that can't wait for breakfast is a burning house, am I right?"],
+        ["Johann", "And even that could probably wait if you live in a stone house."],
+        ["Brigitta", "Karsten. Jorgen still hasn't written. You should go."]
+      ]);
+    } else if (!fromSave && state.book !== 2 && !flag("intro")) {
       setFlag("intro");
       story([
         ["Johann", "If I don't come down to breakfast this instant, Mother will—"],
@@ -1223,6 +1622,34 @@ HHHHHHHHHHHHHHHH
     }
     if (exit.to === "castle" && !hasHero("siegfried") && !flag("chimera_fought") && !flag("amulet_taken")) {
       toast("The castle gates are watched. Later.");
+      return;
+    }
+    if (exit.to === "berlin" && !flag("karsten_gone")) {
+      toast("Karsten asked you not to leave unless the house is on fire.");
+      return;
+    }
+    if (exit.to === "berlin" && !flag("kausen_talk")) {
+      toast("Jonathan Kausen knows the road to Wiesbaden and Berlin.");
+      return;
+    }
+    if (exit.to === "loft" && !flag("met_molly") && state.map !== "berlin") {
+      toast("The loft belongs to someone who still believes in Christmas.");
+      return;
+    }
+    if (exit.to === "mountain" && !flag("got_sledge")) {
+      toast("You need Molly's sleigh — Sledge — to reach the Frozen Mountain.");
+      return;
+    }
+    if (exit.to === "caves" && !flag("sentry_down") && state.map === "mountain") {
+      toast("The stone sentry does not step aside.");
+      return;
+    }
+    if (exit.to === "wyrmlair" && !flag("witter_scry")) {
+      toast("The shafts swallow wanderers. Witter can scry a way.");
+      return;
+    }
+    if (exit.to === "eastberlin" && !flag("wyrm_down")) {
+      toast("The Frozen Globe still pulls toward the mountain.");
       return;
     }
     state.map = exit.to;
@@ -1587,6 +2014,279 @@ HHHHHHHHHHHHHHHH
       await say("", "A music box no larger than a loaf of bread. Its melody is the same one Jorgen could never quite catch in the snow.");
       return;
     }
+    if (id === "karsten_npc") {
+      if (flag("saw_vault")) {
+        await story([
+          ["Karsten", "I'll do it. But you must promise you will come after me if I do not return within two days."],
+          ["Karsten", "Stay in the house. There's food in the pantry. Don't try to use anything you're not sure of."],
+          ["Johann", "If all meals are half as good as that, I won't have time to think about anything else."],
+          ["", "Karsten takes his coat. The workshop feels larger without him."]
+        ]);
+        setFlag("karsten_gone");
+        state.quest = "follow";
+        renderHud();
+        return;
+      }
+      await story([
+        ["Karsten", "Jorgen should have written. He never stays silent this long."],
+        ["Brigitta", "Then you should go. If you aren't back in a day or two, we can always come looking."],
+        ["Karsten", "My brother and I finished a music box once. J und K Müller. You know the rest."],
+        ["Karsten", "Any craftsman worth his salt needs a place to store his really important works. The closet — I'll show you, if I expect you to follow me."]
+      ]);
+      setFlag("met_karsten");
+      state.quest = "vault";
+      renderHud();
+      return;
+    }
+    if (id === "bowl2") {
+      healParty(true);
+      renderHud();
+      await say("Karsten", "Breakfast first. The only thing that can't wait for breakfast is a burning house.");
+      return;
+    }
+    if (id === "closet2") {
+      if (!flag("met_karsten")) { await say("Karsten", "That closet is not for guests. Not yet."); return; }
+      await story([
+        ["Karsten", "Your uncle Brutus started a trend. Here. I might as well show you now."],
+        ["", "He walks you through the hidden door. Loamy earth. A faint yellow glow. The music box waits on its table."]
+      ]);
+      setFlag("closet2_open");
+      state.map = "kvault"; state.x = 4 * TILE; state.y = 3 * TILE;
+      startMusic("secret");
+      renderHud();
+      return;
+    }
+    if (id === "musicbox_k") {
+      await say("", "A music box no larger than a loaf of bread. J und K Müller. The melody is the one Jorgen could never quite catch.");
+      return;
+    }
+    if (id === "globe_mark") {
+      await story([
+        ["", "The table where a second treasure stood is bare. A ring of frost still marks the wood."],
+        ["Brigitta", "What? Like there are other music boxes out there?"],
+        ["Siegfried", "Not a box. A globe. Winter trapped in glass. Someone has already taken it."]
+      ]);
+      setFlag("saw_vault");
+      state.quest = "follow";
+      renderHud();
+      return;
+    }
+    if (id === "kausen") {
+      await story([
+        ["Jonathan Kausen", "Karsten's friends? I am Jonathan Kausen. I can get you as far as Wiesbaden. After that, Berlin is a different country twice a day."],
+        ["Jonathan Kausen", "The airlift hums like a hive. If you are hunting a stolen winter, start at the old Müller bakery. What is left of it."]
+      ]);
+      setFlag("kausen_talk");
+      state.quest = "berlin";
+      renderHud();
+      return;
+    }
+    if (id === "idar_sign") {
+      await say("", "WIESBADEN — BERLIN. The paint is newer than the wood. The road is older than both.");
+      return;
+    }
+    if (id === "bakery") {
+      if (flag("got_globe")) { await say("", "Frost still lingers in the ruined ovens. The Frozen Globe is in your pack, heavier than glass should be."); return; }
+      await story([
+        ["", "The Müller bakery is a husk. Flour mixed with snow. In the back room, winter hangs in the air like a held breath."],
+        ["Johann", "This is where they kept it."]
+      ]);
+      if (!flag("bakery_cleared")) {
+        startBattle(["ice", "ice"], { after: "bakery" });
+        return;
+      }
+      state.inventory.globe = 1;
+      setFlag("got_globe");
+      toast("Obtained the Frozen Globe.");
+      state.quest = "molly";
+      renderHud();
+      return;
+    }
+    if (id === "berlin_thief") {
+      if (flag("bakery_cleared")) { await say("", "The hooded figure is gone. Only a scorch of names that will not stay still."); return; }
+      await story([
+        ["Voice", "I have been known by many. You may not have this winter."],
+        ["Brigitta", "We have heard that speech before."]
+      ]);
+      startBattle(["ice", "shade"], { after: "bakery" });
+      return;
+    }
+    if (id === "molly_npc" || id === "molly_loft") {
+      if (flag("got_sledge")) { await say("Molly", "Hold tight. Next stop wherever the globe is pulling."); return; }
+      await story([
+        ["Molly", "Little Molly Rupert, at your service. You look like the figures on my table. Don't look so surprised — I remember the music box."],
+        ["Molly", "Christmas is not a date. It is a kind of magic that still works when the city is hungry."],
+        ["Molly", "Hats for the holidays. Cocoa. And Sledge. He is not a horse. He is better."]
+      ]);
+      setFlag("met_molly");
+      state.inventory.cocoa = (state.inventory.cocoa || 0) + 2;
+      state.quest = "molly";
+      toast("Molly pressed cocoa into your hands.");
+      renderHud();
+      return;
+    }
+    if (id === "loft_stairs") {
+      state.map = "loft"; state.x = 5 * TILE; state.y = 5 * TILE;
+      startMusic("christmas");
+      renderHud();
+      return;
+    }
+    if (id === "hats") {
+      await say("Molly", "Try one. You look like a person who has forgotten how to be twelve.");
+      return;
+    }
+    if (id === "figurines") {
+      await say("", "Tiny painted Johanns and Brigittas. Molly has an eye for detail. They are who you think they are.");
+      return;
+    }
+    if (id === "sledge") {
+      if (!flag("met_molly")) { await say("", "A sleigh with a personality. It stamps a runner, impatient."); return; }
+      if (!flag("got_globe")) { await say("Molly", "Sledge will not fly until you have the winter-glass. He has standards."); return; }
+      if (flag("got_sledge")) {
+        await story([["Molly", "Hold tight. Frozen Mountain again."]]);
+        state.map = "mountain"; state.x = 4 * TILE; state.y = 11 * TILE;
+        startMusic("ice");
+        renderHud();
+        return;
+      }
+      await story([
+        ["Molly", "Everybody hold tight. Next stop, the Frozen Mountain."],
+        ["", "Berlin drops away. The airlift is a line of beetles. Sledge outruns them like a joke the sky has not heard yet."]
+      ]);
+      setFlag("got_sledge");
+      state.map = "mountain"; state.x = 4 * TILE; state.y = 11 * TILE;
+      state.quest = "mountain";
+      startMusic("ice");
+      toast("Sledge carries you to Frozen Mountain.");
+      renderHud();
+      return;
+    }
+    if (id === "falls_sign") {
+      await say("", "FROZEN FALLS. Water that forgot how to fall. The caves of Burgenring open beyond.");
+      return;
+    }
+    if (id === "mountain_sentry") {
+      if (flag("sentry_down")) { await say("", "The sentry is rubble. Ice already claims the fragments."); return; }
+      await story([
+        ["", "A stone sentry turns its head with the patience of a mountain."],
+        ["Siegfried", "Weaponry magic. Old. It will not listen to a polite request."]
+      ]);
+      startBattle(["sentry", "sentry"], { after: "sentry" });
+      return;
+    }
+    if (id === "witter") {
+      await story([
+        ["Witter", "The whole mountain's gone mad. Bruno roared like the Drevinwyrm and now every child is running."],
+        ["Witter", "I scry in water. There are tubes meant to trap intruders — and a back door, if you can feel the shelf and press until it clicks."],
+        ["Witter", "The real Drevinwyrm is not a story. It is a chord of serpents. Deep. Hungry. And it has a king inside it."]
+      ]);
+      setFlag("witter_scry");
+      if (hasHero("nachtigal")) state.quest = "wyrm";
+      renderHud();
+      return;
+    }
+    if (id === "nachtigal_npc") {
+      if (hasHero("nachtigal")) { await say("Nachtigal", "Keep moving. There isn't time to stroll."); return; }
+      await story([
+        ["Nachtigal", "I am Nachtigal. I was sent to pick up the wounded. Instead I found a king named Drevin clenched around a chain."],
+        ["Nachtigal", "The chain is disastrous. The beast that swallowed him is worse. I will not let you die of something I can thaw."]
+      ]);
+      state.party.push(member("nachtigal"));
+      state.inventory.charm = (state.inventory.charm || 0) + 2;
+      setFlag("met_nachtigal");
+      toast("Nachtigal joined the party!");
+      state.quest = flag("witter_scry") ? "wyrm" : "healer";
+      renderHud();
+      return;
+    }
+    if (id === "lillis") {
+      await say("Lillis", "Silber and Strahl are at the upper shrines. If Bruno keeps shouting dark magic, even the priests will molt their feathers.");
+      return;
+    }
+    if (id === "bruno_dark") {
+      if (hasHero("bruno")) { await say("Bruno", "Don't look at me like that. I am useful now."); return; }
+      await story([
+        ["Bruno", "Keep walking, scarecrow. I scared them off with a pretty spot-on impression of the Drevinwyrm."],
+        ["Bruno", "The problem is I seem to have hit a dead end. And the real thing just answered."],
+        ["Johann", "Then stop shouting at it and come with us."]
+      ]);
+      const fight = await say("Bruno", "Or I could show you the roar.", [
+        { label: "Let Bruno prove it", value: "yes" },
+        { label: "Save it for the wyrm", value: "no" }
+      ]);
+      if (fight === "yes") startBattle(["ice", "ice"], { after: "bruno_roar" });
+      else {
+        state.party.push(member("bruno"));
+        setFlag("bruno_joined");
+        toast("Bruno joined the party!");
+        renderHud();
+      }
+      return;
+    }
+    if (id === "drevin") {
+      await story([
+        ["King Drevin", "I am Drevin. I was a king before the chord of serpents made a crown of me."],
+        ["King Drevin", "If you cut the beast, cut kindly. I would like to finish as a man."]
+      ]);
+      setFlag("met_drevin");
+      return;
+    }
+    if (id === "axertes") {
+      await story([
+        ["Axertes", "Not lost. How can one be lost when you have reached the place at which some roads begin?"],
+        ["Axertes", "Give the old man the clear staff when the time comes. I wish I may see him in a better world."]
+      ]);
+      if (!state.inventory.staff) {
+        state.inventory.staff = 1;
+        toast("Axertes leaves a clear staff.");
+      }
+      setFlag("got_staff");
+      state.quest = "staffq";
+      renderHud();
+      return;
+    }
+    if (id === "wyrm_boss") {
+      if (flag("wyrm_down")) { await say("", "Slime hardens on the ice. The chord of heads is still."); return; }
+      await story([
+        ["", "Instead of a single worm, the Drevinwyrm is a bundle of serpent-creatures chorded together. Each strand ends in its own head."],
+        ["Bruno", "Well, ugly. This dinner fights back."]
+      ]);
+      startBattle(["wyrm"], { after: "wyrm" });
+      return;
+    }
+    if (id === "richard_east") {
+      if (!hasHero("richard")) {
+        await story([
+          ["Grandfather", "Johann. I followed the dark magic and it led me here. A creature gave me a staff I do not understand."],
+          ["Grandfather", "Molly says keep it. Something tells her it was given for a reason."]
+        ]);
+        if (!state.inventory.staff) state.inventory.staff = 1;
+        state.party.push(member("richard"));
+        toast("Richard joined the party!");
+        renderHud();
+      }
+      await say("Grandfather", "So. Do we just storm in? I doubt it will be in the mood to converse.");
+      return;
+    }
+    if (id === "molly_east") {
+      await say("Molly", "Follow me. I am not leaving him a second name to hide behind.");
+      return;
+    }
+    if (id === "many_house") {
+      if (!hasHero("richard") && !state.inventory.staff) {
+        await say("", "The hooded figure's face will not decide what it wants to be. You need Richard — and the staff.");
+        return;
+      }
+      await story([
+        ["Voice", "He's gone home, little wretch. And I'm next. I won't let you meddle with that."],
+        ["Molly", "Where is Johann?"],
+        ["Grandfather", "How could you possibly have one of those?"],
+        ["", "The clear staff flies, lodges, and the dark figure howls in a chorus of borrowed names."]
+      ]);
+      state.quest = "dark";
+      startBattle(["many2"], { after: "final2" });
+      return;
+    }
     if (id === "innkeep") {
       if (flag("brutus_hurt")) {
         await say("Innkeeper", "We did what we could. The woods marked him. He is breathing. That is all I will promise.");
@@ -1654,9 +2354,25 @@ HHHHHHHHHHHHHHHH
       g.fillRect(x + 8, y + 28, 56, 40);
       g.fillRect(x + 36, y + 8, 28, 28);
       g.fillStyle = "#1a1020"; g.fillRect(x + 44, y + 16, 5, 5);
-    } else if (e.id === "many") {
+    } else if (e.id === "many" || e.id === "many2") {
       g.fillStyle = "#140818"; g.fillRect(x + 10, y, 48, 90);
       g.fillStyle = "#6a2060"; g.fillRect(x + 18, y + 18, 32, 24);
+    } else if (e.id === "wyrm") {
+      g.fillStyle = e.tint || "#4a6a48";
+      g.fillRect(x + 16, y + 10, 36, 80);
+      g.fillRect(x, y + 4, 22, 28);
+      g.fillRect(x + 46, y + 8, 22, 28);
+      g.fillRect(x + 18, y - 8, 28, 24);
+      g.fillStyle = "#1a2018";
+      g.fillRect(x + 6, y + 12, 6, 4); g.fillRect(x + 54, y + 16, 6, 4); g.fillRect(x + 28, y - 2, 6, 4);
+    } else if (e.id === "sentry") {
+      g.fillStyle = e.tint || "#9aa8b8";
+      g.fillRect(x + 14, y, 40, 90);
+      g.fillStyle = "#1a2018"; g.fillRect(x + 22, y + 18, 8, 8); g.fillRect(x + 38, y + 18, 8, 8);
+    } else if (e.id === "ice") {
+      g.fillStyle = e.tint || "#8ab4d8";
+      g.fillRect(x + 16, y + 8, 36, 70);
+      g.fillStyle = "#e8f4ff"; g.fillRect(x + 22, y + 16, 8, 8); g.fillRect(x + 38, y + 16, 8, 8);
     } else if (e.id === "croc") {
       g.fillRect(x + 8, y + 20, 52, 60);
       g.fillRect(x + 20, y, 40, 28);
@@ -1683,6 +2399,8 @@ HHHHHHHHHHHHHHHH
       g.fillStyle = "#1a3a28"; g.fillRect(0, 0, 960, 260);
     }
     if (state.map === "middlespace") { g.fillStyle = "#eef2ff"; g.fillRect(0, 0, 960, 260); }
+    if (state.map === "mountain" || state.map === "wyrmlair" || state.map === "caves") { g.fillStyle = "#1a3048"; g.fillRect(0, 0, 960, 260); }
+    if (state.map === "berlin" || state.map === "eastberlin") { g.fillStyle = "#2a2420"; g.fillRect(0, 0, 960, 260); }
     battle.enemies.forEach((e, i) => {
       if (e.hp <= 0) return;
       const x = 90 + i * 140, y = 118;
@@ -1729,7 +2447,7 @@ HHHHHHHHHHHHHHHH
       back.onclick = () => { battle.menu = "cmd"; renderBattle(); };
       box.appendChild(back);
     } else if (battle.menu === "item") {
-      ["porridge", "sausage", "draught"].forEach((id) => {
+      ["porridge", "sausage", "draught", "charm", "cocoa"].forEach((id) => {
         const b = document.createElement("button");
         b.className = "cmd-btn";
         b.textContent = `${ITEMS[id].name} x${state.inventory[id] || 0}`;
@@ -1900,6 +2618,11 @@ HHHHHHHHHHHHHHHH
       if (after === "chimera") afterChimera();
       if (after === "final") afterFinal();
       if (after === "bruno_bully") story([["Bruno", "Fine! Fine! The woods can have you both."]]);
+      if (after === "bakery") afterBakery();
+      if (after === "sentry") afterSentry();
+      if (after === "wyrm") afterWyrm();
+      if (after === "final2") afterFinal2();
+      if (after === "bruno_roar") afterBrunoRoar();
     }
     battle = null;
     startMusic(currentMap().music);
@@ -1936,6 +2659,56 @@ HHHHHHHHHHHHHHHH
     startMusic("labyrinth");
     renderHud();
   }
+  async function afterBakery() {
+    setFlag("bakery_cleared");
+    healParty(true);
+    if (!state.inventory.globe) {
+      state.inventory.globe = 1;
+      setFlag("got_globe");
+      toast("The Frozen Globe settles into your hands, painfully cold.");
+    }
+    state.quest = "molly";
+    await story([
+      ["", "The last ice-shade unravels. In the ruined ovens, a glass sphere holds a storm that does not end."],
+      ["Siegfried", "Winter trapped in glass. Do not shake it. Do not bargain with it."]
+    ]);
+    renderHud();
+  }
+  async function afterSentry() {
+    setFlag("sentry_down");
+    healParty(true);
+    state.quest = "healer";
+    await story([
+      ["", "The sentries crack. Frozen Falls open like a held breath finally released."],
+      ["Siegfried", "Burgenring is below. Stay close."]
+    ]);
+    renderHud();
+  }
+  async function afterBrunoRoar() {
+    if (!hasHero("bruno")) {
+      state.party.push(member("bruno"));
+      setFlag("bruno_joined");
+      toast("Bruno joined the party!");
+    }
+    await story([["Bruno", "See? Useful. Don't tell Brigitta I said please."]]);
+    renderHud();
+  }
+  async function afterWyrm() {
+    setFlag("wyrm_down");
+    healParty(true);
+    if (!hasHero("bruno")) {
+      state.party.push(member("bruno"));
+      setFlag("bruno_joined");
+      toast("Bruno joined the party!");
+    }
+    state.quest = "staffq";
+    await story([
+      ["", "The chord of heads goes slack. Somewhere inside the slime, a man's voice thanks you for cutting kindly."],
+      ["Nachtigal", "Drevin. The king is not the beast. Remember that when you tell the story."],
+      ["Siegfried", "The Many-Named One will want the globe back. East Berlin. Richard is already walking into it."]
+    ]);
+    renderHud();
+  }
   async function afterFinal() {
     setFlag("won");
     state.quest = "done";
@@ -1943,7 +2716,20 @@ HHHHHHHHHHHHHHHH
     $("ending").classList.remove("hidden");
     $("endTitle").textContent = "The First Movement Ends";
     $("endBody").textContent = "The Many-Named One unravels into borrowed faces and is gone — for now. The white castle bells find their true descending scale. Queen Ellis still breathes. Brutus is not stone yet. In a workshop that is also a world, a music box marked J und K Müller keeps singing. Johann looks at Brigitta, at Siegfried, at the scrap sword that learned a canticle. Two worlds remain tangled. The song is not yet finished.";
+    $("endBook2Btn").classList.remove("hidden");
     drawCine("end", "endArt");
+    startMusic("title");
+    save(true);
+  }
+  async function afterFinal2() {
+    setFlag("won2");
+    state.quest = "done2";
+    mode = "ending";
+    $("ending").classList.remove("hidden");
+    $("endTitle").textContent = "The Second Movement Ends";
+    $("endBody").textContent = "The clear staff passes through the Many-Named One and the borrowed faces howl themselves thin. He melts into a white portal and is gone — for now. Molly still breathes. Johann still holds the Frozen Globe as if it might sing. Grandfather Richard spends his last ounce of effort on the family's behalf and is not lost: Axertes waits in the Centerspace, in a better world, with work still to do. Two worlds remain tangled. The music box keeps singing.";
+    $("endBook2Btn").classList.add("hidden");
+    drawCine("end2", "endArt");
     startMusic("title");
     save(true);
   }
@@ -1973,6 +2759,9 @@ HHHHHHHHHHHHHHHH
     ctx.drawImage(hero, Math.floor(state.x - camX), Math.floor(state.y - camY - 8 - bob));
     if (hasHero("brigitta")) ctx.drawImage(sprites.brigitta, Math.floor(state.x - camX - 10), Math.floor(state.y - camY - 6));
     if (hasHero("siegfried")) ctx.drawImage(sprites.siegfried, Math.floor(state.x - camX + 12), Math.floor(state.y - camY - 10));
+    if (hasHero("nachtigal")) ctx.drawImage(sprites.nachtigal, Math.floor(state.x - camX - 18), Math.floor(state.y - camY - 4));
+    if (hasHero("bruno")) ctx.drawImage(sprites.bruno, Math.floor(state.x - camX + 20), Math.floor(state.y - camY - 4));
+    if (hasHero("richard")) ctx.drawImage(sprites.richard, Math.floor(state.x - camX + 2), Math.floor(state.y - camY - 14));
   }
 
   function update(dt) {
@@ -2046,7 +2835,7 @@ HHHHHHHHHHHHHHHH
         b.onclick = () => { useFieldItem(b.dataset.useItem); openPause("items"); };
       });
     } else if (view === "journal") {
-      extra.innerHTML = `${QUEST_TEXT[state.quest]}<br><br>Gold: ${state.gold}<br>Party: ${state.party.map((p) => p.name).join(", ")}`;
+      extra.innerHTML = `${QUEST_TEXT[state.quest] || ""}<br><br>Book ${state.book || 1}<br>Gold: ${state.gold}<br>Party: ${state.party.map((p) => p.name).join(", ")}`;
     } else extra.innerHTML = "Enter / Space: talk · I inventory · Esc pause · O options<br>Battle: 1 Attack  2 Canticle  3 Item  4 Defend  5 Flee";
   }
 
@@ -2059,6 +2848,7 @@ HHHHHHHHHHHHHHHH
     g.fillStyle = "#c9a24a"; g.fillRect(206, 6, 6, 18);
     g.fillStyle = "#9ad4ff"; g.fillRect(176, 48, 6, 8); g.fillRect(234, 48, 6, 8);
     g.drawImage(sprites.musicbox, 200, 86);
+    g.drawImage(sprites.globe, 248, 86);
     g.drawImage(sprites.johann, 120, 90);
     g.drawImage(sprites.brigitta, 268, 90);
   }
@@ -2107,11 +2897,17 @@ HHHHHHHHHHHHHHHH
 
   function startNew() {
     ensureAudio();
-    resetGame();
+    resetGame(1);
     showPrologue(0);
+  }
+  function startBook2() {
+    ensureAudio();
+    resetGame(2);
+    showPrologue2(0);
   }
 
   $("newGameBtn").onclick = startNew;
+  $("book2Btn").onclick = startBook2;
   $("continueBtn").onclick = () => { if (load()) { ensureAudio(); beginExplore(true); } };
   $("optionsBtn").onclick = () => $("options").classList.remove("hidden");
   $("closeOptions").onclick = () => $("options").classList.add("hidden");
@@ -2121,6 +2917,7 @@ HHHHHHHHHHHHHHHH
   $("saveBtn").onclick = () => save();
   $("quitTitleBtn").onclick = () => { save(true); $("pause").classList.add("hidden"); $("title").classList.remove("hidden"); mode = "title"; startMusic("title"); };
   $("endTitleBtn").onclick = () => { $("ending").classList.add("hidden"); $("title").classList.remove("hidden"); mode = "title"; startMusic("title"); };
+  $("endBook2Btn").onclick = () => { $("ending").classList.add("hidden"); startBook2(); };
   $("cinematic").onclick = () => { if (mode === "cine") advanceCine(); };
   $("dialog").onclick = (e) => {
     if (e.target.closest("button")) return;
@@ -2146,8 +2943,9 @@ HHHHHHHHHHHHHHHH
 
   if (/(?:^|[?&])debug=1(?:&|$)/.test(location.search)) {
     window.CanticleDebug = {
-      snapshot() { return { mode, map: state.map, quest: state.quest, party: state.party.map((p) => ({ id: p.id, hp: p.hp, atk: p.atk })), flags: { ...state.flags }, inv: { ...state.inventory }, gold: state.gold }; },
+      snapshot() { return { mode, map: state.map, quest: state.quest, book: state.book, party: state.party.map((p) => ({ id: p.id, hp: p.hp, atk: p.atk })), flags: { ...state.flags }, inv: { ...state.inventory }, gold: state.gold }; },
       state,
+      startBook2,
       warp(map, x, y) { state.map = map; state.x = x * TILE; state.y = y * TILE; if (blocked(state.x, state.y)) { /* keep */ } renderHud(); },
       join(id) { if (!hasHero(id)) state.party.push(member(id)); },
       flag: setFlag, battle: startBattle,

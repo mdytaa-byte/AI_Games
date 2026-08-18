@@ -188,7 +188,7 @@
 
     <div class="play-shell">
       <aside class="panel" id="oppPanel">
-        <h2>Opponent</h2>
+        <h2 id="oppHeading">Opponent</h2>
         <div class="who">
           <div class="portrait" id="oppPort">M</div>
           <div>
@@ -218,8 +218,8 @@
         <div class="result-banner" id="resultBanner"></div>
       </div>
 
-      <aside class="panel">
-        <h2>You</h2>
+      <aside class="panel" id="youPanel">
+        <h2 id="youHeading">You</h2>
         <div class="who">
           <div class="portrait" id="youPort">Y</div>
           <div>
@@ -401,6 +401,7 @@
     <div class="modal" style="text-align:center">
       <h2 id="endTitle">The table is yours</h2>
       <p id="endBody"></p>
+      <p id="endPurse" class="eyebrow" style="margin-top:8px;letter-spacing:.08em"></p>
       <div class="modal-actions" style="justify-content:center">
         <button class="ghost-btn" id="endMenu" type="button">Return</button>
         <button class="gold-btn" id="endAgain" type="button">Sit again</button>
@@ -665,10 +666,39 @@
       circuitIndex: 0,
       throwIndex: 1,
       busy: false,
-      practice: false
+      practice: false,
+      passing: false,
+      hotseatStep: 1,
+      clenched: false
     };
 
     let world = null;
+    let playSeq = 0;
+
+    function stale(seq) { return seq !== playSeq; }
+    function bumpPlay() { playSeq++; }
+    function overlayOpen(ids) {
+      const list = ids || ['setupModal','rulesModal','codexModal','storyModal','endModal','hotseatModal'];
+      return list.some(id => { const el = $('#'+id); return el && !el.classList.contains('hidden'); });
+    }
+    function blockingOverlay() {
+      return overlayOpen(['setupModal','storyModal','endModal','hotseatModal']);
+    }
+    function resetChantLabels() {
+      $$('#chantLine .syllable').forEach(el => {
+        el.classList.remove('on','throw');
+        const s = el.dataset.s;
+        if (s && SIGN_META[s]) el.textContent = SIGN_META[s].name;
+      });
+      $$('#beats i').forEach(el => el.classList.remove('on'));
+      if ($('#resultBanner')) $('#resultBanner').textContent = '';
+    }
+    function cancelPlay() {
+      bumpPlay();
+      state.busy = false;
+      state.passing = false;
+      resetChantLabels();
+    }
 
     function makeTextures() {
       const wood = document.createElement('canvas'); wood.width=512; wood.height=512;
@@ -1051,15 +1081,21 @@
     function beltWidth(merits, cap) { return `${clamp(merits/cap,0,1)*100}%`; }
 
     function renderHud() {
-      const y = state.you, o = state.hotseat ? state.p2 : state.opp;
-      if (!o) return;
+      const p2turn = state.hotseat && state.hotseatStep===2;
+      const y = p2turn ? state.p2 : state.you;
+      const o = p2turn ? state.you : (state.hotseat ? state.p2 : state.opp);
+      if (!y || !o) return;
+      const workingWager = state.you.wager;
+      const workingThrow = state.you.throw;
+      $('#youHeading').textContent = p2turn ? y.name : (state.hotseat ? state.you.name : 'You');
+      $('#oppHeading').textContent = p2turn ? o.name : 'Opponent';
       $('#youName').textContent = y.name;
       $('#youTitle').textContent = y.title;
       $('#youPort').textContent = y.glyph;
       $('#youPort').style.color = y.color;
       $('#youMerits').textContent = y.merits;
       $('#youWins').textContent = y.wins;
-      $('#youWager').textContent = state.phase==='wager' || state.phase==='countdown' || state.phase==='chant' ? y.wager : (state.phase==='idle' ? y.wager : y.wager);
+      $('#youWager').textContent = workingWager;
       $('#youBelt').style.width = beltWidth(y.merits, 48);
       $('#oppName').textContent = o.name;
       $('#oppTitle').textContent = o.title;
@@ -1069,29 +1105,33 @@
       $('#oppWins').textContent = o.wins || 0;
       $('#oppWager').textContent = (state.phase==='reveal' || state.phase==='resolve') ? o.wager : 'clenched';
       $('#oppBelt').style.width = beltWidth(o.merits||0, 48);
-      $('#oppBlurb').textContent = o.blurb || '';
+      $('#oppBlurb').textContent = o.blurb || (p2turn ? `${y.name} chooses in private. ${o.name} should look away.` : '');
       $('#log').innerHTML = state.logs.slice(0,8).map(x=>`<div>${x}</div>`).join('');
       $('#roundLabel').textContent = `Throw ${state.throwIndex}`;
       const modeNames = { duel:'Wagered Duel', hotseat:'Two Sailors', circuit:'Merit Belt Circuit', story:'Command of the Ship', practice:'Practice' };
       $('#modeLabel').textContent = modeNames[state.mode] || 'Match';
-      const maxW = Math.max(1, Math.min(8, y.merits));
+      const purse = Math.max(0, y.merits);
+      const maxW = Math.max(1, Math.min(8, Math.max(1, purse)));
       $('#wager').max = maxW;
-      if (y.wager > maxW) y.wager = maxW;
-      $('#wager').value = y.wager;
-      $('#wagerVal').textContent = y.wager;
-      const wagerLocked = !['wager','idle'].includes(state.phase) || state.busy;
+      if (workingWager > maxW) state.you.wager = maxW;
+      if (state.you.wager < 1) state.you.wager = 1;
+      $('#wager').value = state.you.wager;
+      $('#wagerVal').textContent = state.you.wager;
+      const wagerLocked = !['wager'].includes(state.phase) || state.busy || state.passing || state.clenched;
       $('#wager').disabled = wagerLocked || state.practice || state.mode==='story';
+      $('#wagerMinus').disabled = $('#wager').disabled;
+      $('#wagerPlus').disabled = $('#wager').disabled;
+      const canReady = !state.busy && !state.passing && !blockingOverlay();
       if (state.practice) {
         $('#readyBtn').disabled = state.busy;
         $('#readyBtn').textContent = 'Run a practice chant';
       } else {
-        $('#readyBtn').disabled = state.busy || !['wager','idle'].includes(state.phase);
-        const p2turn = state.hotseat && state.hotseatStep===2;
+        $('#readyBtn').disabled = !canReady || state.phase!=='wager';
         $('#readyBtn').textContent = state.busy ? 'Chanting…' : state.mode==='story' ? 'Call the game' : p2turn ? 'Clench & chant' : 'Clench the wager';
       }
       if (state.mode==='story') {
         $('#youWager').textContent = 'the helm';
-        $('#oppWager').textContent = state.phase==='reveal' || state.phase==='resolve' ? 'the helm' : 'the helm';
+        $('#oppWager').textContent = 'the helm';
       }
       if (state.mode==='circuit') $('#modeLabel').textContent = `Merit Belt Circuit · ${state.circuitIndex+1} / ${OPPONENTS.length}`;
       if (state.full) {
@@ -1101,9 +1141,13 @@
       $('#hudVersion').classList.toggle('on', state.full);
       $('#hudVersion').setAttribute('aria-pressed', state.full ? 'true' : 'false');
       $('#hudVersion').textContent = state.full ? 'Full sequence on' : 'Full sequence';
+      const hint = p2turn
+        ? `${y.name}: choose a silent throw, then clench.`
+        : `Choose your silent throw — <span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">3</span> <span class="kbd">4</span><span class="sky-only"> <span class="kbd">5</span> <span class="kbd">6</span></span>`;
+      $('#signHint').innerHTML = hint;
       $$('.sign-btn').forEach(b => {
-        b.classList.toggle('selected', b.dataset.sign === y.throw);
-        b.classList.toggle('locked', state.phase==='reveal' || state.phase==='resolve');
+        b.classList.toggle('selected', b.dataset.sign === workingThrow);
+        b.classList.toggle('locked', state.phase==='reveal' || state.phase==='resolve' || state.passing);
       });
     }
 
@@ -1119,8 +1163,9 @@
     }
 
     function chooseThrow(sign) {
+      if (blockingOverlay() || state.passing) return;
       if (!throwSigns().includes(sign) && !(state.practice && sign==='hah')) return;
-      if (['reveal','resolve'].includes(state.phase) || state.busy && state.phase==='throw') return;
+      if (['reveal','resolve','story'].includes(state.phase) || state.busy && state.phase==='throw') return;
       if (state.practice) {
         state.you.throw = sign;
         world && world.setHands(sign, sign, 0.16);
@@ -1194,22 +1239,27 @@
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
     async function runChant() {
+      const seqId = playSeq;
       state.busy = true; state.phase = 'countdown'; state.changedOnHah = false; renderHud();
       $('#resultBanner').textContent = '';
       world && world.resetCam();
       audio.resume();
       for (let n=3;n>=1;n--) {
+        if (stale(seqId)) return;
         $('#resultBanner').textContent = n;
         audio.tone(220+n*40, 0.12, 'sine', 0.05);
         await sleep(480);
       }
+      if (stale(seqId)) return;
       $('#resultBanner').textContent = '';
       state.phase = 'chant';
       world && world.setHands('hah','hah', 0.2);
       await sleep(200);
+      if (stale(seqId)) return;
       const seq = chantBeats();
       const lastI = seq.length-1;
       for (let i=0;i<seq.length;i++) {
+        if (stale(seqId)) return;
         state.chantBeat = i;
         const s = seq[i];
         setChant(s);
@@ -1225,30 +1275,33 @@
         }
         await sleep(i===lastI ? 560 : 580);
       }
+      if (stale(seqId)) return;
       $$('#chantLine .syllable').forEach(el=>el.classList.remove('on'));
       const lastName = seq[lastI];
       const lastEl = $(`#chantLine [data-s="${lastName}"]`);
-      lastEl.classList.add('throw');
-      lastEl.textContent = 'THROW';
+      if (lastEl) { lastEl.classList.add('throw'); lastEl.textContent = 'THROW'; }
       audio.beat('throw');
       state.phase = 'throw';
       world && world.punchIn();
       await sleep(160);
+      if (stale(seqId)) return;
       const oppSign = state.hotseat ? state.p2.throw : (state.oppThrowLocked ? state.opp.throw : aiThrow());
       const youSign = state.you.throw;
       if (!state.hotseat) state.opp.throw = oppSign;
       state.oppThrowLocked = false;
       world && world.setHands(youSign, state.hotseat ? state.p2.throw : oppSign, 0.09);
       await sleep(420);
-      lastEl.textContent = SIGN_META[lastName].name;
-      lastEl.classList.remove('throw');
-      await resolveThrow(youSign, state.hotseat ? state.p2.throw : oppSign);
+      if (stale(seqId)) return;
+      if (lastEl) { lastEl.textContent = SIGN_META[lastName].name; lastEl.classList.remove('throw'); }
+      await resolveThrow(youSign, state.hotseat ? state.p2.throw : oppSign, seqId);
     }
 
-    async function resolveThrow(youSign, oppSign) {
+    async function resolveThrow(youSign, oppSign, seqId) {
+      if (seqId==null) seqId = playSeq;
+      if (stale(seqId)) return;
       state.phase = 'reveal';
       state.youThrows.push(youSign);
-      (state.hotseat ? state.oppThrows : state.oppThrows).push(oppSign);
+      state.oppThrows.push(oppSign);
       if (state.hotseat) state.p2.throw = oppSign;
       save.stats.throws = (save.stats.throws||0)+1; persist();
       const res = outcome(youSign, oppSign);
@@ -1259,13 +1312,13 @@
         world && world.flash(0x3a3420);
         $('#resultBanner').innerHTML = `<span class="winlose draw">${yn} against ${on}. Again.</span>`;
         log(`${yn} against ${on}. Opposite or matching — the officiator calls another throw.`);
-        toast('No winner. The merits stay clenched.');
+        toast(state.mode==='story' ? 'No winner. The helm is still at stake — throw again.' : 'No winner. The merits stay clenched.');
+        state.clenched = state.mode!=='story';
         state.throwIndex++;
         state.busy = false;
         state.phase = 'wager';
         state.earlyLock = false;
         renderHud();
-        if (state.mode==='story' || state.autoContinue) setTimeout(()=>{ if(state.phase==='wager') beginThrow(); }, 1100);
         return;
       }
       const youWon = res==='win';
@@ -1275,28 +1328,34 @@
         ? `<span class="winlose win">${yn} defeats ${on}</span>`
         : `<span class="winlose lose">${on} defeats ${yn}</span>`;
       const yw = state.you.wager;
-      const ow = state.mode==='story' ? 0 : (state.hotseat ? state.p2.wager : state.opp.wager);
+      const other = state.hotseat ? state.p2 : state.opp;
+      const ow = state.mode==='story' ? 0 : other.wager;
       if (state.mode==='story') {
         if (youWon) { state.you.wins++; log('The officiator: “That’s the game for the king.”'); endMatch(true, 'Command of the ship is yours. Sail toward the blue light.'); }
         else { state.opp.wins++; log('Motim seizes the call.'); endMatch(false, 'Motim takes the helm. The ship turns back into the wrecks.'); }
         renderHud(); return;
       }
+      // Winner takes the opponent's clenched wager. Own wager never left the purse.
       if (youWon) {
-        state.you.merits += yw + ow;
-        if (state.hotseat) state.p2.merits -= ow; else state.opp.merits -= ow;
+        state.you.merits += ow;
+        other.merits -= ow;
         state.you.wins++;
         save.stats.meritsWon = (save.stats.meritsWon||0)+ow; persist();
         audio.coins();
-        log(`You take ${yw+ow} merits. ${yn} beats ${on}.`);
+        log(`You take ${ow} merit${ow===1?'':'s'} from ${other.name}. ${yn} beats ${on}.`);
       } else {
         state.you.merits -= yw;
-        if (state.hotseat) { state.p2.merits += yw+ow; state.p2.wins++; }
-        else { state.opp.merits += yw+ow; state.opp.wins++; }
-        log(`${state.hotseat?state.p2.name:state.opp.name} takes ${yw+ow} merits. ${on} beats ${yn}.`);
+        other.merits += yw;
+        other.wins++;
+        log(`${other.name} takes ${yw} merit${yw===1?'':'s'} from you. ${on} beats ${yn}.`);
       }
+      state.you.merits = Math.max(0, state.you.merits);
+      other.merits = Math.max(0, other.merits);
+      state.clenched = false;
       state.throwIndex++;
       renderHud();
       await sleep(900);
+      if (stale(seqId)) return;
       const target = state.firstTo;
       const p2 = state.hotseat ? state.p2 : state.opp;
       if (state.you.merits<=0) { endMatch(false, 'Your purse is empty. The belt passes.'); return; }
@@ -1329,6 +1388,12 @@
       persist();
       $('#endTitle').textContent = won ? 'A decisive hand' : 'The wager is lost';
       $('#endBody').textContent = text;
+      const other = state.hotseat ? state.p2 : state.opp;
+      if (state.mode==='story' || state.practice || !other) {
+        $('#endPurse').textContent = '';
+      } else {
+        $('#endPurse').textContent = `${state.you.name}: ${state.you.merits} merits · ${other.name}: ${other.merits} merits`;
+      }
       $('#endAgain').textContent = state.mode==='circuit' && won && state.circuitIndex < OPPONENTS.length-1 ? 'Next challenger' : 'Sit again';
       $('#endModal').classList.remove('hidden');
       if (state.mode==='story') {
@@ -1359,10 +1424,11 @@
     }
 
     function beginMatch() {
+      cancelPlay();
       state.startMerits = +$('#startMerits').value;
       state.firstTo = state.mode==='story' ? 1 : +$('#firstTo').value;
       state.you = { name: state.mode==='story' ? 'Caecus' : 'You', title: state.mode==='story' ? 'Sightless king' : 'Challenger', glyph: state.mode==='story' ? 'C' : 'Y', merits: state.mode==='story' ? 0 : state.startMerits, wins:0, wager: Math.min(3, state.startMerits||3), throw:'shah', color:'#e7c37a' };
-      state.logs = []; state.youThrows=[]; state.oppThrows=[]; state.throwIndex=1; state.circuitIndex = state.mode==='circuit' ? 0 : state.circuitIndex; state.practice=false; state.hotseatStep=1; state.oppThrowLocked=false;
+      state.logs = []; state.youThrows=[]; state.oppThrows=[]; state.throwIndex=1; state.circuitIndex = state.mode==='circuit' ? 0 : state.circuitIndex; state.practice=false; state.hotseatStep=1; state.oppThrowLocked=false; state.passing=false; state.clenched=false;
       if (state.mode==='hotseat') {
         state.hotseat = true;
         state.p2 = { name: $('#p2Name').value.trim()||'Second sailor', title:'Opposite hand', glyph:'2', merits:state.startMerits, wins:0, wager:3, throw:'sheh', color:'#d45b52', blurb:'A living opponent across the same table.' };
@@ -1376,12 +1442,16 @@
       $('#setupModal').classList.add('hidden');
       $('#titleScreen').classList.add('hidden');
       $('#playHud').classList.remove('hidden');
+      $('#endModal').classList.add('hidden');
+      $('#hotseatModal').classList.add('hidden');
       buildSigns();
       renderHud();
       if (state.mode==='story') {
+        state.phase = 'story';
         $('#storyTitle').textContent = 'Shah-Sheh-Rih-Lah';
         $('#storyBody').innerHTML = `<p>The corridor is narrow, the ship starving, the fog thick as wool. You are Caecus. You speak the game’s name to the man wearing a merit belt — a challenge he cannot refuse.</p><p>The stake is command. If you win, the prow stays pointed at the blue light. If Motim wins, the ship turns around.</p><p>You play to the first decisive throw. Listen on <em>Hah</em>. Some throats change when the choice is already made.</p>`;
         $('#storyModal').classList.remove('hidden');
+        renderHud();
       } else {
         log(state.full
           ? 'Witnesses gather. The full sequence is spoken — Ehl and Akh sit with the four throws.'
@@ -1393,18 +1463,21 @@
     }
 
     function beginThrow() {
-      if (state.busy) return;
+      if (state.busy || state.passing || blockingOverlay()) return;
+      if (state.phase!=='wager') return;
       if (state.hotseat) {
         if (state.hotseatStep!==2) {
           state._p1 = { throw: state.you.throw, wager: state.you.wager };
-          state.hotseatStep = 2;
+          state.passing = true;
           $('#hotseatTitle').textContent = `Pass to ${state.p2.name}`;
           $('#hotseatBody').textContent = `${state.you.name} should look away. ${state.p2.name} will choose a hidden throw and wager, then clench.`;
           $('#hotseatModal').classList.remove('hidden');
+          renderHud();
           return;
         }
-        state.p2.throw = state.you.throw;
-        state.p2.wager = state.you.wager;
+        const cap = Math.max(1, Math.min(8, state.p2.merits));
+        state.p2.throw = throwSigns().includes(state.you.throw) ? state.you.throw : throwSigns()[0];
+        state.p2.wager = clamp(state.you.wager, 1, cap);
         state.you.throw = state._p1.throw;
         state.you.wager = state._p1.wager;
         state.hotseatStep = 1;
@@ -1422,11 +1495,13 @@
     }
 
     function showMenu() {
+      cancelPlay();
       $('#playHud').classList.add('hidden');
       $('#titleScreen').classList.remove('hidden');
-      $('#endModal').classList.add('hidden');
-      $('#storyModal').classList.add('hidden');
-      state.phase = 'idle'; state.busy=false;
+      ['endModal','storyModal','setupModal','hotseatModal','rulesModal','codexModal'].forEach(id => $('#'+id).classList.add('hidden'));
+      state.phase = 'idle';
+      state.practice = false;
+      state.hotseatStep = 1;
       world && world.resetCam();
       world && world.setHands('hah','hah', 0.5);
     }
@@ -1489,20 +1564,27 @@
     }
 
     function startPractice() {
+      cancelPlay();
       state.practice = true; state.mode='practice';
-      state.you = { name:'You', title:'Student of the signs', glyph:'Y', merits:0, wins:0, wager:0, throw:'hah', color:'#e7c37a' };
-      state.opp = { name:'Mirror', title:'Practice hand', glyph:'M', merits:0, wins:0, wager:0, throw:'hah', color:'#9aa7d8',
+      const pool = throwSigns();
+      state.you = { name:'You', title:'Student of the signs', glyph:'Y', merits:0, wins:0, wager:0, throw: pool[0], color:'#e7c37a' };
+      state.opp = { name:'Mirror', title:'Practice hand', glyph:'M', merits:0, wins:0, wager:0, throw: pool[0], color:'#9aa7d8',
         blurb: state.full
           ? 'Raise Ehl, then Akh. The silent throw may now be any of the six living signs.'
           : 'Form each sign until the fingers remember. The silent throw is the only choice that matters.' };
       state.logs = [state.full ? 'The rite does not stop at Hah.' : 'Hold a sign. Watch both hands take the shape from the book.'];
       state.phase = 'idle';
+      state.hotseat = false;
+      $('#setupModal').classList.add('hidden');
+      $('#hotseatModal').classList.add('hidden');
+      $('#endModal').classList.add('hidden');
+      $('#storyModal').classList.add('hidden');
       $('#titleScreen').classList.add('hidden');
       $('#playHud').classList.remove('hidden');
       buildSigns();
       $('#readyBtn').textContent = 'Run a practice chant';
       renderHud();
-      world && world.setHands('hah','hah', 0.3);
+      world && world.setHands(state.you.throw, state.you.throw, 0.3);
     }
 
     function bind() {
@@ -1525,20 +1607,33 @@
         if (state.mode==='circuit' && state.you.wins>=state.firstTo && state.circuitIndex < OPPONENTS.length-1) {
           state.circuitIndex++;
           const keep = state.you.merits;
-          const winsKeep = 0;
           state.opp = cloneOpp(OPPONENTS[state.circuitIndex].id);
-          state.you.wins = winsKeep; state.you.merits = keep;
+          state.you.wins = 0; state.you.merits = keep;
+          state.you.throw = throwSigns()[0];
+          state.you.wager = clamp(state.you.wager, 1, Math.max(1, Math.min(8, keep)));
           state.throwIndex = 1; state.youThrows=[]; state.oppThrows=[];
+          state.earlyLock = false; state.changedOnHah = false; state.busy = false; state.clenched = false;
+          resetChantLabels();
           log(`${state.opp.name} sits. The belt still hangs heavy.`);
           state.phase='wager'; renderHud();
+          world && world.setHands('hah','hah', 0.35);
         } else if (state.mode==='story') { openSetup('story'); }
         else beginMatch();
       };
-      $('#storyContinue').onclick = () => { $('#storyModal').classList.add('hidden'); state.phase='wager'; log('Witnesses take their places. Play to the first win.'); renderHud(); };
+      $('#storyContinue').onclick = () => {
+        $('#storyModal').classList.add('hidden');
+        state.phase='wager';
+        log('Witnesses take their places. Play to the first win.');
+        renderHud();
+      };
       $('#hotseatOk').onclick = () => {
         $('#hotseatModal').classList.add('hidden');
-        state.you.throw = pick(throwSigns());
-        state.you.wager = clamp(3, 1, Math.max(1, state.p2.merits));
+        state.passing = false;
+        state.hotseatStep = 2;
+        const pool = throwSigns();
+        state.you.throw = pick(pool);
+        const cap = Math.max(1, Math.min(8, state.p2.merits));
+        state.you.wager = state.clenched ? clamp(state.p2.wager, 1, cap) : clamp(3, 1, cap);
         renderHud();
         toast(`${state.p2.name}: choose in private, then clench.`);
       };
@@ -1552,14 +1647,17 @@
       };
       document.addEventListener('keydown', e => {
         if (e.key==='Escape') { $('#rulesModal').classList.add('hidden'); $('#codexModal').classList.add('hidden'); }
+        if (['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) return;
+        if (overlayOpen() && e.key===' ') return;
         const pool = throwSigns();
         if (['1','2','3','4','5','6'].includes(e.key) && pool[+e.key-1]) chooseThrow(pool[+e.key-1]);
         if (e.key==='q'||e.key==='Q') chooseThrow('shah');
         if (e.key==='w'||e.key==='W') chooseThrow('sheh');
         if (e.key==='e'||e.key==='E') chooseThrow('rih');
         if (e.key==='r'||e.key==='R') chooseThrow('lah');
-        if ((e.key==='f'||e.key==='F') && !['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)) setFull(!state.full);
-        if (e.key===' ' && (state.phase==='wager'||state.phase==='idle'||state.practice)) { e.preventDefault(); $('#readyBtn').click(); }
+        if (e.key==='f'||e.key==='F') setFull(!state.full);
+        const hudUp = $('#playHud') && !$('#playHud').classList.contains('hidden');
+        if (e.key===' ' && hudUp && !overlayOpen() && (state.phase==='wager' || state.practice)) { e.preventDefault(); $('#readyBtn').click(); }
         if (e.key==='+' || e.key==='=') $('#wagerPlus').click();
         if (e.key==='-' || e.key==='_') $('#wagerMinus').click();
       });
@@ -1567,16 +1665,24 @@
     }
 
     async function runPracticeChant() {
+      if (state.busy) return;
+      const seqId = playSeq;
       state.busy = true;
+      renderHud();
+      const pool = throwSigns();
+      if (!pool.includes(state.you.throw)) state.you.throw = pool[0];
       const seq = chantBeats();
       for (const s of seq) {
+        if (stale(seqId)) return;
         setChant(s); world && world.setHands(s,s, s==='ehl'||s==='akh'?0.32:0.22); audio.beat(s); await sleep(560);
       }
+      if (stale(seqId)) return;
       setChant(null);
       world && world.setHands(state.you.throw, state.you.throw, 0.1);
       audio.beat('throw');
       $('#resultBanner').textContent = `Silent throw: ${SIGN_META[state.you.throw].name}`;
       state.busy = false;
+      renderHud();
     }
 
     function boot() {

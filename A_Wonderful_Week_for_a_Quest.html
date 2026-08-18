@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>A Wonderful Week for a Quest</title>
-<meta name="description" content="A 16-bit RPG adaptation of Michael D. Young’s A Wonderful Week for a Quest. Book I: Roddy Squires. Book II: Bellissimo and the Oxymorons.">
+<meta name="description" content="A 16-bit RPG of Michael D. Young’s A Wonderful Week for a Quest. Book I: Squires. Book II: Bellissimo. Book III: Sir Roderick and the Wunderwell.">
 <style>
   :root {
     --ink: #0a0714;
@@ -187,6 +187,7 @@
           <div class="btns">
             <button id="btnNew">Book I</button>
             <button id="btnBook2">Book II</button>
+            <button id="btnBook3">Book III</button>
             <button id="btnCont" class="ghost">Continue</button>
             <button id="btnMute" class="ghost">Sound: On</button>
           </div>
@@ -304,6 +305,7 @@
     };
   }
   function isB2() { return G.day === 2; }
+  function isB3() { return G.day === 3; }
 
   const ITEMS = {
     luna: { name: "Luna Bean", desc: "Tastes terrible. Restores 18 HP.", heal: 18 },
@@ -313,7 +315,9 @@
     chips: { name: "Sweet-and-Sour Chips", desc: "An edible oxymoron. Do not feed to reasonable giants." },
     scrum: { name: "Scrumptious Bean", desc: "Roderick named it. The name is doing a lot of work." },
     garlic: { name: "Count’s Garlic", desc: "A vampire’s favorite. The irony is the point." },
-    onebean: { name: "The One Bean", desc: "Capital letters required. Do not confuse with lunch." }
+    onebean: { name: "The One Bean", desc: "Capital letters required. Do not confuse with lunch." },
+    eyebean: { name: "Eye Bean", desc: "A portable mirror full of opinionated sprites." },
+    file: { name: "Needler File", desc: "Nathaniel Nadle. Most wanted. Words that kneel people." }
   };
 
   const SKILLS = {
@@ -336,7 +340,13 @@
     kayak: { name: "Kayak", mp: 0, desc: "A boat that reads the same backward. Also a boat.", special: "prawn" },
     nether: { name: "Netherworld Shortcut", mp: 6, desc: "Teleportation with extra paperwork.", dmg: 12 },
     oxymoron: { name: "Edible Oxymoron", mp: 0, desc: "Sweet-and-sour chips. Scrumptious bean. Food that argues.", special: "lg" },
-    irony: { name: "Handyvamp Irony", mp: 0, desc: "A garlic-loving vegetarian vampire becomes a rabbit.", special: "dead" }
+    irony: { name: "Handyvamp Irony", mp: 0, desc: "A garlic-loving vegetarian vampire becomes a rabbit.", special: "dead" },
+    gotthis: { name: "You’ve Got This", mp: 0, desc: "Confidence magic. The well billed him later.", special: "needler" },
+    thickskin: { name: "Thick Skin", mp: 0, desc: "Dark scales. Needles bounce. Truths still sting.", special: "needler" },
+    marble: { name: "Rock Beats Glass", mp: 0, desc: "Miss Marble runs in front. Volleys become pebbles.", special: "golem" },
+    rezella: { name: "Call Her Rezella", mp: 0, desc: "Dragonborn fire. The golem’s lances melt.", special: "golem" },
+    goatgoat: { name: "Goat-Goat Charge", mp: 0, desc: "The G.O.A.T. goat. Do not underestimate goats.", special: "golem" },
+    lunaorb: { name: "Smash the Lunar Orb", mp: 0, desc: "Felgarath’s fake moon. Werefolk would like a word.", special: "needler" }
   };
 
   /* ---------- maps ---------- */
@@ -547,6 +557,45 @@ AAAAAAAAAAAAAAAAAAAA
 ^F........F^
 ^FFFFFFFFFF^
 ^^^^^^^^^^^^
+`),
+    ebi: parseMap(`
+NNNNNNNNNNNNNNNN
+N              N
+N   WWWWWWWW   N
+N   W      W   N
+N   W      W   N
+N              N
+N=======D======N
+NNNNNNNNNNNNNNNN
+`),
+    well: parseMap(`
+TTTTTTTTTTTTTTTT
+T..............T
+T......~~~~....T
+T.....~~~~~~...T
+T......S.......T
+T..............T
+T=======D======T
+TTTTTTTTTTTTTTTT
+`),
+    gates: parseMap(`
+RRRRRRRRRRRRRRRRRRRR
+RHHHHHHHHHHHHHHHHHHR
+RH                HR
+RH                HR
+RH                HR
+RHHHHHHHHH D HHHHHHR
+R==================R
+RRRRRRRRRRRRRRRRRRRR
+`),
+    palace: parseMap(`
+################
+#NNNNNNNNNNNNNN#
+#N            N#
+#N     P      N#
+#N            N#
+#NNNNNNNNNNDNNN#
+################
 `)
   };
 
@@ -565,7 +614,11 @@ AAAAAAAAAAAAAAAAAAAA
     swamp: [8, 6],
     circus: [10, 7],
     pub: [8, 4],
-    crater: [5, 4]
+    crater: [5, 4],
+    ebi: [8, 5],
+    well: [8, 5],
+    gates: [10, 4],
+    palace: [8, 4]
   };
 
   const MAPNAME = {
@@ -583,7 +636,11 @@ AAAAAAAAAAAAAAAAAAAA
     swamp: "The Improbable Swamp",
     circus: "Circus Absurdus",
     pub: "Goblin Pub (frozen chilly)",
-    crater: "Mount Ominous, Lava Annex"
+    crater: "Mount Ominous, Lava Annex",
+    ebi: "EBI Quantiflow HQ",
+    well: "The Wunderwell",
+    gates: "Palace Gates",
+    palace: "The Royal Palace"
   };
 
   function tileAt(map, x, y) {
@@ -625,7 +682,10 @@ AAAAAAAAAAAAAAAAAAAA
       { x: 4, y: 2, to: "hornfang", tx: 7, ty: 6, need: "b2grossina" },
       { x: 13, y: 4, to: "lake", tx: 3, ty: 5, need: "b2lg" },
       { x: 15, y: 16, to: "swamp", tx: 8, ty: 6, need: "b2prawn" },
-      { x: 29, y: 5, to: "circus", tx: 10, ty: 5, need: "b2dead" }
+      { x: 29, y: 5, to: "circus", tx: 10, ty: 5, need: "b2dead" },
+      { x: 22, y: 3, to: "ebi", tx: 8, ty: 5, need: "b3sirsi" },
+      { x: 6, y: 3, to: "well", tx: 8, ty: 5, need: "b3ebi" },
+      { x: 21, y: 8, to: "gates", tx: 10, ty: 4, need: "b3wish" }
     ],
     tower: [{ x: 12, y: 8, to: "world", tx: 28, ty: 6 }],
     forest: [
@@ -648,7 +708,14 @@ AAAAAAAAAAAAAAAAAAAA
       { x: 4, y: 4, to: "pub", tx: 8, ty: 4, need: "b2oxing" }
     ],
     pub: [{ x: 11, y: 5, to: "circus", tx: 5, ty: 4 }],
-    crater: [{ x: 5, y: 5, to: "tower", tx: 7, ty: 7, need: "b2ogeron" }]
+    crater: [{ x: 5, y: 5, to: "tower", tx: 7, ty: 7, need: "b2ogeron" }],
+    ebi: [{ x: 8, y: 6, to: "world", tx: 21, ty: 4 }],
+    well: [{ x: 8, y: 6, to: "world", tx: 7, ty: 4 }],
+    gates: [
+      { x: 10, y: 6, to: "world", tx: 20, ty: 9 },
+      { x: 11, y: 5, to: "palace", tx: 8, ty: 4, need: "b3golem" }
+    ],
+    palace: [{ x: 11, y: 5, to: "gates", tx: 10, ty: 4 }]
   };
 
   function npcsFor() {
@@ -657,7 +724,12 @@ AAAAAAAAAAAAAAAAAAAA
     if (G.map === "village") {
       list.push(npc(14, 6, "jackdaw", "Jackdaw", talkJackdawVillage));
       list.push(npc(18, 7, "mordeck", "Mordeck", talkMordeck));
-      if (isB2()) {
+      if (isB3()) {
+        list.push(npc(12, 6, "sirsi", "Sirsi", talkSirsi));
+        list.push(npc(22, 14, "bell", "Bellissimo", talkBellB3));
+        if (G.flags.b3wish && !G.flags.b3rod) list.push(npc(11, 8, "squires", "Roddy Squires", talkSquiresB3));
+        if (G.flags.b3wish && !G.flags.b3glocke) list.push(npc(20, 8, "glocke", "Officer Glocke", talkGlocke));
+      } else if (isB2()) {
         if (!f.b2rod) list.push(npc(16, 8, "roderick", "Sir Roderick 3RG", talkRoderick));
         list.push(npc(11, 8, "squires", "Roddy Squires", talkSquiresB2));
       } else {
@@ -672,8 +744,11 @@ AAAAAAAAAAAAAAAAAAAA
       list.push(npc(25, 11, "villager", "Innkeeper", talkInn));
     }
     if (G.map === "world") {
-      if (!isB2() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
-      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB2()
+      if (!isB2() && !isB3() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
+      if (isB3() && f.b3wish && !f.b3grim) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleB3));
+      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB3()
+        ? "North grass: EBI Quantiflow. Grove gap: Wunderwell. East of the golden P: palace gates. Bring a squad, not a speech."
+        : isB2()
         ? "West beans: cilantro hill. NW grove: Hornfang. North puddles: Lake Ekal. South muck: swamp. Mountain foot (west of the gap): Circus Absurdus."
         : "NE mountain gap: Jackdaw. Stand in the trees south of the highway: elves. East caves: goblins. SE stone ring: dwarves. Far south hole: ELM. Golden P: rally (later)." }])));
     }
@@ -726,6 +801,23 @@ AAAAAAAAAAAAAAAAAAAA
       if (!f.b2ogeron) list.push(npc(6, 3, "bean", "The One Bean", talkOneBean));
       else list.push(npc(6, 3, "ogeron", "King Ogeron", talkOgeron));
     }
+    if (G.map === "ebi") {
+      list.push(npc(7, 3, "elf", "Elegantia", talkElegantia));
+      list.push(npc(10, 3, "elf", "Director Misterssippi", talkMisterssippi));
+    }
+    if (G.map === "well") {
+      list.push(npc(6, 4, "well", "Wunderwell", talkWunderwell));
+      if (!f.b3marble) list.push(npc(10, 4, "marble", "Michelle", talkMichelle));
+      else list.push(npc(10, 4, "marble", "Miss Marble", talkMichelle));
+    }
+    if (G.map === "gates") {
+      if (!f.b3pris) list.push(npc(6, 4, "pris", "Priscilla", talkPriscilla));
+      if (!f.b3golem) list.push(npc(10, 3, "golem", "Glass Golem", talkGolem));
+    }
+    if (G.map === "palace") {
+      if (!f.b3needler) list.push(npc(8, 3, "needler", "The Needler", talkNeedler));
+      list.push(npc(5, 4, "bell", "Bellissimo", talkBellPalace));
+    }
     return list;
   }
 
@@ -738,6 +830,10 @@ AAAAAAAAAAAAAAAAAAAA
   }
   function join(member) {
     if (!G.party.find((p) => p.id === member.id)) G.party.push(member);
+  }
+  function squadReady() {
+    const f = G.flags;
+    return f.b3rod && f.b3grim && f.b3glocke && f.b3pris && f.b3marble;
   }
 
   function questBang(n) {
@@ -763,6 +859,18 @@ AAAAAAAAAAAAAAAAAAAA
       if (n.sprite === "jackdaw" && G.map === "tower" && f.b2bean && !f.b2best) return true;
       if (n.sprite === "bean" && !f.b2ogeron) return true;
       if (n.sprite === "elm" && G.map === "tower" && f.b2ogeron && !f.b2bell) return true;
+    }
+    if (isB3()) {
+      if (n.sprite === "sirsi" && !f.b3sirsi) return true;
+      if (n.name === "Director Misterssippi" && !f.b3ebi) return true;
+      if (n.sprite === "well" && f.b3ebi && !f.b3wish) return true;
+      if (n.sprite === "marble" && !f.b3marble) return true;
+      if (n.sprite === "squires" && f.b3wish && !f.b3rod) return true;
+      if (n.sprite === "grimble" && f.b3wish && !f.b3grim) return true;
+      if (n.sprite === "glocke" && !f.b3glocke) return true;
+      if (n.sprite === "pris" && !f.b3pris) return true;
+      if (n.sprite === "golem" && squadReady() && !f.b3golem) return true;
+      if (n.sprite === "needler" && f.b3golem && !f.b3needler) return true;
     }
     return false;
   }
@@ -832,6 +940,7 @@ AAAAAAAAAAAAAAAAAAAA
   }
 
   function talkJackdawVillage() {
+    if (isB3()) return talkJackdawB3();
     if (isB2()) return talkJackdawB2();
     if (G.flags.prophecy) {
       say([
@@ -886,6 +995,13 @@ AAAAAAAAAAAAAAAAAAAA
   }
 
   function talkMordeck() {
+    if (isB3()) {
+      say([
+        { who: "Mordeck", text: "The palace went quiet. I prefer a ledger that shouts. Quiet is expensive." },
+        { who: "Mordeck", text: "If you’re collecting a squad, try not to name it in front of the statue. The statue already has a name." }
+      ]);
+      return;
+    }
     if (isB2()) {
       say([
         { who: "Mordeck", text: "Taco Tuesday has consequences. I have them on the ledger. Also on the floor." },
@@ -949,6 +1065,13 @@ AAAAAAAAAAAAAAAAAAAA
   }
 
   function talkJackdawTower() {
+    if (isB3()) {
+      say([
+        { who: "Jackdaw", text: "Wells. I told you wells were worse. One wish per person, blessing plus curse, and the well has a lawyer." },
+        { who: "Jackdaw", text: "If you asked to be safe from lies, check whether your villain prefers the truth. I charge extra for that footnote." , note: "The Wunderwell is technically honest. That is the problem." }
+      ]);
+      return;
+    }
     if (isB2()) return talkJackdawB2Tower();
     if (G.flags.quest) {
       if (G.flags.secretL && G.flags.secretE && G.flags.secretM) {
@@ -1497,6 +1620,279 @@ AAAAAAAAAAAAAAAAAAAA
     });
   }
 
+  function talkJackdawB3() {
+    if (G.flags.b3wish) {
+      say([
+        { who: "Jackdaw", text: "Dark scales. A pep talk from a well. I would like it on record that I recommended caution, and that nobody listens to narrators." },
+        { who: "Jackdaw", text: "Squires is naming a squad. I refuse to print the cry until he workshopped it. He did not workshop it." }
+      ]);
+      return;
+    }
+    if (G.flags.b3sirsi) {
+      say([
+        { who: "Jackdaw", text: "Quantiflow floats. The EBI files people. If they offer you a bean that watches you back, accept it. Sprites are better company than villains." },
+        { who: "Jackdaw", text: "North grass. Try not to fall into Book Two’s hill on the way. I am still unpacking that bell." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Jackdaw", text: "Six months of peace. You have been insufferable about it. Sirsi is the one with a plan. I am the one with a beard and a warning about wells." },
+      { who: "Jackdaw", text: "Talk to her before you charge anything. Charging is your entire personality, and it has a poor retention rate." }
+    ]);
+  }
+
+  function talkSirsi() {
+    if (G.flags.b3sirsi) {
+      say([
+        { who: "Sirsi", text: "Quantiflow is north of the village. Ask for Director Misterssippi. And if you see Bellissimo, tell him I said… well. Don’t tell him I said anything." },
+        { who: "Sirsi", text: "The Sprite Message Service still works. I will be in your Eye Bean later, which is a sentence I regret." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Sirsi", text: "Sir Roderick. Six months of peace, and I have been waiting. Bellissimo has not proposed. He is practicing the words. He is also practicing sauce." },
+      { who: "Sir Roderick 3RG", text: "I require a villain. Dragons would also be acceptable. I have an entrance prepared." },
+      { who: "Sirsi", text: "The Elven Bureau of Investigation still needs the Beandom’s most-wanted list recovered. Nathaniel Nadle. The Needler. Words that put people on their knees." },
+      { who: "Sirsi", text: "Go to Quantiflow. I will message you. Try to become wise. Impressive is already your default, and it is not enough." , note: "Sirsi has been trying to upgrade this knight since the statue phase. Progress is glacial, but documented." }
+    ], () => {
+      G.flags.b3sirsi = true;
+      G.quest = "EBI Quantiflow, north of Beanvale. Ask for Director Misterssippi. Try not to charge the front desk.";
+      save();
+    });
+  }
+
+  function talkBellB3() {
+    if (G.flags.b3needler) {
+      say([{ who: "Bellissimo", text: "I will guard her egg. That is a proposal of a sort. A very Bellissimo sort." }]);
+      return;
+    }
+    if (G.flags.b3wish) {
+      say([
+        { who: "Bellissimo", text: "You look scaly. Is that a look? I could plate it. No. I could not plate it." },
+        { who: "Bellissimo", text: "If you see Sirsi, tell her I am still practicing. The words. Not a speech. I have a policy against speeches." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Bellissimo", text: "Roderick. I have been waiting to propose. Sirsi keeps sending me on errands, and you keep looking for a quest that notices you." },
+      { who: "Bellissimo", text: "If you find a good moment, tell her I am practicing. The words. Not the sauce. The sauce is already perfect." }
+    ]);
+  }
+
+  function talkSquiresB3() {
+    if (G.flags.b3rod) {
+      say([{ who: "Squires", text: "Rod Squad. I named it. You may thank me later. Or now. Now is also good." }]);
+      return;
+    }
+    say([
+      { who: "Squires", text: "Sir Roderick! The palace is silent. I have assembled a team in my head. Rod Squad. You, me, a goat if we can find one, Grimblewaith, a pixie, a Dragonborn, and a marble lady." },
+      { who: "Squires", text: "Cry: Rod Squad, accumulate! Then: Charge!" },
+      { who: "Sir Roderick 3RG", text: "I will allow the name. Once. Do not put it on a banner." },
+      { who: "Squires", text: "Goat-Goat is already trotting in spirit. Grimblewaith is on the east road. Officer Glocke is clocking destiny in the square. I am coming." , note: "He named the goat twice so nobody could forget the goat." }
+    ], () => {
+      G.flags.b3rod = true;
+      join(hero());
+      G.quest = "Officer Glocke in the square. Grimblewaith on the east road. Then palace gates, east of the golden P.";
+      save();
+    });
+  }
+
+  function talkGlocke() {
+    if (G.flags.b3glocke) {
+      say([{ who: "Officer Glocke", text: "Pixie Highway Patrol. I clock speed. I also clock destiny. Destiny is speeding." }]);
+      return;
+    }
+    say([
+      { who: "Officer Glocke", text: "Pixie. Badge. Tiny. I am Officer Glocke. Your palace is having a werefolk problem and a glass problem." },
+      { who: "Officer Glocke", text: "I am coming. Do not step on me. If Squires shouts accumulate, I will pretend that is a legal term." }
+    ], () => {
+      G.flags.b3glocke = true;
+      if (G.flags.b3rod && G.flags.b3grim) G.quest = "Palace gates, east of the golden P. Recruit Priscilla. Then the glass.";
+      save();
+    });
+  }
+
+  function talkGrimbleB3() {
+    if (G.flags.b3grim) {
+      say([{ who: "Grimblewaith", text: "Highway Patrol. We ticket destiny. Destiny has outstanding fines." }]);
+      return;
+    }
+    say([
+      { who: "Grimblewaith", text: "Sir Roderick. I heard Squires shout Rod Squad. I am Highway Patrol. I am coming." },
+      { who: "Grimblewaith", text: "Try not to need a ticket. Glass golems do not yield for inspirational speeches. I checked." }
+    ], () => {
+      G.flags.b3grim = true;
+      join(grimble());
+      if (G.flags.b3rod && G.flags.b3glocke) G.quest = "Palace gates, east of the golden P. Recruit Priscilla. Then the glass.";
+      save();
+    });
+  }
+
+  function talkElegantia() {
+    say([
+      { who: "Elegantia", text: "I am a truth-serpent. I do not hiss lies. You want a quest because peace bores you. Bellissimo is waiting. Sirsi already told you both of those." },
+      { who: "Sir Roderick 3RG", text: "I prefer my truths with more trumpets." },
+      { who: "Elegantia", text: "The Eye Bean sees. The Needler needles. Director Misterssippi has the file. Do not pet me. I am not a pet. I am a briefing." , note: "Truth-serpents are union. Applause is extra." }
+    ]);
+  }
+
+  function talkMisterssippi() {
+    if (G.flags.b3ebi) {
+      say([
+        { who: "Director Misterssippi", text: "Eye Bean sprites: Ferdinand for nav, MaW, Otto, Newstrodamus, and Sirsi on SMS. They will message you. You will pretend that is normal." },
+        { who: "Director Misterssippi", text: "The Wunderwell is west, in Hornfang. One wish. Read the inscription. Twice." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Director Misterssippi", text: "Sir Roderick the Really, Really, Really Great. We have a file. We also have standards. Try to meet one of them." },
+      { who: "Director Misterssippi", text: "Nathaniel Nadle, the Needler. Former victim of a knight who charged first. He speaks painful truths until people kneel. He is most wanted. You are most available." },
+      { who: "Director Misterssippi", text: "Take the Eye Bean. The Intelligent Trolls packed Ferdinand, MaW, Otto, Newstrodamus, and Sirsi. The Wunderwell is west, grove gap, Hornfang. One wish per person. Confirm the wording." , note: "The EBI files people alphabetically, except for knights, who file themselves under Impressive." }
+    ], () => {
+      G.flags.b3ebi = true;
+      give("eyebean");
+      give("file");
+      G.quest = "Wunderwell, west grove gap. Read the inscription. Talk to Michelle before you wish.";
+      save();
+    });
+  }
+
+  function talkMichelle() {
+    if (G.flags.b3marble) {
+      say([
+        { who: "Miss Marble", text: "I wished my father well. The well heard marble. Then the family. I make a good shield. I make a terrible hug." },
+        { who: "Miss Marble", text: "If a glass thing starts throwing volleys, stand behind me. I do not flinch. I cannot flinch." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Michelle", text: "I wished my father would be safe. The well made him stone. Then the rest of us. I am Michelle. I think I am becoming Miss Marble." },
+      { who: "Sir Roderick 3RG", text: "A curse. I shall avenge—" },
+      { who: "Michelle", text: "Avenge later. Read the inscription. Confirm the wording. One wish per person. Blessing and curse. I am still coming. I am excellent at not flinching." , note: "The well is precise. Mercy is not a recognized unit of precision." }
+    ], () => {
+      G.flags.b3marble = true;
+      G.quest = "Wish at the Wunderwell. Confirm the wording. The well has a lawyer.";
+      save();
+    });
+  }
+
+  function talkWunderwell() {
+    if (G.flags.b3wish) {
+      say([{ who: "Wunderwell", text: "One wish per person. You already spent yours on a pep talk and a hide. The invoice is the hide." }]);
+      return;
+    }
+    if (!G.flags.b3marble) {
+      say([
+        { who: "Inscription", text: "Blessing and curse. One wish per person. Confirm the wording." },
+        { who: "Jackdaw", text: "Someone named Michelle is staring at the water as if it already answered. Talk to her first. I like my knights pre-warned." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Sir Roderick 3RG", text: "I wish for confidence against the Needler. Protection from his lies. I wish to have this." },
+      { who: "Wunderwell", text: "You’ve got this." },
+      { who: "Sir Roderick 3RG", text: "That was brisk. Also I appear to be growing dark scales." },
+      { who: "Jackdaw", text: "You asked to be safe from lies. The Needler speaks painful truths. The well is technically honest. That is the problem." , note: "Thick skin is useful against needles. It is less useful against accurate character assessments." }
+    ], () => {
+      G.flags.b3wish = true;
+      G.quest = "Return to Beanvale. Squires is naming a squad. Glocke is clocking destiny.";
+      save();
+    });
+  }
+
+  function talkPriscilla() {
+    if (G.flags.b3pris) {
+      say([{ who: "Priscilla", text: "If I have to, call me Rezella. I have an egg. If I go, guard it." }]);
+      return;
+    }
+    say([
+      { who: "Priscilla", text: "I am Priscilla. I was a tower princess. I am Dragonborn. I have an egg. The glass thing needs melting." },
+      { who: "Priscilla", text: "If the lances will not break, call me Rezella. Goat-Goat will charge. Squires named us. I am choosing not to discuss the name." },
+      { who: "Goat-Goat", text: "(gold horns. boulder-smashing credentials. a look that says G.O.A.T.)" }
+    ], () => {
+      G.flags.b3pris = true;
+      if (squadReady()) G.quest = "Rod Squad, accumulate. Then charge the glass golem.";
+      else G.quest = "Finish the Rod Squad. Then the glass.";
+      save();
+    });
+  }
+
+  function talkGolem() {
+    if (G.flags.b3golem) {
+      say([{ who: "Gate", text: "Glass dust. The palace doors are open. Priscilla’s egg remains. Guard it." }]);
+      return;
+    }
+    if (!squadReady()) {
+      say([
+        { who: "Glass Golem", text: "(a mirror with opinions and too many lances)" },
+        { who: "Sir Roderick 3RG", text: "I shall charge—" },
+        { who: "Squires", text: "We need the whole Rod Squad. My list is unfortunately complete. Marble, pixie, Whatsit, goat, Dragonborn, me. Then: accumulate." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Squires", text: "Rod Squad, accumulate!" },
+      { who: "Sir Roderick 3RG", text: "Charge." },
+      { who: "Glass Golem", text: "(the palace wears a reflection and does not move)" }
+    ], () => startBattle([enemy("golem")], { canFlee: false, boss: true, heal: true, onWin: () => {
+      say([
+        { who: "Miss Marble", text: "Volleys become pebbles. I do not flinch." },
+        { who: "Priscilla", text: "Call me Rezella." },
+        { who: "Narrator", text: "Blue fire, then white. The lances run. She does not get back up. Her egg remains." },
+        { who: "Goat-Goat", text: "(the G.O.A.T. goat finds the core and is not impressed)" },
+        { who: "Sir Roderick 3RG", text: "We will guard it. That is not a speech. That is a vow. I am practicing vows." }
+      ], () => {
+        G.flags.b3golem = true;
+        G.quest = "The palace is open. The Needler waits. You’ve got this.";
+        save();
+      });
+    }}));
+  }
+
+  function talkNeedler() {
+    if (G.flags.b3needler) {
+      say([{ who: "Palace", text: "Nathaniel Nadle is gone. The lunar orb is powder. The palace can be loud again." }]);
+      return;
+    }
+    say([
+      { who: "Nathaniel Nadle", text: "Sir Roderick the Really, Really, Really Great. You charged. People knelt. I learned the rest from the sound of it." },
+      { who: "Nathaniel Nadle", text: "I do not need to lie. The palace is already quiet. Felgarath lent me a moon. The werefolk are listening." },
+      { who: "Sir Roderick 3RG", text: "You’ve got this." }
+    ], () => startBattle([enemy("needler")], { canFlee: false, boss: true, heal: true, onWin: () => {
+      G.flags.b3needler = true;
+      G.flags.b3done = true;
+      G.flags.b3bell = true;
+      G.quest = "Sleep in. Book IV involves pirates, which is louder.";
+      save();
+      say([
+        { who: "Sir Roderick 3RG", text: "You’ve got this. One at a time. The werefolk first. Then the room. Then you." },
+        { who: "Bellissimo", text: "That was a proposal. I heard a proposal in there." },
+        { who: "Sir Roderick 3RG", text: "Mary Sue Bellmont. Yes. Stay. Guard Priscilla’s egg. That is the vow. I will try wisdom. I have notes." },
+        { who: "Bellissimo", text: "I said yes. I will guard her egg. I will also cook. That is also the vow." },
+        { who: "Nathaniel Nadle", text: "Needles, then. If the scales drink them, the moon still hangs." },
+        { who: "Lunar Orb", text: "(Felgarath’s fake moon does not survive a knight who has finally aimed)" },
+        { who: "Jackdaw", text: "And many of them lived reasonably happy for some time thereafter. Felgarath is already clearing his throat about pirates." , note: "Book IV: Leftbeard’s Treasure. Try not to wish for it." }
+      ], () => {
+        G.mode = "credits";
+        G.creditT = 0;
+        $("hud").classList.remove("show");
+        $("dialog").classList.remove("show");
+        save();
+      });
+    }}));
+  }
+
+  function talkBellPalace() {
+    if (G.flags.b3needler) {
+      say([{ who: "Bellissimo", text: "I will guard her egg. That is the vow. Also I will cook. That is also the vow. Go be wise. I will nap until you are." }]);
+      return;
+    }
+    say([
+      { who: "Bellissimo", text: "(the Needler’s truths have the room by the throat)" },
+      { who: "Jackdaw", text: "A pep talk might help. A smashed orb would help more. Do not propose until she can answer." }
+    ]);
+  }
+
   function updateQuestSecrets() {
     const a = [G.flags.secretL && "Louisa", G.flags.secretE && "Elisabeth", G.flags.secretM && "Meriwether"].filter(Boolean);
     if (a.length === 3) G.quest = "Return to Jackdaw’s tower. The name is complete. (It is a terrible villain name.)";
@@ -1518,7 +1914,9 @@ AAAAAAAAAAAAAAAAAAAA
       lg: { name: "Little Giant", hp: 40, maxHp: 40, atk: 9, def: 4, xp: 28, gold: 12, spr: "lg", boss: true },
       prawn: { name: "P’R’A’W’’Y’N", hp: 42, maxHp: 42, atk: 8, def: 3, xp: 30, gold: 14, spr: "prawn", boss: true },
       dead: { name: "The Living Dead", hp: 44, maxHp: 44, atk: 9, def: 5, xp: 32, gold: 10, spr: "dead", boss: true },
-      ox: { name: "Moronic Ox", hp: 48, maxHp: 48, atk: 10, def: 5, xp: 36, gold: 20, spr: "ox", boss: true }
+      ox: { name: "Moronic Ox", hp: 48, maxHp: 48, atk: 10, def: 5, xp: 36, gold: 20, spr: "ox", boss: true },
+      golem: { name: "Glass Golem", hp: 60, maxHp: 60, atk: 11, def: 8, xp: 45, gold: 0, spr: "golem", boss: true },
+      needler: { name: "The Needler", hp: 58, maxHp: 58, atk: 9, def: 4, xp: 50, gold: 30, spr: "needler", boss: true }
     };
     return Object.assign({ stun: 0, confuse: 0 }, E[type]);
   }
@@ -1570,6 +1968,18 @@ AAAAAAAAAAAAAAAAAAAA
       if (b.foes.some((f) => f.spr === "prawn" && f.hp > 0) && G.flags.b2elm) opts.unshift("Kayak");
       if (b.foes.some((f) => f.spr === "dead" && f.hp > 0) && G.flags.b2slad) opts.unshift("Handyvamp Irony");
       if (b.foes.some((f) => f.spr === "ox" && f.hp > 0)) opts.unshift("Jokes of the Fathers");
+      if (b.foes.some((f) => f.spr === "golem" && f.hp > 0)) {
+        const gs = b.gstep || 0;
+        if (gs === 0) opts.unshift("Rock Beats Glass");
+        else if (gs === 1) opts.unshift("Call Her Rezella");
+        else opts.unshift("Goat-Goat Charge");
+      }
+      if (b.foes.some((f) => f.spr === "needler" && f.hp > 0)) {
+        const ns = b.nstep || 0;
+        if (ns === 0) opts.unshift("You’ve Got This");
+        else if (ns === 1) opts.unshift("Thick Skin");
+        else opts.unshift("Smash the Lunar Orb");
+      }
     } else if (b.menu === "skill") {
       const p = G.party[b.i];
       opts = p.skills.map((id) => SKILLS[id].name + " (" + SKILLS[id].mp + " MP)");
@@ -1606,6 +2016,12 @@ AAAAAAAAAAAAAAAAAAAA
       else if (c === "Kayak") { b.pending = { type: "skill", id: "kayak" }; resolvePlayer(); return; }
       else if (c === "Handyvamp Irony") { b.pending = { type: "skill", id: "irony" }; resolvePlayer(); return; }
       else if (c === "Jokes of the Fathers") { b.pending = { type: "skill", id: "dadjoke" }; resolvePlayer(); return; }
+      else if (c === "Rock Beats Glass") { b.pending = { type: "skill", id: "marble" }; resolvePlayer(); return; }
+      else if (c === "Call Her Rezella") { b.pending = { type: "skill", id: "rezella" }; resolvePlayer(); return; }
+      else if (c === "Goat-Goat Charge") { b.pending = { type: "skill", id: "goatgoat" }; resolvePlayer(); return; }
+      else if (c === "You’ve Got This") { b.pending = { type: "skill", id: "gotthis" }; resolvePlayer(); return; }
+      else if (c === "Thick Skin") { b.pending = { type: "skill", id: "thickskin" }; resolvePlayer(); return; }
+      else if (c === "Smash the Lunar Orb") { b.pending = { type: "skill", id: "lunaorb" }; resolvePlayer(); return; }
       else if (c === "Attack") {
         b.pending = { type: "atk" };
         b.menu = "target";
@@ -1662,6 +2078,8 @@ AAAAAAAAAAAAAAAAAAAA
       else if (f.spr === "prawn") { b.log = "Pointed appendages. No palindrome. Renaming Roderick still does not count."; }
       else if (f.spr === "dead") { b.log = "Blades, holy water, and reasonable arguments fail. It wants irony."; }
       else if (f.spr === "ox") { b.log = "The ox is unmoved. It has not heard a father joke yet."; }
+      else if (f.spr === "golem") { b.log = "Steel rings off glass. Miss Marble. Rezella. Goat-Goat. In that order."; }
+      else if (f.spr === "needler") { b.log = "Swords bounce. He kneels people with sentences. Try confidence, then scales, then the moon."; }
       else if (f.evade && Math.random() * 100 < f.evade) { b.log = f.name + " skipped aside. (Skipping beans. It’s a whole thing.)"; }
       else {
         const n = dmg(p.atk, f.def);
@@ -1701,6 +2119,31 @@ AAAAAAAAAAAAAAAAAAAA
         b.foes.forEach((f) => { if (f.spr === "ox") f.hp = 0; });
         b.log = "Why did the ox return to the arena? It heard it was outstanding in its field. The Moronic Ox leaves for professional reasons.";
         sfx("magic");
+      } else if (act.id === "marble") {
+        b.gstep = Math.max(b.gstep || 0, 1);
+        b.log = "Miss Marble runs in front. Volleys become pebbles. She does not flinch.";
+        sfx("magic");
+      } else if (act.id === "rezella") {
+        b.gstep = Math.max(b.gstep || 0, 2);
+        b.log = "Priscilla answers to Rezella. Blue fire, then white. The lances run like water. She does not get back up. Her egg remains.";
+        sfx("magic");
+      } else if (act.id === "goatgoat") {
+        b.foes.forEach((f) => { if (f.spr === "golem") f.hp = 0; });
+        b.log = "Goat-Goat, the G.O.A.T. goat, finds the core and is not impressed. Glass remembers it was sand.";
+        sfx("magic");
+      } else if (act.id === "gotthis") {
+        b.nstep = Math.max(b.nstep || 0, 1);
+        G.party.forEach((m) => { m.hp = m.maxHp; });
+        b.log = "You’ve got this. The palace inhales. Bellissimo’s eyes remember how to answer.";
+        sfx("magic");
+      } else if (act.id === "thickskin") {
+        b.nstep = Math.max(b.nstep || 0, 2);
+        b.log = "Dark scales drink the needles. The truths still sting. He stays standing anyway.";
+        sfx("magic");
+      } else if (act.id === "lunaorb") {
+        b.foes.forEach((f) => { if (f.spr === "needler") f.hp = 0; });
+        b.log = "The lunar orb — Felgarath’s fake moon — comes down in powder. Nathaniel Nadle has nothing left to hang a night on.";
+        sfx("magic");
       } else {
         const targets = sk.all ? b.foes.filter((f) => f.hp > 0) : [b.foes[b.target]];
         let msg = p.name + " uses " + sk.name + "! ";
@@ -1711,6 +2154,8 @@ AAAAAAAAAAAAAAAAAAAA
           if (f.spr === "prawn" && act.id !== "kayak") { msg += "Not a palindrome. "; return; }
           if (f.spr === "dead" && act.id !== "irony") { msg += "Still shouting GRAINS. "; return; }
           if (f.spr === "ox" && act.id !== "dadjoke") { msg += "Unamused. "; return; }
+          if (f.spr === "golem") { msg += "Glass ignores that. "; return; }
+          if (f.spr === "needler") { msg += "He would like a sentence, not a dance. "; return; }
           if (f.evade && Math.random() * 100 < f.evade / 2) { msg += f.name + " hops. "; return; }
           const n = dmg(sk.dmg, f.def);
           f.hp = Math.max(0, f.hp - n);
@@ -1759,10 +2204,17 @@ AAAAAAAAAAAAAAAAAAAA
       const alive = G.party.filter((p) => p.hp > 0);
       if (!alive.length) { msgs.push(f.name + " stands over the fallen."); return; }
       const t = alive[irand(0, alive.length - 1)];
+      if (f.spr === "needler" && (b.nstep || 0) >= 2) {
+        msgs.push("Needles skitter off dark scales. Nathaniel looks professionally offended.");
+        return;
+      }
       let n = dmg(f.atk, t.def);
       if (b.guard[t.id]) n = Math.max(1, Math.floor(n / 2));
+      if (f.spr === "needler" && (b.nstep || 0) >= 1) n = Math.max(1, Math.floor(n / 2));
       t.hp -= n;
-      msgs.push(f.name + " hits " + t.name + " for " + n + ".");
+      msgs.push(f.spr === "needler"
+        ? "Nathaniel Nadle kneels " + t.name + " with a sentence. " + n + " damage."
+        : f.name + " hits " + t.name + " for " + n + ".");
     });
     b.guard = {};
     b.log = msgs.join(" ");
@@ -1842,7 +2294,18 @@ AAAAAAAAAAAAAAAAAAAA
   }
 
   function tryWarp(w) {
+    if (isB3() && w.need && (String(w.need).startsWith("b2") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
+    if (isB2() && w.need && String(w.need).startsWith("b3")) return;
+    if (!isB2() && !isB3() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3"))) return;
     if (w.need === "grimbleJoin" && !G.flags.rejected) {
+      if (isB3()) {
+        if (!G.flags.b3sirsi) {
+          say([{ who: "Sirsi", text: "Jackdaw first is traditional. I am standing in the square. I am the tradition this time." }]);
+          return;
+        }
+        warp(w.to, w.tx, w.ty);
+        return;
+      }
       if (isB2()) {
         if (!G.flags.b2prophecy) {
           say([{ who: "Bellissimo", text: "Jackdaw first. If I skip the stained prophecy he will footnote me to death." }]);
@@ -1903,6 +2366,22 @@ AAAAAAAAAAAAAAAAAAAA
       say([{ who: "Lava", text: "Finish the conversation. The Bean is still making offers." }]);
       return;
     }
+    if (w.need === "b3sirsi" && !G.flags.b3sirsi) {
+      say([{ who: "Quantiflow", text: "The EBI does not admit restless knights until Sirsi writes the referral." }]);
+      return;
+    }
+    if (w.need === "b3ebi" && !G.flags.b3ebi) {
+      say([{ who: "Ferdinand", text: "Nav sprite says: file first, well second. I plotted it. Do not improvise a wish." }]);
+      return;
+    }
+    if (w.need === "b3wish" && !G.flags.b3wish) {
+      say([{ who: "Gate", text: "The palace is silent. Come back with a wish, a squad, and fewer speeches." }]);
+      return;
+    }
+    if (w.need === "b3golem" && !G.flags.b3golem) {
+      say([{ who: "Glass Golem", text: "(the door is a reflection until the core is sand)" }]);
+      return;
+    }
     warp(w.to, w.tx, w.ty);
   }
   function warp(map, x, y) {
@@ -1939,7 +2418,7 @@ AAAAAAAAAAAAAAAAAAAA
       tryWarp(standing);
     }
     if (!standing) G.warpKey = null;
-    if (["world", "forest", "hornfang", "swamp"].includes(G.map) && ((G.flags.quest && !G.flags.saved) || (isB2() && G.flags.b2grossina && !G.flags.b2done))) {
+    if (["world", "forest", "hornfang", "swamp"].includes(G.map) && ((G.flags.quest && !G.flags.saved) || (isB2() && G.flags.b2grossina && !G.flags.b2done) || (isB3() && G.flags.b3ebi && !G.flags.b3done))) {
       if (here.x !== lastTile.x || here.y !== lastTile.y) {
         lastTile = here;
         G.enc += 1;
@@ -2041,10 +2520,11 @@ AAAAAAAAAAAAAAAAAAAA
       col("#3a1a10"); r(px + 4, py + 2, 8, 4);
       col("#8cf"); r(px + 2, py + 1, 2, 2); r(px + 12, py + 2, 2, 2);
     } else if (kind === "roderick") {
-      col("#dde"); r(px + 4, py + 8, 8, 7);
+      col(G.flags.b3wish ? "#2a3a32" : "#dde"); r(px + 4, py + 8, 8, 7);
       col(PAL.gold); r(px + 5, py + 7, 6, 2);
       col(PAL.skin); r(px + 5, py + 3, 6, 5);
-      col("#fff"); r(px + 5, py + 1, 6, 3);
+      col(G.flags.b3wish ? "#1a2a22" : "#fff"); r(px + 5, py + 1, 6, 3);
+      if (G.flags.b3wish) { col("#3a5a48"); r(px + 3, py + 9, 2, 3); r(px + 11, py + 10, 2, 3); }
     } else if (kind === "mordeck") {
       col("#6a3"); r(px + 3, py + 8, 10, 7);
       col(PAL.skin); r(px + 5, py + 4, 6, 5);
@@ -2117,9 +2597,41 @@ AAAAAAAAAAAAAAAAAAAA
       col("#4a3a8a"); r(px + 3, py + 8, 10, 8);
       col(PAL.gold); r(px + 4, py + 1, 8, 4);
       col("#eee"); r(px + 5, py + 5, 6, 4);
+    } else if (kind === "sirsi") {
+      col("#c8b070"); r(px + 4, py + 8, 8, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#f2e0a8"); r(px + 4, py + 2, 8, 4);
+      col("#8cf"); r(px + 11, py + 3, 3, 2);
+    } else if (kind === "glocke") {
+      col("#c45"); r(px + 6, py + 8, 5, 5);
+      col(PAL.skin); r(px + 6, py + 5, 4, 4);
+      col("#8cf"); r(px + 4, py + 4, 3, 2); r(px + 10, py + 4, 3, 2);
+      col(PAL.gold); r(px + 7, py + 3, 2, 2);
+    } else if (kind === "pris") {
+      col("#6a2048"); r(px + 4, py + 8, 8, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#f2d66a"); r(px + 4, py + 2, 8, 4);
+      col("#8cf"); r(px + 2, py + 6, 3, 2);
+    } else if (kind === "marble") {
+      col("#9aa4b0"); r(px + 4, py + 6, 8, 10);
+      col("#c8d0d8"); r(px + 5, py + 3, 6, 5);
+      col("#6a7380"); r(px + 6, py + 8, 4, 3);
+    } else if (kind === "golem") {
+      col("#8cf8"); r(px + 2, py + 2, 12, 14);
+      col("#d8f0ff"); r(px + 4, py + 4, 8, 8);
+      col("#6ad"); r(px + 1, py + 6, 3, 8); r(px + 12, py + 6, 3, 8);
+    } else if (kind === "needler") {
+      col("#2a1a28"); r(px + 4, py + 8, 8, 7);
+      col("#c8b8a0"); r(px + 5, py + 4, 6, 5);
+      col("#112"); r(px + 5, py + 2, 6, 3);
+      col("#dde"); r(px + 2, py + 7, 3, 1); r(px + 12, py + 9, 3, 1);
+    } else if (kind === "well") {
+      col("#6a6a70"); r(px + 3, py + 6, 10, 8);
+      col("#2a6aaa"); r(px + 5, py + 8, 6, 4);
+      col("#c8d0d8"); r(px + 4, py + 5, 8, 2);
     }
     // eyes
-    if (!["sign", "bug", "skip", "spoon", "bean", "ox"].includes(kind)) {
+    if (!["sign", "bug", "skip", "spoon", "bean", "ox", "well"].includes(kind)) {
       col("#112"); r(px + 6, py + 6, 1, 1); r(px + 9, py + 6, 1, 1);
     }
   }
@@ -2130,10 +2642,10 @@ AAAAAAAAAAAAAAAAAAAA
     G.camY = G.py * T - H / 2 + 8;
     G.camX = Math.max(0, Math.min(m.w * T - W, G.camX));
     G.camY = Math.max(0, Math.min(m.h * T - H, G.camY));
-    const bg = G.map === "tower" ? "#0c1230"
+    const bg = G.map === "tower" || G.map === "ebi" || G.map === "palace" ? "#0c1230"
       : (G.map === "cave" || G.map === "lair" || G.map === "pub" || G.map === "swamp" || G.map === "crater") ? "#120c14"
-      : (G.map === "arena" || G.map === "circus") ? "#3a3428"
-      : G.map === "lake" ? "#4a7aaa"
+      : (G.map === "arena" || G.map === "circus" || G.map === "gates") ? "#3a3428"
+      : G.map === "lake" || G.map === "well" ? "#4a7aaa"
       : "#87b";
     col(bg); r(0, 0, W, H);
     const x0 = Math.max(0, (G.camX / T) | 0);
@@ -2144,11 +2656,13 @@ AAAAAAAAAAAAAAAAAAAA
       drawTile(tileAt(G.map, x, y), x * T - G.camX, y * T - G.camY, G.t);
     }
     const sprites = npcsFor().map((n) => ({ kind: n.sprite, x: n.x * T - G.camX, y: n.y * T - G.camY, z: n.y, bang: questBang(n) }));
-    const lead = (G.party[0] && G.party[0].id === "bell") ? "bell" : "squires";
+    const lead = (G.party[0] && G.party[0].id === "bell") ? "bell"
+      : (G.party[0] && G.party[0].id === "roderick") ? "roderick"
+      : "squires";
     sprites.push({ kind: lead, x: G.px * T - G.camX, y: G.py * T - G.camY, z: G.py, me: true });
     if (G.mode === "explore" && G.party[1]) {
       const fid = G.party[1].id;
-      const kind = fid === "grimble" ? "grimble" : fid === "roderick" ? "roderick" : fid === "elm" ? "elm" : null;
+      const kind = fid === "grimble" ? "grimble" : fid === "roderick" ? "roderick" : fid === "elm" ? "elm" : fid === "squires" ? "squires" : fid === "bell" ? "bell" : null;
       if (kind) {
         const ox = [0, -6, 0, 6][G.dir], oy = [8, 0, -8, 0][G.dir];
         sprites.push({ kind, x: G.px * T - G.camX + ox, y: G.py * T - G.camY + oy, z: G.py - 0.1 });
@@ -2180,7 +2694,32 @@ AAAAAAAAAAAAAAAAAAAA
 
   function drawCredits(t) {
     col("#0a0714"); r(0, 0, W, H);
-    const lines = (isB2() ? [
+    const lines = isB3() ? [
+      "A WONDERFUL WEEK FOR A QUEST",
+      "Book III  ·  A Quest That Doesn’t Go…Well",
+      "",
+      "Adapted from the novel by",
+      "Michael D. Young",
+      "",
+      "Sir Roderick 3RG  -  thick skin, thinner excuses",
+      "Roddy Squires     -  named the Rod Squad",
+      "Goat-Goat         -  the G.O.A.T. goat",
+      "Grimblewaith      -  Highway Patrol",
+      "Officer Glocke    -  destiny is speeding",
+      "Priscilla/Rezella -  her egg remains",
+      "Miss Marble       -  excellent at not flinching",
+      "Bellissimo        -  guarding an egg, and a yes",
+      "Nathaniel Nadle   -  exiled, still accurate",
+      "",
+      "Felgarath clears his throat.",
+      "Book IV: Leftbeard’s Treasure.",
+      "",
+      "And many of them lived",
+      "reasonably happy",
+      "for some time thereafter.",
+      "",
+      "Press Enter"
+    ] : (isB2() ? [
       "A WONDERFUL WEEK FOR A QUEST",
       "Book II  ·  Both an Ox and a Moron…",
       "",
@@ -2245,7 +2784,7 @@ AAAAAAAAAAAAAAAAAAAA
     });
     G.party.forEach((p, i) => {
       if (p.hp <= 0) return;
-      drawChar(p.id === "grimble" ? "grimble" : "squires", 40 + i * 28, 100, 1, 0, true);
+      drawChar(p.id === "grimble" ? "grimble" : p.id === "bell" ? "bell" : p.id === "roderick" ? "roderick" : p.id === "elm" ? "elm" : "squires", 40 + i * 28, 100, 1, 0, true);
     });
   }
 
@@ -2268,12 +2807,14 @@ AAAAAAAAAAAAAAAAAAAA
     $("menu").classList.add("show");
     const body = G.party.map((p) => p.name + "  HP " + p.hp + "/" + p.maxHp + "  MP " + p.mp + "/" + p.maxMp).join("\n");
     const items = G.inv.length ? G.inv.map((i) => ((ITEMS[i.id] && ITEMS[i.id].name) || i.id) + " ×" + i.n).join("\n") : "(empty pockets, full destiny)";
-    const secrets = isB2()
+    const secrets = isB3()
+      ? ["Squires", "Grimblewaith", "Glocke", "Priscilla", "Miss Marble"].filter((_, i) => [G.flags.b3rod, G.flags.b3grim, G.flags.b3glocke, G.flags.b3pris, G.flags.b3marble][i]).join(", ")
+      : isB2()
       ? ["Little Giant", "Jumbo Shrimp", "Living Dead", "Moronic Ox"].filter((_, i) => [G.flags.b2lg, G.flags.b2prawn, G.flags.b2dead, G.flags.b2ox][i]).join(", ")
       : ["Louisa", "Elisabeth", "Meriwether"].filter((_, i) => [G.flags.secretL, G.flags.secretE, G.flags.secretM][i]).join(", ");
     $("mBody").innerHTML = "<pre style='white-space:pre-wrap;font:inherit'>" +
       body + "\n\nInventory\n" + items + "\n\nQuest\n" + G.quest +
-      "\n\n" + (isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
+      "\n\n" + (isB3() ? "Rod Squad: " : isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
       "\n\nArrows move · Enter talk · Esc menu</pre>";
   }
 
@@ -2382,6 +2923,26 @@ AAAAAAAAAAAAAAAAAAAA
     ]);
     save();
   }
+  function startBook3() {
+    audioInit();
+    G.day = 3;
+    G.flags = { saved: true };
+    G.gold = 20;
+    G.inv = [{ id: "luna", n: 2 }, { id: "taco", n: 1 }];
+    G.party = [rodHero()];
+    G.map = "village";
+    G.px = 12.5; G.py = 7.5; G.dir = 0;
+    G.quest = "Talk to Sirsi. Six months of peace is plenty. She has a referral.";
+    G.mode = "explore";
+    $("titleui").classList.remove("show");
+    hud();
+    say([
+      { who: "Jackdaw", text: "Six months later. The statues have pigeons. The knight has restlessness. The well has not been introduced, which is my favorite kind of foreshadowing." },
+      { who: "Sir Roderick 3RG", text: "I am Sir Roderick the Really, Really, Really Great. Peace is an intermission. I would like a villain, a dragon, and an entrance." },
+      { who: "Jackdaw", text: "Sirsi is in the square. She has the errand. You have the ego. Try listening first. Wells later." }
+    ]);
+    save();
+  }
   function continueGame() {
     audioInit();
     if (!load()) { startNew(); return; }
@@ -2431,6 +2992,7 @@ AAAAAAAAAAAAAAAAAAAA
 
   $("btnNew").onclick = startNew;
   $("btnBook2").onclick = startBook2;
+  $("btnBook3").onclick = startBook3;
   $("btnCont").onclick = continueGame;
   $("btnMute").onclick = toggleMute;
   $("btnSave").onclick = () => { save(); $("mBody").insertAdjacentHTML("afterbegin", "<p style='color:var(--gold)'>Saved in this browser.</p>"); };
@@ -2478,7 +3040,8 @@ AAAAAAAAAAAAAAAAAAAA
     load,
     blocked: (x, y) => blocked(G.map, x, y),
     mapSize: () => ({ w: MAPS[G.map].w, h: MAPS[G.map].h, id: G.map }),
-    startBook2
+    startBook2,
+    startBook3
   };
 })();
 </script>

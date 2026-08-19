@@ -1133,28 +1133,34 @@ function hairData(style, feminine=false){
   };
   const base = defs[style] || defs.messy;
   const extra = hairIllustrationExtras(style);
+  const bangs = extra.replaceBangs
+    ? extra.bangs
+    : [...(extra.undercut||[]), ...(base.bangs||[]), ...(extra.tips||[])];
   return {
     ...base,
-    bangs:[...(extra.undercut||[]), ...(base.bangs||[]), ...(extra.tips||[])],
+    bangs,
     sideLocks:[...(base.sideLocks||[]), ...(extra.sideLocks||[])],
     strandEdges: extra.strandEdges || [],
     ponyLocks:[...(base.ponyLocks||[]), ...(extra.ponyLocks||[])]
   };
 }
 function hairIllustrationExtras(style){
-  const undercut = [
-    'M148 148 C152 128 162 118 174 116 C178 128 176 142 170 156 C162 160 150 156 148 148 Z',
-    'M272 148 C268 128 258 118 246 116 C242 128 244 142 250 156 C258 160 270 156 272 148 Z',
-    'M158 136 C160 118 168 108 178 106 C182 116 180 130 174 144 C168 148 158 146 158 136 Z',
-    'M262 136 C260 118 252 108 242 106 C238 116 240 130 246 144 C252 148 262 146 262 136 Z'
+  const bangs = [
+    'M148 150 C151 128 161 116 174 114 C178 126 176 140 169 154 C161 160 149 158 148 150 Z',
+    'M272 150 C269 128 259 116 246 114 C242 126 244 140 251 154 C259 160 271 158 272 150 Z',
+    'M166 126 C168 104 178 94 190 94 C196 96 198 106 196 118 C191 136 184 150 175 160 C168 156 165 142 166 126 Z',
+    'M180 118 C182 96 192 86 204 86 C212 88 214 98 212 112 C207 132 200 148 190 160 C183 154 179 138 180 118 Z',
+    'M194 114 C196 92 206 82 218 84 C226 86 228 98 226 112 C221 132 214 148 206 160 C199 154 193 134 194 114 Z',
+    'M210 114 C213 92 224 84 236 88 C244 92 246 104 243 118 C237 136 228 150 218 160 C212 152 209 132 210 114 Z',
+    'M226 120 C230 100 242 94 254 100 C260 104 260 116 256 128 C249 144 240 154 230 160 C224 150 224 134 226 120 Z',
+    'M156 138 C158 118 168 108 178 108 C182 118 180 132 174 146 C167 150 156 148 156 138 Z',
+    'M250 136 C254 116 266 110 274 118 C278 126 276 140 268 150 C260 154 250 148 250 136 Z',
+    'M186 146 C188 136 196 132 204 134 C206 144 202 154 196 160 C190 160 185 154 186 146 Z',
+    'M214 144 C216 134 226 132 232 138 C234 148 228 158 220 160 C214 156 212 150 214 144 Z',
+    'M172 132 C174 116 182 108 192 108 C196 118 192 132 186 144 C180 146 171 140 172 132 Z'
   ];
-  const tips = [
-    'M186 148 C188 140 192 136 198 136 C200 144 198 152 194 158 C190 158 186 154 186 148 Z',
-    'M210 146 C212 138 218 134 224 136 C226 144 222 154 216 158 C212 156 209 152 210 146 Z',
-    'M200 150 C202 142 208 140 214 142 C216 150 212 158 206 160 C202 158 199 154 200 150 Z',
-    'M174 142 C176 132 182 128 190 130 C192 140 188 150 182 156 C178 154 173 148 174 142 Z',
-    'M230 142 C234 132 244 130 250 136 C252 144 248 154 240 158 C234 154 229 148 230 142 Z'
-  ];
+  const undercut = bangs.slice(0,2);
+  const tips = bangs.slice(-3);
   const strandEdges = [
     'M176 112 C180 128 178 144 172 156',
     'M198 100 C200 118 198 138 192 154',
@@ -1166,17 +1172,15 @@ function hairIllustrationExtras(style){
     'M232 110 C234 128 232 146 226 158'
   ];
   const sideLocks = [
-    'M144 158 C136 176 138 206 150 232 C154 242 160 248 168 250 C164 222 166 190 174 164 C166 154 152 150 144 158 Z',
-    'M276 158 C284 176 282 206 270 232 C266 242 260 248 252 250 C256 222 254 190 246 164 C254 154 268 150 276 158 Z',
-    'M152 168 C146 188 148 214 158 236 C162 244 168 250 174 252 C170 226 172 198 180 176 C172 166 158 162 152 168 Z',
-    'M268 168 C274 188 272 214 262 236 C258 244 252 250 246 252 C250 226 248 198 240 176 C248 166 262 162 268 168 Z'
+    'M142 162 C136 178 138 204 147 228 C150 238 156 244 163 246 C160 220 162 190 170 166 C162 156 148 154 142 162 Z',
+    'M278 162 C284 178 282 204 273 228 C270 238 264 244 257 246 C260 220 258 190 250 166 C258 156 272 154 278 162 Z'
   ];
   const ponyLocks = style==='ponytail' ? [
     'M278 188 C300 196 314 214 318 236 C322 258 316 280 304 298 C300 274 294 250 286 228 C282 210 280 196 278 188 Z',
     'M290 248 C306 262 314 282 312 304 C310 318 304 330 296 338 C294 318 290 298 284 280 C282 266 284 256 290 248 Z',
     'M284 210 C304 222 314 242 316 264 C318 284 310 304 298 318 C296 296 292 274 284 254 C282 238 282 222 284 210 Z'
   ] : [];
-  return {undercut, tips, strandEdges, sideLocks, ponyLocks};
+  return {replaceBangs:true, bangs, undercut, tips, strandEdges, sideLocks, ponyLocks};
 }
 
 function hairPalette(base){
@@ -1278,7 +1282,7 @@ function renderHairFront(s, data, st=styleProfile(s), ft=headTurnProfile(s), hd=
   });
 
   (data.bangs || []).forEach((d,i)=>{
-    const el=svgEl('path',{d,fill:fills[(i+1)%fills.length],stroke:p.line,'stroke-width':i<4?1.15:1.85,'stroke-linejoin':'round','stroke-linecap':'round'});
+    const el=svgEl('path',{d,fill:fills[(i+1)%fills.length],stroke:p.line,'stroke-width':i<2?1.05:1.55,'stroke-linejoin':'round','stroke-linecap':'round'});
     el.setAttribute('transform',hairLockTransform(hd,i,(data.bangs||[]).length,'bang'));
     g.appendChild(el);
   });
@@ -2085,12 +2089,12 @@ function handPoseSpec(gesture='relaxed'){
       {b:[11,1.8],m:[19,2.0],t:[25,2.4],w:3.7,tw:2.5},
       {b:[10,4.8],m:[17,5.4],t:[22,6.2],w:3.2,tw:2.1}
     ],thumb:{b:[6,6.2],m:[11,9.4],t:[16,9.2],w:4.0,tw:2.8}},
-    wave:{turn:-3,palmL:19.5,palmW:13,fingers:[
-      {b:[10,-5.6],m:[20,-10.5],t:[30,-12.2],w:3.5,tw:2.3},
-      {b:[11,-2.0],m:[23,-4.4],t:[34,-4.8],w:3.8,tw:2.5},
-      {b:[11,1.8],m:[24,1.8],t:[34,2.2],w:3.6,tw:2.4},
-      {b:[10,5.2],m:[21,8],t:[30,10],w:3.3,tw:2.2}
-    ],thumb:{b:[6,6.4],m:[11,12],t:[17,14.5],w:4.0,tw:2.8},nails:true},
+    wave:{turn:-8,palmL:20.5,palmW:13.2,fingers:[
+      {b:[10,-6.2],m:[21,-12.5],t:[32,-15.2],w:3.4,tw:2.2},
+      {b:[11,-2.2],m:[24,-5.2],t:[36,-6.0],w:3.7,tw:2.4},
+      {b:[11,1.6],m:[25,1.4],t:[36,2.0],w:3.5,tw:2.3},
+      {b:[10,5.4],m:[22,8.6],t:[32,11.4],w:3.2,tw:2.1}
+    ],thumb:{b:[6,6.8],m:[12,13],t:[18,16],w:3.9,tw:2.7},nails:true},
     point:{turn:0,palmL:19,palmW:12.5,fingers:[
       {b:[10,-4.4],m:[24,-4.8],t:[38,-4.4],w:3.5,tw:2.3,extended:true},
       {b:[11,-1.1],m:[18,1.6],t:[16,6.2],w:3.7,tw:2.5,curled:true},
@@ -2512,8 +2516,10 @@ function outfitTorsoDetails(parent,s,pal,lights,lines,profile){
   const detail=svgEl('g',{'data-garment-details':k});
   const fine=lines.weights.interior;
   if(k==='school-blazer'){
-    detail.appendChild(svgEl('path',{d:'M168 298 C176 292 186 300 194 312 C198 328 196 352 192 372 C186 368 178 352 172 332 C168 318 166 306 168 298 Z',fill:mixHex(pal.top,'#ffffff',0.05),stroke:lines.top,'stroke-width':'1.45','stroke-linejoin':'round'}));
-    detail.appendChild(svgEl('path',{d:'M252 298 C244 292 234 300 226 312 C222 328 224 352 228 372 C234 368 242 352 248 332 C252 318 254 306 252 298 Z',fill:mixHex(pal.top,'#ffffff',0.05),stroke:lines.top,'stroke-width':'1.45','stroke-linejoin':'round'}));
+    detail.appendChild(svgEl('path',{d:'M168 298 C176 292 186 300 194 312 C198 328 196 352 192 372 C186 368 178 352 172 332 C168 318 166 306 168 298 Z',fill:mixHex(pal.top,'#ffffff',0.18),stroke:lines.top,'stroke-width':'1.55','stroke-linejoin':'round'}));
+    detail.appendChild(svgEl('path',{d:'M252 298 C244 292 234 300 226 312 C222 328 224 352 228 372 C234 368 242 352 248 332 C252 318 254 306 252 298 Z',fill:mixHex(pal.top,'#ffffff',0.18),stroke:lines.top,'stroke-width':'1.55','stroke-linejoin':'round'}));
+    detail.appendChild(svgEl('path',{d:'M194 312 Q198 340 192 372',fill:'none',stroke:mixHex(lines.top,'#111827',0.18),'stroke-width':'1.15','stroke-linecap':'round',opacity:'0.7'}));
+    detail.appendChild(svgEl('path',{d:'M226 312 Q222 340 228 372',fill:'none',stroke:mixHex(lines.top,'#111827',0.18),'stroke-width':'1.15','stroke-linecap':'round',opacity:'0.7'}));
     detail.appendChild(svgEl('path',{d:'M192 292 C198 286 210 284 222 286 C228 292 226 304 222 318 C216 312 204 312 198 318 C194 304 190 296 192 292 Z',fill:'#f7f8fb',stroke:lines.trim,'stroke-width':'1.05'}));
     detail.appendChild(svgEl('path',{d:'M198 318 Q210 308 222 318 C221 328 216 334 210 332 C204 334 199 328 198 318 Z',fill:'#f7f8fb',stroke:lines.trim,'stroke-width':'0.95'}));
     detail.appendChild(svgEl('path',{d:'M206 316 C212 314 216 318 214 328 C216 352 218 372 210 390 C202 372 204 352 206 328 C204 318 208 316 206 316 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1.0'}));
@@ -2539,8 +2545,8 @@ function outfitTorsoDetails(parent,s,pal,lights,lines,profile){
     [360,383,406,429].forEach(y=>detail.appendChild(svgEl('circle',{cx:210,cy:y,r:2.2,fill:pal.trim,stroke:lines.trim,'stroke-width':'.5'})));
     detail.appendChild(svgEl('path',{d:'M158 444 C178 452 210 456 252 452 C260 448 258 442 250 440 C230 446 190 446 162 440 C156 442 156 444 158 444 Z',fill:'none',stroke:mixHex(lines.top,'#ffffff',0.18),'stroke-width':'2.6'}));
   } else if(k==='teacher'){
-    detail.appendChild(svgEl('path',{d:'M172 298 C180 292 188 300 196 312 C200 328 198 354 194 376 C188 370 180 352 174 332 C170 318 168 306 172 298 Z',fill:mixHex(pal.top,'#ffffff',0.04),stroke:lines.top,'stroke-width':'1.4'}));
-    detail.appendChild(svgEl('path',{d:'M248 298 C240 292 232 300 224 312 C220 328 222 354 226 376 C232 370 240 352 246 332 C250 318 252 306 248 298 Z',fill:mixHex(pal.top,'#ffffff',0.04),stroke:lines.top,'stroke-width':'1.4'}));
+    detail.appendChild(svgEl('path',{d:'M172 298 C180 292 188 300 196 312 C200 328 198 354 194 376 C188 370 180 352 174 332 C170 318 168 306 172 298 Z',fill:mixHex(pal.top,'#ffffff',0.16),stroke:lines.top,'stroke-width':'1.45'}));
+    detail.appendChild(svgEl('path',{d:'M248 298 C240 292 232 300 224 312 C220 328 222 354 226 376 C232 370 240 352 246 332 C250 318 252 306 248 298 Z',fill:mixHex(pal.top,'#ffffff',0.16),stroke:lines.top,'stroke-width':'1.45'}));
     detail.appendChild(svgEl('path',{d:'M196 294 C204 288 216 288 224 294 C222 306 218 318 210 314 C202 318 198 306 196 294 Z',fill:'#f8f8f6',stroke:lines.trim,'stroke-width':'1.0'}));
     detail.appendChild(svgEl('path',{d:'M206 314 C212 312 216 318 214 330 C216 356 218 384 210 402 C202 384 204 356 206 330 C204 318 208 314 206 314 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1'}));
     detail.appendChild(svgEl('path',{d:'M236 348 C248 344 260 348 262 354 C260 370 248 374 236 370 C234 362 234 354 236 348 Z',fill:'none',stroke:lines.top,'stroke-width':'1.1'}));

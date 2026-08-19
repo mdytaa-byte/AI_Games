@@ -507,6 +507,11 @@ function feld(id,lab){
 
 function checkA(){
   const map={nachname:ID.nachname,vorname:ID.vorname,geb:ID.geb,staat:ID.staat,strasse:ID.strasse,nr:ID.nr,plz:ID.plz,ort:ID.ort};
+  if(S.formAAttempted){
+    S.total -= 8;
+    S.korrekt -= S.formOk || 0;
+  }
+  S.formAAttempted = true;
   let ok=0, notes=[];
   Object.keys(map).forEach(k=>{
     const el=$("f-"+k);
@@ -593,12 +598,19 @@ function pickB(o,btn,d){
 function checkBform(){
   const mail=($("b-mail").value||"").trim();
   const sig=($("b-sig").value||"").trim();
-  S.total+=2;
+  if(S.formBAttempted){
+    S.total -= 2;
+    S.korrekt -= S.formBOk || 0;
+    S.dlgOk -= S.formBOk || 0;
+  }
+  S.formBAttempted = true;
   let ok=0, msgs=[];
+  S.total+=2;
   if(/@/.test(mail) && /\./.test(mail)){ ok++; S.korrekt++; S.dlgOk++; $("b-mail").className="ok"; }
   else { msgs.push("E-Mail braucht @ und einen Punkt in der Domain."); $("b-mail").className="err"; }
   if(/luca/i.test(sig) && /bergmann/i.test(sig)){ ok++; S.korrekt++; S.dlgOk++; $("b-sig").className="ok"; }
   else { msgs.push("Unterschrift: Luca Bergmann (wie auf dem Ausweis)."); $("b-sig").className="err"; }
+  S.formBOk = ok;
   const fb=$("play-fb"); fb.hidden=false; fb.className="fb "+(ok===2?"ok":"bad");
   fb.innerHTML="<p>"+(ok===2?"Angenommen. Willkommen in der Bücherei.":msgs.join(" "))+"</p>";
   sagen(ok===2?"Ausweis fertig.":"Bitte Felder prüfen.");
@@ -712,12 +724,14 @@ $("btn-start").addEventListener("click", ()=>{
 $("btn-wrong1").addEventListener("click", ()=>{
   sagen("Schalter 1 ist Kfz. Falsch. Gehen Sie zu Schalter 3.");
   sprich("Falscher Schalter. Bitte Schalter drei.");
-  S.total++;
+  if(!S.wrongDesk){ S.total++; S.wrongDesk=true; }
+  $("btn-wrong1").disabled=true;
 });
 $("btn-wrong2").addEventListener("click", ()=>{
   sagen("Schalter 2 ist Steuern. Falsch. Schalter 3, bitte.");
   sprich("Falscher Schalter.");
-  S.total++;
+  if(!S.wrongDesk){ S.total++; S.wrongDesk=true; }
+  $("btn-wrong2").disabled=true;
 });
 $("btn-schalter3").addEventListener("click", ()=>{
   if($("btn-schalter3").disabled){ sagen("Bitte warten Sie auf Ihre Nummer."); return; }

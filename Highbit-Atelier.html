@@ -40,7 +40,7 @@ button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 .hidden{display:none!important}
 
-.app{height:100vh;display:grid;grid-template-rows:64px minmax(0,1fr) 186px;grid-template-columns:228px minmax(0,1fr) 320px;overflow:hidden}
+.app{height:100vh;display:grid;grid-template-rows:64px minmax(0,1fr) 210px;grid-template-columns:228px minmax(0,1fr) 320px;overflow:hidden}
 .rail,.inspector,.stage-wrap{min-height:0}
 .topbar{grid-column:1/-1;display:flex;align-items:center;gap:18px;padding:0 18px;border-bottom:1px solid var(--line);background:rgba(12,14,18,.92);backdrop-filter:blur(12px)}
 .brand{display:flex;align-items:center;gap:12px;min-width:228px}
@@ -333,21 +333,22 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   ];
 
   const EXPRS = {
-    neutral:{browY:0,browInner:0,openL:1,openR:1,curve:.08,open:0,blush:.18,skew:0},
-    smile:{browY:-.2,browInner:-.5,openL:.92,openR:.92,curve:.78,open:.1,blush:.4,skew:0},
-    grin:{browY:-.6,browInner:-.3,openL:.8,openR:.8,curve:1,open:.48,blush:.28,skew:0},
-    smirk:{browY:.1,browInner:.5,openL:.9,openR:.84,curve:.42,open:.06,blush:.05,skew:1.6},
-    sad:{browY:1.1,browInner:1.8,openL:.76,openR:.76,curve:-.88,open:.06,blush:0,skew:0},
-    angry:{browY:.3,browInner:2.4,openL:.7,openR:.7,curve:-.42,open:.14,blush:.22,skew:0},
-    surprised:{browY:-2.4,browInner:0,openL:1.18,openR:1.18,curve:.05,open:.88,blush:0,skew:0},
-    wink:{browY:-.1,browInner:-.2,openL:1,openR:.06,curve:.55,open:.1,blush:.22,skew:.4},
-    determined:{browY:.15,browInner:1.2,openL:.86,openR:.86,curve:-.04,open:0,blush:0,skew:0},
-    tired:{browY:1.5,browInner:.5,openL:.42,openR:.42,curve:-.12,open:.22,blush:0,skew:0},
-    embarrassed:{browY:.7,browInner:.6,openL:.82,openR:.82,curve:.22,open:0,blush:.92,skew:0},
-    thinking:{browY:.4,browInner:-.9,openL:.9,openR:.68,curve:-.12,open:0,blush:0,skew:.2,lookX:-.8,lookY:-.45},
-    scared:{browY:-1.4,browInner:1.3,openL:1.12,openR:1.12,curve:-.18,open:.55,blush:0,skew:0},
-    proud:{browY:-.9,browInner:-.2,openL:.9,openR:.9,curve:.38,open:0,blush:.12,skew:0}
+    neutral:     {browY:0,    browInner:0,    openL:1,    openR:1,    curve:.10,  open:0,    blush:.18, skew:0},
+    smile:       {browY:-.45, browInner:-.55, openL:.94,  openR:.94,  curve:.86,  open:.08,  blush:.44, skew:0},
+    grin:        {browY:-.75, browInner:-.25, openL:.84,  openR:.84,  curve:1,    open:.55,  blush:.30, skew:0},
+    smirk:       {browY:.12,  browInner:.85,  openL:.92,  openR:.76,  curve:.50,  open:.06,  blush:.08, skew:2.4},
+    sad:         {browY:.55,  browInner:-2.45,openL:.74,  openR:.74,  curve:-.95, open:.10,  blush:0,   skew:0},
+    angry:       {browY:.15,  browInner:2.7,  openL:.58,  openR:.58,  curve:-.58, open:.20,  blush:.22, skew:0},
+    surprised:   {browY:-2.7, browInner:0,    openL:1.24, openR:1.24, curve:.04,  open:.96,  blush:0,   skew:0},
+    wink:        {browY:-.22, browInner:-.35, openL:1,    openR:.04,  curve:.64,  open:.10,  blush:.24, skew:.55},
+    determined:  {browY:.08,  browInner:1.55, openL:.78,  openR:.78,  curve:-.10, open:0,    blush:0,   skew:0},
+    tired:       {browY:1.65, browInner:.35,  openL:.36,  openR:.36,  curve:-.20, open:.16,  blush:0,   skew:0},
+    embarrassed: {browY:.75,  browInner:.55,  openL:.82,  openR:.82,  curve:.30,  open:0,    blush:.95, skew:0},
+    thinking:    {browY:.30,  browInner:-1.15,openL:.92,  openR:.60,  curve:-.12, open:0,    blush:0,   skew:.28, lookX:-.85, lookY:-.50},
+    scared:      {browY:-1.55,browInner:1.55, openL:1.16, openR:1.16, curve:-.24, open:.64,  blush:0,   skew:0},
+    proud:       {browY:-1.05,browInner:-.20, openL:.92,  openR:.92,  curve:.46,  open:0,    blush:.14, skew:0}
   };
+
 
   const BODY = {
     slim:{sh:17,wa:12,hp:15,limb:4.2,head:21,leg:5},
@@ -474,55 +475,218 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   function bones(ch, pose, dir, frame, breath){
     const m=BODY[ch.bodyType]||BODY.average;
     const cx=64;
-    let ground=184, hop=0, sit=0;
-    let lArm=10, rArm=-8, lLeg=-4, rLeg=5, lLift=0, rLift=0;
-    const run = pose==="run";
+    const ground=184;
+    const fRaw=(((frame||0)%4)+4)%4;
+    const fi=fRaw|0;
+    const ft=fRaw-fi;
+    const facing=dir==="e"?1:dir==="w"?-1:0;
+    const side=dir==="e"||dir==="w";
+    const run=pose==="run";
+    let hop=0, hipDrop=0, torsoShort=0, lean=0;
+    let lArm=8, rArm=-6, lLeg=-3, rLeg=4, lLift=0, rLift=0;
+    let lArmLen=32, rArmLen=32, lLegLen=52, rLegLen=52;
+    let lKneeFwd=0, rKneeFwd=0, lElBend=0, rElBend=4;
+  
+    function poseMix(a,b,t){
+      const o={};
+      for(const k in a) o[k]=typeof a[k]==="number"?lerp(a[k],b[k],t):a[k];
+      return o;
+    }
+  
     if(pose==="walk"||run){
-      const ph=((frame%4)/4)*Math.PI*2;
-      const amp=run?1.4:1;
-      lArm=Math.sin(ph)*36*amp; rArm=-Math.sin(ph)*36*amp;
-      lLeg=-Math.sin(ph)*26*amp; rLeg=Math.sin(ph)*26*amp;
-      hop=Math.abs(Math.cos(ph))*(run?4:2);
+      const amp=run?1.38:1;
+      const keys=[
+        {lA: 38*amp, rA:-34*amp, lL:-28*amp, rL: 30*amp, hop:run?1.5:0,   lUp:0,      rUp:run?4:0,  lKf:3, rKf:10},
+        {lA: 12*amp, rA:-10*amp, lL: -6*amp, rL:  8*amp, hop:run?6:3,     lUp:run?10:6, rUp:2,      lKf:12,rKf:4},
+        {lA:-34*amp, rA: 38*amp, lL: 30*amp, rL:-28*amp, hop:run?1.5:0,   lUp:run?4:0,  rUp:0,      lKf:10,rKf:3},
+        {lA:-10*amp, rA: 12*amp, lL:  8*amp, rL: -6*amp, hop:run?6:3,     lUp:2,       rUp:run?10:6,lKf:4, rKf:12}
+      ];
+      const a=keys[fi], b=keys[(fi+1)%4], p=poseMix(a,b,ft);
+      lArm=p.lA; rArm=p.rA; lLeg=p.lL; rLeg=p.rL; hop=p.hop;
+      lLift=p.lUp; rLift=p.rUp; lKneeFwd=p.lKf; rKneeFwd=p.rKf;
+      if(run){ torsoShort=3; lean=facing*5; hop+=1 }
+      lElBend=side?6:2; rElBend=side?6:2;
     } else if(pose==="jump"){
-      hop=20; lArm=48; rArm=-46; lLeg=20; rLeg=-18; lLift=-42; rLift=-40;
+      hop=18;
+      torsoShort=4;
+      lArmLen=30; rArmLen=30;
+      lLegLen=30; rLegLen=28;
+      lKneeFwd=14; rKneeFwd=12;
+      lElBend=-10; rElBend=10;
     } else if(pose==="wave"){
-      rLift=-118; rArm=18+Math.sin((frame%4)*1.2)*16; lArm=14;
+      lArm=16; rArm=0;
+      lLeg=-2; rLeg=3;
+      hop=Math.sin((breath||0)*.5)*0.4;
+      if(dir==="w"){
+        lArmLen=28;
+        rArm=12; rArmLen=30;
+      } else {
+        rArmLen=28;
+        lArm=14; lArmLen=30;
+      }
+      rElBend=dir==="w"?4:-8;
+      lElBend=dir==="w"?-8:4;
     } else if(pose==="sit"){
-      sit=28; hop=0; lLeg=55; rLeg=48; lArm=18; rArm=-16;
+      hipDrop=34;
+      torsoShort=12;
+      lArm=22; rArm=-18;
+      lArmLen=28; rArmLen=28;
+      lElBend=10; rElBend=10;
+      lKneeFwd=16; rKneeFwd=16;
     } else if(pose==="attack"){
-      rLift=-70; rArm=-40; lArm=28; lLeg=12; rLeg=-16; hop=3;
+      hop=3;
+      lean=facing*(side?10:2);
+      torsoShort=2;
+      lLeg=32; rLeg=-26;
+      lLift=2; rLift=6;
+      lLegLen=50; rLegLen=48;
+      lKneeFwd=4; rKneeFwd=14;
+      lArmLen=30; rArmLen=34;
+      lElBend=12; rElBend=-6;
     } else if(pose==="crouch"){
-      sit=18; lLeg=28; rLeg=22; lArm=16; rArm=-14;
+      hipDrop=26;
+      torsoShort=16;
+      hop=0;
+      lArm=28; rArm=-24;
+      lArmLen=26; rArmLen=26;
+      lLeg=18; rLeg=14;
+      lLegLen=36; rLegLen=36;
+      lKneeFwd=18; rKneeFwd=16;
+      lElBend=8; rElBend=8;
     } else {
-      const b=Math.sin(breath||0)*2*(ch._anim||0);
-      hop=b*.15; lArm=8+b; rArm=-6-b;
+      const bth=Math.sin(breath||0)*2*(ch._anim||0);
+      hop=bth*.18;
+      lArm=8+bth; rArm=-6-bth;
+      lElBend=3; rElBend=3;
     }
-    const hipY=ground-64-hop+sit*.4;
-    const hipX=cx+(dir==="e"?3:dir==="w"?-3:0);
-    const shY=hipY-46+sit*.15;
-    const headX=hipX+(dir==="e"?5:dir==="w"?-5:0);
-    const headY=shY-26+(pose==="sit"?2:0);
+  
+    const hipX=cx+(dir==="e"?4:dir==="w"?-4:0)+lean;
+    const hipY=ground-64-hop+hipDrop;
+    const shY=hipY-46+torsoShort+hipDrop*.08;
+    const headX=hipX+(dir==="e"?6:dir==="w"?-6:0)+lean*.35;
+    const headY=shY-26+(pose==="sit"?3:pose==="crouch"?4:0);
     const face=dir==="s"?1:dir==="n"?0:.55;
-    const lSh={x:hipX-m.sh*(dir==="s"||dir==="n"?1:.35), y:shY+3};
-    const rSh={x:hipX+m.sh*(dir==="s"||dir==="n"?1:.35), y:shY+3};
-    if(dir==="e"){lSh.x=hipX-6; rSh.x=hipX+8}
-    if(dir==="w"){lSh.x=hipX-8; rSh.x=hipX+6}
-    const lHand=ang(lSh.x,lSh.y,180+lArm+lLift,32);
-    const rHand=ang(rSh.x,rSh.y,180+rArm+rLift,32);
-    const lEl={x:(lSh.x+lHand.x)/2, y:(lSh.y+lHand.y)/2+.5};
-    const rEl={x:(rSh.x+rHand.x)/2, y:(rSh.y+rHand.y)/2+.5};
-    const lHip={x:hipX-m.hp*.45, y:hipY+2};
-    const rHip={x:hipX+m.hp*.45, y:hipY+2};
-    const lFoot=ang(lHip.x,lHip.y,180+lLeg, 52-sit);
-    const rFoot=ang(rHip.x,rHip.y,180+rLeg, 52-sit);
-    if(pose==="sit"){
-      lFoot.x=lHip.x-6; lFoot.y=ground-8;
-      rFoot.x=rHip.x+8; rFoot.y=ground-8;
+  
+    const shSpan=side?0.38:1;
+    const lSh={x:hipX-m.sh*shSpan, y:shY+3};
+    const rSh={x:hipX+m.sh*shSpan, y:shY+3};
+    if(dir==="e"){ lSh.x=hipX-5; lSh.y=shY+1; rSh.x=hipX+11; rSh.y=shY+5 }
+    if(dir==="w"){ lSh.x=hipX-11; lSh.y=shY+5; rSh.x=hipX+5; rSh.y=shY+1 }
+  
+    let lHand=ang(lSh.x,lSh.y,180+lArm+lLift,lArmLen);
+    let rHand=ang(rSh.x,rSh.y,180+rArm+rLift,rArmLen);
+  
+    if(pose==="jump"){
+      lHand={x:lSh.x-18, y:lSh.y-24};
+      rHand={x:rSh.x+18, y:rSh.y-26};
+      if(dir==="e"){ lHand={x:lSh.x-8,y:lSh.y-22}; rHand={x:rSh.x+16,y:rSh.y-20} }
+      if(dir==="w"){ lHand={x:lSh.x-16,y:lSh.y-20}; rHand={x:rSh.x+8,y:rSh.y-22} }
+      if(dir==="n"){ lHand={x:lSh.x-12,y:lSh.y-20}; rHand={x:rSh.x+12,y:rSh.y-20} }
     }
-    const lKnee={x:(lHip.x+lFoot.x)/2, y:(lHip.y+lFoot.y)/2};
-    const rKnee={x:(rHip.x+rFoot.x)/2, y:(rHip.y+rFoot.y)/2};
+    if(pose==="wave"){
+      const wag=Math.sin(fRaw*1.35)*9;
+      if(dir==="w"){
+        lHand={x:lSh.x-4+wag*.2, y:lSh.y-30};
+        rHand=ang(rSh.x,rSh.y,194,30);
+      } else if(dir==="e"){
+        rHand={x:rSh.x+4+wag*.2, y:rSh.y-30};
+        lHand=ang(lSh.x,lSh.y,166,30);
+      } else if(dir==="n"){
+        rHand={x:rSh.x+8+wag*.15, y:rSh.y-28};
+      } else {
+        rHand={x:rSh.x+2+wag, y:rSh.y-30};
+        lHand=ang(lSh.x,lSh.y,196,30);
+      }
+    }
+    if(pose==="attack"){
+      if(dir==="e"){
+        rHand={x:rSh.x+28, y:rSh.y+10};
+        lHand={x:lSh.x-16, y:lSh.y+8};
+      } else if(dir==="w"){
+        lHand={x:lSh.x-28, y:lSh.y+10};
+        rHand={x:rSh.x+16, y:rSh.y+8};
+      } else if(dir==="n"){
+        rHand={x:rSh.x+10, y:rSh.y-8};
+        lHand={x:lSh.x-18, y:lSh.y+16};
+      } else {
+        rHand={x:hipX+6, y:shY+38};
+        lHand={x:lSh.x-18, y:shY+6};
+      }
+    }
+  
+    function elbowOf(sh, hd, bend){
+      const mx=(sh.x+hd.x)/2, my=(sh.y+hd.y)/2+.4;
+      const dx=hd.x-sh.x, dy=hd.y-sh.y, len=Math.hypot(dx,dy)||1;
+      return {x:mx-(dy/len)*bend, y:my+(dx/len)*bend};
+    }
+    const lEl=elbowOf(lSh,lHand,lElBend);
+    const rEl=elbowOf(rSh,rHand,rElBend);
+  
+    const lHip={x:hipX-m.hp*.45-(dir==="w"?2:0), y:hipY+2};
+    const rHip={x:hipX+m.hp*.45+(dir==="e"?2:0), y:hipY+2};
+    if(side){ lHip.x=hipX-m.hp*.22; rHip.x=hipX+m.hp*.22 }
+  
+    let lFoot=ang(lHip.x,lHip.y,180+lLeg,lLegLen-lLift*.35);
+    let rFoot=ang(rHip.x,rHip.y,180+rLeg,rLegLen-rLift*.35);
+    lFoot.y-=lLift*.45; rFoot.y-=rLift*.45;
+  
+    if(side && (pose==="walk"||run)){
+      const stride=(run?16:11)*Math.sin((fRaw/4)*Math.PI*2);
+      lFoot.x+=facing*(-stride);
+      rFoot.x+=facing*stride;
+      lFoot.y=Math.min(lFoot.y, ground-4-hop);
+      rFoot.y=Math.min(rFoot.y, ground-4-hop);
+    }
+  
+    if(pose==="jump"){
+      lFoot={x:lHip.x-12-(side?facing*4:0), y:hipY+26};
+      rFoot={x:rHip.x+10+(side?facing*4:0), y:hipY+24};
+      if(dir==="e"){ lFoot={x:lHip.x-6,y:hipY+22}; rFoot={x:rHip.x+14,y:hipY+20} }
+      if(dir==="w"){ lFoot={x:lHip.x-14,y:hipY+20}; rFoot={x:rHip.x+6,y:hipY+22} }
+    }
+    if(pose==="sit"){
+      const fwd=side?facing*16:0;
+      lFoot={x:lHip.x-8+fwd-(dir==="e"?4:0), y:ground-7};
+      rFoot={x:rHip.x+8+fwd+(dir==="w"?4:0), y:ground-7};
+      if(dir==="n"){ lFoot.x=lHip.x-6; rFoot.x=rHip.x+6 }
+    }
+    if(pose==="crouch"){
+      lFoot={x:lHip.x-6+(facing*4), y:ground-6};
+      rFoot={x:rHip.x+8+(facing*4), y:ground-6};
+    }
+    if(pose==="attack"){
+      if(dir==="e"){
+        rFoot={x:rHip.x+22, y:ground-5}; lFoot={x:lHip.x-10, y:ground-8};
+      } else if(dir==="w"){
+        lFoot={x:lHip.x-22, y:ground-5}; rFoot={x:rHip.x+10, y:ground-8};
+      } else {
+        rFoot.y=ground-5; lFoot.y=ground-10;
+        rFoot.x+=4; lFoot.x-=8;
+      }
+    }
+  
+    function kneeOf(hp, ft, fwd){
+      const mx=(hp.x+ft.x)/2, my=(hp.y+ft.y)/2;
+      const dx=ft.x-hp.x, dy=ft.y-hp.y, len=Math.hypot(dx,dy)||1;
+      const px=-dy/len, py=dx/len;
+      const sign=side?(facing>=0?1:-1):1;
+      return {x:mx+px*fwd*sign*.15 - (side?0:fwd*.35), y:my-fwd*.55};
+    }
+    let lKnee=kneeOf(lHip,lFoot,lKneeFwd);
+    let rKnee=kneeOf(rHip,rFoot,rKneeFwd);
+    if(pose==="sit"){
+      lKnee={x:lHip.x-4+(facing*8), y:hipY+14};
+      rKnee={x:rHip.x+6+(facing*8), y:hipY+14};
+    }
+    if(pose==="crouch"||pose==="jump"){
+      lKnee={x:lHip.x-10-(side?0:2), y:hipY+10};
+      rKnee={x:rHip.x+10+(side?0:2), y:hipY+9};
+      if(pose==="jump"){ lKnee.y=hipY+8; rKnee.y=hipY+7 }
+    }
+  
     return {m,cx:hipX,hipY,shY,head:{x:headX,y:headY,s:1,face},lSh,rSh,lEl,rEl,lHand,rHand,lHip,rHip,lKnee,rKnee,lFoot,rFoot,dir,pose};
   }
+
 
   function shadeTorso(pix, sk, hipX, shY, hipY, sh, wa, hp, dir){
     const top=shY-2, bot=hipY+8;
@@ -536,116 +700,373 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   }
 
   function drawHair(pix, ch, b, layer){
-    if(ch.hairStyle==="bald") return;
+    const style=ch.hairStyle;
+    if(style==="bald") return;
     const hr=ramp(ch.hairColor);
     const hx=b.head.x, hy=b.head.y, r=b.m.head, dir=b.dir;
-    const back = layer==="back";
-    const style=ch.hairStyle;
+    const back=layer==="back";
+    const nape=dir==="n";
+    const sx=dir==="e"?1:dir==="w"?-1:0;
+    const longish=style==="long"||style==="wavy"||style==="pony"||style==="braids"||style==="messy";
+  
+    function clump(x,y,rx,ry,c){ pix.ellipse(x,y,rx,ry,c) }
+    function lock(sideSign, ox, oy, rx, ry, c){
+      clump(hx+sideSign*(r*0.98+ox), hy+oy, rx, ry, c);
+    }
+    function crown(oy, rx, ry, c){
+      clump(hx+sx*2, hy-r*0.74+oy, rx, ry, c);
+    }
+  
     if(back){
-      pix.ellipse(hx, hy+4, r+6, r+8, hr.d);
-      if(style==="long"||style==="wavy"||style==="pony"||style==="braids"||style==="messy"){
-        pix.ellipse(hx, hy+28, r+4, 22, hr.m);
-        pix.ellipse(hx-10, hy+40, 8, 16, hr.d);
-        pix.ellipse(hx+10, hy+40, 8, 16, hr.d);
+      if(style==="buzz"){
+        clump(hx, hy+2, r+1.2, r+1.6, hr.s);
+        return;
       }
-      if(style==="afro") pix.ellipse(hx, hy-2, r+12, r+11, hr.m);
-      if(style==="bun"||style==="pony") pix.ellipse(hx, hy-r-6, 10, 10, hr.m);
+      if(style==="crop"){
+        clump(hx, hy+3, r+2.2, r+2.4, hr.d);
+        clump(hx, hy+r*0.55, r*0.7, 6, hr.s);
+        return;
+      }
+      if(style==="pixie"){
+        clump(hx, hy+2, r+2, r+2.2, hr.d);
+        clump(hx-r*0.4, hy+r*0.5, 6, 7, hr.s);
+        clump(hx+r*0.55, hy+r*0.2, 5, 5, hr.m);
+        return;
+      }
+      if(style==="bob"){
+        clump(hx, hy+8, r+5, r+6, hr.d);
+        clump(hx, hy+r*0.7, r+3, 10, hr.m);
+        clump(hx-r*0.2, hy+r+2, 9, 7, hr.s);
+        clump(hx+r*0.25, hy+r+1, 8, 7, hr.s);
+        return;
+      }
+      if(style==="afro"){
+        clump(hx, hy-1, r+13, r+12, hr.d);
+        clump(hx-3, hy-4, r+10, r+9, hr.m);
+        clump(hx+6, hy-8, 8, 7, hr.l);
+        return;
+      }
+      if(style==="undercut"){
+        clump(hx+sx*3+(dir==="s"?4:0), hy+1, r*0.75, r*0.7, hr.d);
+        clump(hx, hy-r*0.15, r*0.9, r*0.55, hr.m);
+        return;
+      }
+      if(style==="bun"){
+        clump(hx, hy+3, r+1.5, r+1.2, hr.d);
+        const bx=hx-(nape||dir==="s"?0:sx*6), by=hy-r-5;
+        clump(bx, by, 11, 10, hr.m);
+        clump(bx-2, by-2, 7, 6, hr.l);
+        clump(bx, by+8, 5, 3, hr.s);
+        return;
+      }
+      if(style==="pony"){
+        clump(hx, hy+3, r+1.8, r+1.5, hr.d);
+        const tx=hx+(dir==="e"?10:dir==="w"?-10:dir==="n"?0:7);
+        const ty=hy+r*0.35;
+        clump(tx, ty, 6, 5, hr.s);
+        pix.capsule(tx, ty, tx+sx*3, ty+28, 4.2, hr.m, hr.d);
+        clump(tx+sx*2, ty+32, 5.5, 8, hr.d);
+        pix.set((tx)|0,(ty+2)|0, hr.h);
+        return;
+      }
       if(style==="braids"){
-        pix.capsule(hx-12,hy+8,hx-16,hy+48,3,hr.d,hr.m);
-        pix.capsule(hx+12,hy+8,hx+16,hy+48,3,hr.d,hr.m);
+        clump(hx, hy+4, r+2, r+2, hr.d);
+        const pairs=[[-11,8,-15,50],[11,8,15,50]];
+        pairs.forEach(([x0,y0,x1,y1],i)=>{
+          const ox=sx?sx*(i?2:-2):0;
+          pix.capsule(hx+x0+ox, hy+y0, hx+x1+ox, hy+y1, 3.1, hr.d, hr.m);
+          for(let k=0;k<5;k++){
+            const t=k/4;
+            clump(lerp(hx+x0,hx+x1,t)+ox, lerp(hy+y0,hy+y1,t), 3.4-k*.2, 3.2, k%2?hr.m:hr.l);
+          }
+        });
+        return;
       }
+      if(style==="wavy"){
+        clump(hx, hy+6, r+5, r+5, hr.d);
+        clump(hx-8, hy+24, 11, 16, hr.m);
+        clump(hx+9, hy+26, 10, 15, hr.m);
+        clump(hx-14, hy+40, 8, 10, hr.d);
+        clump(hx+13, hy+44, 8, 11, hr.d);
+        clump(hx-4, hy+50, 7, 9, hr.s);
+        clump(hx+6, hy+52, 7, 8, hr.s);
+        clump(hx-16, hy+32, 6, 6, hr.l);
+        clump(hx+17, hy+36, 6, 6, hr.l);
+        return;
+      }
+      if(style==="long"){
+        clump(hx, hy+8, r+4.5, r+6, hr.d);
+        pix.capsule(hx-8, hy+12, hx-10, hy+54, 7, hr.m, hr.d);
+        pix.capsule(hx+8, hy+12, hx+10, hy+56, 7, hr.m, hr.d);
+        clump(hx, hy+36, r+2, 18, hr.m);
+        clump(hx-11, hy+58, 8, 10, hr.d);
+        clump(hx+12, hy+60, 8, 10, hr.d);
+        return;
+      }
+      if(style==="messy"){
+        clump(hx, hy+4, r+3, r+3, hr.d);
+        clump(hx-10, hy+22, 8, 14, hr.m);
+        clump(hx+12, hy+18, 7, 16, hr.d);
+        clump(hx-2, hy+34, 9, 12, hr.s);
+        clump(hx+8, hy-r-2, 6, 5, hr.l);
+        clump(hx-9, hy-r+2, 5, 6, hr.h);
+        return;
+      }
+      clump(hx, hy+4, r+3, r+3, hr.d);
       return;
     }
-    if(dir==="n"){
-      pix.ellipse(hx, hy-2, r+5, r+4, hr.l);
+  
+    if(nape){
+      if(style==="buzz"){ clump(hx, hy, r+1.4, r+1.2, hr.m); return }
+      if(style==="crop"){ clump(hx, hy-1, r+2.5, r+2, hr.m); clump(hx, hy-r*.4, r+1, 8, hr.l); return }
+      if(style==="afro"){ clump(hx, hy-2, r+12, r+11, hr.m); clump(hx-4, hy-6, 8, 7, hr.l); return }
+      if(style==="bun"){ clump(hx, hy, r+2, r+1.5, hr.m); clump(hx, hy-r-6, 11, 10, hr.l); return }
+      if(style==="pony"){
+        clump(hx, hy, r+2, r+1.6, hr.m);
+        pix.capsule(hx, hy+r*.2, hx, hy+r+18, 4.4, hr.m, hr.d);
+        return;
+      }
+      clump(hx, hy-2, r+4, r+3.2, hr.m);
+      if(longish) clump(hx, hy+r*.6, r+3, 12, hr.d);
       return;
     }
-    pix.ellipse(hx, hy-r*.72, r+2, r*.52, hr.m);
-    pix.ellipse(hx-r*.9, hy+1, 5.5, 11, hr.d);
-    pix.ellipse(hx+r*.9, hy+1, 5.5, 11, hr.d);
-    if(style==="buzz") pix.ellipse(hx, hy-r*.35, r+1, r*.45, hr.d);
-    if(style==="crop"||style==="undercut") pix.ellipse(hx, hy-r*.55, r+2, 10, hr.m);
-    if(style==="pixie"){ pix.ellipse(hx-r,hy-2,8,11,hr.l); pix.ellipse(hx+r-2,hy-4,7,9,hr.m) }
-    if(style==="bob"){ pix.ellipse(hx-r-2,hy+8,8,12,hr.m); pix.ellipse(hx+r+2,hy+8,8,12,hr.m) }
-    if(style==="long"||style==="wavy"||style==="messy"){
-      pix.ellipse(hx-r-3,hy+10,8,16,hr.l); pix.ellipse(hx+r+3,hy+10,8,16,hr.l);
-      if(style==="wavy"){ pix.ellipse(hx-r-5,hy+22,7,10,hr.m); pix.ellipse(hx+r+4,hy+24,7,10,hr.m) }
-      if(style==="messy"){ pix.ellipse(hx-6,hy-r-3,7,6,hr.h); pix.ellipse(hx+9,hy-r-1,6,7,hr.l) }
+  
+    if(style==="buzz"){
+      crown(4, r*0.92, r*0.34, hr.d);
+      lock(-1, -0.5, -2, 3.2, 5, hr.s);
+      lock( 1, -0.5, -2, 3.2, 5, hr.s);
+      return;
     }
-    if(style==="pony") pix.ellipse(hx+(dir==="e"?10:dir==="w"?-10:8), hy+26, 7, 18, hr.d);
-    if(style==="bun") pix.ellipse(hx, hy-r-6, 9, 8, hr.l);
-    if(style==="afro") pix.ellipse(hx, hy-r*.4, r+8, r*.7, hr.l);
-    if(style==="undercut") pix.ellipse(hx+(dir==="w"?-8:8), hy-8, 12, 10, hr.l);
-    pix.set((hx-r*.4)|0, (hy-r*.7)|0, hr.h);
+    if(style==="crop"){
+      crown(2, r+1.5, r*0.46, hr.m);
+      crown(-2, r*0.7, 5, hr.l);
+      lock(-1, 0, 1, 4.2, 8, hr.d);
+      lock( 1, 0, 1, 4.2, 8, hr.d);
+      pix.set((hx-4)|0,(hy-r*0.7)|0, hr.h);
+      return;
+    }
+    if(style==="pixie"){
+      crown(0, r+1, r*0.5, hr.m);
+      clump(hx-6, hy-r-2, 6, 5, hr.l);
+      clump(hx+8, hy-r+1, 5, 4, hr.h);
+      lock(-1, 1.5, 0, 6.5, 10, hr.l);
+      lock( 1, 0, -3, 5, 7, hr.d);
+      clump(hx-r-2, hy-6, 5, 5, hr.m);
+      return;
+    }
+    if(style==="bob"){
+      crown(1, r+2, r*0.48, hr.m);
+      lock(-1, 2, 8, 7.5, 12, hr.m);
+      lock( 1, 2, 8, 7.5, 12, hr.m);
+      clump(hx-r-1, hy+16, 6, 5, hr.d);
+      clump(hx+r+1, hy+16, 6, 5, hr.d);
+      pix.set((hx-r*.3)|0,(hy-r*.65)|0, hr.h);
+      return;
+    }
+    if(style==="long"){
+      crown(0, r+1.8, r*0.5, hr.m);
+      lock(-1, 3, 10, 7, 16, hr.l);
+      lock( 1, 3, 11, 7, 16, hr.l);
+      pix.capsule(hx-r-2, hy+8, hx-r-4, hy+28, 3.2, hr.m, hr.d);
+      pix.capsule(hx+r+2, hy+8, hx+r+4, hy+30, 3.2, hr.m, hr.d);
+      pix.set((hx)|0,(hy-r*0.8)|0, hr.h);
+      return;
+    }
+    if(style==="wavy"){
+      crown(0, r+1.6, r*0.48, hr.m);
+      lock(-1, 2, 6, 6.5, 9, hr.l);
+      lock(-1, 4, 16, 6, 8, hr.m);
+      lock(-1, 1, 26, 5.5, 7, hr.d);
+      lock( 1, 2, 7, 6.5, 9, hr.l);
+      lock( 1, 5, 18, 6, 8, hr.m);
+      lock( 1, 2, 28, 5.5, 7, hr.d);
+      clump(hx-r-6, hy+12, 5, 5, hr.h);
+      return;
+    }
+    if(style==="pony"){
+      crown(3, r*0.95, r*0.4, hr.m);
+      lock(-1, -1, 0, 3.6, 6, hr.d);
+      lock( 1, -1, 0, 3.6, 6, hr.d);
+      pix.hline((hx-r*0.55)|0,(hx+r*0.55)|0, (hy-r*0.42)|0, hr.s);
+      if(dir==="e") pix.capsule(hx+r*0.2, hy+8, hx+r*0.6, hy+24, 3.5, hr.d, hr.m);
+      if(dir==="w") pix.capsule(hx-r*0.2, hy+8, hx-r*0.6, hy+24, 3.5, hr.d, hr.m);
+      return;
+    }
+    if(style==="bun"){
+      crown(4, r*0.9, r*0.38, hr.m);
+      clump(hx+sx*2, hy-r-6, 9, 8, hr.l);
+      clump(hx+sx*2-2, hy-r-8, 5, 4, hr.h);
+      lock(-1, -1.5, -1, 3.2, 5, hr.d);
+      lock( 1, -1.5, -1, 3.2, 5, hr.d);
+      return;
+    }
+    if(style==="braids"){
+      crown(2, r+1, r*0.42, hr.m);
+      pix.set((hx)|0,(hy-r*0.55)|0, hr.s);
+      pix.set((hx)|0,(hy-r*0.45)|0, hr.s);
+      lock(-1, 1, 4, 5, 8, hr.d);
+      lock( 1, 1, 4, 5, 8, hr.d);
+      pix.capsule(hx-r, hy+6, hx-r-3, hy+22, 2.4, hr.m, hr.d);
+      pix.capsule(hx+r, hy+6, hx+r+3, hy+22, 2.4, hr.m, hr.d);
+      clump(hx-r-3, hy+12, 3, 3, hr.l);
+      clump(hx+r+3, hy+12, 3, 3, hr.l);
+      return;
+    }
+    if(style==="afro"){
+      crown(-2, r+6, r*0.62, hr.m);
+      clump(hx-3, hy-r*0.85, 8, 6, hr.l);
+      clump(hx+5, hy-r*0.7, 7, 6, hr.h);
+      lock(-1, 5, 0, 9, 11, hr.d);
+      lock( 1, 5, 0, 9, 11, hr.d);
+      clump(hx-r-6, hy-8, 7, 7, hr.m);
+      clump(hx+r+6, hy-8, 7, 7, hr.m);
+      return;
+    }
+    if(style==="undercut"){
+      const sweep=dir==="w"?-1:1;
+      crown(0, r*0.95, r*0.5, hr.m);
+      clump(hx+sweep*(r*0.35), hy-r*0.55, 11, 8, hr.l);
+      clump(hx+sweep*(r*0.7), hy-r*0.2, 8, 7, hr.m);
+      lock(sweep, 2, 2, 5.5, 9, hr.d);
+      lock(-sweep, -2, -2, 2.6, 4, hr.s);
+      pix.set((hx+sweep*6)|0,(hy-r*0.75)|0, hr.h);
+      return;
+    }
+    if(style==="messy"){
+      crown(1, r+1.2, r*0.46, hr.m);
+      const spikes=[[-10,-r-3,5,5],[ -2,-r-6,6,5],[8,-r-2,5,6],[4,-r-8,4,4],[-7,-r+2,4,4]];
+      spikes.forEach(([x,y,rx,ry],i)=>clump(hx+x, hy+y, rx, ry, i%2?hr.l:hr.h));
+      lock(-1, 2, 3, 6, 12, hr.d);
+      lock( 1, 3, 8, 5.5, 10, hr.l);
+      clump(hx+r+3, hy-4, 5, 5, hr.m);
+      return;
+    }
   }
 
   function drawBangs(pix, ch, b){
     if(!ch.bangs || ch.hairStyle==="bald" || ch.hairStyle==="buzz" || b.dir==="n") return;
-    const hr=ramp(ch.hairColor);
-    const hx=b.head.x, hy=b.head.y, r=b.m.head;
-    const y=hy-r+7;
-    pix.ellipse(hx-9, y, 6, 5, hr.d);
-    pix.ellipse(hx+8, y+1, 5.5, 4.5, hr.m);
-    pix.ellipse(hx, y+2, 5, 4, hr.d);
+    const hr = ramp(ch.hairColor);
+    const hx = b.head.x, hy = b.head.y, r = b.m.head, s = r/23;
+    const dir = b.dir;
+    const profile = dir==="e"||dir==="w";
+    const side = dir==="e"?1:dir==="w"?-1:0;
+    // Hairline sits on the scalp cap. Hard stop stays above brows (≈ hy-9s) and far above irises (≈ hy-2s).
+    const hairline = hy - r*0.70;
+    const maxY = hy - 11.2*s;
+    const clumps = profile ? 3 : 5;
+    for(let i=0;i<clumps;i++){
+      const t = clumps===1 ? 0 : (i/(clumps-1))*2-1;
+      let x = hx + t*(r*0.62);
+      if(profile) x = hx + side*(2 + i*3.2) - side*2;
+      const hang = 2.4 + (i%2)*1.1 + (ch.hairStyle==="pixie"?-0.6:0);
+      const y0 = hairline + (Math.abs(t)*0.8);
+      const y1 = Math.min(maxY, y0 + hang);
+      if(y1<=y0) continue;
+      const col = i%2 ? hr.m : hr.d;
+      pix.capsule(x-t*1.2, y0, x+t*0.6, y1, 1.35, col, hr.m);
+      pix.set((x)|0, (y0)|0, hr.l);
+    }
+    if(!profile){
+      pix.ellipse(hx, hairline+0.4, 4.2*s, 1.6*s, hr.d);
+    }
   }
 
   function drawFace(pix, ch, b){
     if(b.dir==="n") return;
-    const hx=b.head.x, hy=b.head.y, s=b.m.head/23;
-    const e=Object.assign({},EXPRS[ch.expression]||EXPRS.neutral);
-    const lookX = ch.lookX + (e.lookX||0);
-    const lookY = ch.lookY + (e.lookY||0);
-    const sk=ramp(ch.skin);
-    const browC=ramp(ch.browColor||ch.hairColor);
-    const lip=mix(sk.m, [160,70,80], .45);
-
+    const hx = b.head.x, hy = b.head.y, s = b.m.head/23;
+    const e = Object.assign({}, EXPRS[ch.expression]||EXPRS.neutral);
+    const lookX = (ch.lookX||0) + (e.lookX||0);
+    const lookY = (ch.lookY||0) + (e.lookY||0);
+    const sk = ramp(ch.skin);
+    const browC = ramp(ch.browColor||ch.hairColor);
+    const lip = mix(sk.m, [168,72,84], .48);
+    const expr = ch.expression||"neutral";
+  
     if(b.dir==="e"||b.dir==="w"){
-      const side=b.dir==="e"?1:-1;
-      pix.ellipse(hx+side*b.m.head*.15, hy+2, 3.2, 5, sk.d);
-      const ex=hx+side*2, ey=hy-1;
-      drawEye(pix,ex,ey,side,e.openL,ch,lookX,lookY,s,true,sk);
-      const ny=hy+6;
-      pix.set(hx+side*8, ny, sk.d);
-      pix.set(hx+side*9, ny+1, sk.s);
-      drawMouth(pix, hx+side*3, hy+13, e, ch, lip, sk, true, side);
+      const side = b.dir==="e"?1:-1;
+      const earX = hx - side*(b.m.head*0.72);
+      pix.ellipse(earX, hy+2, 3.2, 5.2, sk.d);
+      pix.ellipse(earX, hy+2, 1.7, 2.8, sk.m);
+      pix.ellipse(hx+side*b.m.head*.12, hy+3, 3.0, 5.2, sk.d);
+  
+      const browY = hy-8.2*s + e.browY;
+      const innerY = browY + e.browInner*0.95;
+      const outerY = browY - e.browInner*0.45;
+      const bx0 = hx - side*2.5*s, bx1 = hx + side*6.5*s;
+      drawBrow(pix, bx0, innerY, bx1, outerY, browC, ch.browStyle);
+  
+      const ex = hx + side*1.2, ey = hy-1.2*s;
+      drawEye(pix, ex, ey, side, (b.dir==="e"?e.openR:e.openL), ch, lookX, lookY, s, true, sk);
+  
+      const nx = hx + side*(7.2*s);
+      const ny = hy+5.5*s;
+      pix.capsule(hx+side*2.5*s, hy+0.5*s, nx, ny, 1.15, sk.m, sk.d);
+      pix.set((nx+side)|0, (ny)|0, sk.l);
+      pix.set((nx)|0, (ny+1)|0, sk.s);
+      pix.set((nx-side)|0, (ny+2)|0, sk.d);
+  
+      drawMouth(pix, hx+side*3.2*s, hy+12.5*s, e, ch, lip, sk, true, side);
+  
+      if(e.blush>.05){
+        const bc = mix(sk.m, [210,90,110], .22+e.blush*.42);
+        pix.ellipse(hx+side*1.5, hy+7.5*s, 3.2+e.blush*1.4, 2.1, bc);
+      }
       return;
     }
-
-    const earY=hy+2;
+  
+    const earY = hy+2;
     pix.ellipse(hx-b.m.head+1, earY, 3.5, 5.5, sk.d);
     pix.ellipse(hx+b.m.head-1, earY, 3.5, 5.5, sk.d);
     pix.ellipse(hx-b.m.head+1, earY, 2, 3, sk.m);
     pix.ellipse(hx+b.m.head-1, earY, 2, 3, sk.m);
-
-    const browY=hy-9*s + e.browY;
-    drawBrow(pix, hx-13*s, browY+e.browInner, hx-3.5*s, browY-e.browInner*.35, browC, ch.browStyle);
-    drawBrow(pix, hx+13*s, browY+e.browInner, hx+3.5*s, browY-e.browInner*.35, browC, ch.browStyle);
-
+  
+    const browY = hy-9.2*s + e.browY;
+    const innerY = browY + e.browInner*0.95;
+    const outerY = browY - e.browInner*0.50;
+    const midY = (innerY+outerY)*0.5 - (ch.browStyle==="arched"?1.1:ch.browStyle==="straight"?0:0.45);
+    drawBrow(pix, hx-13.2*s, outerY, hx-8.2*s, midY, browC, ch.browStyle);
+    drawBrow(pix, hx-8.2*s, midY, hx-3.2*s, innerY, browC, ch.browStyle);
+    drawBrow(pix, hx+13.2*s, outerY, hx+8.2*s, midY, browC, ch.browStyle);
+    drawBrow(pix, hx+8.2*s, midY, hx+3.2*s, innerY, browC, ch.browStyle);
+    if(expr==="angry"||expr==="determined"){
+      pix.set((hx-1)|0, (browY+2)|0, mix(sk.m, sk.d, .55));
+      pix.set((hx+1)|0, (browY+2)|0, mix(sk.m, sk.d, .55));
+      pix.set(hx|0, (browY+3)|0, sk.d);
+    }
+  
     drawEye(pix, hx-9*s, hy-2*s, -1, e.openL, ch, lookX, lookY, s, false, sk);
     drawEye(pix, hx+9*s, hy-2*s,  1, e.openR, ch, lookX, lookY, s, false, sk);
-
-    const nose=ch.nose==="small"?2:ch.nose==="strong"?4:3;
-    pix.ellipse(hx, hy+6*s, nose*.45, nose*.7, sk.d);
-    pix.set(hx-1, (hy+7*s)|0, sk.s);
-    pix.set(hx+1, (hy+7*s)|0, sk.s);
-    pix.set(hx, (hy+5*s)|0, sk.l);
-
-    drawMouth(pix, hx, hy+14*s, e, ch, lip, sk, false, 1);
-
+  
+    const nose = ch.nose==="small"?2:ch.nose==="strong"?4:3;
+    pix.set(hx|0, (hy+4.2*s)|0, sk.l);
+    pix.set(hx|0, (hy+5.2*s)|0, sk.l);
+    pix.ellipse(hx, hy+6.6*s, nose*.42, nose*.62, sk.d);
+    pix.set((hx-1-(nose>3?1:0))|0, (hy+7.2*s)|0, sk.s);
+    pix.set((hx+1+(nose>3?1:0))|0, (hy+7.2*s)|0, sk.s);
+    pix.set(hx|0, (hy+6.0*s)|0, sk.l);
+  
+    drawMouth(pix, hx, hy+13.6*s, e, ch, lip, sk, false, 1);
+  
     if(e.blush>.05){
-      const bc=mix(sk.m,[210,90,110], .25+e.blush*.4);
-      pix.ellipse(hx-14*s, hy+8*s, 4+e.blush*2, 2.5, bc);
-      pix.ellipse(hx+14*s, hy+8*s, 4+e.blush*2, 2.5, bc);
+      const bc = mix(sk.m, [214,92,112], .24+e.blush*.42);
+      const brx = 3.6 + e.blush*2.1, bry = 2.2 + e.blush*0.6;
+      pix.ellipse(hx-14*s, hy+8.2*s, brx, bry, bc);
+      pix.ellipse(hx+14*s, hy+8.2*s, brx, bry, bc);
+      if(e.blush>.7){
+        pix.set((hx-14*s)|0, (hy+8.2*s)|0, mix(bc, [230,120,130], .4));
+        pix.set((hx+14*s)|0, (hy+8.2*s)|0, mix(bc, [230,120,130], .4));
+      }
     }
     if(ch.marks==="freckles"){
-      const f=sk.d;
-      [[-10,6],[-7,8],[-12,9],[9,6],[11,8],[7,9],[-2,7],[3,8]].forEach(([x,y])=>pix.set(hx+x,hy+y,f));
+      const f = mix(sk.d, [120,70,50], .25);
+      [[-10,6],[-7,8],[-12,9],[9,6],[11,8],[7,9],[-2,7],[3,8],[-8,5],[8,5]].forEach(([x,y])=>pix.set((hx+x)|0,(hy+y)|0,f));
     }
     if(ch.marks==="scar"){
-      for(let i=0;i<6;i++) pix.set(hx+6+i, hy-4+i, mix(sk.m,[90,60,60],.4));
+      for(let i=0;i<6;i++) pix.set((hx+6+i)|0, (hy-4+i)|0, mix(sk.m,[90,60,60],.42));
     }
-    if(ch.marks==="mole") pix.set(hx+10, hy+8, sk.s);
+    if(ch.marks==="mole") pix.set((hx+10)|0, (hy+8)|0, sk.s);
   }
+
 
   function drawBrow(pix,x0,y0,x1,y1,c,style){
     const thick=style==="thick"?2:style==="short"?1:1.4;
@@ -654,149 +1075,519 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   }
 
   function drawEye(pix,cx,cy,side,open,ch,lx,ly,s,profile,skin){
-    const iris=ramp(ch.eyeColor);
-    const sk=skin||ramp(ch.skin);
-    open=Math.max(0,Math.min(1.25,open));
-    const w=ch.eyeShape==="round"?6.2:ch.eyeShape==="sharp"?6.8:6.4;
-    const h=Math.max(1.2, 4.6*Math.min(1,open))*s;
-    const ww=(profile?4:w)*s;
-    if(open<.12){
-      pix.capsule(cx-ww,cy,cx+ww,cy,1.3,[28,24,26]);
+    const iris = ramp(ch.eyeColor);
+    const sk = skin||ramp(ch.skin);
+    const expr = ch.expression||"";
+    open = Math.max(0, Math.min(1.28, open));
+    const shape = ch.eyeShape||"almond";
+    const angry = expr==="angry"||expr==="determined";
+    const tired = expr==="tired";
+    const sad = expr==="sad";
+    const winkClosed = open<0.14;
+  
+    let rw = shape==="round"?5.9:shape==="sharp"?7.0:6.4;
+    let rh = shape==="round"?5.1:shape==="lidded"?3.7:shape==="sharp"?4.1:4.6;
+    if(profile){ rw = 4.1; rh = Math.min(rh, 4.4); }
+    rw *= s;
+    rh *= s * (open>1 ? 0.82+open*0.18 : 1);
+    const h = Math.max(1.05, rh * Math.min(1, open>1?1:open));
+    const ww = rw;
+    const lidCol = [26,22,24];
+    const lashCol = [18,14,16];
+    const sclera = [248,244,238];
+    const scleraHi = [255,252,248];
+    const water = mix(sk.m, [220,140,150], .28);
+  
+    if(winkClosed){
+      const smileClose = (expr==="wink"||expr==="smile"||expr==="grin") ? 1 : 0;
+      const x0 = Math.round(cx-ww), x1 = Math.round(cx+ww);
+      for(let xs=x0;xs<=x1;xs++){
+        const t = (xs-cx)/Math.max(.001,ww);
+        const y = cy + (smileClose ? -(1-t*t)*1.15 : tired ? t*t*0.55 : 0);
+        const ys = Math.round(y);
+        pix.set(xs, ys, lidCol);
+        pix.set(xs, ys+1, mix(sk.m, sk.d, .35));
+        if(smileClose && Math.abs(t)<0.7) pix.set(xs, ys-1, sk.m);
+      }
+      const lx0 = Math.round(cx+side*(ww+0.2));
+      const ly0 = Math.round(cy - (smileClose?1.2:0));
+      pix.set(lx0, ly0, lashCol);
+      pix.set(lx0+side, ly0+1, lashCol);
+      if(ch.lashes!=="none"){
+        pix.set(lx0+side, ly0-1, lashCol);
+        pix.set(Math.round(cx+side*(ww-1.5)), ly0-1, lashCol);
+      }
       return;
     }
-    pix.ellipse(cx,cy,ww,h,[248,244,238]);
-    pix.ellipse(cx, cy-h*.15, ww, h*.85, [255,252,248]);
-    const ix=cx+lx*2.2+side*.3, iy=cy+ly*1.6;
-    const ir=Math.max(2, 3.1*Math.min(1,open))*s;
-    pix.ellipse(ix,iy,ir,ir*(ch.eyeShape==="lidded"?.75:1), iris.m);
-    pix.ellipse(ix,iy, ir*.45, ir*.45, [22,18,20]);
-    pix.set((ix-1)|0,(iy-1)|0,[255,255,255]);
-    pix.set((ix)|0,(iy-1)|0, iris.l);
-    if(open<1){
-      const cover=h*(1-Math.min(1,open));
-      for(let y=-h;y<-h+cover+1;y++) pix.hline(cx-ww,cx+ww,Math.round(cy+y), sk.m);
+  
+    pix.ellipse(cx, cy+0.35, ww+0.35, h+0.7, mix(sk.m, sk.d, .35));
+    pix.ellipse(cx, cy, ww, h, sclera);
+    pix.ellipse(cx, cy-h*0.18, ww*0.92, h*0.78, scleraHi);
+    pix.set(Math.round(cx-side*ww+0.2), Math.round(cy+h*0.15), water);
+  
+    const irx = shape==="lidded"?0.78:1;
+    const ir = Math.max(2.05, 3.05*Math.min(1, open))*s * (profile?0.9:1);
+    const maxOffX = Math.max(0.4, ww - ir - 1.1);
+    const maxOffY = Math.max(0.3, h - ir*irx - 0.8);
+    const ix = cx + Math.max(-maxOffX, Math.min(maxOffX, lx*2.4 + side*(profile?0.8:0.25)));
+    const iy = cy + Math.max(-maxOffY, Math.min(maxOffY, ly*1.7 + (tired?0.5:0) + (angry?0.25:0)));
+  
+    pix.ellipse(ix, iy, ir+0.55, (ir+0.55)*irx, iris.s);
+    pix.ellipse(ix, iy, ir, ir*irx, iris.m);
+    pix.ellipse(ix, iy-ir*0.22, ir*0.72, ir*0.50*irx, iris.l);
+    const pr = Math.max(1.05, ir*0.42);
+    pix.ellipse(ix, iy, pr, pr*irx, [20,16,18]);
+    pix.set((ix-1)|0, (iy-1)|0, [255,255,255]);
+    if(ir>2.4) pix.set(ix|0, (iy-1)|0, mix(iris.l, [255,255,255], .35));
+    if(open>1.05){
+      pix.set((ix)|0, Math.round(cy-h+1.2), sclera);
+      pix.set((ix+side)|0, Math.round(cy-h+1.6), sclera);
     }
-    if(ch.eyeShape==="sharp"||ch.lashes!=="none"){
-      pix.set((cx+side*ww)|0, (cy-h)|0, [20,16,18]);
-      pix.set((cx+side*(ww+1))|0, (cy-h+1)|0, [20,16,18]);
+  
+    const top = Math.round(cy-h);
+    const bot = Math.round(cy+h);
+    const cover = (1-Math.min(1, open))*h + (tired?0.7:0) + (angry?0.55:0) + (shape==="lidded"?0.85:0);
+    const innerDir = -side;
+    const x0 = Math.round(cx-ww), x1 = Math.round(cx+ww);
+    for(let xs=x0;xs<=x1;xs++){
+      const x = xs-cx;
+      const tInner = Math.max(0, x*innerDir / Math.max(.001,ww));
+      const angryDrop = angry ? tInner*2.3 : 0;
+      const sadDrop = sad ? (1-tInner)*1.1 : 0;
+      const drop = cover + angryDrop + sadDrop;
+      const yEnd = Math.min(bot, top + Math.round(drop));
+      for(let y=top-1;y<=yEnd;y++) pix.set(xs, y, sk.m);
+      pix.set(xs, Math.min(bot, yEnd+1), lidCol);
     }
-    if(ch.eyeShape==="lidded") pix.hline(cx-ww,cx+ww, (cy-h+1)|0, sk.m);
+  
+    pix.hline(Math.round(cx-ww+0.2), Math.round(cx+ww-0.2), bot, mix(sk.m, sk.d, .4));
+    pix.set(Math.round(cx-ww), Math.round(cy), lidCol);
+    pix.set(Math.round(cx+ww), Math.round(cy), lidCol);
+    if(shape==="sharp"){
+      pix.set(Math.round(cx+side*(ww+1)), Math.round(cy-h*0.35), lidCol);
+      pix.set(Math.round(cx+side*(ww+2)), Math.round(cy-h*0.15), lashCol);
+    }
+  
+    if(tired){
+      pix.hline(Math.round(cx-ww+1), Math.round(cx+ww-1), bot+1, mix(sk.m, sk.d, .55));
+      pix.hline(Math.round(cx-ww+2), Math.round(cx+ww-2), bot+2, mix(sk.d, [80,60,70], .25));
+    }
+  
+    const lashesOn = ch.lashes!=="none" || shape==="sharp";
+    if(lashesOn){
+      const ly1 = top + Math.round(Math.min(h*0.25, cover));
+      const ox = Math.round(cx+side*ww);
+      pix.set(ox, ly1, lashCol);
+      pix.set(ox+side, ly1-1, lashCol);
+      pix.set(ox+side, ly1+1, lashCol);
+      if(ch.lashes==="medium"||ch.lashes==="long"||!ch.lashes){
+        pix.set(Math.round(cx+side*(ww-2)), ly1-1, lashCol);
+      }
+      if(ch.lashes==="long"){
+        pix.set(ox+side, ly1-2, lashCol);
+        pix.set(Math.round(cx+side*(ww-3.2)), ly1-1, lashCol);
+      }
+    }
   }
 
   function drawMouth(pix,hx,hy,e,ch,lip,sk,profile,side){
-    const w=(ch.mouth==="small"?4:ch.mouth==="full"?7.5:5.5) + Math.abs(e.curve)*1.8;
-    const open=e.open;
-    const skew=e.skew||0;
-    if(open>.16){
-      pix.ellipse(hx+skew, hy+open*2, w, 1.2+open*3.2, [70,28,36]);
-      if(open>.34) pix.fillRect((hx-w+1)|0, (hy-0.2)|0, Math.round(w*1.6), 2, [236,232,224]);
+    const curve = e.curve||0;
+    const open = Math.max(0, e.open||0);
+    const skew = e.skew||0;
+    const lipD = mix(lip, [48,20,26], .38);
+    const lipL = mix(lip, [255,210,200], .22);
+    const cavity = [68,26,34];
+    const teeth = [238,232,222];
+    const toothGap = [210,198,188];
+    const tongue = [176,78,90];
+    const baseW = ch.mouth==="small"?4:ch.mouth==="full"?8:5.8;
+    const w = baseW + Math.abs(curve)*2.1 + (open>0.4?1.2:0);
+  
+    if(profile){
+      const mx = Math.round(hx), my = Math.round(hy);
+      const fwd = Math.round(hx + side*2.2);
+      if(open>0.28){
+        pix.set(mx, my, cavity);
+        pix.set(fwd, my, cavity);
+        pix.set(mx, my+1, cavity);
+        if(open>0.45) pix.set(fwd, my+1, cavity);
+        if(open>0.5) pix.set(mx, my, teeth);
+        pix.set(mx, my-1, lip);
+        pix.set(fwd, my-1, lipL);
+        pix.set(mx, my+(open>0.45?2:1)+1, lipD);
+        pix.set(fwd, my+2, lipD);
+      } else {
+        const lift = curve>0.3 ? -1 : curve<-0.3 ? 1 : 0;
+        pix.set(mx, my, lip);
+        pix.set(fwd, my+lift, lip);
+        pix.set(fwd+side, my+lift+(open>0.08?1:0), lipD);
+        if(ch.mouth==="full") pix.set(mx, my+1, mix(lip, sk.d, .3));
+        if(curve>0.55) pix.set(mx-side, my+1, sk.d);
+      }
+      return;
     }
-    for(let x=-w;x<=w;x++){
-      const t=x/Math.max(.001,w);
-      const y=hy + e.curve*(1-t*t)*3.1 + (open>.16? open*2.4 : 0) + (profile?0:0);
-      const xs=hx+x+skew*t;
-      pix.set(xs, y, lip);
-      if(ch.mouth==="full") pix.set(xs, y+1, mix(lip,sk.d,.3));
-      if(e.curve>.5 && !open) pix.set(xs, y-1, sk.m);
+  
+    hx = Math.round(hx);
+    hy = Math.round(hy);
+  
+    if(open>=0.28){
+      const oh = 1.15 + open*4.35;
+      const ow = w*(0.82 + open*0.16);
+      const cx = hx + skew*0.25;
+      pix.ellipse(cx, hy+oh*0.38, ow, oh, cavity);
+      const toothH = open>0.72 ? 2 : 1;
+      pix.fillRect(Math.round(cx-ow+1), Math.round(hy-0.2), Math.max(3, Math.round(ow*1.55)), toothH, teeth);
+      if(open>=0.42 && open<0.82){
+        for(let i=-2;i<=2;i++) pix.set(Math.round(cx+i*2), hy, toothGap);
+      }
+      if(open>0.72){
+        pix.ellipse(cx, hy+oh*0.78, ow*0.48, oh*0.32, tongue);
+      } else if(open>0.4){
+        pix.hline(Math.round(cx-ow*0.55), Math.round(cx+ow*0.55), Math.round(hy+oh*0.7), mix(cavity, tongue, .45));
+      }
+      const x0o = Math.round(cx-ow), x1o = Math.round(cx+ow);
+      for(let xs=x0o;xs<=x1o;xs++){
+        const t = (xs-cx)/Math.max(.001,ow);
+        const yOff = curve*(1-t*t)*2.4 - curve*t*t*0.8;
+        const xDraw = xs + Math.round(skew*t*0.45);
+        pix.set(xDraw, Math.round(hy-oh*0.12+yOff), lip);
+        pix.set(xDraw, Math.round(hy+oh*0.92+yOff*0.35), lipD);
+        if(ch.mouth==="full") pix.set(xDraw, Math.round(hy+oh*0.92+yOff*0.35)+1, mix(lipD, sk.d, .25));
+      }
+      if(curve>0.55){
+        pix.set(Math.round(cx-ow-1), hy+1, sk.d);
+        pix.set(Math.round(cx+ow+1), hy+1, sk.d);
+      }
+      if(curve<-0.4){
+        pix.set(Math.round(cx-ow), hy-1, mix(sk.m, sk.d, .4));
+        pix.set(Math.round(cx+ow), hy-1, mix(sk.m, sk.d, .4));
+      }
+      return;
     }
-    if(e.curve>.7){
-      pix.set(hx-w-1, hy+1, sk.d);
-      pix.set(hx+w+1, hy+1, sk.d);
+  
+    const k = 3.7;
+    const x0 = Math.round(hx-w), x1 = Math.round(hx+w);
+    for(let xs=x0;xs<=x1;xs++){
+      const t = (xs-hx)/Math.max(.001,w);
+      const y = hy + curve*(1-t*t)*k - curve*t*t*1.35 + (skew?skew*t*0.2:0);
+      const xDraw = xs + Math.round(skew*t);
+      const ys = Math.round(y);
+      pix.set(xDraw, ys, lip);
+      if(ch.mouth==="full") pix.set(xDraw, ys+1, mix(lip, sk.d, .28));
+      if(open>0.08){
+        pix.set(xDraw, ys+1, cavity);
+        pix.set(xDraw, ys+2, lipD);
+      } else if(curve>0.72 && Math.abs(t)<0.55){
+        pix.set(xDraw, ys+1, mix(teeth, lip, .55));
+      }
+      if(curve>0.42 && Math.abs(t)<0.45) pix.set(xDraw, ys-1, sk.m);
+      if(curve<-0.45 && Math.abs(t)<0.55) pix.set(xDraw, ys-1, mix(sk.m, sk.d, .45));
+    }
+    if(curve>0.68){
+      pix.set(Math.round(hx-w-1), hy+1, sk.d);
+      pix.set(Math.round(hx+w+1), hy+1, sk.d);
+      pix.set(Math.round(hx-w-1), hy+2, mix(sk.m, sk.d, .4));
+      pix.set(Math.round(hx+w+1), hy+2, mix(sk.m, sk.d, .4));
+    }
+    if(curve<-0.7){
+      pix.set(Math.round(hx-w), hy+1, lipD);
+      pix.set(Math.round(hx+w), hy+1, lipD);
+    }
+    if(Math.abs(skew)>0.8){
+      const d = Math.sign(skew);
+      pix.set(Math.round(hx+d*(w+1)), hy-1, lip);
+      pix.set(Math.round(hx+d*(w+2)), hy, lip);
+      pix.set(Math.round(hx-d*(w+0.5)), hy+1, mix(lip, sk.d, .3));
     }
   }
 
+
   function drawClothes(pix, ch, b){
     const top=ramp(ch.topColor), bot=ramp(ch.bottomColor), sh=ramp(ch.shoeColor);
+    const sk=ramp(ch.skin);
     const {m,dir}=b;
     const hipX=b.cx;
-    shadeTorso(pix, top, hipX, b.shY+2, b.hipY+2, m.sh-1, m.wa+1, m.hp-1, dir);
-    if(ch.top==="tank"){
-      pix.capsule(b.lSh.x+4,b.lSh.y, b.lSh.x+4,b.shY+18, 2, top.m);
-      pix.capsule(b.rSh.x-4,b.rSh.y, b.rSh.x-4,b.shY+18, 2, top.m);
+    const side=dir==="e"||dir==="w";
+    const t=ch.top, p=ch.bottom, shoe=ch.shoes;
+    const hem=t==="tunic"?16:t==="hoodie"||t==="sweater"?4:t==="jacket"?2:0;
+    const shW=t==="tank"||t==="vest"?m.sh-3:m.sh-1;
+    const waW=t==="tank"?m.wa:m.wa+1;
+    const hpW=t==="tunic"?m.hp+2:m.hp-1;
+  
+    shadeTorso(pix, top, hipX, b.shY+2, b.hipY+2+hem, shW, waW, hpW, dir);
+  
+    const neckY=(b.shY+3)|0;
+    if(t==="tee"){
+      pix.ellipse(hipX, b.shY+3, 6.5, 3.6, sk.m);
+      pix.hline((hipX-m.hp+2)|0,(hipX+m.hp-2)|0, (b.hipY+6)|0, top.d);
+      pix.set((hipX-4)|0, (b.shY+14)|0, top.l);
     }
-    if(ch.top==="hoodie"||ch.top==="sweater"||ch.top==="jacket"){
-      pix.ellipse(hipX, b.shY+6, 7, 5, top.d);
+    if(t==="tank"){
+      pix.ellipse(hipX, b.shY+5, 7.5, 5, sk.m);
+      pix.ellipse(b.lSh.x+3, b.shY+10, side?3:5.5, 8, sk.m);
+      pix.ellipse(b.rSh.x-3, b.shY+10, side?3:5.5, 8, sk.m);
+      pix.capsule(b.lSh.x+5, b.lSh.y-1, hipX-6, b.shY+10, 2.2, top.l, top.m);
+      pix.capsule(b.rSh.x-5, b.rSh.y-1, hipX+6, b.shY+10, 2.2, top.l, top.m);
+      pix.hline((hipX-m.hp)|0,(hipX+m.hp)|0, (b.hipY+5)|0, top.s);
     }
-    if(ch.top==="shirt"||ch.top==="jacket"){
-      pix.hline(hipX-3, hipX+3, b.shY+8, top.l);
-      pix.set(hipX, b.shY+12, top.h);
+    if(t==="hoodie"){
+      pix.ellipse(hipX, b.shY+2, 11, 7, top.d);
+      pix.ellipse(hipX, b.shY+6, 8, 5, top.s);
+      pix.set((hipX-3)|0, (b.shY+8)|0, top.l);
+      pix.set((hipX+3)|0, (b.shY+8)|0, top.l);
+      pix.capsule(hipX-3, b.shY+8, hipX-5, b.shY+18, 1.1, top.l);
+      pix.capsule(hipX+3, b.shY+8, hipX+5, b.shY+18, 1.1, top.l);
+      pix.fillRect((hipX-9)|0, (b.shY+18)|0, 18, 11, top.d);
+      pix.hline((hipX-9)|0,(hipX+8)|0, (b.shY+18)|0, top.s);
+      pix.hline((hipX-9)|0,(hipX+8)|0, (b.shY+28)|0, top.s);
+      pix.hline((hipX-m.hp)|0,(hipX+m.hp)|0, (b.hipY+8)|0, top.s);
+      pix.hline((hipX-m.hp)|0,(hipX+m.hp)|0, (b.hipY+10)|0, top.d);
     }
-    if(ch.top==="armor"){
-      pix.ellipse(hipX, b.shY+16, m.sh-2, 12, top.l);
-      pix.ellipse(hipX, b.shY+16, m.sh-6, 8, top.h);
+    if(t==="shirt"){
+      pix.ellipse(hipX, b.shY+2, 5, 2.5, sk.m);
+      pix.capsule(hipX-5, b.shY+2, hipX-9, b.shY+9, 1.6, top.l, top.h);
+      pix.capsule(hipX+5, b.shY+2, hipX+9, b.shY+9, 1.6, top.l, top.h);
+      for(let i=0;i<4;i++) pix.set(hipX|0, (b.shY+12+i*6)|0, top.h);
+      pix.hline(hipX, hipX, (b.shY+10)|0, top.s);
+      pix.hline((hipX-m.hp+1)|0,(hipX+m.hp-1)|0, (b.hipY+7)|0, top.d);
     }
-    if(ch.top==="vest"){
-      for(let y=b.shY+6;y<b.hipY;y++) pix.set(hipX,y,top.s);
+    if(t==="sweater"){
+      pix.ellipse(hipX, b.shY+4, 7, 4, top.d);
+      for(let x=-7;x<=7;x++) if((x+20)%2===0) pix.set((hipX+x)|0, (b.shY+7)|0, top.s);
+      const hy=(b.hipY+7)|0;
+      for(let x=-m.hp;x<=m.hp;x++) pix.set((hipX+x)|0, hy, (x+20)%2?top.s:top.d);
+      pix.set((hipX-6)|0,(b.shY+16)|0, top.l);
     }
-    if(ch.top==="tunic") shadeTorso(pix, top, hipX, b.shY+2, b.hipY+18, m.sh-1, m.wa+2, m.hp+2, dir);
-
-    const skirt=ch.bottom==="skirt";
-    if(skirt){
-      for(let y=b.hipY;y<b.hipY+22;y++){
-        const t=(y-b.hipY)/22;
-        const w=m.hp+4+t*10;
-        pix.hline(hipX-w, hipX+w, y, t>.7?bot.d:bot.m);
+    if(t==="jacket"){
+      const inner=mix(top.s, sk.d, .25);
+      for(let y=b.shY+6;y<b.hipY+4;y++){
+        const gap=1.6+(y-b.shY)*0.04;
+        pix.hline(hipX-gap, hipX+gap, y|0, inner);
       }
+      for(let i=0;i<14;i++){
+        pix.set((hipX-4-i*0.35)|0, (b.shY+6+i)|0, top.l);
+        pix.set((hipX+4+i*0.35)|0, (b.shY+6+i)|0, top.l);
+      }
+      for(let i=0;i<5;i++) pix.set(hipX|0, (b.shY+12+i*5)|0, top.h);
+      pix.fillRect((hipX-m.hp+1)|0, (b.hipY-2)|0, 7, 6, top.d);
+      pix.fillRect((hipX+m.hp-8)|0, (b.hipY-2)|0, 7, 6, top.d);
+      pix.hline((hipX-m.sh+2)|0,(hipX+m.sh-2)|0, (b.hipY+6)|0, top.s);
+    }
+    if(t==="vest"){
+      pix.ellipse(hipX, b.shY+4, 6, 4, sk.m);
+      for(let y=b.shY+8;y<b.hipY-2;y++){
+        const g=2+(y-b.shY)*0.08;
+        pix.hline(hipX-g, hipX+g, y|0, sk.m);
+      }
+      pix.ellipse(b.lSh.x+4, b.shY+11, side?2.5:5, 7, sk.m);
+      pix.ellipse(b.rSh.x-4, b.shY+11, side?2.5:5, 7, sk.m);
+      for(let i=0;i<3;i++) pix.set((hipX-5)|0, (b.shY+14+i*6)|0, top.h);
+      pix.hline((hipX-m.wa)|0,(hipX+m.wa)|0, (b.hipY)|0, top.s);
+    }
+    if(t==="tunic"){
+      pix.ellipse(hipX, b.shY+3, 6, 3.2, sk.m);
+      pix.hline((hipX-m.hp-4)|0,(hipX+m.hp+4)|0, (b.hipY+16)|0, top.d);
+      pix.capsule(hipX-m.hp, b.hipY+4, hipX-m.hp-1, b.hipY+16, 1.2, top.s);
+      pix.capsule(hipX+m.hp, b.hipY+4, hipX+m.hp+1, b.hipY+16, 1.2, top.s);
+      pix.hline((hipX-m.wa)|0,(hipX+m.wa)|0, (b.hipY+2)|0, top.l);
+      pix.set(hipX|0, (b.hipY+2)|0, top.h);
+    }
+    if(t==="armor"){
+      pix.ellipse(hipX-7, b.shY+14, 9, 8, top.l);
+      pix.ellipse(hipX+7, b.shY+14, 9, 8, top.l);
+      pix.ellipse(hipX-7, b.shY+13, 5, 4, top.h);
+      pix.ellipse(hipX+7, b.shY+13, 5, 4, top.h);
+      pix.ellipse(b.lSh.x+1, b.lSh.y+1, 7, 5, top.m);
+      pix.ellipse(b.rSh.x-1, b.rSh.y+1, 7, 5, top.m);
+      pix.hline((hipX-m.hp)|0,(hipX+m.hp)|0, (b.hipY+2)|0, top.s);
+      pix.hline((hipX-m.hp)|0,(hipX+m.hp)|0, (b.hipY+4)|0, top.h);
+      pix.set((hipX)|0,(b.shY+10)|0, top.h);
+      for(let i=0;i<3;i++) pix.hline((hipX-4)|0,(hipX+4)|0, (b.shY+22+i*3)|0, top.d);
+    }
+  
+    if(p==="skirt"){
+      const h=b.pose==="sit"?16:24;
+      for(let y=0;y<h;y++){
+        const tt=y/h;
+        let w=m.hp+3+tt*(side?8:12);
+        if(side) w*=0.72;
+        const col=tt>.72?bot.d:tt<.18?bot.l:bot.m;
+        pix.hline(hipX-w, hipX+w, (b.hipY+y)|0, col);
+        if(y>4 && y<h-3 && y%4===0){
+          pix.set((hipX-w*0.3)|0, (b.hipY+y)|0, bot.s);
+          pix.set((hipX+w*0.3)|0, (b.hipY+y)|0, bot.s);
+        }
+      }
+      pix.hline((hipX-m.hp)|0,(hipX+m.hp)|0, b.hipY|0, bot.s);
     } else {
-      const wide=ch.bottom==="cargo"?1.15:ch.bottom==="shorts"?1:1;
-      pix.capsule(b.lHip.x,b.lHip.y, b.lKnee.x,b.lKnee.y, m.leg*wide, bot.m, bot.d);
-      pix.capsule(b.rHip.x,b.rHip.y, b.rKnee.x,b.rKnee.y, m.leg*wide, bot.m, bot.d);
-      if(ch.bottom!=="shorts"){
-        pix.capsule(b.lKnee.x,b.lKnee.y, b.lFoot.x,b.lFoot.y-4, m.leg*.9, bot.d, bot.s);
-        pix.capsule(b.rKnee.x,b.rKnee.y, b.rFoot.x,b.rFoot.y-4, m.leg*.9, bot.d, bot.s);
+      const bag=p==="cargo"?1.22:p==="jeans"?1.05:p==="shorts"?1.08:1;
+      const thick=m.leg*bag;
+      pix.capsule(b.lHip.x,b.lHip.y, b.lKnee.x,b.lKnee.y, thick, bot.m, bot.d);
+      pix.capsule(b.rHip.x,b.rHip.y, b.rKnee.x,b.rKnee.y, thick, bot.m, bot.d);
+      pix.hline((hipX-m.hp)|0,(hipX+m.hp)|0, (b.hipY+1)|0, bot.s);
+      if(p!=="shorts"){
+        pix.capsule(b.lKnee.x,b.lKnee.y, b.lFoot.x,b.lFoot.y-5, m.leg*.92, bot.d, bot.s);
+        pix.capsule(b.rKnee.x,b.rKnee.y, b.rFoot.x,b.rFoot.y-5, m.leg*.92, bot.d, bot.s);
+      } else {
+        pix.ellipse(b.lKnee.x, b.lKnee.y+3, thick*.9, 3, bot.s);
+        pix.ellipse(b.rKnee.x, b.rKnee.y+3, thick*.9, 3, bot.s);
+        pix.hline((b.lKnee.x-thick)|0,(b.lKnee.x+thick)|0, (b.lKnee.y+4)|0, bot.l);
+        pix.hline((b.rKnee.x-thick)|0,(b.rKnee.x+thick)|0, (b.rKnee.y+4)|0, bot.l);
       }
-      if(ch.bottom==="jeans"){
+      if(p==="jeans"){
+        pix.capsule(b.lHip.x-2, b.lHip.y+2, b.lKnee.x-2, b.lKnee.y, 0.9, bot.l);
+        pix.capsule(b.rHip.x+2, b.rHip.y+2, b.rKnee.x+2, b.rKnee.y, 0.9, bot.l);
         pix.set((b.lKnee.x)|0,(b.lKnee.y)|0, bot.l);
         pix.set((b.rKnee.x)|0,(b.rKnee.y)|0, bot.l);
+        pix.fillRect((b.lHip.x-6)|0,(b.hipY+3)|0, 6, 5, bot.d);
+        pix.fillRect((b.rHip.x)|0,(b.hipY+3)|0, 6, 5, bot.d);
+        pix.set((hipX-m.hp+3)|0,(b.hipY+2)|0, bot.h);
+        pix.set((hipX+m.hp-3)|0,(b.hipY+2)|0, bot.h);
+      }
+      if(p==="pants"){
+        pix.hline((hipX-m.hp)|0,(hipX+m.hp)|0, (b.hipY+3)|0, mix(bot.m,bot.s,.5));
+        pix.set(hipX|0, (b.hipY+3)|0, bot.l);
+      }
+      if(p==="cargo"){
+        pix.fillRect((b.lHip.x-8)|0, ((b.lHip.y+b.lKnee.y)/2)|0, 8, 7, bot.s);
+        pix.fillRect((b.rHip.x)|0, ((b.rHip.y+b.rKnee.y)/2)|0, 8, 7, bot.s);
+        pix.hline((b.lHip.x-8)|0,(b.lHip.x)|0, ((b.lHip.y+b.lKnee.y)/2)|0, bot.l);
+        pix.hline((b.rHip.x)|0,(b.rHip.x+8)|0, ((b.rHip.y+b.rKnee.y)/2)|0, bot.l);
+        pix.set((b.lHip.x-5)|0, (((b.lHip.y+b.lKnee.y)/2)+3)|0, bot.h);
+        pix.set((b.rHip.x+4)|0, (((b.rHip.y+b.rKnee.y)/2)+3)|0, bot.h);
       }
     }
-    if(ch.shoes!=="none"){
-      const r=ch.shoes==="boots"?6:ch.shoes==="sandals"?4:5;
-      pix.ellipse(b.lFoot.x, b.lFoot.y-1, r+(ch.shoes==="sneakers"?2:0), 4, sh.m);
-      pix.ellipse(b.rFoot.x, b.rFoot.y-1, r+(ch.shoes==="sneakers"?2:0), 4, sh.m);
-      if(ch.shoes==="boots"){
-        pix.capsule(b.lFoot.x,b.lFoot.y-12,b.lFoot.x,b.lFoot.y,4,sh.d,sh.m);
-        pix.capsule(b.rFoot.x,b.rFoot.y-12,b.rFoot.x,b.rFoot.y,4,sh.d,sh.m);
-      }
+  
+    const lf=b.lFoot, rf=b.rFoot;
+    if(shoe==="none"){
+      pix.ellipse(lf.x, lf.y-1, 4.2, 2.6, sk.d);
+      pix.ellipse(rf.x, rf.y-1, 4.2, 2.6, sk.d);
+      pix.set((lf.x+1)|0,(lf.y-2)|0, sk.m);
+      pix.set((rf.x+1)|0,(rf.y-2)|0, sk.m);
+    } else if(shoe==="sneakers"){
+      pix.ellipse(lf.x+1, lf.y-1, 7.5, 4.2, sh.m);
+      pix.ellipse(rf.x+1, rf.y-1, 7.5, 4.2, sh.m);
+      pix.hline((lf.x-6)|0,(lf.x+7)|0, (lf.y+1)|0, sh.h);
+      pix.hline((rf.x-6)|0,(rf.x+7)|0, (rf.y+1)|0, sh.h);
+      pix.hline((lf.x-4)|0,(lf.x+3)|0, (lf.y-3)|0, sh.l);
+      pix.hline((rf.x-4)|0,(rf.x+3)|0, (rf.y-3)|0, sh.l);
+      pix.set((lf.x)|0,(lf.y-2)|0, sh.h);
+      pix.set((rf.x)|0,(rf.y-2)|0, sh.h);
+    } else if(shoe==="boots"){
+      pix.capsule(lf.x, lf.y-16, lf.x, lf.y-1, 4.4, sh.d, sh.m);
+      pix.capsule(rf.x, rf.y-16, rf.x, rf.y-1, 4.4, sh.d, sh.m);
+      pix.ellipse(lf.x+1, lf.y-1, 6.5, 4, sh.m);
+      pix.ellipse(rf.x+1, rf.y-1, 6.5, 4, sh.m);
+      pix.hline((lf.x-4)|0,(lf.x+4)|0, (lf.y-8)|0, sh.s);
+      pix.hline((rf.x-4)|0,(rf.x+4)|0, (rf.y-8)|0, sh.s);
+      pix.hline((lf.x-5)|0,(lf.x+6)|0, (lf.y+1)|0, sh.s);
+      pix.hline((rf.x-5)|0,(rf.x+6)|0, (rf.y+1)|0, sh.s);
+    } else if(shoe==="loafers"){
+      pix.ellipse(lf.x+1, lf.y-1, 6.2, 3.2, sh.m);
+      pix.ellipse(rf.x+1, rf.y-1, 6.2, 3.2, sh.m);
+      pix.ellipse(lf.x, lf.y-2, 3.2, 1.6, sh.d);
+      pix.ellipse(rf.x, rf.y-2, 3.2, 1.6, sh.d);
+      pix.set((lf.x+2)|0,(lf.y-2)|0, sh.l);
+      pix.set((rf.x+2)|0,(rf.y-2)|0, sh.l);
+      pix.hline((lf.x-4)|0,(lf.x+5)|0, lf.y|0, sh.s);
+      pix.hline((rf.x-4)|0,(rf.x+5)|0, rf.y|0, sh.s);
+    } else if(shoe==="sandals"){
+      pix.ellipse(lf.x, lf.y-1, 5.5, 2.4, sh.d);
+      pix.ellipse(rf.x, rf.y-1, 5.5, 2.4, sh.d);
+      pix.ellipse(lf.x+1, lf.y-2, 3.2, 2, sk.m);
+      pix.ellipse(rf.x+1, rf.y-2, 3.2, 2, sk.m);
+      pix.hline((lf.x-3)|0,(lf.x+4)|0, (lf.y-3)|0, sh.m);
+      pix.hline((rf.x-3)|0,(rf.x+4)|0, (rf.y-3)|0, sh.m);
+      pix.hline((lf.x-2)|0,(lf.x+3)|0, (lf.y-1)|0, sh.l);
+      pix.hline((rf.x-2)|0,(rf.x+3)|0, (rf.y-1)|0, sh.l);
     }
   }
 
   function drawExtras(pix, ch, b){
     if(ch.extra==="none") return;
     const ac=ramp(ch.accColor);
-    const hx=b.head.x, hy=b.head.y, r=b.m.head;
-    if(ch.extra==="glasses"||ch.extra==="round-glasses"){
-      const rr=ch.extra==="round-glasses"?4.2:3.4;
+    const hx=b.head.x, hy=b.head.y, r=b.m.head, dir=b.dir;
+    const x=ch.extra;
+    const side=dir==="e"?1:dir==="w"?-1:0;
+  
+    if(x==="glasses"||x==="round-glasses"){
+      const rr=x==="round-glasses"?4.4:3.3;
+      const ry=x==="round-glasses"?4.2:2.8;
       const y=hy-1;
-      pix.ellipse(hx-8,y,rr,rr*.8, ac.m);
-      pix.ellipse(hx+8,y,rr,rr*.8, ac.m);
-      pix.hline(hx-4,hx+4,y, ac.d);
-      pix.ellipse(hx-8,y,rr-1.4,rr*.5, [180,210,230]);
-      pix.ellipse(hx+8,y,rr-1.4,rr*.5, [180,210,230]);
+      const lens=mix(ac.m,[160,190,210],.45);
+      if(dir==="n"){
+        pix.hline((hx-r+2)|0,(hx+r-2)|0, (hy-2)|0, ac.d);
+      } else if(dir==="e"||dir==="w"){
+        pix.ellipse(hx+side*3, y, rr*.85, ry, ac.m);
+        pix.ellipse(hx+side*3, y, rr*.5, ry*.55, lens);
+        pix.hline(hx+side*3, hx+side*(r-2), y, ac.d);
+      } else {
+        pix.ellipse(hx-8, y, rr, ry, ac.m);
+        pix.ellipse(hx+8, y, rr, ry, ac.m);
+        pix.hline(hx-4, hx+4, y, ac.d);
+        pix.ellipse(hx-8, y, rr-1.5, ry*.55, lens);
+        pix.ellipse(hx+8, y, rr-1.5, ry*.55, lens);
+        pix.set((hx-10)|0,(y-2)|0, ac.h);
+        pix.set((hx+6)|0,(y-2)|0, ac.h);
+      }
     }
-    if(ch.extra==="earrings"){
-      pix.circle(hx-r, hy+6, 1.6, ac.h);
-      pix.circle(hx+r, hy+6, 1.6, ac.h);
+    if(x==="earrings"){
+      if(dir!=="n"){
+        pix.circle(hx-r+(dir==="e"?r*1.6:0), hy+6, 1.7, ac.h);
+        if(dir==="s") pix.circle(hx+r, hy+6, 1.7, ac.h);
+        pix.set((hx-r+(dir==="e"?r*1.6:0))|0, (hy+8)|0, ac.m);
+      }
     }
-    if(ch.extra==="scarf"){
-      pix.ellipse(b.cx, b.shY+4, 12, 6, ac.m);
-      pix.capsule(b.cx+8, b.shY+6, b.cx+10, b.shY+28, 3, ac.d, ac.m);
+    if(x==="scarf"){
+      pix.ellipse(b.cx, b.shY+5, 13, 6.5, ac.m);
+      pix.ellipse(b.cx-2, b.shY+4, 8, 3.5, ac.l);
+      const tail=dir==="w"?-1:1;
+      pix.capsule(b.cx+tail*8, b.shY+7, b.cx+tail*11, b.shY+30, 3.2, ac.d, ac.m);
+      pix.capsule(b.cx+tail*6, b.shY+8, b.cx+tail*7, b.shY+22, 2.2, ac.l, ac.d);
     }
-    if(ch.extra==="cap"){
-      pix.ellipse(hx, hy-r+4, r+4, 8, ac.m);
-      pix.fillRect((hx+(b.dir==="w"?-r-6:6))|0, (hy-r+6)|0, 12, 3, ac.l);
+    if(x==="cap"){
+      pix.ellipse(hx, hy-r+5, r+4.5, 8.5, ac.m);
+      pix.ellipse(hx-2, hy-r+2, r*0.7, 5, ac.l);
+      const vis=dir==="w"?-1:1;
+      const vx=dir==="n"?hx: hx+(dir==="s"?6:vis*(r+2));
+      pix.fillRect((vx-(dir==="w"?12:0))|0, (hy-r+6)|0, 13, 3, ac.l);
+      pix.hline((hx-6)|0,(hx+6)|0, (hy-r+10)|0, ac.s);
     }
-    if(ch.extra==="beanie"){
-      pix.ellipse(hx, hy-r+2, r+3, 11, ac.m);
-      pix.ellipse(hx, hy-r-6, 5, 4, ac.l);
+    if(x==="beanie"){
+      pix.ellipse(hx, hy-r+3, r+3.5, 11, ac.m);
+      pix.ellipse(hx-2, hy-r, r*0.7, 6, ac.l);
+      pix.ellipse(hx, hy-r-6, 5.5, 4.2, ac.h);
+      for(let i=-r;i<=r;i++) if(((i+20)%3)===0) pix.set((hx+i)|0, (hy-r+10)|0, ac.s);
     }
-    if(ch.extra==="headband") pix.hline(hx-r, hx+r, (hy-r+8)|0, ac.h);
-    if(ch.extra==="necklace"){
-      pix.ellipse(b.cx, b.shY+10, 6, 3, ac.d);
-      pix.circle(b.cx, b.shY+14, 2, ac.h);
+    if(x==="headband"){
+      const y=(hy-r+8)|0;
+      pix.hline((hx-r-1)|0, (hx+r+1)|0, y, ac.h);
+      pix.hline((hx-r)|0, (hx+r)|0, y+1, ac.m);
+      pix.set((hx-r-1)|0, y, ac.s);
+      pix.set((hx+r+1)|0, y, ac.s);
     }
-    if(ch.extra==="backpack") return;
+    if(x==="necklace"){
+      pix.ellipse(b.cx, b.shY+9, 7.5, 3.4, ac.d);
+      pix.circle(b.cx, b.shY+14, 2.3, ac.h);
+      pix.set(b.cx|0, (b.shY+13)|0, ac.l);
+    }
+    if(x==="backpack"){
+      pix.capsule(b.lSh.x+4, b.shY+2, b.lSh.x+2, b.shY+18, 1.6, ac.d, ac.m);
+      pix.capsule(b.rSh.x-4, b.shY+2, b.rSh.x-2, b.shY+18, 1.6, ac.d, ac.m);
+      if(dir==="n"){
+        pix.fillRect((b.cx-14)|0, (b.shY+2)|0, 28, 24, ac.m);
+        pix.fillRect((b.cx-12)|0, (b.shY+4)|0, 24, 8, ac.d);
+        pix.set((b.cx)|0,(b.shY+14)|0, ac.h);
+      } else if(dir==="e"){
+        pix.fillRect((b.cx-16)|0, (b.shY+4)|0, 10, 20, ac.m);
+        pix.fillRect((b.cx-15)|0, (b.shY+6)|0, 8, 6, ac.d);
+      } else if(dir==="w"){
+        pix.fillRect((b.cx+6)|0, (b.shY+4)|0, 10, 20, ac.m);
+        pix.fillRect((b.cx+7)|0, (b.shY+6)|0, 8, 6, ac.d);
+      }
+    }
   }
+
 
   function drawPaint(pix, ch){
     const p=ch.paint||{};
@@ -831,9 +1622,10 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     }
 
     if(dir==="e"||dir==="w") arm(farArm);
-    if(c.extra==="backpack"){
+    if(c.extra==="backpack" && dir==="s"){
       const ac=ramp(c.accColor);
-      pix.fillRect((b.cx-18)|0, (b.shY+4)|0, 12, 22, ac.m);
+      pix.fillRect((b.cx-16)|0, (b.shY+4)|0, 12, 22, ac.m);
+      pix.fillRect((b.cx-14)|0, (b.shY+8)|0, 8, 8, ac.d);
     }
     drawHair(pix,c,b,"back");
     pix.capsule(b.cx, b.shY-2, b.head.x, b.head.y+b.m.head*.6, 4, sk.m, sk.d);
@@ -849,8 +1641,8 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     pix.ellipse(b.head.x-4, b.head.y-4, b.m.head*.45, b.m.head*.4, sk.l);
     if(c.faceShape==="square") pix.fillRect((b.head.x-b.m.head+4)|0,(b.head.y+8)|0, (b.m.head*2-8)|0, 8, sk.m);
     drawHair(pix,c,b,"front");
-    pix.ellipse(b.head.x, b.head.y+3, b.m.head*hs*0.74, b.m.head*0.9*hy, sk.m);
-    pix.ellipse(b.head.x-3, b.head.y-2, b.m.head*.32, b.m.head*.28, sk.l);
+    pix.ellipse(b.head.x, b.head.y+4, b.m.head*hs*0.68, b.m.head*0.82*hy, sk.m);
+    pix.ellipse(b.head.x-3, b.head.y-1, b.m.head*.28, b.m.head*.24, sk.l);
     drawFace(pix,c,b);
     drawBangs(pix,c,b);
     if(dir==="e"||dir==="w") arm(nearArm);
@@ -863,8 +1655,12 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   }
 
   function renderPortrait(ch, expr){
-    const c=Object.assign({},ch,{expression:expr||ch.expression});
-    return render(c,{pose:"idle",dir:"s",animAmt:0}).crop(16, 2, PW, PH);
+    const c=Object.assign({},ch,{expression:expr||ch.expression, _anim:0});
+    const full=render(c,{pose:"idle",dir:"s",animAmt:0});
+    const b=bones(c,"idle","s",0,0);
+    const x=Math.max(0, Math.min(W-PW, Math.round(b.head.x-PW/2)));
+    const y=Math.max(0, Math.min(H-PH, Math.round(b.head.y-PH/2+10)));
+    return full.crop(x,y,PW,PH);
   }
 
   function defaultChar(){
@@ -884,9 +1680,9 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       mouth:"medium",
       expression:"neutral",
       lookX:0, lookY:0,
-      hairStyle:"wavy",
+      hairStyle:"crop",
       hairColor:"#2a1810",
-      bangs:true,
+      bangs:false,
       top:"jacket",
       topColor:"#2b4c7e",
       bottom:"pants",
@@ -926,6 +1722,13 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
 
   function snapshot(){undo.push(JSON.stringify(ch)); if(undo.length>40) undo.shift(); redo=[]}
   function toast(msg){const t=$("#toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600)}
+  function syncForm(){
+    $("#charName").value=ch.name||"";
+    if($("#exprSel")) $("#exprSel").value=ch.expression;
+    if($("#poseSel")) $("#poseSel").value=ui.pose;
+    const look=`${ch.lookX||0},${ch.lookY||0}`;
+    if($("#lookSel") && [...$("#lookSel").options].some(o=>o.value===look)) $("#lookSel").value=look;
+  }
 
   function paintView(){
     const pix=render(ch,{pose:ui.pose, dir:ui.dir, frame:ui.frame, breath:ui.breath, animAmt:+$("#animAmt").value});
@@ -947,10 +1750,13 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     const row=$("#sheetRow"); row.innerHTML="";
     sheetSpecs().forEach(spec=>{
       const fig=document.createElement("figure");
-      fig.className="thumb"+(spec.pose===ui.pose && spec.dir===ui.dir && !spec.expression || spec.expression===ch.expression && ui.sheet==="face" ? " on":"");
+      const on = spec.expression
+        ? spec.expression===ch.expression
+        : spec.pose===ui.pose && spec.dir===ui.dir && (spec.frame==null || spec.frame===(ui.frame|0));
+      fig.className="thumb"+(on?" on":"");
       const c=document.createElement("canvas");
       const pix = spec.portrait ? renderPortrait(ch, spec.expression) : render(ch,{pose:spec.pose,dir:spec.dir,frame:spec.frame,expression:spec.expression,animAmt:0});
-      const sc=spec.portrait?1.2:0.7;
+      const sc=spec.portrait?1.45:0.65;
       c.width=pix.w*sc; c.height=pix.h*sc;
       pix.blitTo(c.getContext("2d"),0,0,sc);
       const cap=document.createElement("figcaption");
@@ -964,8 +1770,6 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       row.append(fig);
     });
   }
-
-  function paintAll(){ paintView(); paintSheet(); paintInspector(); }
 
   function setDir(d){
     ui.dir=d;
@@ -986,7 +1790,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
         const b=document.createElement("button");
         b.className="choice"+(ch[key]===o||ch[key]===true&&o==="on"?" on":"");
         b.textContent=String(o).replace(/-/g," ");
-        b.onclick=()=>{snapshot(); ch[key]=o; paintAll()};
+        b.onclick=()=>{snapshot(); ch[key]=o; if(key==="expression") $("#exprSel").value=o; paintAll()};
         wrap.append(b);
       });
     };
@@ -1137,10 +1941,10 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       expression:ch.expression,
       paint:{}
     });
-    paintAll(); toast("New silhouette");
+    syncForm(); paintAll(); toast("New silhouette");
   };
-  $("#btnUndo").onclick=()=>{if(!undo.length) return; redo.push(JSON.stringify(ch)); ch=JSON.parse(undo.pop()); $("#charName").value=ch.name; $("#exprSel").value=ch.expression; paintAll()};
-  $("#btnRedo").onclick=()=>{if(!redo.length) return; undo.push(JSON.stringify(ch)); ch=JSON.parse(redo.pop()); $("#charName").value=ch.name; paintAll()};
+  $("#btnUndo").onclick=()=>{if(!undo.length) return; redo.push(JSON.stringify(ch)); ch=JSON.parse(undo.pop()); syncForm(); paintAll()};
+  $("#btnRedo").onclick=()=>{if(!redo.length) return; undo.push(JSON.stringify(ch)); ch=JSON.parse(redo.pop()); syncForm(); paintAll()};
 
   function libKey(){return "highbit-atelier-v1"}
   function loadLib(){try{return JSON.parse(localStorage.getItem(libKey())||"[]")}catch{return []}}
@@ -1154,7 +1958,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       const c=document.createElement("canvas"); c.width=64; c.height=96;
       render(p,{animAmt:0}).blitTo(c.getContext("2d"),0,0,.5);
       b.append(c); const t=document.createElement("b"); t.textContent="Preset · "+p.name; b.append(t);
-      b.onclick=()=>{snapshot(); ch=fn(); ch.id=crypto.randomUUID?crypto.randomUUID():String(Date.now()); $("#charName").value=ch.name; paintAll(); toast("Loaded "+p.name)};
+      b.onclick=()=>{snapshot(); ch=fn(); ch.id=crypto.randomUUID?crypto.randomUUID():String(Date.now()); syncForm(); paintAll(); toast("Loaded "+p.name)};
       box.append(b);
     });
     loadLib().forEach((p,i)=>{
@@ -1162,7 +1966,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       const c=document.createElement("canvas"); c.width=64; c.height=96;
       try{render(p,{animAmt:0}).blitTo(c.getContext("2d"),0,0,.5)}catch{}
       b.append(c); const t=document.createElement("b"); t.textContent=p.name||"Saved"; b.append(t);
-      b.onclick=()=>{snapshot(); ch=Object.assign(defaultChar(),p); $("#charName").value=ch.name; paintAll(); toast("Loaded")};
+      b.onclick=()=>{snapshot(); ch=Object.assign(defaultChar(),p); syncForm(); paintAll(); toast("Loaded")};
       box.append(b);
     });
   }
@@ -1180,7 +1984,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   $("#jsonFile").onchange=ev=>{
     const f=ev.target.files[0]; if(!f) return;
     const r=new FileReader();
-    r.onload=()=>{try{snapshot(); const data=JSON.parse(r.result); ch=Object.assign(defaultChar(), data.appearance||data); $("#charName").value=ch.name; paintAll(); toast("JSON imported")}catch{toast("Could not read JSON")}};
+    r.onload=()=>{try{snapshot(); const data=JSON.parse(r.result); ch=Object.assign(defaultChar(), data.appearance||data); syncForm(); paintAll(); toast("JSON imported")}catch{toast("Could not read JSON")}};
     r.readAsText(f);
   };
 
@@ -1207,16 +2011,24 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     return JSON.stringify({
       generator:"Highbit Atelier",
       name:ch.name,
-      sprite:{width:W,height:H,anchor:{x:64,y:186}},
+      sprite:{width:W,height:H,anchor:{x:64,y:184}},
       portrait:{width:PW,height:PH},
       appearance:ch,
       animations:{
-        "idle-s":{row:"idle",dir:"s",frames:1,fps:4},
-        "walk-s":{row:"walk",dir:"s",frames:4,fps:8},
-        "walk-w":{row:"walk",dir:"w",frames:4,fps:8},
-        "walk-e":{row:"walk",dir:"e",frames:4,fps:8},
-        "walk-n":{row:"walk",dir:"n",frames:4,fps:8},
-        jump:{frames:1}, wave:{frames:4,fps:6}, sit:{frames:1}, attack:{frames:1}, crouch:{frames:1}
+        "idle-s":{sheet:"turn", col:0, row:0, dir:"s", frames:1, fps:4},
+        "idle-w":{sheet:"turn", col:1, row:0, dir:"w", frames:1, fps:4},
+        "idle-e":{sheet:"turn", col:2, row:0, dir:"e", frames:1, fps:4},
+        "idle-n":{sheet:"turn", col:3, row:0, dir:"n", frames:1, fps:4},
+        "walk-s":{sheet:"walk", row:0, frames:4, fps:8, dir:"s"},
+        "walk-w":{sheet:"walk", row:1, frames:4, fps:8, dir:"w"},
+        "walk-e":{sheet:"walk", row:2, frames:4, fps:8, dir:"e"},
+        "walk-n":{sheet:"walk", row:3, frames:4, fps:8, dir:"n"},
+        jump:{sheet:"act", col:1, row:0, frames:1},
+        wave:{sheet:"act", col:2, row:0, frames:1},
+        sit:{sheet:"act", col:3, row:0, frames:1},
+        attack:{sheet:"act", col:4, row:0, frames:1},
+        crouch:{sheet:"act", col:5, row:0, frames:1},
+        run:{note:"same layout as walk; use pose run in appearance playback"}
       },
       expressions:Object.keys(EXPRS),
       ...extra
@@ -1247,7 +2059,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       const cx=(i%cols)*cw*scale, cy=Math.floor(i/cols)*chh*scale;
       pix.blitTo(x,cx,cy,scale);
     });
-    return {canvas:c, cols, rows, frame:{w:cw,h:chh}};
+    return {canvas:c, cols, rows, frame:{w:cw,h:chh}, cells};
   }
 
   function openExport(){
@@ -1276,16 +2088,19 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   function doExport(kind){
     const scale=ui.scale, n=slug();
     if(kind==="json"){ downloadText(n+".json", metaJSON()); toast("JSON downloaded"); return }
-    if(kind==="pack"){
-      const {canvas,cols,rows,frame}=sheetCanvas("walk", scale);
-      downloadCanvas(canvas, n+"-walk.png");
-      downloadText(n+"-walk.json", metaJSON({sheet:{file:n+"-walk.png",columns:cols,rows,frame,layout:"dirs s,w,e,n × walk frames 0-3"}}));
-      toast("Pack downloaded"); return;
-    }
-    const map={current:"current",portrait:"portrait",turn:"turn",walk:"walk",face:"face",act:"act"};
-    const {canvas}=sheetCanvas(map[kind], scale);
-    downloadCanvas(canvas, n+"-"+kind+".png");
-    toast("PNG downloaded");
+    const sheetKind = kind==="pack" ? "walk" : kind;
+    const {canvas,cols,rows,frame,cells}=sheetCanvas(sheetKind, scale);
+    const file=n+"-"+(kind==="pack"?"walk":kind)+".png";
+    downloadCanvas(canvas, file);
+    const layout = cells.map((cell,i)=>({
+      col:i%cols, row:Math.floor(i/cols),
+      pose:cell.pose||"idle", dir:cell.dir||"s", frame:cell.frame||0,
+      expression:cell.expression||null, portrait:!!cell.portrait
+    }));
+    downloadText(n+"-"+(kind==="pack"?"walk":kind)+".json", metaJSON({
+      sheet:{file, columns:cols, rows, frame, scale, cells:layout}
+    }));
+    toast(kind==="pack"?"Pack downloaded":"PNG + JSON downloaded");
   }
 
   $("#btnExport").onclick=openExport;
@@ -1304,13 +2119,15 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   });
 
   let last=performance.now();
+  let viewDirty=true;
+  function paintAll(){ viewDirty=true; paintView(); paintSheet(); paintInspector(); }
   function tick(now){
     const dt=Math.min(.05,(now-last)/1000); last=now;
-    ui.breath += dt*2.4;
-    if(ui.pose==="walk"||ui.pose==="run"||ui.pose==="wave"){
-      ui.frame = (ui.frame + dt*(ui.pose==="run"?10:7)) % 4;
-    }
-    paintView();
+    const moving=ui.pose==="walk"||ui.pose==="run"||ui.pose==="wave";
+    const idleMotion=ui.pose==="idle" && +$("#animAmt").value>0;
+    if(moving) ui.frame = (ui.frame + dt*(ui.pose==="run"?10:7)) % 4;
+    if(idleMotion||moving) ui.breath += dt*2.4;
+    if(moving || idleMotion || viewDirty){ paintView(); viewDirty=false; }
     requestAnimationFrame(tick);
   }
 

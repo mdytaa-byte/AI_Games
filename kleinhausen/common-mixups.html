@@ -164,7 +164,7 @@ html[data-motion="aus"] .speed-bar.run span,html[data-motion="aus"] .stamp{anima
       <div class="mini"><strong>weil / dass</strong>Verb ans Ende</div>
       <div class="mini"><strong>trennbare Verben</strong>Ich rufe dich an.</div>
     </div>
-    <p>13 Lektionen (False friends + Wortstellung), dann eine Schnellrunde, dann ein Meta-Witz von der letzten Folie.
+    <p>14 Lektionen (False friends + Wortstellung), dann eine Schnellrunde, dann ein Meta-Witz von der letzten Folie.
       <span class="en gloss" lang="en">13 lessons, a speed round, then a joke from the last slide.</span></p>
     <details class="scene">
       <summary>Tastatur und Barrierefreiheit <span class="en gloss" lang="en">Keyboard &amp; accessibility</span></summary>
@@ -182,7 +182,7 @@ html[data-motion="aus"] .speed-bar.run span,html[data-motion="aus"] .stamp{anima
   </section>
 
   <section class="screen" id="screen-play" aria-labelledby="h-play">
-    <p class="eyebrow" id="round-lab">Runde 1 von 11</p>
+    <p class="eyebrow" id="round-lab">Runde 1 von 14</p>
     <h2 id="h-play" tabindex="-1">bekommen</h2>
     <div class="pips" id="pips"></div>
     <div class="speed-bar" id="timer" hidden><span></span></div>
@@ -524,14 +524,19 @@ $("btn-next").addEventListener("click", ()=>{
 });
 
 function startSpeed(){
-  S.speed=true; S.speedI=0; S.answered=false;
+  S.speed=true; S.speedI=-1; S.answered=true;
   $("round-lab").textContent="Schnellrunde · 6 Karten";
   $("h-play").textContent="Tempo!";
   $("scene-de").textContent="Sechs schnelle Karten. 12 Sekunden pro Karte. Denk an die Stempel!";
   $("scene-en").textContent="Six rapid cards. 12 seconds each.";
   $("stamp").classList.remove("on");
-  $("btn-next").hidden=true;
-  loadSpeed();
+  $("choices").innerHTML="";
+  $("timer").hidden=true;
+  $("btn-next").hidden=false;
+  $("btn-next").textContent="Los!";
+  $("btn-next").focus();
+  sagen("Schnellrunde. Sechs Karten.");
+  sprich("Schnellrunde. Sechs schnelle Karten.");
 }
 function loadSpeed(){
   S.answered=false;
@@ -549,7 +554,8 @@ function loadSpeed(){
   });
   $("stamp").classList.remove("on");
   $("btn-next").hidden=true;
-  const bar=$("timer"); bar.hidden=false;
+  $("btn-next").textContent="Nächste Karte";
+  const bar=$("timer"); bar.hidden=false; bar.classList.remove("run");
   const span=bar.querySelector("span");
   span.style.animation="none";
   void span.offsetWidth;
@@ -692,7 +698,8 @@ $("btn-start").addEventListener("click", ()=>{
   zeigeScreen("screen-play"); loadRound();
 });
 $("btn-retry").addEventListener("click", ()=>{
-  S.i=0; S.korrekt=0; S.total=0; S.bonus=0;
+  S.i=0; S.korrekt=0; S.total=0; S.bonus=0; S.speed=false; S.speedI=0; S.answered=false;
+  if(speedTimer) clearTimeout(speedTimer);
   zeigeScreen("screen-start");
 });
 document.addEventListener("keydown", e=>{

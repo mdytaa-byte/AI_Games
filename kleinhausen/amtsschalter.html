@@ -358,8 +358,8 @@ const DIALOG_B = [
     en:"Good day. How can I help you?",
     opts:[
       {t:"Hi, I wanna library card.", ok:false, why:"Zu informell und auf Englisch. Hier spricht man Sie und Deutsch."},
-      {t:"Ich möchte mich anmelden.", ok:true, why:"Perfekt: höflich, formell, klar."},
-      {t:"Anmelden. Los.", ok:false, why:"Zu knapp und unhöflich. Besser: Ich möchte mich anmelden."},
+      {t:"Guten Tag, ich möchte einen Bücherei-Ausweis.", ok:true, why:"Perfekt: höflich, formell, klar – Sie möchten einen Ausweis für die Bücherei."},
+      {t:"Ausweis. Los.", ok:false, why:"Zu knapp und unhöflich. Besser: Ich möchte einen Bücherei-Ausweis."},
       {t:"Gib mir 'nen Ausweis, ey.", ok:false, why:"Umgangssprache. Im Amt: Sie + vollständiger Satz."}
     ]},
   { clerk:"Sehr gern. Wie viele Medien darf ein Schülerausweis ausleihen? Schauen Sie auf das Poster.",
@@ -513,7 +513,8 @@ function checkA(){
     S.total++;
     const good = val.toLowerCase()===map[k].toLowerCase() ||
       (k==="staat" && /deutsch/.test(val.toLowerCase())) ||
-      (k==="strasse" && /^rathausstra(ss|ß)e$/i.test(val));
+      (k==="strasse" && /^rathausstra(ss|ß)e$/i.test(val)) ||
+      (k==="geb" && /^14\.0?3\.2008$/.test(val));
     el.className = good?"ok":"err";
     if(good){ ok++; S.korrekt++; }
     else {

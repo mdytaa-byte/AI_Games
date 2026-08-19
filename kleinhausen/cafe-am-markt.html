@@ -590,9 +590,10 @@ function pick(oi){
     if(b.opts[i].best) el.classList.add("good");
     if(i === oi && !o.best) el.classList.add("no");
   });
-  if(o.table){
-    Object.keys(o.table).forEach(k => {
-      if(o.table[k]) S.table[k] = o.table[k];
+  const visual = o.table || (b.opts.find(x => x.best) || {}).table;
+  if(visual){
+    Object.keys(visual).forEach(k => {
+      if(visual[k]) S.table[k] = visual[k];
       else delete S.table[k];
     });
     drawTable();
@@ -605,12 +606,13 @@ function pick(oi){
   fb.className = o.best ? "fb" : "fb bad";
   fb.innerHTML = "<p>"+esc(o.fb)+'</p><span class="en gloss">'+esc(o.fbEn)+"</span>";
   fb.hidden = false; fb.focus();
-  if(o.bill){
+  const bill = o.bill || (b.opts.find(x => x.best) || {}).bill;
+  if(bill){
     $("bill").hidden = false;
     $("bill").innerHTML = "<h4>Rechnung · Café Linde</h4>"+
-      o.bill.zeilen.map(z => "<div>"+esc(z)+"</div>").join("")+
-      "<div><strong>Summe "+esc(o.bill.summe)+" €</strong></div>"+
-      "<div>"+esc(o.bill.tip)+"</div>"+
+      bill.zeilen.map(z => "<div>"+esc(z)+"</div>").join("")+
+      "<div><strong>Summe "+esc(bill.summe)+" €</strong></div>"+
+      "<div>"+esc(bill.tip)+"</div>"+
       '<span class="en gloss">Printed bill at the end of the visit.</span>';
   }
   sagen(o.best ? "Gute Wahl." : "Schau dir die Erklärung an.");

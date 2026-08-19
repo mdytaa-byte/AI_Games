@@ -749,12 +749,14 @@ function renderRoom(){
   });
   renderInv();
   renderNotes();
+  const oldGo = $("btn-accuse-go");
+  if(oldGo) oldGo.remove();
   if(has("siegel") && evidenceCount()>=3){
     const go = document.createElement("button");
-    go.type="button"; go.className="btn"; go.style.margin=".6rem";
+    go.type="button"; go.className="btn"; go.id="btn-accuse-go";
     go.textContent = "Verdächtige befragen";
     go.addEventListener("click", openAccuse);
-    box.appendChild(go);
+    $("room-frame").parentNode.appendChild(go);
   }
 }
 
@@ -771,6 +773,7 @@ function renderInv(){
   }
   ids.forEach(id=>{
     const it = ITEMS.find(x=>x.id===id);
+    if(!it) return;
     const span = document.createElement("span");
     span.className="inv-item";
     span.textContent = it.name + (it.herring ? " (Ablenkung)" : "");
@@ -871,15 +874,16 @@ $("btn-next-step").addEventListener("click", ()=>{
   sprich(S.current.steps[S.step].prompt.replace("___","Punkt Punkt Punkt"));
 });
 $("btn-collect").addEventListener("click", ()=>{
-  if(!S.stepOk) return;
-  S.collected[S.current.id] = true;
+  if(!S.stepOk || !S.current) return;
+  const item = S.current;
+  S.collected[item.id] = true;
   closeModal();
-  let msg = S.current.name+" liegt jetzt im Inventar.";
-  if(S.current.herring) msg = "Die Spinne ist eine Ablenkung. Kein Beweis.";
-  if(S.current.finale) msg = "Das Stadtsiegel! Jetzt die Verdächtigen…";
+  let msg = item.name+" liegt jetzt im Inventar.";
+  if(item.herring) msg = "Die Spinne ist eine Ablenkung. Kein Beweis.";
+  if(item.finale) msg = "Das Stadtsiegel! Jetzt die Verdächtigen…";
   sagen(msg); sprich(msg);
   renderRoom();
-  if(S.current.finale && evidenceCount()>=3) openAccuse();
+  if(item.finale && evidenceCount()>=3) openAccuse();
 });
 $("btn-close").addEventListener("click", closeModal);
 $("modal-bg").addEventListener("click", e=>{ if(e.target===$("modal-bg")) closeModal(); });
@@ -1006,6 +1010,8 @@ $("btn-start").addEventListener("click", ()=>{
 $("btn-back-search").addEventListener("click", ()=>{ zeigeScreen("screen-play"); renderRoom(); });
 $("btn-retry").addEventListener("click", ()=>{
   S.collected={}; S.korrekt=0; S.total=0; S.won=false; S.accused=null; S.room="buero";
+  const oldGo = $("btn-accuse-go");
+  if(oldGo) oldGo.remove();
   zeigeScreen("screen-start");
 });
 

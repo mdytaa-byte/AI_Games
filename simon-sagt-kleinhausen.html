@@ -429,6 +429,44 @@ kbd{
 }
 .veil.on{display:grid}
 .veil[hidden]{display:none !important}
+.coach{
+  position:fixed;inset:0;z-index:80;display:none;
+  pointer-events:auto;
+}
+.coach.on{display:block}
+.coach[hidden]{display:none !important}
+.coach-spot{
+  position:fixed;pointer-events:none;z-index:81;
+  border-radius:20px;
+  box-shadow:0 0 0 4px var(--gold), 0 0 0 9999px rgba(18,28,34,.72);
+  transition:top .2s ease, left .2s ease, width .2s ease, height .2s ease;
+}
+html[data-contrast="hoch"] .coach-spot{
+  box-shadow:0 0 0 5px #000, 0 0 0 9999px rgba(0,0,0,.78);
+}
+.coach-card{
+  position:fixed;left:50%;bottom:16px;transform:translateX(-50%);
+  z-index:82;width:min(540px, calc(100% - 24px));
+  background:var(--paper);border:3px solid var(--ink);border-radius:22px;
+  padding:16px 18px 14px;box-shadow:8px 8px 0 var(--ink);
+  max-height:min(46vh, 420px);overflow:auto;
+}
+.coach-card h2{font-family:var(--display);font-size:1.25rem;margin-bottom:6px}
+.coach-card p{font-weight:700}
+.coach-step{
+  font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-soft);margin-bottom:4px;
+}
+.coach-dots{display:flex;gap:2px;justify-content:center;margin:8px 0 4px}
+.coach-dots button{
+  width:44px;height:44px;border:0;background:transparent;display:grid;place-items:center;padding:0;
+}
+.coach-dots button::after{
+  content:"";width:12px;height:12px;border-radius:50%;border:2px solid var(--ink);background:#fff;
+}
+.coach-dots button[aria-current="true"]::after{background:var(--gold)}
+.coach-actions{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;align-items:center}
+.tut-launch{margin:0 4px 14px}
 .modal{
   background:var(--paper);border:3px solid var(--ink);border-radius:22px;
   padding:22px;max-width:640px;width:100%;box-shadow:8px 8px 0 var(--ink);
@@ -539,6 +577,12 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
       </select>
       <button type="button" class="mini" id="voiceTest"><span lang="de">Probe hören</span><span class="sr" lang="en"> (play a sample)</span></button>
     </div>
+    <p class="tut-launch">
+      <button type="button" class="mini" id="btnTutorial">
+        <span lang="de">Tutorial ansehen</span>
+        <span class="sr" lang="en"> (short walkthrough)</span>
+      </button>
+    </p>
     <p lang="de" id="playHow" style="font-weight:800;margin:0 4px 8px">Wie willst du spielen?</p>
     <span class="en" lang="en" style="margin:-4px 4px 10px">How do you want to play?</span>
     <div class="modes" role="group" aria-labelledby="playHow">
@@ -655,6 +699,20 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
   </main>
 </div>
 
+<div class="coach" id="coach" hidden>
+  <div class="coach-spot" id="coachSpot" hidden aria-hidden="true"></div>
+  <div class="coach-card" role="dialog" aria-modal="true" aria-labelledby="coachTitle" aria-describedby="coachDe">
+    <p class="coach-step" id="coachStep" lang="de"></p>
+    <h2 id="coachTitle" lang="de" tabindex="-1"></h2>
+    <p id="coachDe" lang="de"></p>
+    <span class="en" id="coachEn" lang="en"></span>
+    <div class="coach-dots" id="coachDots" role="group" aria-label="Tutorial-Schritte"></div>
+    <div class="coach-actions">
+      <button type="button" class="mini" id="coachSkip"><span lang="de">Überspringen</span><span class="sr" lang="en"> (skip tutorial)</span></button>
+      <button type="button" class="primary" id="coachNext"><span lang="de">Weiter</span><span class="sr" lang="en"> (next)</span></button>
+    </div>
+  </div>
+</div>
 <div class="veil" id="helpVeil" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
   <div class="modal">
     <h2 id="helpTitle" lang="de" tabindex="-1">So funktioniert's</h2>
@@ -666,10 +724,14 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
       <li>Ohne „Simon sagt“ bleiben Mira, Otto und Frau Berg stehen. Mit den Worten führen sie den Befehl aus.</li>
       <li><b>Simon sagt (klassisch):</b> Tippe die Aktion nur, wenn der Fuchs „Simon sagt“ voranschickt.</li>
       <li><b>Noch mal hören</b> spricht den letzten Befehl erneut. <b>Vollbild</b> eignet sich für den Beamer. <b>Spickzettel drucken</b> gibt den Imperativ-Zettel auf Papier.</li>
-      <li>Tastatur: <kbd>S</kbd> = Simon sagt ein/aus · <kbd>1</kbd>–<kbd>9</kbd> = Befehl · <kbd>Esc</kbd> = Hilfe schließen.</li>
+      <li>Tastatur: <kbd>S</kbd> = Simon sagt ein/aus · <kbd>1</kbd>–<kbd>9</kbd> = Befehl · <kbd>Esc</kbd> = Hilfe oder Tutorial schließen.</li>
+      <li>Das <b>Tutorial</b> zeigt die Spielfläche Schritt für Schritt. Keine Cookies — nur in diesem Besuch.</li>
     </ul>
     <span class="en" lang="en">One person → <span lang="de">du</span>. Two people → <span lang="de">ihr</span>. Frau Berg (formal) → <span lang="de">Sie</span>. Without “<span lang="de">Simon sagt</span>”, nobody moves. Keyboard: <kbd>S</kbd> toggles Simon, number keys pick a command.</span>
-    <p style="text-align:right;margin-top:12px"><button type="button" class="primary" id="helpClose"><span lang="de">Alles klar!</span><span class="sr" lang="en"> (close help)</span></button></p>
+    <p style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px">
+      <button type="button" class="mini" id="helpTutorial"><span lang="de">Tutorial nochmal</span><span class="sr" lang="en"> (replay walkthrough)</span></button>
+      <button type="button" class="primary" id="helpClose"><span lang="de">Alles klar!</span><span class="sr" lang="en"> (close help)</span></button>
+    </p>
   </div>
 </div>
 <div class="confetti" id="confetti" hidden aria-hidden="true"></div>
@@ -862,7 +924,12 @@ const state = {
   animTimer:{mira:0, otto:0, frau:0},
   log:[],
   lastSpoken:"",
-  lastBubble:{de:"", en:""}
+  lastBubble:{de:"", en:""},
+  sawTutorial:{give:false, listen:false},
+  tutorialOn:false,
+  tutorialKind:null,
+  tutorialStep:0,
+  tutorialOnDone:null
 };
 
 const $ = id => document.getElementById(id);
@@ -879,6 +946,7 @@ function bumpSession(){
   state.listenTimer = null;
   if (window.speechSynthesis) speechSynthesis.cancel();
   hideBubble();
+  if (state.tutorialOn) hideTutorial(true);
   return state.session;
 }
 function alive(session){ return session === state.session; }
@@ -1185,7 +1253,163 @@ function setSimonBtn(on){
     : `<span lang="de">Simon sagt</span> <span class="en" lang="en">Simon says</span> <span aria-hidden="true">?</span>`;
 }
 
-function startGive(){
+const TUTORIAL = {
+  give: [
+    {
+      sel: "#stage",
+      title: "Du bist Simon.",
+      de: "Mira, Otto und Frau Berg stehen auf dem Sportplatz Kleinhausen. Sie hören nur, wenn du die magischen Worte sagst.",
+      en: "Mira, Otto, and Frau Berg are on the Kleinhausen sports field. They only listen when you say the magic words."
+    },
+    {
+      sel: "#missionBox",
+      title: "Lies den Auftrag.",
+      de: "Hier steht, wen du ansprichst. Eine Person → du (Wink!). Beide → ihr (Winkt!). Frau Berg → Sie (Winken Sie!).",
+      en: "This box says who you are talking to. One person → <span lang=\"de\">du</span>. Both kids → <span lang=\"de\">ihr</span>. Frau Berg → <span lang=\"de\">Sie</span>."
+    },
+    {
+      sel: "#simonBtn",
+      title: "Der Stempel.",
+      de: "Tippe auf „Simon sagt“, bevor sie sich bewegen sollen. Ohne den Stempel bleiben sie stehen — auch bei Tricks. Taste S geht auch.",
+      en: "Turn on “<span lang=\"de\">Simon sagt</span>” if they should move. Without it they freeze — including trick rounds. The <kbd>S</kbd> key works too."
+    },
+    {
+      sel: "#cmds",
+      title: "Wähle den Befehl.",
+      de: "Tippe die Form, die zur Person passt. Die kleine Marke zeigt du, ihr oder Sie. Zahlen 1–4 auf der Tastatur gehen auch.",
+      en: "Tap the imperative that matches the person. The badge shows <span lang=\"de\">du</span>, <span lang=\"de\">ihr</span>, or <span lang=\"de\">Sie</span>."
+    }
+  ],
+  listen: [
+    {
+      sel: "#stage",
+      title: "Hör genau zu.",
+      de: "Jetzt ist der Fuchs Simon. Mira, Otto und Frau Berg machen die Bewegung — aber nur, wenn er „Simon sagt“ voranschickt.",
+      en: "Now the fox is Simon. The class moves only if he says “<span lang=\"de\">Simon sagt</span>” first."
+    },
+    {
+      sel: "#missionBox",
+      title: "Warten ist auch richtig.",
+      de: "Tippe die passende Aktion nur, wenn Simon es sagt. Sagt er die Worte nicht, warte — sonst verlierst du ein Leben.",
+      en: "Tap the matching action only when Simon says so. If he skips the magic words, wait — or you lose a life."
+    }
+  ]
+};
+
+function queueTutorial(kind, force){
+  if (!TUTORIAL[kind]) return;
+  if (!force && state.sawTutorial[kind]) return;
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => openTutorial(kind));
+  });
+}
+
+function openTutorial(kind){
+  if (!$("screen-play").classList.contains("on")) return;
+  closeHelp();
+  state.tutorialOn = true;
+  state.tutorialKind = kind;
+  state.tutorialStep = 0;
+  const el = $("coach");
+  el.hidden = false;
+  el.classList.add("on");
+  showTutorialStep(0);
+}
+
+function showTutorialStep(i){
+  const steps = TUTORIAL[state.tutorialKind] || [];
+  const step = steps[i];
+  if (!step){ finishTutorial(); return; }
+  state.tutorialStep = i;
+  const last = i === steps.length - 1;
+  $("coachStep").textContent = `Schritt ${i+1} von ${steps.length}`;
+  $("coachTitle").textContent = step.title;
+  $("coachDe").textContent = step.de;
+  $("coachEn").innerHTML = step.en;
+  $("coachNext").innerHTML = last
+    ? `<span lang="de">Los geht's!</span><span class="sr" lang="en"> (start playing)</span>`
+    : `<span lang="de">Weiter</span><span class="sr" lang="en"> (next)</span>`;
+  $("coachDots").innerHTML = steps.map((_, n) =>
+    `<button type="button" data-step="${n}" aria-label="Schritt ${n+1}" aria-current="${n===i?"true":"false"}"></button>`
+  ).join("");
+  $("coachDots").querySelectorAll("button").forEach(b => {
+    b.addEventListener("click", () => showTutorialStep(+b.dataset.step));
+  });
+  placeSpot(step.sel);
+  placeCard(step.sel);
+  try { $("coachTitle").focus({preventScroll:true}); } catch(e){}
+  announce(step.title + " " + step.de, step.en.replace(/<[^>]+>/g, ""));
+}
+
+function placeSpot(sel){
+  const spot = $("coachSpot");
+  const target = sel ? document.querySelector(sel) : null;
+  if (!target){ spot.hidden = true; return; }
+  const r = target.getBoundingClientRect();
+  const pad = 8;
+  spot.hidden = false;
+  spot.style.top = Math.max(6, r.top - pad) + "px";
+  spot.style.left = Math.max(6, r.left - pad) + "px";
+  spot.style.width = Math.max(40, Math.min(window.innerWidth - 12, r.width + pad * 2)) + "px";
+  spot.style.height = Math.max(40, Math.min(window.innerHeight - 12, r.height + pad * 2)) + "px";
+}
+
+function placeCard(sel){
+  const card = document.querySelector("#coach .coach-card");
+  if (!card) return;
+  const target = sel ? document.querySelector(sel) : null;
+  card.style.left = "50%";
+  card.style.transform = "translateX(-50%)";
+  if (!target){
+    card.style.top = "";
+    card.style.bottom = "16px";
+    return;
+  }
+  const r = target.getBoundingClientRect();
+  const spaceBelow = window.innerHeight - r.bottom;
+  if (spaceBelow < 210 && r.top > 210){
+    card.style.bottom = "";
+    card.style.top = "16px";
+  } else {
+    card.style.top = "";
+    card.style.bottom = "16px";
+  }
+}
+
+function tutorialNext(){
+  const steps = TUTORIAL[state.tutorialKind] || [];
+  if (state.tutorialStep >= steps.length - 1) finishTutorial();
+  else showTutorialStep(state.tutorialStep + 1);
+}
+
+function finishTutorial(){
+  hideTutorial(false);
+}
+
+function hideTutorial(silent){
+  const wasOn = state.tutorialOn;
+  const done = state.tutorialOnDone;
+  const kind = state.tutorialKind;
+  state.tutorialOnDone = null;
+  state.tutorialOn = false;
+  state.tutorialKind = null;
+  const el = $("coach");
+  if (el){
+    el.classList.remove("on");
+    el.hidden = true;
+  }
+  if ($("coachSpot")) $("coachSpot").hidden = true;
+  if (wasOn && kind) state.sawTutorial[kind] = true;
+  if (!silent && typeof done === "function") done();
+}
+
+function replayTutorial(){
+  closeHelp();
+  if (state.mode === "listen" && $("screen-play").classList.contains("on")) startListen({tutorial:true});
+  else startGive({tutorial:true});
+}
+
+function startGive(opts){
   bumpSession();
   state.mode = "give";
   state.round = 0;
@@ -1203,6 +1427,9 @@ function startGive(){
   renderRef();
   updateHud();
   nextMission();
+  const force = !!(opts && opts.tutorial);
+  if (force) state.sawTutorial.give = false;
+  queueTutorial("give", force);
 }
 
 function nextMission(){
@@ -1246,7 +1473,7 @@ function nextMission(){
 }
 
 function onCommand(opt, btn){
-  if (state.busy) return;
+  if (state.tutorialOn || state.busy) return;
   if (state.mode === "listen"){ onListenTap(opt, btn); return; }
   if (state.mode === "free"){ onFreeTap(opt); return; }
 
@@ -1318,7 +1545,7 @@ function onCommand(opt, btn){
 }
 
 /* ---------- LISTEN MODE ---------- */
-function startListen(){
+function startListen(opts){
   bumpSession();
   const session = state.session;
   state.mode = "listen";
@@ -1341,7 +1568,15 @@ function startListen(){
   $("whoPill").innerHTML = `<span class="dot frau" aria-hidden="true"></span> <span lang="de">Alle auf dem Platz</span><span class="en" lang="en">everyone on the field</span>`;
   updateHud();
   $("cmds").innerHTML = "";
-  window.setTimeout(() => { if (alive(session)) listenRound(); }, 600);
+  const go = () => { if (alive(session)) listenRound(); };
+  const force = !!(opts && opts.tutorial);
+  if (force) state.sawTutorial.listen = false;
+  if (!state.sawTutorial.listen || force){
+    state.tutorialOnDone = go;
+    queueTutorial("listen", force);
+  } else {
+    window.setTimeout(go, 600);
+  }
 }
 
 function listenChoices(must){
@@ -1630,6 +1865,15 @@ function printSheet(){ window.print(); }
 $("btnPrint").addEventListener("click", printSheet);
 $("btnPrintEnd").addEventListener("click", printSheet);
 
+function trapFocus(container, e){
+  if (e.key !== "Tab") return;
+  const focusable = [...container.querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])")].filter(el => !el.disabled);
+  if (!focusable.length) return;
+  const first = focusable[0], last = focusable[focusable.length-1];
+  if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+}
+
 let helpPrev = null;
 function openHelp(){
   helpPrev = document.activeElement;
@@ -1647,13 +1891,24 @@ function closeHelp(){
 $("btnHelp").addEventListener("click", openHelp);
 $("helpClose").addEventListener("click", closeHelp);
 $("helpVeil").addEventListener("click", e => { if (e.target.id==="helpVeil") closeHelp(); });
-$("helpVeil").addEventListener("keydown", e => {
-  if (e.key !== "Tab") return;
-  const focusable = [...$("helpVeil").querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])")].filter(el => !el.disabled);
-  if (!focusable.length) return;
-  const first = focusable[0], last = focusable[focusable.length-1];
-  if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
-  else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+$("helpVeil").addEventListener("keydown", e => trapFocus($("helpVeil"), e));
+$("helpTutorial").addEventListener("click", replayTutorial);
+$("btnTutorial").addEventListener("click", () => startGive({tutorial:true}));
+$("coachSkip").addEventListener("click", finishTutorial);
+$("coachNext").addEventListener("click", tutorialNext);
+$("coach").addEventListener("keydown", e => {
+  if (!state.tutorialOn) return;
+  trapFocus($("coach"), e);
+});
+window.addEventListener("resize", () => {
+  if (state.tutorialOn){
+    const steps = TUTORIAL[state.tutorialKind] || [];
+    const step = steps[state.tutorialStep];
+    if (step){
+      placeSpot(step.sel);
+      placeCard(step.sel);
+    }
+  }
 });
 
 $("simonBtn").addEventListener("click", () => {
@@ -1696,9 +1951,15 @@ $("btnAgain").addEventListener("click", () => {
 
 document.addEventListener("keydown", e => {
   if (e.key === "Escape"){
+    if (state.tutorialOn){ finishTutorial(); return; }
     if (!$("helpVeil").hidden){ closeHelp(); return; }
   }
   if (e.target && ["INPUT","TEXTAREA","SELECT"].includes(e.target.tagName)) return;
+  if (state.tutorialOn){
+    if (e.key === "ArrowRight"){ e.preventDefault(); tutorialNext(); }
+    else if (e.key === "ArrowLeft"){ e.preventDefault(); if (state.tutorialStep > 0) showTutorialStep(state.tutorialStep - 1); }
+    return;
+  }
   if (!$("screen-play").classList.contains("on")) return;
   if ((e.key === "s" || e.key === "S") && $("simonBtn").style.display !== "none" && !state.busy){
     e.preventDefault();

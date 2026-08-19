@@ -545,12 +545,12 @@ $("btn-map").addEventListener("click", () => {
   }
   let pts = 0;
   [["kh",SOLL.kh],["mz",SOLL.mz],["ff",SOLL.ff]].forEach(([k,s]) => {
-    if(S.map[k].wx === s.wx) pts += 6;
+    if(S.map[k].wx === s.wx) pts += 4;
     else S.blooper.push("Falsches Icon über "+ORTE[k]);
-    if(S.map[k].t === s.t) pts += 4;
+    if(S.map[k].t === s.t) pts += 3;
   });
   if(S.morgen.wx === SOLL.morgen.wx) pts += 6; else S.blooper.push("Morgen-Wetter für Kleinhausen weicht vom DWD ab");
-  if(S.morgen.t === SOLL.morgen.t) pts += 4;
+  if(S.morgen.t === SOLL.morgen.t) pts += 3;
   S.mapPts = pts;
   const fb = $("map-fb");
   fb.className = pts >= 24 ? "fb" : "fb bad";

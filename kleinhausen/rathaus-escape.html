@@ -808,10 +808,10 @@ function puzzleMatch(){
     html);
   const bind = () => {
     $("panel-extra").querySelectorAll(".match-word").forEach(b => {
-      b.onclick = () => { if(b.classList.contains("ok")) return; S.r1.word = b.dataset.word; highlightMatch(); };
+      b.onclick = () => { if(b.classList.contains("ok")) return; S.r1.word = b.dataset.word; highlightMatch(); tryMatch(); };
     });
     $("panel-extra").querySelectorAll(".match-pic").forEach(b => {
-      b.onclick = () => { if(b.classList.contains("ok")) return; S.r1.pic = b.dataset.pic; tryMatch(); };
+      b.onclick = () => { if(b.classList.contains("ok")) return; S.r1.pic = b.dataset.pic; highlightMatch(); tryMatch(); };
     });
   };
   function highlightMatch(){
@@ -1092,7 +1092,11 @@ document.addEventListener("keydown", e => {
   if(!$("screen-play").classList.contains("on")) return;
   const tag = (e.target.tagName||"").toLowerCase();
   if(tag==="input" || tag==="textarea"){
-    if(e.key==="Enter" && $("chk-code")){ e.preventDefault(); $("chk-code").click(); }
+    if(e.key==="Enter"){
+      e.preventDefault();
+      if($("chk-pass")) $("chk-pass").click();
+      else if($("chk-code")) $("chk-code").click();
+    }
     return;
   }
   if(/^[1-9]$/.test(e.key)){

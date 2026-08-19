@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Highbit Atelier — HD Pixel Character Builder</title>
+<meta name="description" content="Build high-resolution pixel characters, expression portraits, and game-ready pose sheets.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0c10;
+  --bg-2:#12141a;
+  --panel:#171a21;
+  --panel-2:#1d212b;
+  --line:#2b3140;
+  --line-2:#3a4254;
+  --ink:#ece8df;
+  --muted:#8f96a7;
+  --faint:#6a7182;
+  --mint:#7ee0c3;
+  --mint-2:#4fb89c;
+  --gold:#e2b86a;
+  --rose:#e08b8b;
+  --stage:#0e1016;
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+  --sans:"Manrope",ui-sans-serif,system-ui,sans-serif;
+  --display:"Syne",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:3px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans)}
+body{min-height:100vh;background:
+  radial-gradient(1200px 500px at 12% -10%,#1a2436 0%,transparent 55%),
+  radial-gradient(900px 400px at 100% 0%,#18221c 0%,transparent 50%),
+  var(--bg);overflow:hidden}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+.app{height:100vh;display:grid;grid-template-rows:64px 1fr 168px;grid-template-columns:228px 1fr 320px}
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:18px;padding:0 18px;border-bottom:1px solid var(--line);background:rgba(12,14,18,.92);backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:12px;min-width:228px}
+.mark{width:34px;height:34px;image-rendering:pixelated;border:1px solid var(--line-2);background:
+  linear-gradient(#1b1f28,#12141a);display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:repeat(5,1fr);padding:4px;gap:1px}
+.mark i{background:#2a3140;display:block}
+.mark i.on{background:var(--mint)}
+.brand h1{margin:0;font-family:var(--display);font-size:20px;letter-spacing:.02em;font-weight:800}
+.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.18em;text-transform:uppercase;margin-top:1px}
+.name-wrap{flex:1;display:flex;justify-content:center}
+#charName{width:min(420px,46vw);height:38px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:0 12px;text-align:center;font-family:var(--display);font-weight:700;letter-spacing:.04em}
+#charName:focus{outline:2px solid var(--mint);border-color:transparent}
+.top-actions{display:flex;gap:8px;margin-left:auto}
+.btn{height:36px;padding:0 13px;border-radius:var(--r);border:1px solid var(--line-2);background:var(--panel);color:var(--ink);font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.btn:hover{border-color:var(--mint);color:#fff}
+.btn.mint{background:linear-gradient(#8aebd0,#4fb89c);color:#10211b;border-color:#b7f5e4}
+.btn.mint:hover{filter:brightness(1.05);color:#06140f}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.rail,.inspector{background:var(--bg-2);border-right:1px solid var(--line);overflow:auto}
+.inspector{border-right:0;border-left:1px solid var(--line)}
+.rail h2,.inspector h2,.dock h2{margin:0;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:800}
+.section{padding:14px 14px 8px}
+.layers{display:flex;flex-direction:column;gap:6px;padding:0 14px 14px}
+.layer{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:8px;height:42px;padding:0 10px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);text-align:left}
+.layer .ico{font-family:var(--mono);font-size:12px;color:var(--mint)}
+.layer em{font-style:normal;font-size:13px;font-weight:700}
+.layer span{font-size:10px;color:var(--faint);letter-spacing:.08em;text-transform:uppercase}
+.layer.active{border-color:var(--mint);box-shadow:inset 0 0 0 1px #7ee0c355;background:#1a2422}
+
+.stage-wrap{position:relative;display:grid;grid-template-rows:auto 1fr auto;background:
+  linear-gradient(180deg,#12151c,#0c0e13);min-width:0}
+.stage-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line)}
+.seg{display:flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--panel)}
+.seg button{height:32px;padding:0 10px;border:0;background:transparent;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.seg button.on,.seg button[aria-pressed="true"]{background:#24332e;color:var(--mint)}
+.stage-toolbar .spacer{flex:1}
+.hint{font-size:11px;color:var(--faint);font-family:var(--mono)}
+
+.stage{position:relative;display:grid;place-items:center;overflow:hidden}
+.stage:before{content:"";position:absolute;inset:0;opacity:.5;background-image:
+  linear-gradient(#1a1d26 1px,transparent 1px),
+  linear-gradient(90deg,#1a1d26 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(circle at 50% 42%,#000 40%,transparent 78%)}
+.canvas-frame{position:relative;z-index:1;padding:18px;border:1px solid var(--line);background:
+  repeating-conic-gradient(#1a1c22 0% 25%, #12141a 0% 50%) 0 0/16px 16px;box-shadow:var(--shadow)}
+#view{display:block;image-rendering:pixelated;image-rendering:crisp-edges;background:transparent;cursor:crosshair}
+.canvas-frame.grid #view{background-image:
+  linear-gradient(rgba(126,224,195,.12) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(126,224,195,.12) 1px,transparent 1px);background-size:4px 4px}
+.pose-bar{display:flex;gap:8px;justify-content:center;align-items:center;padding:10px 14px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:0 8px;color:var(--ink);font-size:12px}
+
+.inspector .section + .section{border-top:1px solid var(--line)}
+.swatches{display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin:10px 0}
+.swatch{aspect-ratio:1;border:1px solid #0008;border-radius:2px;padding:0}
+.swatch.on{outline:2px solid var(--mint);outline-offset:1px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.choice{min-height:36px;padding:7px 8px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);font-size:12px;font-weight:650;text-align:left}
+.choice.on{border-color:var(--mint);background:#1a2422;color:var(--mint)}
+.field{margin:10px 0}
+.field label{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;font-weight:700}
+.field input[type=range]{width:100%;accent-color:var(--mint)}
+.color-row{display:flex;gap:8px;align-items:center}
+.color-row input[type=color]{width:42px;height:32px;border:1px solid var(--line-2);background:var(--panel);padding:2px;border-radius:var(--r)}
+.color-row code{font-family:var(--mono);font-size:12px;color:var(--gold)}
+
+.dock{grid-column:1/-1;display:grid;grid-template-columns:180px 1fr 280px;border-top:1px solid var(--line);background:#10131a}
+.dock-head{padding:12px 14px;display:flex;flex-direction:column;gap:8px;justify-content:center;border-right:1px solid var(--line)}
+.sheet-scroller{overflow:auto;padding:10px 12px;display:flex;gap:10px;align-items:center}
+.thumb{flex:0 0 auto;border:1px solid var(--line);background:repeating-conic-gradient(#1a1c22 0% 25%, #12141a 0% 50%) 0 0/10px 10px;padding:6px;cursor:pointer;border-radius:var(--r)}
+.thumb.on{border-color:var(--mint)}
+.thumb canvas{display:block;image-rendering:pixelated;height:132px;width:auto}
+.thumb figcaption{display:block;text-align:center;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:4px;font-weight:700}
+.export-mini{padding:12px 14px;border-left:1px solid var(--line);display:flex;flex-direction:column;gap:8px;justify-content:center}
+.export-mini p{margin:0;font-size:12px;color:var(--muted);line-height:1.4}
+
+.modal-bg{position:fixed;inset:0;background:#000000c7;display:grid;place-items:center;z-index:20;padding:20px;backdrop-filter:blur(8px)}
+.modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:linear-gradient(180deg,#1a1e27,#12141a);border:1px solid var(--line-2);border-radius:6px;box-shadow:var(--shadow);padding:22px}
+.modal h2{font-family:var(--display);font-size:26px;margin:0 0 8px;color:#fff}
+.modal p{color:var(--muted);line-height:1.5}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.card{border:1px solid var(--line);background:var(--panel);padding:14px;border-radius:var(--r)}
+.card strong{display:block;margin-bottom:4px}
+.card small{color:var(--muted);line-height:1.4}
+.library{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px}
+.lib-item{border:1px solid var(--line);background:var(--panel);padding:8px;text-align:left;border-radius:var(--r)}
+.lib-item canvas{width:100%;height:auto;image-rendering:pixelated;background:#0e1016}
+.lib-item b{display:block;margin-top:6px;font-size:12px}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(12px);opacity:0;background:#151820;border:1px solid var(--mint);color:var(--ink);padding:10px 14px;z-index:40;transition:.2s;font-size:13px}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+@media(max-width:1180px){
+  body{overflow:auto}
+  .app{height:auto;min-height:100vh;grid-template-columns:1fr;grid-template-rows:auto auto auto auto auto}
+  .rail,.inspector,.dock{border:0;border-top:1px solid var(--line)}
+  .dock{grid-template-columns:1fr}
+  .stage{min-height:64vh}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i>
+        <i class="on"></i><i></i><i></i><i></i><i class="on"></i>
+        <i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i>
+        <i class="on"></i><i></i><i></i><i></i><i class="on"></i>
+        <i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i>
+      </div>
+      <div>
+        <h1>Highbit Atelier</h1>
+        <small>HD pixel characters</small>
+      </div>
+    </div>
+    <div class="name-wrap"><input id="charName" maxlength="40" aria-label="Character name" value="Aurel Vale"></div>
+    <div class="top-actions">
+      <button class="btn ghost" id="btnHelp">Guide</button>
+      <button class="btn" id="btnLib">Library</button>
+      <button class="btn" id="btnRandom">Random</button>
+      <button class="btn mint" id="btnExport">Export</button>
+    </div>
+  </header>
+
+  <aside class="rail">
+    <div class="section"><h2>Layers</h2></div>
+    <div class="layers" id="layers"></div>
+    <div class="section">
+      <h2>Studio</h2>
+      <div class="field" style="margin-top:12px">
+        <label>Idle motion <span id="animLbl">on</span></label>
+        <input type="range" id="animAmt" min="0" max="1" step="0.05" value="1">
+      </div>
+      <button class="btn" id="btnUndo" style="width:100%;margin-bottom:6px">Undo</button>
+      <button class="btn" id="btnRedo" style="width:100%">Redo</button>
+    </div>
+  </aside>
+
+  <section class="stage-wrap">
+    <div class="stage-toolbar">
+      <div class="seg" id="dirSeg" role="group" aria-label="Facing">
+        <button data-dir="w">West</button>
+        <button data-dir="s" class="on">South</button>
+        <button data-dir="e">East</button>
+        <button data-dir="n">North</button>
+      </div>
+      <div class="seg" id="zoomSeg" role="group" aria-label="Zoom">
+        <button data-zoom="3">3×</button>
+        <button data-zoom="4" class="on">4×</button>
+        <button data-zoom="5">5×</button>
+        <button data-zoom="6">6×</button>
+      </div>
+      <button class="btn" id="btnGrid">Pixel grid</button>
+      <div class="spacer"></div>
+      <span class="hint" id="pxHint">128 × 192 · nearest neighbor</span>
+    </div>
+    <div class="stage">
+      <div class="canvas-frame" id="frame">
+        <canvas id="view" width="512" height="768" aria-label="Character preview"></canvas>
+      </div>
+    </div>
+    <div class="pose-bar">
+      <label class="hint" for="poseSel">Pose</label>
+      <select class="quiet" id="poseSel"></select>
+      <label class="hint" for="exprSel">Expression</label>
+      <select class="quiet" id="exprSel"></select>
+      <label class="hint" for="lookSel">Gaze</label>
+      <select class="quiet" id="lookSel">
+        <option value="0,0">Forward</option>
+        <option value="-1,0">Left</option>
+        <option value="1,0">Right</option>
+        <option value="0,-1">Up</option>
+        <option value="0,1">Down</option>
+        <option value="-1,-1">Up left</option>
+        <option value="1,-1">Up right</option>
+      </select>
+    </div>
+  </section>
+
+  <aside class="inspector">
+    <div class="section"><h2 id="inspTitle">Body</h2><p id="inspLead" style="margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.45">Proportions and complexion.</p></div>
+    <div id="inspBody"></div>
+  </aside>
+
+  <footer class="dock">
+    <div class="dock-head">
+      <h2>Character sheet</h2>
+      <div class="seg" id="sheetSeg">
+        <button data-sheet="turn" class="on">Turn</button>
+        <button data-sheet="walk">Walk</button>
+        <button data-sheet="face">Faces</button>
+        <button data-sheet="act">Actions</button>
+      </div>
+    </div>
+    <div class="sheet-scroller" id="sheetRow"></div>
+    <div class="export-mini">
+      <h2>Game import</h2>
+      <p>Sheets export as crisp PNG plus a JSON sidecar engines can read (Phaser, Godot, Unity sprites).</p>
+      <button class="btn mint" id="btnSheetExport">Download this sheet</button>
+    </div>
+  </footer>
+</div>
+
+<div class="modal-bg hidden" id="helpModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <h2>Build once. Import anywhere.</h2>
+    <p>Highbit draws true pixel art at 128×192 — large enough for eyelid tension, iris catchlights, and mouth shapes, small enough to drop into a game as a sprite. Faces also render as 96×96 portraits for dialogue.</p>
+    <div class="grid-2">
+      <div class="card"><strong>Customize</strong><small>Swap body, face, hair, outfit, and extras. Colors generate a five-stop shade ramp automatically.</small></div>
+      <div class="card"><strong>Perform</strong><small>Fourteen expressions and directional poses, including a four-frame walk cycle.</small></div>
+      <div class="card"><strong>Paint</strong><small>The paint layer lets you add unique pixels on top of the generated sprite.</small></div>
+      <div class="card"><strong>Export</strong><small>PNG at 1×/2×/4×, pose sheets, walk strips, expression grids, and JSON metadata.</small></div>
+    </div>
+    <p style="font-family:var(--mono);font-size:12px;color:var(--gold)">Keys: 1–6 layers · R randomize · [ ] direction · G grid · E export</p>
+    <div style="text-align:right"><button class="btn mint" id="closeHelp">Start drawing</button></div>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="libModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <h2>Library</h2>
+    <p>Characters save in this browser. Load one to keep editing, or start from a preset.</p>
+    <div style="display:flex;gap:8px;margin:10px 0">
+      <button class="btn mint" id="btnSaveLib">Save current</button>
+      <button class="btn" id="btnLoadJson">Import JSON</button>
+      <input type="file" id="jsonFile" accept="application/json" class="hidden">
+    </div>
+    <div class="library" id="library"></div>
+    <div style="text-align:right;margin-top:12px"><button class="btn" id="closeLib">Close</button></div>
+  </div>
+</div>
+
+<div class="modal-bg hidden" id="exportModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <h2>Export for games</h2>
+    <p>Every PNG is nearest-neighbor scaled — no blur, no filtering. JSON describes frame size, animations, and the full appearance so you can reload the character later.</p>
+    <div class="grid-2" id="exportGrid"></div>
+    <div class="field"><label>Scale</label>
+      <div class="seg" id="scaleSeg">
+        <button data-scale="1" class="on">1× native</button>
+        <button data-scale="2">2×</button>
+        <button data-scale="4">4×</button>
+      </div>
+    </div>
+    <div style="text-align:right;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" id="closeExport">Close</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const W = 128, H = 192, PW = 96, PH = 96;
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+
+  const SKINS = ["#f6e0c8","#f0d0b0","#e4b894","#d9a06a","#c68654","#b56b3d","#8d5524","#6d3b22","#4a2714","#2e1a12","#e7c4c4","#c9d5e8"];
+  const HAIRS = ["#1a1210","#2a1810","#4a2a14","#6b3a1c","#8a4a1c","#c47a2a","#e2b05a","#f0d48a","#f5f0e6","#8a8a92","#4b2a4a","#6a1e2b","#1e3a4a","#245c48","#2a3a8a","#c45a8a"];
+  const CLOTH = ["#1f2430","#2b4c7e","#7a2e2e","#2d5a45","#6b5344","#3d2a58","#c45a2a","#d8d2c8","#4a5560","#8aa0b8","#b33a4a","#1a1a1d","#c9a227","#3a6b4a"];
+  const EYES = ["#3a6b4a","#2a4a7a","#5a3a22","#1a1a1a","#6a8aaa","#4a2a4a","#8a5a2a","#2a6a6a","#a33a3a","#c8c3b4"];
+
+  const LAYERS = [
+    {id:"body", ico:"01", title:"Body", lead:"Proportions, skin, and marks."},
+    {id:"face", ico:"02", title:"Face", lead:"Features with enough pixels for nuance."},
+    {id:"hair", ico:"03", title:"Hair", lead:"Volume in back, fringe in front."},
+    {id:"outfit", ico:"04", title:"Outfit", lead:"Top, bottom, shoes — separate ramps."},
+    {id:"extra", ico:"05", title:"Extras", lead:"Glasses, hats, jewelry, packs."},
+    {id:"paint", ico:"06", title:"Paint", lead:"Free pixels on top of the sprite."}
+  ];
+
+  const POSES = [
+    {id:"idle", label:"Idle"},
+    {id:"walk", label:"Walk"},
+    {id:"run", label:"Run"},
+    {id:"jump", label:"Jump"},
+    {id:"wave", label:"Wave"},
+    {id:"sit", label:"Sit"},
+    {id:"attack", label:"Attack"},
+    {id:"crouch", label:"Crouch"}
+  ];
+
+  const EXPRS = {
+    neutral:{browY:0,browInner:0,openL:1,openR:1,curve:.08,open:0,blush:.18,skew:0},
+    smile:{browY:-.2,browInner:-.5,openL:.92,openR:.92,curve:.78,open:.1,blush:.4,skew:0},
+    grin:{browY:-.6,browInner:-.3,openL:.8,openR:.8,curve:1,open:.48,blush:.28,skew:0},
+    smirk:{browY:.1,browInner:.5,openL:.9,openR:.84,curve:.42,open:.06,blush:.05,skew:1.6},
+    sad:{browY:1.1,browInner:1.8,openL:.76,openR:.76,curve:-.88,open:.06,blush:0,skew:0},
+    angry:{browY:.3,browInner:2.4,openL:.7,openR:.7,curve:-.42,open:.14,blush:.22,skew:0},
+    surprised:{browY:-2.4,browInner:0,openL:1.18,openR:1.18,curve:.05,open:.88,blush:0,skew:0},
+    wink:{browY:-.1,browInner:-.2,openL:1,openR:.06,curve:.55,open:.1,blush:.22,skew:.4},
+    determined:{browY:.15,browInner:1.2,openL:.86,openR:.86,curve:-.04,open:0,blush:0,skew:0},
+    tired:{browY:1.5,browInner:.5,openL:.42,openR:.42,curve:-.12,open:.22,blush:0,skew:0},
+    embarrassed:{browY:.7,browInner:.6,openL:.82,openR:.82,curve:.22,open:0,blush:.92,skew:0},
+    thinking:{browY:.4,browInner:-.9,openL:.9,openR:.68,curve:-.12,open:0,blush:0,skew:.2,lookX:-.8,lookY:-.45},
+    scared:{browY:-1.4,browInner:1.3,openL:1.12,openR:1.12,curve:-.18,open:.55,blush:0,skew:0},
+    proud:{browY:-.9,browInner:-.2,openL:.9,openR:.9,curve:.38,open:0,blush:.12,skew:0}
+  };
+
+  const BODY = {
+    slim:{sh:17,wa:12,hp:15,limb:4.2,head:21,leg:5},
+    average:{sh:21,wa:15,hp:18,limb:5.4,head:23,leg:6},
+    athletic:{sh:25,wa:15,hp:19,limb:6.1,head:23,leg:6.4},
+    sturdy:{sh:27,wa:21,hp:25,limb:7,head:24,leg:7.2}
+  };
+
+  const HAIR_STYLES = ["bald","buzz","crop","pixie","bob","long","wavy","pony","bun","braids","afro","undercut","messy"];
+  const TOPS = ["tee","tank","hoodie","shirt","sweater","jacket","vest","tunic","armor"];
+  const BOTTOMS = ["pants","jeans","shorts","skirt","cargo"];
+  const SHOES = ["none","sneakers","boots","loafers","sandals"];
+  const EXTRAS = ["none","glasses","round-glasses","earrings","scarf","cap","beanie","headband","necklace","backpack"];
+  const FACES = ["oval","round","square","heart"];
+  const EYE_SHAPES = ["round","almond","lidded","sharp"];
+  const BROWS = ["soft","arched","straight","thick","short"];
+  const NOSES = ["small","medium","strong"];
+  const MOUTHS = ["small","medium","full"];
+  const MARKS = ["none","freckles","scar","mole"];
+
+  function hexToRgb(h){
+    h = (h||"#888").replace("#","");
+    if(h.length===3) h=h.split("").map(c=>c+c).join("");
+    const n=parseInt(h,16);
+    return [(n>>16)&255,(n>>8)&255,n&255];
+  }
+  function rgbToHex([r,g,b]){return "#"+[r,g,b].map(v=>Math.max(0,Math.min(255,v|0)).toString(16).padStart(2,"0")).join("")}
+  function lerp(a,b,t){return a+(b-a)*t}
+  function mix(a,b,t){return [lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)].map(v=>v|0)}
+  function shade(rgb,k){
+    if(k>=1) return rgb.map(v=>Math.min(255, v+(255-v)*(k-1))) .map(v=>v|0);
+    return rgb.map(v=>Math.max(0,v*k)|0);
+  }
+  function ramp(hex){
+    const m=hexToRgb(hex);
+    return {s:shade(m,.42), d:shade(m,.66), m, l:shade(m,1.18), h:shade(m,1.42)};
+  }
+
+  class Pix{
+    constructor(w,h){this.w=w;this.h=h;this.img=new ImageData(w,h);this.d=this.img.data}
+    idx(x,y){return (y*this.w+x)*4}
+    in(x,y){return x>=0&&y>=0&&x<this.w&&y<this.h}
+    set(x,y,c,a=255){
+      x=x|0;y=y|0; if(!this.in(x,y)||a<=0) return;
+      const i=this.idx(x,y);
+      if(a>=255 || this.d[i+3]===0){this.d[i]=c[0];this.d[i+1]=c[1];this.d[i+2]=c[2];this.d[i+3]=a;return}
+      const u=a/255, v=1-u;
+      this.d[i]=this.d[i]*v+c[0]*u; this.d[i+1]=this.d[i+1]*v+c[1]*u; this.d[i+2]=this.d[i+2]*v+c[2]*u;
+      this.d[i+3]=Math.min(255,this.d[i+3]+a);
+    }
+    getA(x,y){if(!this.in(x,y)) return 0; return this.d[this.idx(x,y)+3]}
+    fillRect(x,y,w,h,c){for(let j=0;j<h;j++) for(let i=0;i<w;i++) this.set(x+i,y+j,c)}
+    hline(x0,x1,y,c){if(x0>x1)[x0,x1]=[x1,x0]; for(let x=x0;x<=x1;x++) this.set(x,y,c)}
+    circle(cx,cy,r,c){
+      const r2=r*r;
+      for(let y=-r;y<=r;y++){
+        const span=Math.sqrt(Math.max(0,r2-y*y));
+        this.hline(Math.round(cx-span),Math.round(cx+span),Math.round(cy+y),c);
+      }
+    }
+    ellipse(cx,cy,rx,ry,c){
+      rx=Math.max(.6,rx); ry=Math.max(.6,ry);
+      for(let y=-ry;y<=ry;y++){
+        const t=1-(y*y)/(ry*ry);
+        if(t<0) continue;
+        const span=Math.sqrt(t)*rx;
+        this.hline(Math.round(cx-span),Math.round(cx+span),Math.round(cy+y),c);
+      }
+    }
+    capsule(x0,y0,x1,y1,r,c,c2){
+      const dx=x1-x0,dy=y1-y0,len=Math.hypot(dx,dy)||1,steps=Math.ceil(len)+r*2;
+      for(let i=0;i<=steps;i++){
+        const t=i/steps;
+        this.circle(x0+dx*t,y0+dy*t,r,c2?mix(c,c2,t):c);
+      }
+    }
+    outline(col=[18,16,20]){
+      const copy=new Uint8ClampedArray(this.d);
+      const w=this.w,h=this.h;
+      const aAt=(x,y)=>{if(x<0||y<0||x>=w||y>=h) return 0; return copy[(y*w+x)*4+3]}
+      for(let y=0;y<h;y++) for(let x=0;x<w;x++){
+        if(aAt(x,y)<20) continue;
+        if(aAt(x-1,y)<20||aAt(x+1,y)<20||aAt(x,y-1)<20||aAt(x,y+1)<20) this.set(x,y,col);
+      }
+    }
+    innerShade(){
+      const copy=new Uint8ClampedArray(this.d);
+      const w=this.w;
+      for(let y=1;y<this.h-1;y++) for(let x=1;x<this.w-1;x++){
+        const i=(y*w+x)*4;
+        if(copy[i+3]<20) continue;
+        const up=copy[((y-1)*w+(x-1))*4+3];
+        if(up<20){
+          this.d[i]=Math.min(255,this.d[i]+18);
+          this.d[i+1]=Math.min(255,this.d[i+1]+16);
+          this.d[i+2]=Math.min(255,this.d[i+2]+14);
+        }
+      }
+    }
+    blitTo(ctx,sx,sy,scale){
+      const c=document.createElement("canvas");
+      c.width=this.w; c.height=this.h;
+      c.getContext("2d").putImageData(this.img,0,0);
+      ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(c,sx,sy,this.w*scale,this.h*scale);
+    }
+    crop(x,y,w,h){
+      const p=new Pix(w,h);
+      for(let j=0;j<h;j++) for(let i=0;i<w;i++){
+        const ox=x+i, oy=y+j;
+        if(!this.in(ox,oy)) continue;
+        const k=this.idx(ox,oy);
+        if(this.d[k+3]) p.set(i,j,[this.d[k],this.d[k+1],this.d[k+2]],this.d[k+3]);
+      }
+      return p;
+    }
+  }
+
+  function ang(cx,cy,deg,len){
+    const a=(deg-90)*Math.PI/180;
+    return {x:cx+Math.cos(a)*len, y:cy+Math.sin(a)*len};
+  }
+
+  function bones(ch, pose, dir, frame, breath){
+    const m=BODY[ch.bodyType]||BODY.average;
+    const cx=64;
+    let ground=184, hop=0, sit=0;
+    let lArm=10, rArm=-8, lLeg=-4, rLeg=5, lLift=0, rLift=0;
+    const run = pose==="run";
+    if(pose==="walk"||run){
+      const ph=((frame%4)/4)*Math.PI*2;
+      const amp=run?1.4:1;
+      lArm=Math.sin(ph)*36*amp; rArm=-Math.sin(ph)*36*amp;
+      lLeg=-Math.sin(ph)*26*amp; rLeg=Math.sin(ph)*26*amp;
+      hop=Math.abs(Math.cos(ph))*(run?4:2);
+    } else if(pose==="jump"){
+      hop=20; lArm=48; rArm=-46; lLeg=20; rLeg=-18; lLift=-42; rLift=-40;
+    } else if(pose==="wave"){
+      rLift=-118; rArm=18+Math.sin((frame%4)*1.2)*16; lArm=14;
+    } else if(pose==="sit"){
+      sit=28; hop=0; lLeg=55; rLeg=48; lArm=18; rArm=-16;
+    } else if(pose==="attack"){
+      rLift=-70; rArm=-40; lArm=28; lLeg=12; rLeg=-16; hop=3;
+    } else if(pose==="crouch"){
+      sit=18; lLeg=28; rLeg=22; lArm=16; rArm=-14;
+    } else {
+      const b=Math.sin(breath||0)*2*(ch._anim||0);
+      hop=b*.15; lArm=8+b; rArm=-6-b;
+    }
+    const hipY=ground-64-hop+sit*.4;
+    const hipX=cx+(dir==="e"?3:dir==="w"?-3:0);
+    const shY=hipY-46+sit*.15;
+    const headX=hipX+(dir==="e"?5:dir==="w"?-5:0);
+    const headY=shY-26+(pose==="sit"?2:0);
+    const face=dir==="s"?1:dir==="n"?0:.55;
+    const lSh={x:hipX-m.sh*(dir==="s"||dir==="n"?1:.35), y:shY+3};
+    const rSh={x:hipX+m.sh*(dir==="s"||dir==="n"?1:.35), y:shY+3};
+    if(dir==="e"){lSh.x=hipX-6; rSh.x=hipX+8}
+    if(dir==="w"){lSh.x=hipX-8; rSh.x=hipX+6}
+    const lHand=ang(lSh.x,lSh.y,180+lArm+lLift,32);
+    const rHand=ang(rSh.x,rSh.y,180+rArm+rLift,32);
+    const lEl={x:(lSh.x+lHand.x)/2, y:(lSh.y+lHand.y)/2+.5};
+    const rEl={x:(rSh.x+rHand.x)/2, y:(rSh.y+rHand.y)/2+.5};
+    const lHip={x:hipX-m.hp*.45, y:hipY+2};
+    const rHip={x:hipX+m.hp*.45, y:hipY+2};
+    const lFoot=ang(lHip.x,lHip.y,180+lLeg, 52-sit);
+    const rFoot=ang(rHip.x,rHip.y,180+rLeg, 52-sit);
+    if(pose==="sit"){
+      lFoot.x=lHip.x-6; lFoot.y=ground-8;
+      rFoot.x=rHip.x+8; rFoot.y=ground-8;
+    }
+    const lKnee={x:(lHip.x+lFoot.x)/2, y:(lHip.y+lFoot.y)/2};
+    const rKnee={x:(rHip.x+rFoot.x)/2, y:(rHip.y+rFoot.y)/2};
+    return {m,cx:hipX,hipY,shY,head:{x:headX,y:headY,s:1,face},lSh,rSh,lEl,rEl,lHand,rHand,lHip,rHip,lKnee,rKnee,lFoot,rFoot,dir,pose};
+  }
+
+  function shadeTorso(pix, sk, hipX, shY, hipY, sh, wa, hp, dir){
+    const top=shY-2, bot=hipY+8;
+    for(let y=top;y<=bot;y++){
+      const t=(y-top)/Math.max(1,bot-top);
+      let w=lerp(sh, hp, t) - Math.sin(t*Math.PI)* (sh-wa)*.9;
+      if(dir==="e"||dir==="w") w*=.62;
+      const yk = t>.62 ? sk.d : t<.18 ? sk.l : sk.m;
+      pix.hline(Math.round(hipX-w), Math.round(hipX+w), y|0, yk);
+    }
+  }
+
+  function drawHair(pix, ch, b, layer){
+    if(ch.hairStyle==="bald") return;
+    const hr=ramp(ch.hairColor);
+    const hx=b.head.x, hy=b.head.y, r=b.m.head, dir=b.dir;
+    const back = layer==="back";
+    const style=ch.hairStyle;
+    if(back){
+      pix.ellipse(hx, hy+4, r+6, r+8, hr.d);
+      if(style==="long"||style==="wavy"||style==="pony"||style==="braids"||style==="messy"){
+        pix.ellipse(hx, hy+28, r+4, 22, hr.m);
+        pix.ellipse(hx-10, hy+40, 8, 16, hr.d);
+        pix.ellipse(hx+10, hy+40, 8, 16, hr.d);
+      }
+      if(style==="afro") pix.ellipse(hx, hy-2, r+12, r+11, hr.m);
+      if(style==="bun"||style==="pony") pix.ellipse(hx, hy-r-6, 10, 10, hr.m);
+      if(style==="braids"){
+        pix.capsule(hx-12,hy+8,hx-16,hy+48,3,hr.d,hr.m);
+        pix.capsule(hx+12,hy+8,hx+16,hy+48,3,hr.d,hr.m);
+      }
+      return;
+    }
+    if(dir==="n"){
+      pix.ellipse(hx, hy-2, r+5, r+4, hr.l);
+      return;
+    }
+    pix.ellipse(hx, hy-r*.55, r+3, r*.7, hr.m);
+    if(style==="buzz") pix.ellipse(hx, hy-2, r+1, r-1, hr.d);
+    if(style==="crop"||style==="undercut") pix.ellipse(hx, hy-8, r+2, 12, hr.m);
+    if(style==="pixie"){ pix.ellipse(hx-12,hy-4,9,12,hr.l); pix.ellipse(hx+10,hy-6,8,10,hr.m) }
+    if(style==="bob"){ pix.ellipse(hx,hy+6,r+5,r-2,hr.m); pix.ellipse(hx-14,hy+2,8,12,hr.l); pix.ellipse(hx+14,hy+2,8,12,hr.l) }
+    if(style==="long"||style==="wavy"||style==="messy"){
+      pix.ellipse(hx-16,hy,8,14,hr.l); pix.ellipse(hx+16,hy,8,14,hr.l);
+      if(style==="wavy"){ pix.ellipse(hx-18,hy+12,7,10,hr.m); pix.ellipse(hx+17,hy+14,7,10,hr.m) }
+      if(style==="messy"){ pix.ellipse(hx-6,hy-r-2,7,6,hr.h); pix.ellipse(hx+9,hy-r,6,7,hr.l) }
+    }
+    if(style==="pony") pix.ellipse(hx+(dir==="e"?10:dir==="w"?-10:8), hy+26, 7, 18, hr.d);
+    if(style==="bun") pix.ellipse(hx, hy-r-4, 9, 8, hr.l);
+    if(style==="afro"){ pix.ellipse(hx-2,hy-8,r+9,r+6,hr.l); pix.set(hx-r,hy-r,hr.h) }
+    if(style==="undercut"){ pix.ellipse(hx+(dir==="w"?-8:8), hy-6, 14, 12, hr.l) }
+    if(ch.bangs && style!=="buzz" && style!=="bald"){
+      pix.ellipse(hx-8, hy-r+6, 9, 8, hr.d);
+      pix.ellipse(hx+7, hy-r+7, 8, 7, hr.m);
+      pix.ellipse(hx, hy-r+8, 6, 6, hr.d);
+    }
+    pix.set((hx-r*.4)|0, (hy-r*.7)|0, hr.h);
+  }
+
+  function drawFace(pix, ch, b){
+    if(b.dir==="n") return;
+    const hx=b.head.x, hy=b.head.y, s=b.m.head/23;
+    const e=Object.assign({},EXPRS[ch.expression]||EXPRS.neutral);
+    const lookX = ch.lookX + (e.lookX||0);
+    const lookY = ch.lookY + (e.lookY||0);
+    const sk=ramp(ch.skin);
+    const browC=ramp(ch.browColor||ch.hairColor);
+    const lip=mix(sk.m, [160,70,80], .45);
+
+    if(b.dir==="e"||b.dir==="w"){
+      const side=b.dir==="e"?1:-1;
+      pix.ellipse(hx+side*b.m.head*.15, hy+2, 3.2, 5, sk.d);
+      const ex=hx+side*2, ey=hy-1;
+      drawEye(pix,ex,ey,side,e.openL,ch,lookX,lookY,s,true,sk);
+      const ny=hy+6;
+      pix.set(hx+side*8, ny, sk.d);
+      pix.set(hx+side*9, ny+1, sk.s);
+      drawMouth(pix, hx+side*3, hy+13, e, ch, lip, sk, true, side);
+      return;
+    }
+
+    const earY=hy+2;
+    pix.ellipse(hx-b.m.head+1, earY, 3.5, 5.5, sk.d);
+    pix.ellipse(hx+b.m.head-1, earY, 3.5, 5.5, sk.d);
+    pix.ellipse(hx-b.m.head+1, earY, 2, 3, sk.m);
+    pix.ellipse(hx+b.m.head-1, earY, 2, 3, sk.m);
+
+    const browY=hy-7*s + e.browY;
+    drawBrow(pix, hx-12*s, browY+e.browInner, hx-4*s, browY-e.browInner*.35, browC, ch.browStyle);
+    drawBrow(pix, hx+12*s, browY+e.browInner, hx+4*s, browY-e.browInner*.35, browC, ch.browStyle);
+
+    drawEye(pix, hx-8*s, hy-1*s, -1, e.openL, ch, lookX, lookY, s, false, sk);
+    drawEye(pix, hx+8*s, hy-1*s,  1, e.openR, ch, lookX, lookY, s, false, sk);
+
+    const nose=ch.nose==="small"?2:ch.nose==="strong"?4:3;
+    pix.ellipse(hx, hy+6*s, nose*.45, nose*.7, sk.d);
+    pix.set(hx-1, (hy+7*s)|0, sk.s);
+    pix.set(hx+1, (hy+7*s)|0, sk.s);
+    pix.set(hx, (hy+5*s)|0, sk.l);
+
+    drawMouth(pix, hx, hy+14*s, e, ch, lip, sk, false, 1);
+
+    if(e.blush>.05){
+      const bc=mix(sk.m,[210,90,110], .25+e.blush*.4);
+      pix.ellipse(hx-14*s, hy+8*s, 4+e.blush*2, 2.5, bc);
+      pix.ellipse(hx+14*s, hy+8*s, 4+e.blush*2, 2.5, bc);
+    }
+    if(ch.marks==="freckles"){
+      const f=sk.d;
+      [[-10,6],[-7,8],[-12,9],[9,6],[11,8],[7,9],[-2,7],[3,8]].forEach(([x,y])=>pix.set(hx+x,hy+y,f));
+    }
+    if(ch.marks==="scar"){
+      for(let i=0;i<6;i++) pix.set(hx+6+i, hy-4+i, mix(sk.m,[90,60,60],.4));
+    }
+    if(ch.marks==="mole") pix.set(hx+10, hy+8, sk.s);
+  }
+
+  function drawBrow(pix,x0,y0,x1,y1,c,style){
+    const thick=style==="thick"?2:style==="short"?1:1.4;
+    pix.capsule(x0,y0,x1,y1,thick,c.d,c.m);
+    if(style==="arched") pix.set(((x0+x1)/2)|0, ((y0+y1)/2-1)|0, c.l);
+  }
+
+  function drawEye(pix,cx,cy,side,open,ch,lx,ly,s,profile,skin){
+    const iris=ramp(ch.eyeColor);
+    const sk=skin||ramp(ch.skin);
+    open=Math.max(0,Math.min(1.25,open));
+    const w=ch.eyeShape==="round"?4.4:ch.eyeShape==="sharp"?5.2:4.6;
+    const h=Math.max(.8, 3.6*Math.min(1,open))*s;
+    const ww=(profile?3.2:w)*s;
+    if(open<.12){
+      pix.capsule(cx-ww,cy,cx+ww,cy,1,[28,24,26]);
+      return;
+    }
+    pix.ellipse(cx,cy,ww,h,[246,242,236]);
+    const ix=cx+lx*1.8+side*.4, iy=cy+ly*1.4;
+    const ir=Math.max(1.4, 2.3*Math.min(1,open))*s;
+    pix.ellipse(ix,iy,ir,ir*(ch.eyeShape==="lidded"?.75:1), iris.m);
+    pix.ellipse(ix,iy, ir*.45, ir*.45, [22,18,20]);
+    pix.set((ix-1)|0,(iy-1)|0,[255,255,255]);
+    pix.set((ix)|0,(iy-1)|0, iris.l);
+    if(open<1){
+      const cover=h*(1-Math.min(1,open));
+      for(let y=-h;y<-h+cover+1;y++) pix.hline(cx-ww,cx+ww,Math.round(cy+y), sk.m);
+    }
+    if(ch.eyeShape==="sharp"||ch.lashes!=="none"){
+      pix.set((cx+side*ww)|0, (cy-h)|0, [20,16,18]);
+      pix.set((cx+side*(ww+1))|0, (cy-h+1)|0, [20,16,18]);
+    }
+    if(ch.eyeShape==="lidded") pix.hline(cx-ww,cx+ww, (cy-h+1)|0, sk.m);
+  }
+
+  function drawMouth(pix,hx,hy,e,ch,lip,sk,profile,side){
+    const w=(ch.mouth==="small"?3:ch.mouth==="full"?6:4.5) + Math.abs(e.curve)*1.5;
+    const open=e.open;
+    const skew=e.skew||0;
+    if(open>.16){
+      pix.ellipse(hx+skew, hy+open*2, w, 1.2+open*3.2, [70,28,36]);
+      if(open>.34) pix.fillRect((hx-w+1)|0, (hy-0.2)|0, Math.round(w*1.6), 2, [236,232,224]);
+    }
+    for(let x=-w;x<=w;x++){
+      const t=x/Math.max(.001,w);
+      const y=hy + e.curve*(1-t*t)*3.1 + (open>.16? open*2.4 : 0) + (profile?0:0);
+      const xs=hx+x+skew*t;
+      pix.set(xs, y, lip);
+      if(ch.mouth==="full") pix.set(xs, y+1, mix(lip,sk.d,.3));
+      if(e.curve>.5 && !open) pix.set(xs, y-1, sk.m);
+    }
+    if(e.curve>.7){
+      pix.set(hx-w-1, hy+1, sk.d);
+      pix.set(hx+w+1, hy+1, sk.d);
+    }
+  }
+
+  function drawClothes(pix, ch, b){
+    const top=ramp(ch.topColor), bot=ramp(ch.bottomColor), sh=ramp(ch.shoeColor);
+    const {m,dir}=b;
+    const hipX=b.cx;
+    shadeTorso(pix, top, hipX, b.shY+2, b.hipY+2, m.sh-1, m.wa+1, m.hp-1, dir);
+    if(ch.top==="tank"){
+      pix.capsule(b.lSh.x+4,b.lSh.y, b.lSh.x+4,b.shY+18, 2, top.m);
+      pix.capsule(b.rSh.x-4,b.rSh.y, b.rSh.x-4,b.shY+18, 2, top.m);
+    }
+    if(ch.top==="hoodie"||ch.top==="sweater"||ch.top==="jacket"){
+      pix.ellipse(hipX, b.shY+6, 7, 5, top.d);
+    }
+    if(ch.top==="shirt"||ch.top==="jacket"){
+      pix.hline(hipX-3, hipX+3, b.shY+8, top.l);
+      pix.set(hipX, b.shY+12, top.h);
+    }
+    if(ch.top==="armor"){
+      pix.ellipse(hipX, b.shY+16, m.sh-2, 12, top.l);
+      pix.ellipse(hipX, b.shY+16, m.sh-6, 8, top.h);
+    }
+    if(ch.top==="vest"){
+      for(let y=b.shY+6;y<b.hipY;y++) pix.set(hipX,y,top.s);
+    }
+    if(ch.top==="tunic") shadeTorso(pix, top, hipX, b.shY+2, b.hipY+18, m.sh-1, m.wa+2, m.hp+2, dir);
+
+    const skirt=ch.bottom==="skirt";
+    if(skirt){
+      for(let y=b.hipY;y<b.hipY+22;y++){
+        const t=(y-b.hipY)/22;
+        const w=m.hp+4+t*10;
+        pix.hline(hipX-w, hipX+w, y, t>.7?bot.d:bot.m);
+      }
+    } else {
+      const wide=ch.bottom==="cargo"?1.15:ch.bottom==="shorts"?1:1;
+      pix.capsule(b.lHip.x,b.lHip.y, b.lKnee.x,b.lKnee.y, m.leg*wide, bot.m, bot.d);
+      pix.capsule(b.rHip.x,b.rHip.y, b.rKnee.x,b.rKnee.y, m.leg*wide, bot.m, bot.d);
+      if(ch.bottom!=="shorts"){
+        pix.capsule(b.lKnee.x,b.lKnee.y, b.lFoot.x,b.lFoot.y-4, m.leg*.9, bot.d, bot.s);
+        pix.capsule(b.rKnee.x,b.rKnee.y, b.rFoot.x,b.rFoot.y-4, m.leg*.9, bot.d, bot.s);
+      }
+      if(ch.bottom==="jeans"){
+        pix.set((b.lKnee.x)|0,(b.lKnee.y)|0, bot.l);
+        pix.set((b.rKnee.x)|0,(b.rKnee.y)|0, bot.l);
+      }
+    }
+    if(ch.shoes!=="none"){
+      const r=ch.shoes==="boots"?6:ch.shoes==="sandals"?4:5;
+      pix.ellipse(b.lFoot.x, b.lFoot.y-1, r+(ch.shoes==="sneakers"?2:0), 4, sh.m);
+      pix.ellipse(b.rFoot.x, b.rFoot.y-1, r+(ch.shoes==="sneakers"?2:0), 4, sh.m);
+      if(ch.shoes==="boots"){
+        pix.capsule(b.lFoot.x,b.lFoot.y-12,b.lFoot.x,b.lFoot.y,4,sh.d,sh.m);
+        pix.capsule(b.rFoot.x,b.rFoot.y-12,b.rFoot.x,b.rFoot.y,4,sh.d,sh.m);
+      }
+    }
+  }
+
+  function drawExtras(pix, ch, b){
+    if(ch.extra==="none") return;
+    const ac=ramp(ch.accColor);
+    const hx=b.head.x, hy=b.head.y, r=b.m.head;
+    if(ch.extra==="glasses"||ch.extra==="round-glasses"){
+      const rr=ch.extra==="round-glasses"?4.2:3.4;
+      const y=hy-1;
+      pix.ellipse(hx-8,y,rr,rr*.8, ac.m);
+      pix.ellipse(hx+8,y,rr,rr*.8, ac.m);
+      pix.hline(hx-4,hx+4,y, ac.d);
+      pix.ellipse(hx-8,y,rr-1.4,rr*.5, [180,210,230]);
+      pix.ellipse(hx+8,y,rr-1.4,rr*.5, [180,210,230]);
+    }
+    if(ch.extra==="earrings"){
+      pix.circle(hx-r, hy+6, 1.6, ac.h);
+      pix.circle(hx+r, hy+6, 1.6, ac.h);
+    }
+    if(ch.extra==="scarf"){
+      pix.ellipse(b.cx, b.shY+4, 12, 6, ac.m);
+      pix.capsule(b.cx+8, b.shY+6, b.cx+10, b.shY+28, 3, ac.d, ac.m);
+    }
+    if(ch.extra==="cap"){
+      pix.ellipse(hx, hy-r+4, r+4, 8, ac.m);
+      pix.fillRect((hx+(b.dir==="w"?-r-6:6))|0, (hy-r+6)|0, 12, 3, ac.l);
+    }
+    if(ch.extra==="beanie"){
+      pix.ellipse(hx, hy-r+2, r+3, 11, ac.m);
+      pix.ellipse(hx, hy-r-6, 5, 4, ac.l);
+    }
+    if(ch.extra==="headband") pix.hline(hx-r, hx+r, (hy-r+8)|0, ac.h);
+    if(ch.extra==="necklace"){
+      pix.ellipse(b.cx, b.shY+10, 6, 3, ac.d);
+      pix.circle(b.cx, b.shY+14, 2, ac.h);
+    }
+    if(ch.extra==="backpack") return;
+  }
+
+  function drawPaint(pix, ch){
+    const p=ch.paint||{};
+    for(const k in p){
+      const [x,y]=k.split(",").map(Number);
+      pix.set(x,y, hexToRgb(p[k]));
+    }
+  }
+
+  function render(ch, opt={}){
+    const pose=opt.pose||"idle";
+    const dir=opt.dir||"s";
+    const frame=opt.frame||0;
+    const breath=opt.breath||0;
+    const expr=opt.expression;
+    const c=Object.assign({}, ch);
+    if(expr) c.expression=expr;
+    if(opt.look){c.lookX=opt.look[0]; c.lookY=opt.look[1]}
+    c._anim = opt.animAmt ?? 1;
+    const b=bones(c, pose, dir, frame, breath);
+    const pix=new Pix(W,H);
+    const sk=ramp(c.skin);
+    const farArm = dir==="e" ? "l" : "r";
+    const nearArm = dir==="e" ? "r" : "l";
+    function arm(side){
+      const sh=side==="l"?b.lSh:b.rSh, el=side==="l"?b.lEl:b.rEl, hd=side==="l"?b.lHand:b.rHand;
+      const top=ramp(c.topColor);
+      const sleeve = ["tee","hoodie","sweater","jacket","shirt","armor","tunic"].includes(c.top);
+      pix.capsule(sh.x,sh.y,el.x,el.y, b.m.limb, sleeve?top.m:sk.m, sleeve?top.d:sk.d);
+      pix.capsule(el.x,el.y,hd.x,hd.y, b.m.limb*.85, sk.m, sk.d);
+      pix.circle(hd.x,hd.y, b.m.limb*.9, sk.l);
+    }
+
+    if(dir==="e"||dir==="w") arm(farArm);
+    if(c.extra==="backpack"){
+      const ac=ramp(c.accColor);
+      pix.fillRect((b.cx-18)|0, (b.shY+4)|0, 12, 22, ac.m);
+    }
+    drawHair(pix,c,b,"back");
+    pix.capsule(b.cx, b.shY-2, b.head.x, b.head.y+b.m.head*.6, 4, sk.m, sk.d);
+    shadeTorso(pix, sk, b.cx, b.shY, b.hipY, b.m.sh, b.m.wa, b.m.hp, dir);
+    if(c.bottom==="shorts"||c.bottom==="skirt"){
+      pix.capsule(b.lKnee.x,b.lKnee.y,b.lFoot.x,b.lFoot.y-3,b.m.leg*.75, sk.m, sk.d);
+      pix.capsule(b.rKnee.x,b.rKnee.y,b.rFoot.x,b.rFoot.y-3,b.m.leg*.75, sk.m, sk.d);
+    }
+    drawClothes(pix,c,b);
+    const hs = c.faceShape==="round"?1.08:c.faceShape==="square"?1.02:c.faceShape==="heart"?0.96:1;
+    const hy = c.faceShape==="heart"?0.92:c.faceShape==="square"?1.05:1;
+    pix.ellipse(b.head.x, b.head.y+1, b.m.head*hs, b.m.head*1.12*hy, sk.m);
+    pix.ellipse(b.head.x-4, b.head.y-4, b.m.head*.45, b.m.head*.4, sk.l);
+    if(c.faceShape==="square") pix.fillRect((b.head.x-b.m.head+4)|0,(b.head.y+8)|0, (b.m.head*2-8)|0, 8, sk.m);
+    drawFace(pix,c,b);
+    drawHair(pix,c,b,"front");
+    if(dir==="e"||dir==="w") arm(nearArm);
+    else { arm("l"); arm("r"); }
+    drawExtras(pix,c,b);
+    pix.innerShade();
+    pix.outline([16,14,18]);
+    drawPaint(pix,c);
+    return pix;
+  }
+
+  function renderPortrait(ch, expr){
+    const c=Object.assign({},ch,{expression:expr||ch.expression});
+    return render(c,{pose:"idle",dir:"s",animAmt:0}).crop(16, 2, PW, PH);
+  }
+
+  function defaultChar(){
+    return {
+      id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+      name:"Aurel Vale",
+      bodyType:"average",
+      skin:"#e4b894",
+      marks:"none",
+      faceShape:"oval",
+      eyeShape:"almond",
+      eyeColor:"#3a6b4a",
+      lashes:"medium",
+      browStyle:"soft",
+      browColor:"",
+      nose:"medium",
+      mouth:"medium",
+      expression:"neutral",
+      lookX:0, lookY:0,
+      hairStyle:"wavy",
+      hairColor:"#2a1810",
+      bangs:true,
+      top:"jacket",
+      topColor:"#2b4c7e",
+      bottom:"pants",
+      bottomColor:"#1f2430",
+      shoes:"boots",
+      shoeColor:"#3a2a22",
+      extra:"none",
+      accColor:"#c9a227",
+      paint:{}
+    };
+  }
+
+  const PRESETS = [
+    () => Object.assign(defaultChar(),{name:"Aurel Vale"}),
+    () => Object.assign(defaultChar(),{name:"Nim Solace",bodyType:"slim",skin:"#f0d0b0",hairStyle:"pixie",hairColor:"#c45a8a",top:"hoodie",topColor:"#3d2a58",bottom:"skirt",bottomColor:"#2a1a22",shoes:"sneakers",shoeColor:"#d8d2c8",eyeColor:"#4a2a4a",expression:"smile",extra:"round-glasses",accColor:"#1a1a1d"}),
+    () => Object.assign(defaultChar(),{name:"Bram Forge",bodyType:"athletic",skin:"#8d5524",hairStyle:"crop",hairColor:"#1a1210",top:"armor",topColor:"#6b5344",bottom:"cargo",bottomColor:"#2c241c",shoes:"boots",eyeColor:"#5a3a22",browStyle:"thick",expression:"determined",extra:"none"}),
+    () => Object.assign(defaultChar(),{name:"Ivy Quill",bodyType:"slim",skin:"#c68654",hairStyle:"bun",hairColor:"#4a2a14",top:"shirt",topColor:"#d8d2c8",bottom:"pants",bottomColor:"#4a5560",extra:"glasses",accColor:"#1a1a1d",eyeColor:"#2a4a7a",expression:"thinking",bangs:true}),
+    () => Object.assign(defaultChar(),{name:"Orrin Marsh",bodyType:"sturdy",skin:"#6d3b22",hairStyle:"afro",hairColor:"#1a1210",top:"tee",topColor:"#c45a2a",bottom:"shorts",bottomColor:"#1f2430",shoes:"sandals",shoeColor:"#6b5344",expression:"grin",mouth:"full"})
+  ];
+
+  const ui = {
+    layer:"body",
+    dir:"s",
+    pose:"idle",
+    zoom:4,
+    grid:false,
+    sheet:"turn",
+    scale:1,
+    brush:"#f2e6d4",
+    brushOn:true,
+    frame:0,
+    breath:0
+  };
+  let ch = defaultChar();
+  let undo=[], redo=[];
+  const view=$("#view"), vctx=view.getContext("2d");
+
+  function snapshot(){undo.push(JSON.stringify(ch)); if(undo.length>40) undo.shift(); redo=[]}
+  function toast(msg){const t=$("#toast"); t.textContent=msg; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),1600)}
+
+  function paintView(){
+    const pix=render(ch,{pose:ui.pose, dir:ui.dir, frame:ui.frame, breath:ui.breath, animAmt:+$("#animAmt").value});
+    view.width=W*ui.zoom; view.height=H*ui.zoom;
+    vctx.imageSmoothingEnabled=false;
+    vctx.clearRect(0,0,view.width,view.height);
+    pix.blitTo(vctx,0,0,ui.zoom);
+    $("#pxHint").textContent = `${W} × ${H} · ${ui.zoom}× nearest · ${ch.expression}`;
+  }
+
+  function sheetSpecs(){
+    if(ui.sheet==="turn") return ["s","w","e","n"].map(d=>({label:d, pose:"idle", dir:d, frame:0}));
+    if(ui.sheet==="walk") return [0,1,2,3].map(f=>({label:"w"+f, pose:"walk", dir:ui.dir, frame:f}));
+    if(ui.sheet==="act") return ["idle","jump","wave","sit","attack","crouch"].map(p=>({label:p, pose:p, dir:"s", frame:0}));
+    return Object.keys(EXPRS).map(e=>({label:e, pose:"idle", dir:"s", frame:0, expression:e, portrait:true}));
+  }
+
+  function paintSheet(){
+    const row=$("#sheetRow"); row.innerHTML="";
+    sheetSpecs().forEach(spec=>{
+      const fig=document.createElement("figure");
+      fig.className="thumb"+(spec.pose===ui.pose && spec.dir===ui.dir && !spec.expression || spec.expression===ch.expression && ui.sheet==="face" ? " on":"");
+      const c=document.createElement("canvas");
+      const pix = spec.portrait ? renderPortrait(ch, spec.expression) : render(ch,{pose:spec.pose,dir:spec.dir,frame:spec.frame,expression:spec.expression,animAmt:0});
+      const sc=spec.portrait?1.2:0.7;
+      c.width=pix.w*sc; c.height=pix.h*sc;
+      pix.blitTo(c.getContext("2d"),0,0,sc);
+      const cap=document.createElement("figcaption");
+      cap.textContent=spec.expression||spec.label;
+      fig.append(c,cap);
+      fig.onclick=()=>{
+        if(spec.expression){ ch.expression=spec.expression; $("#exprSel").value=spec.expression }
+        else { ui.pose=spec.pose; ui.dir=spec.dir||ui.dir; $("#poseSel").value=ui.pose; setDir(ui.dir) }
+        paintAll();
+      };
+      row.append(fig);
+    });
+  }
+
+  function paintAll(){ paintView(); paintSheet(); paintInspector(); }
+
+  function setDir(d){
+    ui.dir=d;
+    $$("#dirSeg button").forEach(b=>b.classList.toggle("on", b.dataset.dir===d));
+  }
+
+  function paintInspector(){
+    $("#inspTitle").textContent = LAYERS.find(l=>l.id===ui.layer).title;
+    $("#inspLead").textContent = LAYERS.find(l=>l.id===ui.layer).lead;
+    const box=$("#inspBody");
+    box.innerHTML="";
+    const addSection=html=>{const s=document.createElement("div"); s.className="section"; s.innerHTML=html; box.append(s); return s}
+
+    const choices=(label,key,opts)=>{
+      const s=addSection(`<h2>${label}</h2><div class="choices"></div>`);
+      const wrap=s.querySelector(".choices");
+      opts.forEach(o=>{
+        const b=document.createElement("button");
+        b.className="choice"+(ch[key]===o||ch[key]===true&&o==="on"?" on":"");
+        b.textContent=String(o).replace(/-/g," ");
+        b.onclick=()=>{snapshot(); ch[key]=o; paintAll()};
+        wrap.append(b);
+      });
+    };
+    const colors=(label,key,swatches)=>{
+      const s=addSection(`<h2>${label}</h2><div class="swatches"></div><div class="color-row"><input type="color"><code></code></div>`);
+      const sw=s.querySelector(".swatches");
+      swatches.forEach(hex=>{
+        const b=document.createElement("button");
+        b.className="swatch"+(ch[key].toLowerCase()===hex.toLowerCase()?" on":"");
+        b.style.background=hex; b.title=hex;
+        b.onclick=()=>{snapshot(); ch[key]=hex; paintAll()};
+        sw.append(b);
+      });
+      const inp=s.querySelector("input");
+      inp.value=ch[key]||"#888888";
+      s.querySelector("code").textContent=(ch[key]||"").toUpperCase();
+      inp.oninput=()=>{ch[key]=inp.value; s.querySelector("code").textContent=inp.value.toUpperCase(); paintView(); paintSheet()};
+      inp.onchange=()=>snapshot();
+    };
+
+    if(ui.layer==="body"){
+      choices("Body type","bodyType",Object.keys(BODY));
+      colors("Skin","skin",SKINS);
+      choices("Marks","marks",MARKS);
+    }
+    if(ui.layer==="face"){
+      choices("Face shape","faceShape",FACES);
+      choices("Eyes","eyeShape",EYE_SHAPES);
+      colors("Iris","eyeColor",EYES);
+      choices("Brows","browStyle",BROWS);
+      choices("Nose","nose",NOSES);
+      choices("Mouth","mouth",MOUTHS);
+      choices("Expression","expression",Object.keys(EXPRS));
+    }
+    if(ui.layer==="hair"){
+      choices("Style","hairStyle",HAIR_STYLES);
+      colors("Color","hairColor",HAIRS);
+      const s=addSection(`<h2>Bangs</h2><div class="choices"></div>`);
+      ["on","off"].forEach(o=>{
+        const b=document.createElement("button");
+        b.className="choice"+((ch.bangs && o==="on")||(!ch.bangs&&o==="off")?" on":"");
+        b.textContent=o;
+        b.onclick=()=>{snapshot(); ch.bangs=o==="on"; paintAll()};
+        s.querySelector(".choices").append(b);
+      });
+    }
+    if(ui.layer==="outfit"){
+      choices("Top","top",TOPS);
+      colors("Top color","topColor",CLOTH);
+      choices("Bottom","bottom",BOTTOMS);
+      colors("Bottom color","bottomColor",CLOTH);
+      choices("Shoes","shoes",SHOES);
+      colors("Shoe color","shoeColor",CLOTH);
+    }
+    if(ui.layer==="extra"){
+      choices("Accessory","extra",EXTRAS);
+      colors("Accent","accColor",CLOTH.concat(["#c9a227","#e8e6e1","#4fb89c"]));
+    }
+    if(ui.layer==="paint"){
+      const s=addSection(`<h2>Brush</h2><div class="color-row"><input type="color" id="brushCol"><code id="brushHex"></code></div>
+        <p style="color:var(--muted);font-size:12px;line-height:1.45">Click the preview to stamp opaque pixels. Hold shift to erase. Right-click samples a color.</p>
+        <button class="btn" id="clearPaint" style="width:100%;margin-top:8px">Clear paint layer</button>`);
+      const inp=s.querySelector("#brushCol");
+      inp.value=ui.brush;
+      s.querySelector("#brushHex").textContent=ui.brush.toUpperCase();
+      inp.oninput=()=>{ui.brush=inp.value; s.querySelector("#brushHex").textContent=inp.value.toUpperCase()};
+      s.querySelector("#clearPaint").onclick=()=>{snapshot(); ch.paint={}; paintAll(); toast("Paint cleared")};
+    }
+  }
+
+  function buildLayers(){
+    const wrap=$("#layers"); wrap.innerHTML="";
+    LAYERS.forEach(l=>{
+      const b=document.createElement("button");
+      b.className="layer"+(ui.layer===l.id?" active":"");
+      b.innerHTML=`<span class="ico">${l.ico}</span><em>${l.title}</em><span>${l.id}</span>`;
+      b.onclick=()=>{ui.layer=l.id; $$(".layer").forEach(x=>x.classList.remove("active")); b.classList.add("active"); paintInspector()};
+      wrap.append(b);
+    });
+  }
+
+  $("#poseSel").innerHTML=POSES.map(p=>`<option value="${p.id}">${p.label}</option>`).join("");
+  $("#exprSel").innerHTML=Object.keys(EXPRS).map(k=>`<option value="${k}">${k}</option>`).join("");
+  $("#poseSel").onchange=()=>{ui.pose=$("#poseSel").value; paintAll()};
+  $("#exprSel").onchange=()=>{snapshot(); ch.expression=$("#exprSel").value; paintAll()};
+  $("#lookSel").onchange=()=>{const [x,y]=$("#lookSel").value.split(",").map(Number); snapshot(); ch.lookX=x; ch.lookY=y; paintAll()};
+  $("#charName").oninput=()=>{ch.name=$("#charName").value};
+  $("#animAmt").oninput=()=>{$("#animLbl").textContent= +$("#animAmt").value===0?"off":"on"};
+
+  $$("#dirSeg button").forEach(b=>b.onclick=()=>{setDir(b.dataset.dir); paintAll()});
+  $$("#zoomSeg button").forEach(b=>b.onclick=()=>{ui.zoom=+b.dataset.zoom; $$("#zoomSeg button").forEach(x=>x.classList.toggle("on",x===b)); paintView()});
+  $$("#sheetSeg button").forEach(b=>b.onclick=()=>{ui.sheet=b.dataset.sheet; $$("#sheetSeg button").forEach(x=>x.classList.toggle("on",x===b)); paintSheet()});
+  $("#btnGrid").onclick=()=>{ui.grid=!ui.grid; $("#frame").classList.toggle("grid", ui.grid)};
+
+  $("#view").addEventListener("pointerdown", ev=>{
+    if(ui.layer!=="paint") return;
+    const r=view.getBoundingClientRect();
+    const x=Math.floor((ev.clientX-r.left)/ui.zoom);
+    const y=Math.floor((ev.clientY-r.top)/ui.zoom);
+    if(ev.button===2){
+      const pix=render(ch,{pose:ui.pose,dir:ui.dir,frame:ui.frame,animAmt:0});
+      const i=pix.idx(x,y);
+      if(pix.d[i+3]) ui.brush=rgbToHex([pix.d[i],pix.d[i+1],pix.d[i+2]]);
+      paintInspector();
+      return;
+    }
+    snapshot();
+    stamp(x,y, ev.shiftKey);
+    const move=e=>{
+      const r2=view.getBoundingClientRect();
+      stamp(Math.floor((e.clientX-r2.left)/ui.zoom), Math.floor((e.clientY-r2.top)/ui.zoom), e.shiftKey);
+    };
+    const up=()=>{window.removeEventListener("pointermove",move); window.removeEventListener("pointerup",up)};
+    window.addEventListener("pointermove",move);
+    window.addEventListener("pointerup",up);
+  });
+  view.addEventListener("contextmenu",e=>e.preventDefault());
+  function stamp(x,y,erase){
+    if(x<0||y<0||x>=W||y>=H) return;
+    const k=x+","+y;
+    if(erase) delete ch.paint[k]; else ch.paint[k]=ui.brush;
+    paintView();
+  }
+
+  function randFrom(a){return a[Math.floor(Math.random()*a.length)]}
+  $("#btnRandom").onclick=()=>{
+    snapshot();
+    const p=randFrom(PRESETS)();
+    const keepName=ch.name;
+    Object.assign(ch, p, {
+      id:ch.id,
+      name:keepName,
+      bodyType:randFrom(Object.keys(BODY)),
+      skin:randFrom(SKINS),
+      hairStyle:randFrom(HAIR_STYLES.filter(h=>h!=="bald")),
+      hairColor:randFrom(HAIRS),
+      top:randFrom(TOPS),
+      topColor:randFrom(CLOTH),
+      bottom:randFrom(BOTTOMS),
+      bottomColor:randFrom(CLOTH),
+      shoes:randFrom(SHOES),
+      shoeColor:randFrom(CLOTH),
+      extra:randFrom(EXTRAS),
+      eyeColor:randFrom(EYES),
+      eyeShape:randFrom(EYE_SHAPES),
+      faceShape:randFrom(FACES),
+      expression:ch.expression,
+      paint:{}
+    });
+    paintAll(); toast("New silhouette");
+  };
+  $("#btnUndo").onclick=()=>{if(!undo.length) return; redo.push(JSON.stringify(ch)); ch=JSON.parse(undo.pop()); $("#charName").value=ch.name; $("#exprSel").value=ch.expression; paintAll()};
+  $("#btnRedo").onclick=()=>{if(!redo.length) return; undo.push(JSON.stringify(ch)); ch=JSON.parse(redo.pop()); $("#charName").value=ch.name; paintAll()};
+
+  function libKey(){return "highbit-atelier-v1"}
+  function loadLib(){try{return JSON.parse(localStorage.getItem(libKey())||"[]")}catch{return []}}
+  function saveLib(list){localStorage.setItem(libKey(), JSON.stringify(list))}
+
+  function renderLib(){
+    const box=$("#library"); box.innerHTML="";
+    PRESETS.forEach((fn,i)=>{
+      const p=fn();
+      const b=document.createElement("button"); b.className="lib-item";
+      const c=document.createElement("canvas"); c.width=64; c.height=96;
+      render(p,{animAmt:0}).blitTo(c.getContext("2d"),0,0,.5);
+      b.append(c); const t=document.createElement("b"); t.textContent="Preset · "+p.name; b.append(t);
+      b.onclick=()=>{snapshot(); ch=fn(); ch.id=crypto.randomUUID?crypto.randomUUID():String(Date.now()); $("#charName").value=ch.name; paintAll(); toast("Loaded "+p.name)};
+      box.append(b);
+    });
+    loadLib().forEach((p,i)=>{
+      const b=document.createElement("button"); b.className="lib-item";
+      const c=document.createElement("canvas"); c.width=64; c.height=96;
+      try{render(p,{animAmt:0}).blitTo(c.getContext("2d"),0,0,.5)}catch{}
+      b.append(c); const t=document.createElement("b"); t.textContent=p.name||"Saved"; b.append(t);
+      b.onclick=()=>{snapshot(); ch=Object.assign(defaultChar(),p); $("#charName").value=ch.name; paintAll(); toast("Loaded")};
+      box.append(b);
+    });
+  }
+
+  $("#btnLib").onclick=()=>{renderLib(); $("#libModal").classList.remove("hidden")};
+  $("#closeLib").onclick=()=>$("#libModal").classList.add("hidden");
+  $("#btnSaveLib").onclick=()=>{
+    const list=loadLib();
+    const copy=JSON.parse(JSON.stringify(ch));
+    const i=list.findIndex(x=>x.id===copy.id);
+    if(i>=0) list[i]=copy; else list.unshift(copy);
+    saveLib(list); renderLib(); toast("Saved to library");
+  };
+  $("#btnLoadJson").onclick=()=>$("#jsonFile").click();
+  $("#jsonFile").onchange=ev=>{
+    const f=ev.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{try{snapshot(); const data=JSON.parse(r.result); ch=Object.assign(defaultChar(), data.appearance||data); $("#charName").value=ch.name; paintAll(); toast("JSON imported")}catch{toast("Could not read JSON")}};
+    r.readAsText(f);
+  };
+
+  $("#btnHelp").onclick=()=>$("#helpModal").classList.remove("hidden");
+  $("#closeHelp").onclick=()=>$("#helpModal").classList.add("hidden");
+
+  function downloadCanvas(can, name){
+    can.toBlob(b=>{
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(b); a.download=name; a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+    });
+  }
+  function scaledCanvas(pix, scale){
+    const c=document.createElement("canvas");
+    c.width=pix.w*scale; c.height=pix.h*scale;
+    const x=c.getContext("2d"); x.imageSmoothingEnabled=false;
+    pix.blitTo(x,0,0,scale);
+    return c;
+  }
+  function slug(){return (ch.name||"character").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+
+  function metaJSON(extra){
+    return JSON.stringify({
+      generator:"Highbit Atelier",
+      name:ch.name,
+      sprite:{width:W,height:H,anchor:{x:64,y:186}},
+      portrait:{width:PW,height:PH},
+      appearance:ch,
+      animations:{
+        "idle-s":{row:"idle",dir:"s",frames:1,fps:4},
+        "walk-s":{row:"walk",dir:"s",frames:4,fps:8},
+        "walk-w":{row:"walk",dir:"w",frames:4,fps:8},
+        "walk-e":{row:"walk",dir:"e",frames:4,fps:8},
+        "walk-n":{row:"walk",dir:"n",frames:4,fps:8},
+        jump:{frames:1}, wave:{frames:4,fps:6}, sit:{frames:1}, attack:{frames:1}, crouch:{frames:1}
+      },
+      expressions:Object.keys(EXPRS),
+      ...extra
+    }, null, 2);
+  }
+  function downloadText(name, text, type="application/json"){
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click();
+  }
+
+  function sheetCanvas(kind, scale){
+    let cells=[], cols=4, cw=W, chh=H, portrait=false;
+    if(kind==="turn") cells=["s","w","e","n"].map(d=>({pose:"idle",dir:d,frame:0}));
+    if(kind==="walk"){
+      cols=4; cells=[];
+      ["s","w","e","n"].forEach(d=>[0,1,2,3].forEach(f=>cells.push({pose:"walk",dir:d,frame:f})));
+    }
+    if(kind==="act"){ cols=6; cells=["idle","jump","wave","sit","attack","crouch"].map(p=>({pose:p,dir:"s",frame:0})) }
+    if(kind==="face"){ portrait=true; cw=PW; chh=PH; cols=7; cells=Object.keys(EXPRS).map(e=>({expression:e,portrait:true})) }
+    if(kind==="current"){ cols=1; cells=[{pose:ui.pose,dir:ui.dir,frame:ui.frame}] }
+    if(kind==="portrait"){ portrait=true; cw=PW; chh=PH; cols=1; cells=[{expression:ch.expression,portrait:true}] }
+    const rows=Math.ceil(cells.length/cols);
+    const c=document.createElement("canvas");
+    c.width=cols*cw*scale; c.height=rows*chh*scale;
+    const x=c.getContext("2d"); x.imageSmoothingEnabled=false;
+    cells.forEach((cell,i)=>{
+      const pix=cell.portrait?renderPortrait(ch, cell.expression):render(ch,{...cell,animAmt:0});
+      const cx=(i%cols)*cw*scale, cy=Math.floor(i/cols)*chh*scale;
+      pix.blitTo(x,cx,cy,scale);
+    });
+    return {canvas:c, cols, rows, frame:{w:cw,h:chh}};
+  }
+
+  function openExport(){
+    const grid=$("#exportGrid"); grid.innerHTML="";
+    const items=[
+      ["current","Current pose PNG","The studio view, transparent background."],
+      ["portrait","Expression portrait","96×96 bust for dialogue boxes."],
+      ["turn","Turnaround sheet","Idle south, west, east, north."],
+      ["walk","Walk cycle sheet","4 directions × 4 frames."],
+      ["face","Expression sheet","All fourteen faces as portraits."],
+      ["act","Action sheet","Idle, jump, wave, sit, attack, crouch."],
+      ["json","Character JSON","Reload in Highbit or parse in a game."],
+      ["pack","Game pack","Walk sheet + JSON sidecar together."]
+    ];
+    items.forEach(([id,title,lead])=>{
+      const b=document.createElement("button");
+      b.className="card"; b.style.textAlign="left";
+      b.innerHTML=`<strong>${title}</strong><small>${lead}</small>`;
+      b.onclick=()=>doExport(id);
+      grid.append(b);
+    });
+    $("#exportModal").classList.remove("hidden");
+  }
+  $$("#scaleSeg button").forEach(b=>b.onclick=()=>{ui.scale=+b.dataset.scale; $$("#scaleSeg button").forEach(x=>x.classList.toggle("on",x===b))});
+
+  function doExport(kind){
+    const scale=ui.scale, n=slug();
+    if(kind==="json"){ downloadText(n+".json", metaJSON()); toast("JSON downloaded"); return }
+    if(kind==="pack"){
+      const {canvas,cols,rows,frame}=sheetCanvas("walk", scale);
+      downloadCanvas(canvas, n+"-walk.png");
+      downloadText(n+"-walk.json", metaJSON({sheet:{file:n+"-walk.png",columns:cols,rows,frame,layout:"dirs s,w,e,n × walk frames 0-3"}}));
+      toast("Pack downloaded"); return;
+    }
+    const map={current:"current",portrait:"portrait",turn:"turn",walk:"walk",face:"face",act:"act"};
+    const {canvas}=sheetCanvas(map[kind], scale);
+    downloadCanvas(canvas, n+"-"+kind+".png");
+    toast("PNG downloaded");
+  }
+
+  $("#btnExport").onclick=openExport;
+  $("#closeExport").onclick=()=>$("#exportModal").classList.add("hidden");
+  $("#btnSheetExport").onclick=()=>{doExport(ui.sheet==="turn"?"turn":ui.sheet==="walk"?"walk":ui.sheet==="face"?"face":"act")};
+
+  window.addEventListener("keydown", e=>{
+    if(["INPUT","SELECT","TEXTAREA"].includes(e.target.tagName)) return;
+    if(e.key>="1"&&e.key<="6"){ ui.layer=LAYERS[+e.key-1].id; buildLayers(); paintInspector() }
+    if(e.key==="r"||e.key==="R") $("#btnRandom").click();
+    if(e.key==="e"||e.key==="E") openExport();
+    if(e.key==="g"||e.key==="G") $("#btnGrid").click();
+    if(e.key==="["){ const o=["w","s","e","n"]; setDir(o[(o.indexOf(ui.dir)+3)%4]); paintAll() }
+    if(e.key==="]"){ const o=["w","s","e","n"]; setDir(o[(o.indexOf(ui.dir)+1)%4]); paintAll() }
+    if((e.metaKey||e.ctrlKey)&&e.key==="z"){ e.preventDefault(); (e.shiftKey?$("#btnRedo"):$("#btnUndo")).click() }
+  });
+
+  let last=performance.now();
+  function tick(now){
+    const dt=Math.min(.05,(now-last)/1000); last=now;
+    ui.breath += dt*2.4;
+    if(ui.pose==="walk"||ui.pose==="run"||ui.pose==="wave"){
+      ui.frame = (ui.frame + dt*(ui.pose==="run"?10:7)) % 4;
+    }
+    paintView();
+    requestAnimationFrame(tick);
+  }
+
+  buildLayers();
+  paintInspector();
+  paintSheet();
+  paintView();
+  requestAnimationFrame(tick);
+  if(!localStorage.getItem("highbit-atelier-seen")){ $("#helpModal").classList.remove("hidden"); localStorage.setItem("highbit-atelier-seen","1") }
+})();
+</script>
+</body>
+</html>

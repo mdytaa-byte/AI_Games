@@ -40,7 +40,8 @@ button,input,select{font:inherit;color:inherit}
 button{cursor:pointer}
 .hidden{display:none!important}
 
-.app{height:100vh;display:grid;grid-template-rows:64px 1fr 168px;grid-template-columns:228px 1fr 320px}
+.app{height:100vh;display:grid;grid-template-rows:64px minmax(0,1fr) 186px;grid-template-columns:228px minmax(0,1fr) 320px;overflow:hidden}
+.rail,.inspector,.stage-wrap{min-height:0}
 .topbar{grid-column:1/-1;display:flex;align-items:center;gap:18px;padding:0 18px;border-bottom:1px solid var(--line);background:rgba(12,14,18,.92);backdrop-filter:blur(12px)}
 .brand{display:flex;align-items:center;gap:12px;min-width:228px}
 .mark{width:34px;height:34px;image-rendering:pixelated;border:1px solid var(--line-2);background:
@@ -80,13 +81,13 @@ button{cursor:pointer}
 .stage-toolbar .spacer{flex:1}
 .hint{font-size:11px;color:var(--faint);font-family:var(--mono)}
 
-.stage{position:relative;display:grid;place-items:center;overflow:hidden}
+.stage{position:relative;display:grid;place-items:center;overflow:hidden;min-height:0}
 .stage:before{content:"";position:absolute;inset:0;opacity:.5;background-image:
   linear-gradient(#1a1d26 1px,transparent 1px),
   linear-gradient(90deg,#1a1d26 1px,transparent 1px);background-size:32px 32px;mask-image:radial-gradient(circle at 50% 42%,#000 40%,transparent 78%)}
-.canvas-frame{position:relative;z-index:1;padding:18px;border:1px solid var(--line);background:
-  repeating-conic-gradient(#1a1c22 0% 25%, #12141a 0% 50%) 0 0/16px 16px;box-shadow:var(--shadow)}
-#view{display:block;image-rendering:pixelated;image-rendering:crisp-edges;background:transparent;cursor:crosshair}
+.canvas-frame{position:relative;z-index:1;padding:12px;border:1px solid var(--line);background:
+  repeating-conic-gradient(#1a1c22 0% 25%, #12141a 0% 50%) 0 0/16px 16px;box-shadow:var(--shadow);max-height:100%;max-width:100%}
+#view{display:block;image-rendering:pixelated;image-rendering:crisp-edges;background:transparent;cursor:crosshair;max-height:min(560px, calc(100vh - 360px));width:auto;height:auto}
 .canvas-frame.grid #view{background-image:
   linear-gradient(rgba(126,224,195,.12) 1px,transparent 1px),
   linear-gradient(90deg,rgba(126,224,195,.12) 1px,transparent 1px);background-size:4px 4px}
@@ -107,9 +108,11 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
 .color-row input[type=color]{width:42px;height:32px;border:1px solid var(--line-2);background:var(--panel);padding:2px;border-radius:var(--r)}
 .color-row code{font-family:var(--mono);font-size:12px;color:var(--gold)}
 
-.dock{grid-column:1/-1;display:grid;grid-template-columns:180px 1fr 280px;border-top:1px solid var(--line);background:#10131a}
+.dock{grid-column:1/-1;display:grid;grid-template-columns:150px minmax(0,1fr) 260px;border-top:1px solid var(--line);background:#10131a}
 .dock-head{padding:12px 14px;display:flex;flex-direction:column;gap:8px;justify-content:center;border-right:1px solid var(--line)}
-.sheet-scroller{overflow:auto;padding:10px 12px;display:flex;gap:10px;align-items:center}
+.sheet-col{min-width:0;display:flex;flex-direction:column}
+.sheet-col .seg{margin:8px 12px 0;align-self:flex-start;flex-wrap:wrap}
+.sheet-scroller{overflow:auto;padding:8px 12px 10px;display:flex;gap:10px;align-items:center;flex:1}
 .thumb{flex:0 0 auto;border:1px solid var(--line);background:repeating-conic-gradient(#1a1c22 0% 25%, #12141a 0% 50%) 0 0/10px 10px;padding:6px;cursor:pointer;border-radius:var(--r)}
 .thumb.on{border-color:var(--mint)}
 .thumb canvas{display:block;image-rendering:pixelated;height:132px;width:auto}
@@ -191,8 +194,8 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
         <button data-dir="n">North</button>
       </div>
       <div class="seg" id="zoomSeg" role="group" aria-label="Zoom">
-        <button data-zoom="3">3×</button>
-        <button data-zoom="4" class="on">4×</button>
+        <button data-zoom="3" class="on">3×</button>
+        <button data-zoom="4">4×</button>
         <button data-zoom="5">5×</button>
         <button data-zoom="6">6×</button>
       </div>
@@ -231,14 +234,17 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   <footer class="dock">
     <div class="dock-head">
       <h2>Character sheet</h2>
+      <p style="margin:0;font-size:12px;color:var(--muted);line-height:1.35">Live poses for game import</p>
+    </div>
+    <div class="sheet-col">
       <div class="seg" id="sheetSeg">
         <button data-sheet="turn" class="on">Turn</button>
         <button data-sheet="walk">Walk</button>
         <button data-sheet="face">Faces</button>
         <button data-sheet="act">Actions</button>
       </div>
+      <div class="sheet-scroller" id="sheetRow"></div>
     </div>
-    <div class="sheet-scroller" id="sheetRow"></div>
     <div class="export-mini">
       <h2>Game import</h2>
       <p>Sheets export as crisp PNG plus a JSON sidecar engines can read (Phaser, Godot, Unity sprites).</p>
@@ -554,26 +560,33 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       pix.ellipse(hx, hy-2, r+5, r+4, hr.l);
       return;
     }
-    pix.ellipse(hx, hy-r*.55, r+3, r*.7, hr.m);
-    if(style==="buzz") pix.ellipse(hx, hy-2, r+1, r-1, hr.d);
-    if(style==="crop"||style==="undercut") pix.ellipse(hx, hy-8, r+2, 12, hr.m);
-    if(style==="pixie"){ pix.ellipse(hx-12,hy-4,9,12,hr.l); pix.ellipse(hx+10,hy-6,8,10,hr.m) }
-    if(style==="bob"){ pix.ellipse(hx,hy+6,r+5,r-2,hr.m); pix.ellipse(hx-14,hy+2,8,12,hr.l); pix.ellipse(hx+14,hy+2,8,12,hr.l) }
+    pix.ellipse(hx, hy-r*.72, r+2, r*.52, hr.m);
+    pix.ellipse(hx-r*.9, hy+1, 5.5, 11, hr.d);
+    pix.ellipse(hx+r*.9, hy+1, 5.5, 11, hr.d);
+    if(style==="buzz") pix.ellipse(hx, hy-r*.35, r+1, r*.45, hr.d);
+    if(style==="crop"||style==="undercut") pix.ellipse(hx, hy-r*.55, r+2, 10, hr.m);
+    if(style==="pixie"){ pix.ellipse(hx-r,hy-2,8,11,hr.l); pix.ellipse(hx+r-2,hy-4,7,9,hr.m) }
+    if(style==="bob"){ pix.ellipse(hx-r-2,hy+8,8,12,hr.m); pix.ellipse(hx+r+2,hy+8,8,12,hr.m) }
     if(style==="long"||style==="wavy"||style==="messy"){
-      pix.ellipse(hx-16,hy,8,14,hr.l); pix.ellipse(hx+16,hy,8,14,hr.l);
-      if(style==="wavy"){ pix.ellipse(hx-18,hy+12,7,10,hr.m); pix.ellipse(hx+17,hy+14,7,10,hr.m) }
-      if(style==="messy"){ pix.ellipse(hx-6,hy-r-2,7,6,hr.h); pix.ellipse(hx+9,hy-r,6,7,hr.l) }
+      pix.ellipse(hx-r-3,hy+10,8,16,hr.l); pix.ellipse(hx+r+3,hy+10,8,16,hr.l);
+      if(style==="wavy"){ pix.ellipse(hx-r-5,hy+22,7,10,hr.m); pix.ellipse(hx+r+4,hy+24,7,10,hr.m) }
+      if(style==="messy"){ pix.ellipse(hx-6,hy-r-3,7,6,hr.h); pix.ellipse(hx+9,hy-r-1,6,7,hr.l) }
     }
     if(style==="pony") pix.ellipse(hx+(dir==="e"?10:dir==="w"?-10:8), hy+26, 7, 18, hr.d);
-    if(style==="bun") pix.ellipse(hx, hy-r-4, 9, 8, hr.l);
-    if(style==="afro"){ pix.ellipse(hx-2,hy-8,r+9,r+6,hr.l); pix.set(hx-r,hy-r,hr.h) }
-    if(style==="undercut"){ pix.ellipse(hx+(dir==="w"?-8:8), hy-6, 14, 12, hr.l) }
-    if(ch.bangs && style!=="buzz" && style!=="bald"){
-      pix.ellipse(hx-8, hy-r+6, 9, 8, hr.d);
-      pix.ellipse(hx+7, hy-r+7, 8, 7, hr.m);
-      pix.ellipse(hx, hy-r+8, 6, 6, hr.d);
-    }
+    if(style==="bun") pix.ellipse(hx, hy-r-6, 9, 8, hr.l);
+    if(style==="afro") pix.ellipse(hx, hy-r*.4, r+8, r*.7, hr.l);
+    if(style==="undercut") pix.ellipse(hx+(dir==="w"?-8:8), hy-8, 12, 10, hr.l);
     pix.set((hx-r*.4)|0, (hy-r*.7)|0, hr.h);
+  }
+
+  function drawBangs(pix, ch, b){
+    if(!ch.bangs || ch.hairStyle==="bald" || ch.hairStyle==="buzz" || b.dir==="n") return;
+    const hr=ramp(ch.hairColor);
+    const hx=b.head.x, hy=b.head.y, r=b.m.head;
+    const y=hy-r+7;
+    pix.ellipse(hx-9, y, 6, 5, hr.d);
+    pix.ellipse(hx+8, y+1, 5.5, 4.5, hr.m);
+    pix.ellipse(hx, y+2, 5, 4, hr.d);
   }
 
   function drawFace(pix, ch, b){
@@ -604,12 +617,12 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     pix.ellipse(hx-b.m.head+1, earY, 2, 3, sk.m);
     pix.ellipse(hx+b.m.head-1, earY, 2, 3, sk.m);
 
-    const browY=hy-7*s + e.browY;
-    drawBrow(pix, hx-12*s, browY+e.browInner, hx-4*s, browY-e.browInner*.35, browC, ch.browStyle);
-    drawBrow(pix, hx+12*s, browY+e.browInner, hx+4*s, browY-e.browInner*.35, browC, ch.browStyle);
+    const browY=hy-9*s + e.browY;
+    drawBrow(pix, hx-13*s, browY+e.browInner, hx-3.5*s, browY-e.browInner*.35, browC, ch.browStyle);
+    drawBrow(pix, hx+13*s, browY+e.browInner, hx+3.5*s, browY-e.browInner*.35, browC, ch.browStyle);
 
-    drawEye(pix, hx-8*s, hy-1*s, -1, e.openL, ch, lookX, lookY, s, false, sk);
-    drawEye(pix, hx+8*s, hy-1*s,  1, e.openR, ch, lookX, lookY, s, false, sk);
+    drawEye(pix, hx-9*s, hy-2*s, -1, e.openL, ch, lookX, lookY, s, false, sk);
+    drawEye(pix, hx+9*s, hy-2*s,  1, e.openR, ch, lookX, lookY, s, false, sk);
 
     const nose=ch.nose==="small"?2:ch.nose==="strong"?4:3;
     pix.ellipse(hx, hy+6*s, nose*.45, nose*.7, sk.d);
@@ -644,16 +657,17 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     const iris=ramp(ch.eyeColor);
     const sk=skin||ramp(ch.skin);
     open=Math.max(0,Math.min(1.25,open));
-    const w=ch.eyeShape==="round"?4.4:ch.eyeShape==="sharp"?5.2:4.6;
-    const h=Math.max(.8, 3.6*Math.min(1,open))*s;
-    const ww=(profile?3.2:w)*s;
+    const w=ch.eyeShape==="round"?6.2:ch.eyeShape==="sharp"?6.8:6.4;
+    const h=Math.max(1.2, 4.6*Math.min(1,open))*s;
+    const ww=(profile?4:w)*s;
     if(open<.12){
-      pix.capsule(cx-ww,cy,cx+ww,cy,1,[28,24,26]);
+      pix.capsule(cx-ww,cy,cx+ww,cy,1.3,[28,24,26]);
       return;
     }
-    pix.ellipse(cx,cy,ww,h,[246,242,236]);
-    const ix=cx+lx*1.8+side*.4, iy=cy+ly*1.4;
-    const ir=Math.max(1.4, 2.3*Math.min(1,open))*s;
+    pix.ellipse(cx,cy,ww,h,[248,244,238]);
+    pix.ellipse(cx, cy-h*.15, ww, h*.85, [255,252,248]);
+    const ix=cx+lx*2.2+side*.3, iy=cy+ly*1.6;
+    const ir=Math.max(2, 3.1*Math.min(1,open))*s;
     pix.ellipse(ix,iy,ir,ir*(ch.eyeShape==="lidded"?.75:1), iris.m);
     pix.ellipse(ix,iy, ir*.45, ir*.45, [22,18,20]);
     pix.set((ix-1)|0,(iy-1)|0,[255,255,255]);
@@ -670,7 +684,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   }
 
   function drawMouth(pix,hx,hy,e,ch,lip,sk,profile,side){
-    const w=(ch.mouth==="small"?3:ch.mouth==="full"?6:4.5) + Math.abs(e.curve)*1.5;
+    const w=(ch.mouth==="small"?4:ch.mouth==="full"?7.5:5.5) + Math.abs(e.curve)*1.8;
     const open=e.open;
     const skew=e.skew||0;
     if(open>.16){
@@ -834,8 +848,11 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     pix.ellipse(b.head.x, b.head.y+1, b.m.head*hs, b.m.head*1.12*hy, sk.m);
     pix.ellipse(b.head.x-4, b.head.y-4, b.m.head*.45, b.m.head*.4, sk.l);
     if(c.faceShape==="square") pix.fillRect((b.head.x-b.m.head+4)|0,(b.head.y+8)|0, (b.m.head*2-8)|0, 8, sk.m);
-    drawFace(pix,c,b);
     drawHair(pix,c,b,"front");
+    pix.ellipse(b.head.x, b.head.y+3, b.m.head*hs*0.74, b.m.head*0.9*hy, sk.m);
+    pix.ellipse(b.head.x-3, b.head.y-2, b.m.head*.32, b.m.head*.28, sk.l);
+    drawFace(pix,c,b);
+    drawBangs(pix,c,b);
     if(dir==="e"||dir==="w") arm(nearArm);
     else { arm("l"); arm("r"); }
     drawExtras(pix,c,b);
@@ -894,7 +911,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     layer:"body",
     dir:"s",
     pose:"idle",
-    zoom:4,
+    zoom:3,
     grid:false,
     sheet:"turn",
     scale:1,
@@ -1038,6 +1055,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       inp.oninput=()=>{ui.brush=inp.value; s.querySelector("#brushHex").textContent=inp.value.toUpperCase()};
       s.querySelector("#clearPaint").onclick=()=>{snapshot(); ch.paint={}; paintAll(); toast("Paint cleared")};
     }
+    document.querySelector(".inspector").scrollTop=0;
   }
 
   function buildLayers(){
@@ -1067,8 +1085,8 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   $("#view").addEventListener("pointerdown", ev=>{
     if(ui.layer!=="paint") return;
     const r=view.getBoundingClientRect();
-    const x=Math.floor((ev.clientX-r.left)/ui.zoom);
-    const y=Math.floor((ev.clientY-r.top)/ui.zoom);
+    const x=Math.floor((ev.clientX-r.left)/r.width*W);
+    const y=Math.floor((ev.clientY-r.top)/r.height*H);
     if(ev.button===2){
       const pix=render(ch,{pose:ui.pose,dir:ui.dir,frame:ui.frame,animAmt:0});
       const i=pix.idx(x,y);
@@ -1080,7 +1098,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     stamp(x,y, ev.shiftKey);
     const move=e=>{
       const r2=view.getBoundingClientRect();
-      stamp(Math.floor((e.clientX-r2.left)/ui.zoom), Math.floor((e.clientY-r2.top)/ui.zoom), e.shiftKey);
+      stamp(Math.floor((e.clientX-r2.left)/r2.width*W), Math.floor((e.clientY-r2.top)/r2.height*H), e.shiftKey);
     };
     const up=()=>{window.removeEventListener("pointermove",move); window.removeEventListener("pointerup",up)};
     window.addEventListener("pointermove",move);
@@ -1301,7 +1319,10 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   paintSheet();
   paintView();
   requestAnimationFrame(tick);
-  if(!localStorage.getItem("highbit-atelier-seen")){ $("#helpModal").classList.remove("hidden"); localStorage.setItem("highbit-atelier-seen","1") }
+  if(!localStorage.getItem("highbit-atelier-seen") && !/[?&]studio=1/.test(location.search)){
+    $("#helpModal").classList.remove("hidden");
+    localStorage.setItem("highbit-atelier-seen","1");
+  }
 })();
 </script>
 </body>

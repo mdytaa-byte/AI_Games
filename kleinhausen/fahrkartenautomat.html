@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fahrkartenautomat Kleinhausen</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23FFCC00'/%3E%3Crect x='4' y='4' width='24' height='24' fill='%23E30613'/%3E%3C/svg%3E">
 <style>
 :root{
   --db-gelb:#FFCC00;
@@ -345,7 +346,6 @@ function glossUpdate(){
 $("s-en").addEventListener("click", ()=>{
   S.englisch = !S.englisch; setToggle($("s-en"), S.englisch); glossUpdate();
   sagen(S.englisch ? "English is on." : "Englisch ist aus.");
-  if($("screen-play").classList.contains("on")) render();
 });
 $("s-audio").addEventListener("click", ()=>{
   S.audio = !S.audio; setToggle($("s-audio"), S.audio);
@@ -573,12 +573,25 @@ function renderZahlen(prompt){
   glossUpdate();
   $("btn-karte").addEventListener("click", ()=>{
     S.karte = true;
-    $("kslot").innerHTML = "<svg width=\"86\" height=\"52\" viewBox=\"0 0 86 52\" aria-hidden=\"true\"><rect width=\"86\" height=\"52\" rx=\"6\" fill=\"#1e4a78\" stroke=\"#9ec7ef\" stroke-width=\"2\"/><rect x=\"8\" y=\"12\" width=\"28\" height=\"18\" fill=\"#d4c48a\"/><text x=\"12\" y=\"44\" fill=\"#fff\" font-size=\"9\" font-family=\"monospace\">KH-BANK</text></svg> Karte erkannt";
-    $("pinbox").hidden = false;
-    bauePad();
+    zeigeKarte();
     sprich("Bitte PIN eingeben.");
     sagen("PIN eingeben. Übung: 1234.");
   });
+  if(S.karte) zeigeKarte();
+  if(S.pinOk){
+    $("printrow").hidden = false;
+    $("fbslot").innerHTML = "<div class=\"fb ok\">PIN richtig. Bitte Ticket drucken.</div>";
+    $("btn-print").addEventListener("click", drucke, {once:true});
+    const pad = $("pad");
+    if(pad) pad.querySelectorAll("button").forEach(b => { b.disabled = true; });
+  }
+}
+function zeigeKarte(){
+  $("kslot").innerHTML = "<svg width=\"86\" height=\"52\" viewBox=\"0 0 86 52\" aria-hidden=\"true\"><rect width=\"86\" height=\"52\" rx=\"6\" fill=\"#1e4a78\" stroke=\"#9ec7ef\" stroke-width=\"2\"/><rect x=\"8\" y=\"12\" width=\"28\" height=\"18\" fill=\"#d4c48a\"/><text x=\"12\" y=\"44\" fill=\"#fff\" font-size=\"9\" font-family=\"monospace\">KH-BANK</text></svg> Karte erkannt";
+  $("pinbox").hidden = false;
+  $("btn-karte").disabled = true;
+  bauePad();
+  $("pindots").textContent = "•".repeat(S.pin.length) + "_".repeat(4-S.pin.length);
 }
 function bauePad(){
   const pad = $("pad");
@@ -591,10 +604,13 @@ function bauePad(){
   });
 }
 function pinTaste(n){
+  if(S.pinOk || S.fertig) return;
   if(n === "C"){ S.pin = ""; }
+  else if(n === "BS"){ S.pin = S.pin.slice(0, -1); }
   else if(n === "OK"){ pruefePin(); return; }
   else if(S.pin.length < 4){ S.pin += String(n); }
-  $("pindots").textContent = "•".repeat(S.pin.length) + "_".repeat(4-S.pin.length);
+  const dots = $("pindots");
+  if(dots) dots.textContent = "•".repeat(S.pin.length) + "_".repeat(4-S.pin.length);
 }
 function setLed(ok, txt){
   const led = $("led");
@@ -620,6 +636,8 @@ function pruefePin(){
   sprich("PIN richtig. Bitte Ticket drucken.");
   setLed(true, "PIN ok · drucken");
   $("btn-print").addEventListener("click", drucke, {once:true});
+  const pad = $("pad");
+  if(pad) pad.querySelectorAll("button").forEach(b => { b.disabled = true; });
 }
 function ticketHTML(m, small){
   const t = TICKETS.find(x=>x.id===m.ticket);
@@ -636,6 +654,8 @@ function drucke(){
   const p = Math.max(4, roh - abzug);
   S.punkte += p;
   S.tickets.push({m:m, p:p, fehler:S.fehler});
+  const printBtn = $("btn-print");
+  if(printBtn) printBtn.disabled = true;
   $("schlitz").innerHTML = ticketHTML(m, true);
   const gleis = ZIELE.find(z=>z.id===m.ziel).gleis;
   $("lcd").insertAdjacentHTML("beforeend", "<div class=\"fb ok\"><p>Fahrkarte gedruckt. Bitte zu <strong>Gleis "+gleis+"</strong> gehen.</p><p class=\"en gloss\">Please go to platform "+gleis+".</p><p>+"+p+" Punkte"+(S.fehler? " (Abzug wegen "+S.fehler+" Korrektur"+(S.fehler===1?"":"en")+")":"")+".</p><p><button type=\"button\" class=\"btn\" id=\"btn-next\">"+(S.i<MISSIONS.length-1?"Nächste Fahrt":"Zur Auswertung")+"</button></p></div>");
@@ -707,9 +727,9 @@ document.addEventListener("keydown", e=>{
   if(!$("screen-play").classList.contains("on")) return;
   const tag = (e.target.tagName||"").toLowerCase();
   if(tag === "input" || tag === "textarea") return;
-  if(STEPS[S.step]==="zahlen" && $("pad")){
+  if(STEPS[S.step]==="zahlen" && S.karte && $("pad")){
     if(/^[0-9]$/.test(e.key)){ pinTaste(Number(e.key)); e.preventDefault(); return; }
-    if(e.key==="Backspace"){ pinTaste("C"); e.preventDefault(); return; }
+    if(e.key==="Backspace"){ pinTaste("BS"); e.preventDefault(); return; }
     if(e.key==="Enter"){ pinTaste("OK"); e.preventDefault(); return; }
   }
   if(/^[1-9]$/.test(e.key)){

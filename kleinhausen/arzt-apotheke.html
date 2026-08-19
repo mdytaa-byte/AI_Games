@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Beim Arzt / In der Apotheke – Kleinhausen</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23fff' stroke='%23C81E1E' stroke-width='2'/%3E%3Crect x='14' y='6' width='4' height='20' fill='%23C81E1E'/%3E%3Crect x='6' y='14' width='20' height='4' fill='%23C81E1E'/%3E%3C/svg%3E">
 <style>
 :root{
   --klinik:#F7FBFA;
@@ -93,6 +94,10 @@ html[data-contrast="hoch"] .doktor,html[data-contrast="hoch"] .rezept{border:2px
 .body-svg .teil.aktiv{fill:#f4b4b4;stroke:var(--kreuz)}
 .body-svg .teil.richtig{fill:#8fd9b0;stroke:var(--ok)}
 .body-svg .teil.falsch{fill:#f0a0a0;stroke:var(--kreuz)}
+.body-btns{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0}
+.body-btns button{min-height:44px;min-width:44px;font:inherit;cursor:pointer;background:#fff;border:2px solid var(--mint-tief);border-radius:8px;padding:.35em .7em}
+.body-btns button.richtig{border-color:var(--ok);background:#e5f6ec}
+.body-btns button.falsch{border-color:var(--kreuz);background:#fde8e8}
 .strasse{
   background:linear-gradient(#cfe8f2 0 42%, var(--strasse) 42%);
   border-radius:12px;padding:1rem;min-height:140px;position:relative;overflow:hidden;margin:1rem 0;
@@ -124,7 +129,7 @@ input[type=text]{min-height:44px;padding:.4em .6em;font:inherit;border:2px solid
 .phase{font-size:.78em;letter-spacing:.16em;text-transform:uppercase;color:var(--mint-tief);margin:0 0 .3em}
 .doktor{display:flex;gap:.8rem;align-items:flex-start;background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--mint);margin:.8rem 0}
 .bodies{display:flex;flex-wrap:wrap;gap:1rem}
-.body-svg text.lbl{font-size:9px;fill:#2A8F78;pointer-events:none}
+.body-svg text.lbl{font-size:9px;fill:#2A8F78;pointer-events:auto;cursor:pointer}
 .wartenummer{font-size:2rem;font-weight:800;color:var(--kreuz);letter-spacing:.12em;margin:.3rem 0}
 .flasche{display:flex;align-items:center;gap:.45rem}
 .verify{background:#fff;border:2px solid var(--mint);padding:1rem;margin-top:1rem;border-radius:10px}
@@ -135,6 +140,9 @@ input[type=text]{min-height:44px;padding:.4em .6em;font:inherit;border:2px solid
 .ampel b.on{background:var(--ok)}
 html[data-contrast="hoch"] .wahl,html[data-contrast="hoch"] .produkt,html[data-contrast="hoch"] .karte-symptom{border-color:#000;background:#fff}
 html[data-contrast="hoch"] .body-svg .teil{fill:#fff;stroke:#000}
+html[data-contrast="hoch"] .body-svg .teil.richtig{fill:#cfc;stroke:#000;stroke-width:4}
+html[data-contrast="hoch"] .body-svg .teil.falsch{fill:#fcc;stroke:#000;stroke-width:4}
+html[data-contrast="hoch"] .body-btns button{border-color:#000}
 </style>
 </head>
 <body>
@@ -368,7 +376,7 @@ const FAELLE = [
 const S = {
   englisch:true, audio:false, kontrast:false, size:0,
   motion:!window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-  i:0, phase:"warte", dIdx:0, punkte:0, max:80, fehler:0, auswahl:[], akte:[], bodyOk:false
+  i:0, phase:"warte", dIdx:0, punkte:0, max:80, fehler:0, auswahl:[], akte:[], bodyOk:false, lock:false
 };
 
 function sagen(t){ $("status").textContent = t; }
@@ -415,7 +423,7 @@ function startGame(){
   S.i=0; S.punkte=0; S.akte=[]; startFall(); zeige("screen-play");
 }
 function startFall(){
-  S.phase="warte"; S.dIdx=0; S.fehler=0; S.auswahl=[]; S.bodyOk=false;
+  S.phase="warte"; S.dIdx=0; S.fehler=0; S.auswahl=[]; S.bodyOk=false; S.lock=false;
   $("fall-nr").textContent=String(S.i+1);
   $("scorechip").textContent="Punkte: "+S.punkte;
   render();
@@ -465,6 +473,7 @@ function renderDialog(f){
   sagen(d.q);
 }
 function dialogWahl(f, i, btn){
+  if(S.phase!=="dialog" || S.lock) return;
   const d=f.dialog[S.dIdx];
   const o=d.opts[i];
   if(!o.ok){
@@ -476,12 +485,14 @@ function dialogWahl(f, i, btn){
     glossUpdate();
     return;
   }
+  S.lock=true;
   btn.classList.add("gut");
   S.dIdx++;
   if(S.dIdx < f.dialog.length){
     $("fb").innerHTML="<div class=\"fb ok\">Gut. Weiter.</div>";
-    setTimeout(()=>render(), S.motion?500:0);
+    setTimeout(()=>{ S.lock=false; render(); }, S.motion?500:0);
   } else {
+    S.lock=false;
     S.phase="koerper";
     render();
   }
@@ -491,51 +502,61 @@ function bodySVG(){
   return "<div class=\"bodies\">"+
     "<svg class=\"body-svg\" viewBox=\"0 0 200 430\" role=\"img\" aria-label=\"Körper vorn\">"+
     "<text x=\"100\" y=\"16\" text-anchor=\"middle\" class=\"lbl\">VORN</text>"+
-    "<circle class=\"teil\" data-teil=\"kopf\" cx=\"100\" cy=\"48\" r=\"30\" tabindex=\"0\" role=\"button\" aria-label=\"Kopf\"></circle>"+
-    "<text x=\"100\" y=\"52\" text-anchor=\"middle\" class=\"lbl\">Kopf</text>"+
-    "<rect class=\"teil\" data-teil=\"hals\" x=\"90\" y=\"78\" width=\"20\" height=\"22\" rx=\"6\" tabindex=\"0\" role=\"button\" aria-label=\"Hals\"></rect>"+
-    "<text x=\"148\" y=\"94\" class=\"lbl\">Hals</text>"+
-    "<rect class=\"teil\" data-teil=\"brust\" x=\"70\" y=\"100\" width=\"60\" height=\"68\" rx=\"10\" tabindex=\"0\" role=\"button\" aria-label=\"Brust\"></rect>"+
-    "<text x=\"100\" y=\"138\" text-anchor=\"middle\" class=\"lbl\">Brust</text>"+
-    "<rect class=\"teil\" data-teil=\"bauch\" x=\"72\" y=\"170\" width=\"56\" height=\"58\" rx=\"8\" tabindex=\"0\" role=\"button\" aria-label=\"Bauch\"></rect>"+
-    "<text x=\"100\" y=\"202\" text-anchor=\"middle\" class=\"lbl\">Bauch</text>"+
-    "<rect class=\"teil\" data-teil=\"arm\" x=\"22\" y=\"104\" width=\"42\" height=\"100\" rx=\"16\" tabindex=\"0\" role=\"button\" aria-label=\"Arm\"></rect>"+
-    "<text x=\"42\" y=\"150\" text-anchor=\"middle\" class=\"lbl\">Arm</text>"+
-    "<rect class=\"teil\" data-teil=\"hand\" x=\"18\" y=\"206\" width=\"34\" height=\"28\" rx=\"8\" tabindex=\"0\" role=\"button\" aria-label=\"Hand\"></rect>"+
-    "<text x=\"35\" y=\"248\" text-anchor=\"middle\" class=\"lbl\">Hand</text>"+
-    "<rect x=\"78\" y=\"228\" width=\"18\" height=\"70\" fill=\"#d7efe8\" stroke=\"#2A8F78\" stroke-width=\"2\"></rect>"+
-    "<rect x=\"104\" y=\"228\" width=\"18\" height=\"70\" fill=\"#d7efe8\" stroke=\"#2A8F78\" stroke-width=\"2\"></rect>"+
-    "<rect class=\"teil\" data-teil=\"knie\" x=\"76\" y=\"300\" width=\"48\" height=\"36\" rx=\"8\" tabindex=\"0\" role=\"button\" aria-label=\"Knie\"></rect>"+
-    "<text x=\"100\" y=\"322\" text-anchor=\"middle\" class=\"lbl\">Knie</text>"+
-    "<rect class=\"teil\" data-teil=\"fuss\" x=\"68\" y=\"382\" width=\"64\" height=\"28\" rx=\"10\" tabindex=\"0\" role=\"button\" aria-label=\"Fuß\"></rect>"+
-    "<text x=\"100\" y=\"400\" text-anchor=\"middle\" class=\"lbl\">Fuß</text>"+
+    "<circle class=\"teil\" data-teil=\"kopf\" cx=\"100\" cy=\"48\" r=\"32\" tabindex=\"0\" role=\"button\" aria-label=\"Kopf\"></circle>"+
+    "<text x=\"100\" y=\"52\" text-anchor=\"middle\" class=\"lbl\" data-teil=\"kopf\">Kopf</text>"+
+    "<rect class=\"teil\" data-teil=\"hals\" x=\"80\" y=\"76\" width=\"40\" height=\"28\" rx=\"8\" tabindex=\"0\" role=\"button\" aria-label=\"Hals\"></rect>"+
+    "<text x=\"148\" y=\"94\" class=\"lbl\" data-teil=\"hals\">Hals</text>"+
+    "<rect class=\"teil\" data-teil=\"brust\" x=\"70\" y=\"104\" width=\"60\" height=\"66\" rx=\"10\" tabindex=\"0\" role=\"button\" aria-label=\"Brust\"></rect>"+
+    "<text x=\"100\" y=\"140\" text-anchor=\"middle\" class=\"lbl\" data-teil=\"brust\">Brust</text>"+
+    "<rect class=\"teil\" data-teil=\"bauch\" x=\"72\" y=\"172\" width=\"56\" height=\"58\" rx=\"8\" tabindex=\"0\" role=\"button\" aria-label=\"Bauch\"></rect>"+
+    "<text x=\"100\" y=\"204\" text-anchor=\"middle\" class=\"lbl\" data-teil=\"bauch\">Bauch</text>"+
+    "<rect class=\"teil\" data-teil=\"arm\" x=\"18\" y=\"104\" width=\"46\" height=\"100\" rx=\"16\" tabindex=\"0\" role=\"button\" aria-label=\"Arm\"></rect>"+
+    "<text x=\"41\" y=\"150\" text-anchor=\"middle\" class=\"lbl\" data-teil=\"arm\">Arm</text>"+
+    "<rect class=\"teil\" data-teil=\"hand\" x=\"14\" y=\"206\" width=\"40\" height=\"32\" rx=\"8\" tabindex=\"0\" role=\"button\" aria-label=\"Hand\"></rect>"+
+    "<text x=\"34\" y=\"248\" text-anchor=\"middle\" class=\"lbl\" data-teil=\"hand\">Hand</text>"+
+    "<rect x=\"78\" y=\"230\" width=\"18\" height=\"68\" fill=\"#d7efe8\" stroke=\"#2A8F78\" stroke-width=\"2\"></rect>"+
+    "<rect x=\"104\" y=\"230\" width=\"18\" height=\"68\" fill=\"#d7efe8\" stroke=\"#2A8F78\" stroke-width=\"2\"></rect>"+
+    "<rect class=\"teil\" data-teil=\"knie\" x=\"74\" y=\"296\" width=\"52\" height=\"42\" rx=\"8\" tabindex=\"0\" role=\"button\" aria-label=\"Knie\"></rect>"+
+    "<text x=\"100\" y=\"322\" text-anchor=\"middle\" class=\"lbl\" data-teil=\"knie\">Knie</text>"+
+    "<rect class=\"teil\" data-teil=\"fuss\" x=\"64\" y=\"376\" width=\"72\" height=\"36\" rx=\"10\" tabindex=\"0\" role=\"button\" aria-label=\"Fuß\"></rect>"+
+    "<text x=\"100\" y=\"400\" text-anchor=\"middle\" class=\"lbl\" data-teil=\"fuss\">Fuß</text>"+
     "</svg>"+
     "<svg class=\"body-svg\" viewBox=\"0 0 200 430\" role=\"img\" aria-label=\"Körper Rücken\">"+
     "<text x=\"100\" y=\"16\" text-anchor=\"middle\" class=\"lbl\">RÜCKEN</text>"+
     "<circle cx=\"100\" cy=\"48\" r=\"28\" fill=\"#eef6f3\" stroke=\"#2A8F78\" stroke-width=\"2\"></circle>"+
-    "<rect class=\"teil\" data-teil=\"ruecken\" x=\"68\" y=\"100\" width=\"64\" height=\"140\" rx=\"14\" tabindex=\"0\" role=\"button\" aria-label=\"Rücken\"></rect>"+
-    "<text x=\"100\" y=\"172\" text-anchor=\"middle\" class=\"lbl\">Rücken</text>"+
+    "<rect class=\"teil\" data-teil=\"ruecken\" x=\"64\" y=\"96\" width=\"72\" height=\"148\" rx=\"14\" tabindex=\"0\" role=\"button\" aria-label=\"Rücken\"></rect>"+
+    "<text x=\"100\" y=\"172\" text-anchor=\"middle\" class=\"lbl\" data-teil=\"ruecken\">Rücken</text>"+
     "<rect x=\"78\" y=\"242\" width=\"18\" height=\"90\" fill=\"#d7efe8\" stroke=\"#2A8F78\" stroke-width=\"2\"></rect>"+
     "<rect x=\"104\" y=\"242\" width=\"18\" height=\"90\" fill=\"#d7efe8\" stroke=\"#2A8F78\" stroke-width=\"2\"></rect>"+
     "</svg></div>";
 }
+function bodyButtons(){
+  const teile = [
+    {id:"kopf", de:"Kopf"}, {id:"hals", de:"Hals"}, {id:"brust", de:"Brust"},
+    {id:"bauch", de:"Bauch"}, {id:"arm", de:"Arm"}, {id:"hand", de:"Hand"},
+    {id:"knie", de:"Knie"}, {id:"fuss", de:"Fuß"}, {id:"ruecken", de:"Rücken"}
+  ];
+  return "<div class=\"body-btns\" role=\"group\" aria-label=\"Körperstellen\">"+
+    teile.map(t=>"<button type=\"button\" data-teil=\""+t.id+"\">"+t.de+"</button>").join("")+
+    "</div>";
+}
 function renderKoerper(f){
   setPhase("Wo tut es weh?");
   $("play").innerHTML =
-    "<p>Klicke auf die Stelle. Richtig ist: du zeigst, nicht nur redest.</p><p class=\"en gloss\">Click the body region that hurts.</p>"+
-    "<div class=\"body-wrap\">"+bodySVG()+"<div><p>Frau Dr. Keller: <em>Bitte zeigen Sie: Wo tut es weh?</em></p><div id=\"fb\"></div></div></div>";
+    "<p>Klicke auf die Stelle. Richtig ist: du zeigst, nicht nur redest.</p><p class=\"en gloss\">Click the body region that hurts. You can tap the drawing or the name buttons.</p>"+
+    "<div class=\"body-wrap\">"+bodySVG()+"<div><p>Frau Dr. Keller: <em>Bitte zeigen Sie: Wo tut es weh?</em></p>"+bodyButtons()+"<div id=\"fb\"></div></div></div>";
   sprich("Bitte zeigen Sie: Wo tut es weh?");
-  $("play").querySelectorAll(".teil").forEach(el=>{
-    const go=()=>klickTeil(f, el.dataset.teil, el);
+  $("play").querySelectorAll("[data-teil]").forEach(el=>{
+    const go=()=>klickTeil(f, el.dataset.teil);
     el.addEventListener("click", go);
     el.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); }});
   });
 }
-function klickTeil(f, teil, el){
+function klickTeil(f, teil){
   if(S.bodyOk) return;
   if(teil !== f.wo){
     S.fehler++;
-    el.classList.add("falsch");
+    $("play").querySelectorAll('[data-teil="'+teil+'"]').forEach(n=>n.classList.add("falsch"));
     const map={kopf:"Kopf",hals:"Hals",brust:"Brust",bauch:"Bauch",arm:"Arm",hand:"Hand",knie:"Knie",fuss:"Fuß",ruecken:"Rücken"};
     $("fb").innerHTML="<div class=\"fb\"><strong>Nicht "+esc(map[teil]||teil)+".</strong> Die Karte zeigt: <em>"+esc(f.woDe)+"</em>.</div><p class=\"en gloss\">Not that region. The card points to the "+esc(f.woDe)+".</p>";
     sprich("Nicht dort. Es tut am "+f.woDe+" weh.");
@@ -544,7 +565,7 @@ function klickTeil(f, teil, el){
     return;
   }
   S.bodyOk=true;
-  el.classList.add("richtig");
+  $("play").querySelectorAll('[data-teil="'+teil+'"]').forEach(n=>n.classList.add("richtig"));
   $("fb").innerHTML="<div class=\"fb ok\">Genau, der "+esc(f.woDe)+".</div><p><button type=\"button\" class=\"btn\" id=\"go\">Diagnose hören</button></p>";
   sprich("Genau, der "+f.woDe+".");
   $("go").addEventListener("click", ()=>{ S.phase="rezept"; render(); });
@@ -611,6 +632,7 @@ function icon(id){
   return "<span class=\"flasche\">"+(map[id]||"")+"</span>";
 }
 function kasse(f){
+  if(S.lock) return;
   const need=f.rezept.slice().sort().join(",");
   const got=S.auswahl.slice().sort().join(",");
   const buttons=[...$("regal").querySelectorAll(".produkt")];
@@ -620,9 +642,11 @@ function kasse(f){
     else if(S.auswahl.includes(id)) b.classList.add("falsch");
   });
   if(need===got){
+    S.lock=true;
     const p=Math.max(8, 20-S.fehler*3);
     S.punkte+=p;
     S.akte.push({name:FAELLE[S.i].name, p:p, fehler:S.fehler, rezept:f.rezept});
+    $("kasse").disabled=true;
     $("fb").innerHTML="<div class=\"fb ok\">Richtig abgeholt. +"+p+" Punkte.</div><p><button type=\"button\" class=\"btn\" id=\"go\">"+(S.i<FAELLE.length-1?"Nächster Fall":"Patientenakte")+"</button></p>";
     sprich("Richtig. Gute Besserung.");
     $("scorechip").textContent="Punkte: "+S.punkte;
@@ -686,7 +710,7 @@ $("btn-verify").addEventListener("click", ()=>{
 document.addEventListener("keydown", e=>{
   if(!$("screen-play").classList.contains("on")) return;
   if(/^[1-9]$/.test(e.key)){
-    const btns=[...$("play").querySelectorAll(".wahl, .produkt")];
+    const btns=[...$("play").querySelectorAll(".wahl, .produkt, .body-btns button")];
     const b=btns[Number(e.key)-1];
     if(b){ e.preventDefault(); b.click(); b.focus(); }
   }

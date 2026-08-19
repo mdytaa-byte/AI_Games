@@ -182,10 +182,11 @@
       <div class="title-panel">
         <canvas id="titleArt" width="420" height="150"></canvas>
         <h1>THE CANTICLE<br>KINGDOM</h1>
-        <div class="sub">A 16-bit role-playing game after the novels by Michael D. Young<br>Book I: The Canticle Kingdom · Book II: The Frozen Globe</div>
+        <div class="sub">A 16-bit role-playing game after the novels by Michael D. Young<br>Book I: The Canticle Kingdom · Book II: The Frozen Globe · Book III: The Skyward Isle</div>
         <div class="title-actions">
           <button class="title-btn" id="newGameBtn">Book I: New Game</button>
           <button class="title-btn" id="book2Btn">Book II: The Frozen Globe</button>
+          <button class="title-btn" id="book3Btn">Book III: The Skyward Isle</button>
           <button class="title-btn" id="continueBtn" disabled>Continue</button>
           <button class="title-btn" id="optionsBtn">Options</button>
         </div>
@@ -236,6 +237,7 @@
         <h2 id="endTitle" style="font-size:16px;color:var(--gold)"></h2>
         <p id="endBody" style="font-size:10px;line-height:1.85;max-width:640px;color:#efe4c4"></p>
         <button class="title-btn" id="endBook2Btn" style="margin-top:22px">Begin The Frozen Globe</button>
+        <button class="title-btn hidden" id="endBook3Btn" style="margin-top:12px">Begin The Skyward Isle</button>
         <button class="title-btn" id="endTitleBtn" style="margin-top:12px">Return to Title</button>
       </div>
     </div>
@@ -305,6 +307,11 @@
       id: "richard", name: "Richard", color: "#c8b898",
       maxHp: 40, maxMp: 24, atk: 6, mag: 16, def: 4, spd: 5,
       bio: "Johann's grandfather. An old man with a clear staff he barely understands — and a reason to use it."
+    },
+    howa: {
+      id: "howa", name: "Howa", color: "#e0a050",
+      maxHp: 58, maxMp: 26, atk: 10, mag: 16, def: 6, spd: 9,
+      bio: "A broad, exuberant drummer of the hidden Musicanters. He calls Johann little bird."
     }
   };
 
@@ -320,7 +327,13 @@
     globe: { name: "Frozen Globe", key: true, desc: "A glass sphere that holds winter itself. Stolen from the Müller bakery ruins." },
     staff: { name: "Clear staff", key: true, desc: "Axertes's gift. The Many-Named One is afraid of it." },
     charm: { name: "Nachtigal charm", heal: 28, mp: 12, desc: "A jingling vial of mountain medicine." },
-    cocoa: { name: "Christmas cocoa", heal: 20, desc: "Molly's holiday cocoa. It tastes like a world that still believes." }
+    cocoa: { name: "Christmas cocoa", heal: 20, desc: "Molly's holiday cocoa. It tastes like a world that still believes." },
+    rheingold: { name: "Rheingold", key: true, desc: "River-gold for Lorelei. Brigitta will know how to wake a statue." },
+    mask: { name: "Pilgrim mask", key: true, desc: "The Sansomnians name you sacred pilgrims — the first in generations." },
+    watch: { name: "Lorelei's watch", key: true, desc: "An enchanted object that carries a doorway between worlds." },
+    cloak: { name: "Fuchsbar cloak", key: true, desc: "Ewyn's last gift. It wards all but the strongest magic." },
+    homu: { name: "Homuchorus", key: true, desc: "A wooden figurine that answers one question in song — then breaks." },
+    feast: { name: "Dolorii feast", heal: 30, mp: 10, desc: "Cahni's hospitality is genuine in form. Eat before you trust the rest." }
   };
 
   const CANTICLES = {
@@ -333,7 +346,9 @@
     thaw: { name: "Thaw", mp: 6, heal: 28, all: true, who: ["nachtigal"], desc: "Warmth poured into frozen bones." },
     scry: { name: "Water Scry", mp: 5, pow: 12, slow: true, who: ["nachtigal"], desc: "A glowing pool that finds the weak point." },
     roar: { name: "Dark Cry", mp: 7, pow: 20, all: true, who: ["bruno"], desc: "Bruno's impression of the Drevinwyrm — too convincing." },
-    staffc: { name: "Clear Staff", mp: 8, pow: 26, who: ["richard"], desc: "The rod flies, strikes, and snaps back to the hand." }
+    staffc: { name: "Clear Staff", mp: 8, pow: 26, who: ["richard"], desc: "The rod flies, strikes, and snaps back to the hand." },
+    banish: { name: "Banishing Melody", mp: 9, pow: 20, all: true, who: ["johann"], desc: "The old music that once kept darkness out of the box." },
+    drum: { name: "Avalanche Drum", mp: 7, pow: 22, all: true, who: ["howa"], desc: "Rhythm that rides snow, cracks earth, and hurries a whole company." }
   };
 
   const ENEMIES = {
@@ -350,7 +365,11 @@
     ice: { name: "Ice Shade", hp: 32, atk: 10, def: 3, spd: 8, xp: 14, gold: 5, tint: "#8ab4d8" },
     sentry: { name: "Stone Sentry", hp: 48, atk: 13, def: 8, spd: 4, xp: 22, gold: 8, tint: "#9aa8b8" },
     wyrm: { name: "Drevinwyrm", hp: 168, atk: 16, def: 7, spd: 7, xp: 90, gold: 20, tint: "#4a6a48", boss: true },
-    many2: { name: "The Many-Named One", hp: 180, atk: 16, def: 7, spd: 9, xp: 100, gold: 0, tint: "#1a0818", boss: true }
+    many2: { name: "The Many-Named One", hp: 180, atk: 16, def: 7, spd: 9, xp: 100, gold: 0, tint: "#1a0818", boss: true },
+    shard: { name: "Name-Shard", hp: 40, atk: 14, def: 5, spd: 9, xp: 20, gold: 6, tint: "#4a2060" },
+    dolor: { name: "Doom Acolyte", hp: 44, atk: 13, def: 6, spd: 7, xp: 22, gold: 7, tint: "#5a3048" },
+    doom: { name: "The Doom Tone", hp: 160, atk: 17, def: 8, spd: 6, xp: 95, gold: 16, tint: "#2a1020", boss: true },
+    many3: { name: "The Many-Named One", hp: 220, atk: 18, def: 8, spd: 10, xp: 120, gold: 0, tint: "#100410", boss: true }
   };
 
   const QUEST_TEXT = {
@@ -384,7 +403,18 @@
     wyrm: "The Drevinwyrm is no children's tale. Follow Witter's water-scry.",
     staffq: "Richard's task: a clear staff, and a dark house in East Berlin.",
     dark: "Confront the Many-Named One before he takes the Frozen Globe home.",
-    done2: "The second movement is finished. The Centerspace is still singing."
+    done2: "The second movement is finished. The Centerspace is still singing.",
+    grey: "The Canticle Kingdom is lifeless. Speak with Peter among the dead bells.",
+    ewynq: "Peter's cottage still waits in the woods. Ewyn has something to say.",
+    rhineq: "Brigitta can wake Lorelei's statue with Rheingold. The Rhine remembers.",
+    pilgrim: "The Sansomnians name you sacred pilgrims. Hear Olear on the Seven Secrets.",
+    dolorq: "Cahni's tree-city has no fear. Accept the feast. Do not accept the altar.",
+    councilq: "Father Roleni means to offer Johann to the Doom Tone. Stop the Council.",
+    howaq: "A drummer in the mountains calls you little bird. The hidden Musicanters still vote in harmony.",
+    telegroq: "Reach Telegro's moving Sanctuary. Petitioners must attain the heights.",
+    anchq: "Plant the Custodians' anchor on the Skyward Isle. One question. One answer.",
+    darkq: "Weaken the Many-Named One in Darkespace. The empty box will be his prison.",
+    done3: "The last movement is finished. The kingdom is out of the box."
   };
 
   const CHAR = {
@@ -392,7 +422,7 @@
     "C": 10, "R": 11, "H": 12, "W": 13, "r": 14, "A": 15, "F": 16,
     "B": 17, "t": 18, "D": 19, "S": 20, "%": 21, "@": 22, "*": 23,
     "b": 24, "c": 25, "f": 26, "u": 27, "/": 28, "o": 29, "Y": 30,
-    "G": 31, "k": 32, "I": 33, "X": 35, "m": 36, "i": 37, "E": 38, "z": 39
+    "G": 31, "k": 32, "I": 33, "X": 35, "m": 36, "i": 37, "E": 38, "z": 39, "q": 40
   };
   const SOLID = new Set([5, 6, 7, 10, 11, 12, 13, 20, 26, 30, 32, 33, 36, 38, 39]);
 
@@ -1021,6 +1051,253 @@ EEEEEEEEEEEE
     exits: [{ x: 6, y: 6, to: "berlin", tx: 16, ty: 9 }]
   });
 
+  addMap("greyking", {
+    name: "The Lifeless Kingdom", music: "labyrinth", start: [10, 8],
+    rows: `
+####################
+#,,,,,,,,,,,,,,,,,,#
+#,,CCCCCCCCCCCCCC,,#
+#,,C============C,,#
+#,,C=====tt=====C,,#
+#,,C============C,,#
+#,,CCCCCC==CCCCCC,,#
+#,,,,,,,,,,,,,,,,,,#
+#,,,,TTTT,,,,,,,,,,#
+#,,,,,,,,D,,,,,,,,,#
+####################
+`,
+    npcs: [
+      { id: "peter_npc", x: 6, y: 8, sprite: "peter", name: "Peter" },
+      { id: "rufus_grey", x: 10, y: 4, sprite: "rufus", name: "Rufus" },
+      { id: "gold_chest", x: 12, y: 5, sprite: "chest", name: "Rheingold casket" }
+    ],
+    exits: [
+      { x: 9, y: 9, to: "ewyncot", tx: 5, ty: 5 },
+      { x: 17, y: 7, to: "rhine", tx: 3, ty: 8 }
+    ],
+    encounters: ["shard", "shade"]
+  });
+
+  addMap("ewyncot", {
+    name: "Ewyn's Cottage", music: "home", start: [5, 5],
+    rows: `
+WWWWWWWWWWW
+W====tt===W
+W=========W
+W==B======W
+W=========W
+W=========W
+W====D====W
+WWWWWWWWWWW
+`,
+    npcs: [
+      { id: "ewyn_ghost", x: 7, y: 2, sprite: "ewyn", name: "Ewyn" },
+      { id: "peter_cot", x: 3, y: 3, sprite: "peter", name: "Peter" },
+      { id: "cloak_chest", x: 8, y: 4, sprite: "chest", name: "Hidden compartment" }
+    ],
+    exits: [{ x: 5, y: 6, to: "greyking", tx: 9, ty: 8 }]
+  });
+
+  addMap("rhine", {
+    name: "The Rhine", music: "woods", start: [3, 8],
+    rows: `
+YYYYYYYYYYYYYYYYYYYY
+Y,,,,,,,,,,,,,,,,,,Y
+Y,,,,S,,,,,,,,,,,,,Y
+Y,,,,,,,,,,,,,,,,,,Y
+Y~~~~,,,,,,,,,,~~~~Y
+Y~~~~~~,,,,,,~~~~~~Y
+Y~~~~~~~~,,~~~~~~~~Y
+Y,,,,,,,,,,,,,,,,,,Y
+Y,,,,,,,,,,,,,,,,,,Y
+Y,,,,,,,,D,,,,,,,,,Y
+YYYYYYYYYYYYYYYYYYYY
+`,
+    npcs: [
+      { id: "lorelei_stat", x: 5, y: 2, sprite: "statue", name: "Lorelei's statue" },
+      { id: "lorelei_npc", x: 8, y: 3, sprite: "lorelei", name: "Lorelei" },
+      { id: "jorgen_rhine", x: 12, y: 7, sprite: "jorgen", name: "Jorgen" }
+    ],
+    exits: [
+      { x: 9, y: 9, to: "greyking", tx: 10, ty: 7 },
+      { x: 16, y: 7, to: "sansomnia", tx: 3, ty: 8 }
+    ],
+    encounters: ["ice", "shard"]
+  });
+
+  addMap("sansomnia", {
+    name: "Sansomnian Crossing", music: "village", start: [3, 8],
+    rows: `
+......................
+....TTTT........TTTT..
+....T..T........T..T..
+....TTTT........TTTT..
+......................
+....####........####..
+....#==#........#==#..
+....#==DppppppppD==#..
+....####........####..
+......................
+.....oooooooooooooo...
+.....o............o...
+.....ooooooooooDooo...
+`,
+    npcs: [
+      { id: "olear_npc", x: 11, y: 9, sprite: "olear", name: "Olear" },
+      { id: "mask_table", x: 16, y: 7, sprite: "chest", name: "Pilgrim masks" }
+    ],
+    exits: [
+      { x: 7, y: 7, to: "rhine", tx: 16, ty: 7 },
+      { x: 16, y: 12, to: "dolorii", tx: 4, ty: 10 }
+    ]
+  });
+
+  addMap("dolorii", {
+    name: "Dolorii Tree-City", music: "woods", start: [4, 10],
+    rows: `
+TTTTTTTTTTTTTTTTTTTT
+T....T....T....T...T
+T....T....T....T...T
+TppppTppppTppppTpppT
+T....T....T....T...T
+T....####....####..T
+T....#==#....#==#..T
+T....#==DppppD==#..T
+T....####....####..T
+TppppppppppppppppppT
+T..................T
+T........D.........T
+TTTTTTTTTTTTTTTTTTTT
+`,
+    npcs: [
+      { id: "cahni_npc", x: 8, y: 7, sprite: "cahni", name: "Cahni" },
+      { id: "feast_table", x: 12, y: 6, sprite: "bowl", name: "Feast" }
+    ],
+    exits: [
+      { x: 9, y: 11, to: "sansomnia", tx: 16, ty: 11 },
+      { x: 16, y: 7, to: "council", tx: 5, ty: 5 }
+    ],
+    encounters: ["dolor", "shade"]
+  });
+
+  addMap("council", {
+    name: "Council of Tones", music: "boss", start: [5, 5],
+    rows: `
+WWWWWWWWWWWW
+WcccccBccccW
+WccccccccccW
+WccccccccccW
+WccccccccccW
+WccccccccccW
+WccccDcccccW
+WWWWWWWWWWWW
+`,
+    npcs: [
+      { id: "roleni_npc", x: 6, y: 1, sprite: "roleni", name: "Father Roleni" },
+      { id: "bells7", x: 3, y: 3, sprite: "score", name: "Seven Bells" }
+    ],
+    exits: [
+      { x: 5, y: 6, to: "dolorii", tx: 15, ty: 7 },
+      { x: 9, y: 3, to: "refuge", tx: 4, ty: 8 }
+    ]
+  });
+
+  addMap("refuge", {
+    name: "Hidden Musicanters", music: "secret", start: [4, 8],
+    rows: `
+mmmmmmmmmmmmmmmmmmmm
+miiiiiiiiiiiiiiiiiim
+mii##iiiiiiiiii##iim
+miiiiiiiiiiiiiiiiiim
+miiiiiiiiiiiiiiiiiim
+mii##iiiiiiiiii##iim
+miiiiiiiiiiiiiiiiiim
+miiiiiiiiiiiiiiiiiim
+m,,,,,,,,,,,,,,,,,,m
+m,,,,,,,,D,,,,,,,,,m
+mmmmmmmmmmmmmmmmmmmm
+`,
+    npcs: [
+      { id: "howa_npc", x: 10, y: 4, sprite: "howa", name: "Howa" },
+      { id: "drum_set", x: 6, y: 3, sprite: "chest", name: "Great drum" }
+    ],
+    exits: [
+      { x: 9, y: 9, to: "council", tx: 8, ty: 4 },
+      { x: 16, y: 6, to: "sanctuary", tx: 4, ty: 8 }
+    ],
+    encounters: ["ice", "shard"]
+  });
+
+  addMap("sanctuary", {
+    name: "Telegro's Sanctuary", music: "between", start: [4, 8],
+    rows: `
+##################
+#@@@@@@@@@@@@@@@@#
+#@@qqqqqqqqqqqq@@#
+#@@@@@@@@@@@@@@@@#
+#@@@@@@tt@@@@@@@@#
+#@@@@@@@@@@@@@@@@#
+#@@@@@@@@@@@@@@@@#
+#@@@@@@@@@@@@@@@@#
+#@@@@@@@@D@@@@@@@#
+##################
+`,
+    npcs: [
+      { id: "telegro_npc", x: 9, y: 4, sprite: "telegro", name: "Telegro" },
+      { id: "gian_npc", x: 6, y: 6, sprite: "axertes", name: "Gian" }
+    ],
+    exits: [
+      { x: 9, y: 8, to: "refuge", tx: 15, ty: 6 },
+      { x: 12, y: 3, to: "skyisle", tx: 4, ty: 8 }
+    ]
+  });
+
+  addMap("skyisle", {
+    name: "The Skyward Isle", music: "sky", start: [4, 8],
+    rows: `
+##################
+#,,,,,,,,,,,,,,,,#
+#,,,,TTTT,,,,,,,,#
+#,,,,T..T,,,,,,,,#
+#,,,,TTTT,,,,,,,,#
+#,,,,,,,,,,,,,,,,#
+#,,,,,,**,,,,,,,,#
+#,,,,,,,,,,,,,,,,#
+#,,,,,,,,D,,,,,,,#
+##################
+`,
+    npcs: [
+      { id: "homu_npc", x: 9, y: 6, sprite: "homu", name: "Homuchorus" },
+      { id: "anchor_site", x: 6, y: 3, sprite: "orb", name: "Transfer site" }
+    ],
+    exits: [
+      { x: 9, y: 8, to: "sanctuary", tx: 11, ty: 4 },
+      { x: 14, y: 6, to: "darkespace", tx: 5, ty: 8 }
+    ]
+  });
+
+  addMap("darkespace", {
+    name: "Darkespace", music: "boss", start: [5, 7],
+    rows: `
+###############
+#%%%%%%%%%%%%%#
+#%##%%%%%%%##%#
+#%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%#
+#%##%%%%%%%##%#
+#%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%#
+#%%%%%%%%%%%%%#
+###############
+`,
+    npcs: [
+      { id: "many_dark", x: 7, y: 4, sprite: "hood", name: "The Many-Named One" },
+      { id: "box_prison", x: 4, y: 6, sprite: "musicbox", name: "Empty music box" }
+    ],
+    exits: [{ x: 5, y: 8, to: "skyisle", tx: 13, ty: 6 }],
+    encounters: ["shard"]
+  });
+
   function member(id) {
     const base = HEROES[id];
     return { ...base, hp: base.maxHp, mp: base.maxMp, alive: true };
@@ -1042,6 +1319,12 @@ EEEEEEEEEEEE
     if (n.id === "wyrm_boss" && flag("wyrm_down")) return false;
     if (n.id === "many_house" && flag("won2")) return false;
     if (n.id === "berlin_thief" && flag("bakery_cleared")) return false;
+    if (n.id === "lorelei_npc" && !flag("lorelei_free")) return false;
+    if (n.id === "lorelei_stat" && flag("lorelei_free")) return false;
+    if (n.id === "ewyn_ghost" && flag("ewyn_done")) return false;
+    if (n.id === "howa_npc" && hasHero("howa")) return false;
+    if (n.id === "many_dark" && flag("won3")) return false;
+    if (n.id === "homu_npc" && flag("homu_used")) return false;
     return true;
   }
 
@@ -1054,18 +1337,32 @@ EEEEEEEEEEEE
   }
 
   function blankInv() {
-    return { porridge: 0, ribbon: 0, sword: 0, amulet: 0, sausage: 0, draught: 0, score: 0, coins: 0, globe: 0, staff: 0, charm: 0, cocoa: 0 };
+    return { porridge: 0, ribbon: 0, sword: 0, amulet: 0, sausage: 0, draught: 0, score: 0, coins: 0, globe: 0, staff: 0, charm: 0, cocoa: 0, rheingold: 0, mask: 0, watch: 0, cloak: 0, homu: 0, feast: 0 };
+  }
+  function boostParty(party, hp, mp, atk, def) {
+    party.forEach((p) => {
+      p.maxHp += hp; p.hp = p.maxHp;
+      p.maxMp += mp; p.mp = p.maxMp;
+      p.atk += atk; p.def += def;
+    });
+    return party;
   }
   function resetGame(book = 1) {
     HEROES.johann.atk = 8;
+    if (book === 3) {
+      HEROES.johann.atk = 13;
+      const party = boostParty([member("johann"), member("brigitta"), member("siegfried"), member("bruno")], 24, 12, 5, 3);
+      Object.assign(state, {
+        map: "greyking", x: 10 * TILE, y: 8 * TILE, dir: "down",
+        flags: { won: true, won2: true }, gold: 28,
+        inventory: { ...blankInv(), porridge: 1, sausage: 3, draught: 3, sword: 1, ribbon: 1, score: 1, globe: 1, staff: 1, charm: 2 },
+        party, quest: "grey", playtime: 0, book: 3
+      });
+      return;
+    }
     if (book === 2) {
       HEROES.johann.atk = 11;
-      const party = [member("johann"), member("brigitta"), member("siegfried")];
-      party.forEach((p) => {
-        p.maxHp += 16; p.hp = p.maxHp;
-        p.maxMp += 8; p.mp = p.maxMp;
-        p.atk += 3; p.def += 2;
-      });
+      const party = boostParty([member("johann"), member("brigitta"), member("siegfried")], 16, 8, 3, 2);
       Object.assign(state, {
         map: "karsten", x: 8 * TILE, y: 4 * TILE, dir: "down",
         flags: { won: true }, gold: 18,
@@ -1234,6 +1531,29 @@ EEEEEEEEEEEE
       pix(g, 4, 4, "#4a6a48", 8, 16); pix(g, 2, 2, "#5a8a58", 5, 6); pix(g, 9, 2, "#5a8a58", 5, 6); pix(g, 5, 0, "#6a9a68", 6, 5);
       pix(g, 3, 4, "#1a2018", 2, 1); pix(g, 11, 4, "#1a2018", 2, 1);
     });
+    sprites.peter = makeSpr(16, 24, (g) => person(g, { hair: "#c8c0b0", shirt: "#4a4a38", pants: "#2a2a28", extra: (g) => pix(g, 11, 8, "#8a8a70", 3, 8) }));
+    sprites.ewyn = makeSpr(16, 24, (g) => {
+      person(g, { hair: "#6a3a20", shirt: "#3a5a48", pants: "#2a3a30" });
+      pix(g, 4, 2, "#d8e8f8", 8, 18);
+    });
+    sprites.lorelei = makeSpr(16, 24, (g) => person(g, {
+      hair: "#e8e0f0", skin: "#f0d8e0", shirt: "#6a4a88", pants: "#3a2a50",
+      extra: (g) => pix(g, 3, 8, "#c9a24a", 10, 2)
+    }));
+    sprites.olear = makeSpr(16, 24, (g) => person(g, { hair: "#d8c090", shirt: "#e8e0d0", pants: "#8a7a60" }));
+    sprites.cahni = makeSpr(16, 24, (g) => person(g, { hair: "#2a2018", shirt: "#c8b070", pants: "#4a3a20" }));
+    sprites.roleni = makeSpr(16, 24, (g) => person(g, { hair: "#1a1a18", shirt: "#2a1020", pants: "#1a0810", extra: (g) => pix(g, 3, 8, "#4a2038", 10, 10) }));
+    sprites.howa = makeSpr(16, 24, (g) => person(g, {
+      hair: "#5a3020", shirt: "#c45a28", pants: "#3a2418",
+      extra: (g) => pix(g, 2, 12, "#8a5a28", 4, 4)
+    }));
+    sprites.telegro = makeSpr(16, 24, (g) => {
+      pix(g, 3, 1, "#e8e0c8", 10, 20); pix(g, 5, 5, "#fff8d0", 6, 6);
+      pix(g, 6, 7, "#c9a24a", 1, 1); pix(g, 9, 7, "#c9a24a", 1, 1);
+    });
+    sprites.homu = makeSpr(16, 16, (g) => {
+      pix(g, 5, 2, "#c9a24a", 6, 10); pix(g, 6, 4, "#f0c7a0", 4, 4); pix(g, 7, 5, "#3a2018", 1, 1); pix(g, 9, 5, "#3a2018", 1, 1);
+    });
   }
 
   const tileCache = {};
@@ -1324,6 +1644,8 @@ EEEEEEEEEEEE
       fill("#3a3430"); pix(g, 0, 0, "#2a2420", 16, 2); pix(g, 7, 0, "#5a5048", 2, 16);
     } else if (id === 39) {
       fill("#8ab8d0"); pix(g, 0, 6, "#c8e0f0", 16, 3); pix(g, 4, 2, "#e8f4ff", 6, 2);
+    } else if (id === 40) {
+      fill("#7ec8f0"); pix(g, 3, 4, "#c8e8ff", 4, 2); pix(g, 10, 9, "#ffffff", 2, 2);
     } else fill("#203040");
   }
 
@@ -1358,7 +1680,8 @@ EEEEEEEEEEEE
     boss: { bpm: 120, notes: [[0, 155], [1, 185], [2, 196], [3, 233], [4, 185], [5, 155]] },
     ice: { bpm: 72, notes: [[0, 523], [2, 494], [4, 440], [6, 392], [8, 440], [10, 523]] },
     berlin: { bpm: 96, notes: [[0, 196], [1, 247], [2, 220], [3, 196], [4, 165], [6, 185], [8, 196]] },
-    christmas: { bpm: 100, notes: [[0, 392], [1, 523], [2, 659], [3, 784], [4, 659], [5, 523], [6, 587], [8, 392]] }
+    christmas: { bpm: 100, notes: [[0, 392], [1, 523], [2, 659], [3, 784], [4, 659], [5, 523], [6, 587], [8, 392]] },
+    sky: { bpm: 86, notes: [[0, 784], [2, 880], [4, 988], [6, 880], [8, 659], [10, 784]] }
   };
   function stopMusic() { clearTimeout(musicTimer); musicTimer = 0; }
   function startMusic(name) {
@@ -1468,6 +1791,20 @@ EEEEEEEEEEEE
       body: "Grandfather Richard is given a clear staff he barely understands. The Many-Named One is afraid of it. Two worlds remain tangled. The second movement is about to begin.",
       art: "berlinart" }
   ];
+  const PROLOGUE3 = [
+    { kicker: "Darkespace", title: "A Portal of Pure Darkness",
+      body: "The Many-Named One flees luminous pursuers. Ordinary worlds would not hide him long. He chooses a door that admits no light — a prison of the vilest beings — and drinks their evil until he is too large to kill.",
+      art: "darkart" },
+    { kicker: "The Canticle Kingdom", title: "Lifeless Bells",
+      body: "Without the banishing music the white castle falls silent. The kingdom inside the Müller box is a husk. Johann, Brigitta, Siegfried, and Bruno stand in a world that has forgotten how to sing.",
+      art: "greyart" },
+    { kicker: "The Rhine · Burgenring", title: "Sacred Pilgrims",
+      body: "Lorelei waits in ice and statue. The Sansomnians have not seen pilgrims in generations. Cahni's people do not know fear. Father Roleni knows the Doom Tone. Howa still drums in hiding.",
+      art: "rhineart" },
+    { kicker: "The Skyward Isle", title: "Out of the Box",
+      body: "The Custodians of the Worlds will not destroy him. They will empty the music box, plant an anchor, and make the vessel his prison. The last movement begins.",
+      art: "skyart" }
+  ];
   let cineList = PROLOGUE;
 
   function drawCine(kind, canvasId = "cineArt") {
@@ -1533,6 +1870,37 @@ EEEEEEEEEEEE
       g.drawImage(sprites.globe, 120, 110);
       g.drawImage(sprites.johann, 70, 100);
       g.drawImage(sprites.molly, 310, 100);
+    } else if (kind === "darkart") {
+      g.fillStyle = "#050208"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#1a0818"; g.fillRect(170, 40, 80, 100);
+      g.drawImage(sprites.hood, 200, 70);
+    } else if (kind === "greyart") {
+      g.fillStyle = "#3a3a48"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#8a8a98"; g.fillRect(150, 40, 36, 90); g.fillRect(234, 40, 36, 90); g.fillRect(180, 55, 60, 75);
+      g.fillStyle = "#6a6a78"; g.fillRect(142, 28, 52, 16); g.fillRect(226, 28, 52, 16);
+      g.drawImage(sprites.johann, 110, 100);
+      g.drawImage(sprites.peter, 280, 96);
+    } else if (kind === "rhineart") {
+      g.fillStyle = "#1a3048"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#2a5a88"; g.fillRect(0, 120, 420, 60);
+      g.drawImage(sprites.lorelei, 200, 70);
+      g.drawImage(sprites.brigitta, 120, 90);
+      g.drawImage(sprites.statue, 250, 66);
+    } else if (kind === "skyart") {
+      g.fillStyle = "#7ec8f0"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#e8eef6"; g.fillRect(80, 40, 260, 70);
+      g.drawImage(sprites.telegro, 200, 50);
+      g.drawImage(sprites.johann, 120, 100);
+      g.drawImage(sprites.brigitta, 260, 100);
+      g.drawImage(sprites.musicbox, 202, 118);
+    } else if (kind === "end3") {
+      g.fillStyle = "#7ec8f0"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#e8eef6"; g.fillRect(40, 50, 40, 80); g.fillRect(160, 30, 50, 100); g.fillRect(300, 40, 60, 90);
+      g.drawImage(sprites.musicbox, 200, 110);
+      g.drawImage(sprites.johann, 150, 90);
+      g.drawImage(sprites.brigitta, 250, 90);
+      g.drawImage(sprites.howa, 90, 96);
+      g.drawImage(sprites.telegro, 310, 70);
     }
   }
   function showCine(list, i = 0) {
@@ -1550,6 +1918,7 @@ EEEEEEEEEEEE
   }
   function showPrologue(i = 0) { showCine(PROLOGUE, i); }
   function showPrologue2(i = 0) { showCine(PROLOGUE2, i); }
+  function showPrologue3(i = 0) { showCine(PROLOGUE3, i); }
   function advanceCine() {
     if (cineIndex < cineList.length - 1) showCine(cineList, cineIndex + 1);
     else beginExplore();
@@ -1564,14 +1933,21 @@ EEEEEEEEEEEE
     if (!fromSave) save(true);
     startMusic(currentMap().music);
     renderHud();
-    if (!fromSave && state.book === 2 && !flag("intro2")) {
+    if (!fromSave && state.book === 3 && !flag("intro3")) {
+      setFlag("intro3");
+      story([
+        ["Peter", "The bells are dead. I used to hunt in these woods when they still had the decency to be woods."],
+        ["Siegfried", "The Many-Named One came out of Darkespace fatter with stolen evil. Without the banishing music, his reign lasts forever."],
+        ["Brigitta", "Then we find a home that is not a box. Johann. Stop staring at the silence and walk."]
+      ]);
+    } else if (!fromSave && state.book === 2 && !flag("intro2")) {
       setFlag("intro2");
       story([
         ["Karsten", "The only thing that can't wait for breakfast is a burning house, am I right?"],
         ["Johann", "And even that could probably wait if you live in a stone house."],
         ["Brigitta", "Karsten. Jorgen still hasn't written. You should go."]
       ]);
-    } else if (!fromSave && state.book !== 2 && !flag("intro")) {
+    } else if (!fromSave && state.book === 1 && !flag("intro")) {
       setFlag("intro");
       story([
         ["Johann", "If I don't come down to breakfast this instant, Mother will—"],
@@ -1650,6 +2026,42 @@ EEEEEEEEEEEE
     }
     if (exit.to === "eastberlin" && !flag("wyrm_down")) {
       toast("The Frozen Globe still pulls toward the mountain.");
+      return;
+    }
+    if (exit.to === "ewyncot" && !flag("met_peter")) {
+      toast("Peter has not finished insulting the silence. Talk to him first.");
+      return;
+    }
+    if (exit.to === "rhine" && !flag("got_cloak")) {
+      toast("Ewyn's cottage first. Peter will not walk the Rhine unarmored.");
+      return;
+    }
+    if (exit.to === "sansomnia" && !flag("lorelei_free")) {
+      toast("Lorelei's watch opens the pilgrim road. Wake her first.");
+      return;
+    }
+    if (exit.to === "dolorii" && !flag("got_mask")) {
+      toast("Olear would not send you on without a pilgrim's name.");
+      return;
+    }
+    if (exit.to === "council" && !flag("met_cahni")) {
+      toast("Cahni's hospitality first. Then the Council.");
+      return;
+    }
+    if (exit.to === "refuge" && !flag("doom_down")) {
+      toast("The Doom Tone still hangs in the council chamber.");
+      return;
+    }
+    if (exit.to === "sanctuary" && !flag("howa_song")) {
+      toast("Howa has not yet taught the mountain to move.");
+      return;
+    }
+    if (exit.to === "skyisle" && !flag("telegro_ok")) {
+      toast("Telegro has not given the heights. Petitioners must attain them.");
+      return;
+    }
+    if (exit.to === "darkespace" && !flag("anchor_set")) {
+      toast("Plant the Custodians' anchor first. The box cannot be a prison while it is still a home.");
       return;
     }
     state.map = exit.to;
@@ -2307,6 +2719,226 @@ EEEEEEEEEEEE
       await say("", "Brutus's skin is flecked with gray, cool and stiff. The woods have begun to make a statue of him.");
       return;
     }
+    if (id === "peter_npc" || id === "peter_cot") {
+      if (flag("got_cloak")) {
+        await say("Peter", "I am not here to be useful. I am here because Ewyn told me to stop wasting the years I have left.");
+        return;
+      }
+      await story([
+        ["Peter", "Look at you. Children with a scrap sword, standing in a dead kingdom. Karsten would laugh until he coughed."],
+        ["Peter", "I made a bargain once, to keep my wife from being slaughtered. It did not make me wise. It made me old."],
+        ["Peter", "The cottage is still in the woods. If she has anything left to say, I would rather hear it with company than without."]
+      ]);
+      setFlag("met_peter");
+      state.quest = "ewynq";
+      renderHud();
+      return;
+    }
+    if (id === "rufus_grey") {
+      await say("Rufus", "The queen's bells have no descending scale left. I keep telling her she is safe. I do not believe myself.");
+      return;
+    }
+    if (id === "gold_chest") {
+      if (flag("got_rheingold")) { await say("", "The casket is empty. River-gold does not sit still."); return; }
+      await story([
+        ["", "A thin plate of river-gold, cold as the Rhine. Brigitta turns it toward the light."],
+        ["Brigitta", "Lorelei will want this. Statues remember offerings."]
+      ]);
+      state.inventory.rheingold = 1;
+      setFlag("got_rheingold");
+      toast("Obtained Rheingold.");
+      renderHud();
+      return;
+    }
+    if (id === "ewyn_ghost") {
+      await story([
+        ["Ewyn", "You took your time, Peter. The wounds from that earlier attack never truly healed. I stayed long enough to see the child cared for."],
+        ["Ewyn", "I am not here to scold. I am here because the battle ahead will not respect sarcasm."],
+        ["", "She shows a hidden compartment. A cloak of Fuchsbar pelt, enchanted to ward all but the strongest magic."]
+      ]);
+      setFlag("ewyn_done");
+      renderHud();
+      return;
+    }
+    if (id === "cloak_chest") {
+      if (flag("got_cloak")) { await say("", "The compartment is empty. The cloak already knows Peter's shoulders."); return; }
+      if (!flag("ewyn_done")) { await say("", "A hidden seam in the wall. Peter will not open it until she has spoken."); return; }
+      state.inventory.cloak = 1;
+      setFlag("got_cloak");
+      state.party.forEach((p) => { p.def += 2; });
+      toast("The Fuchsbar cloak settles over the party.");
+      state.quest = "rhineq";
+      renderHud();
+      await say("Ewyn", "Wear it. Then go be useful with what remains of your life.");
+      return;
+    }
+    if (id === "lorelei_stat") {
+      if (!state.inventory.rheingold) { await say("Brigitta", "A statue above the river. She will not wake for politeness. She wakes for Rheingold."); return; }
+      await story([
+        ["Brigitta", "Lorelei. We did not come to be lured. We came to bargain."],
+        ["", "The Rheingold touches the stone. Ice answers from below the Rhine. A woman steps out of a legend and looks through you."]
+      ]);
+      state.inventory.rheingold = 0;
+      setFlag("lorelei_free");
+      renderHud();
+      return;
+    }
+    if (id === "lorelei_npc") {
+      await story([
+        ["Lorelei", "I have imprisoned, healed, revealed, and opened doors. Jorgen's grief is not the only wound in this company."],
+        ["Lorelei", "Karsten once carried a portable doorway. You will carry a watch. It is a door that fits a pocket."],
+        ["Lorelei", "Howa still drums in the mountains. Tell him the old edict is gone. Darkness is not."]
+      ]);
+      state.inventory.watch = 1;
+      setFlag("got_watch");
+      toast("Obtained Lorelei's watch.");
+      state.quest = "pilgrim";
+      renderHud();
+      return;
+    }
+    if (id === "jorgen_rhine") {
+      await say("Jorgen", "She saw the grief I kept for decades. Healing still requires future care. I am trying.");
+      return;
+    }
+    if (id === "olear_npc") {
+      await story([
+        ["Olear", "Sacred pilgrims. The first my people have seen in generations. You do not need to sleep. We never did."],
+        ["Olear", "The worlds were once connected by regular crossings. The Seven Secrets may still hold the means."],
+        ["Olear", "Telegro's Sanctuary moves. Petitioners must attain the heights. We keep charts. You keep courage."]
+      ]);
+      setFlag("met_olear");
+      if (flag("got_mask")) state.quest = "dolorq";
+      renderHud();
+      return;
+    }
+    if (id === "mask_table") {
+      if (flag("got_mask")) { await say("", "The remaining masks watch you as if you might still forget your names."); return; }
+      state.inventory.mask = 1;
+      setFlag("got_mask");
+      toast("The Sansomnians name you pilgrims.");
+      state.quest = "dolorq";
+      renderHud();
+      await say("Olear", "Wear them. The Dolorii will see the office even if they do not see the persons.");
+      return;
+    }
+    if (id === "cahni_npc") {
+      await story([
+        ["Cahni", "Forgive the detention. A feast, clothing, quarters — meticulous hospitality."],
+        ["Bruno", "I distrust people who apologize with a banquet."],
+        ["Cahni", "Our people are not slaves to fear. The great tower nears the path of the Exalted One. Sacred pilgrims are... providential."]
+      ]);
+      setFlag("met_cahni");
+      state.quest = "councilq";
+      renderHud();
+      return;
+    }
+    if (id === "feast_table") {
+      healParty(true);
+      state.inventory.feast = (state.inventory.feast || 0) + 1;
+      renderHud();
+      await say("", "The feast is genuine in form. HP and MP restored. The purpose of the welcome is another matter.");
+      return;
+    }
+    if (id === "roleni_npc") {
+      if (flag("doom_down")) { await say("Father Roleni", "The Tone is broken. Certainty without wisdom is a kind of silence."); return; }
+      await story([
+        ["Father Roleni", "Seven priests. Seven Bells. The Doom Tone is not ceremony. It is judgment."],
+        ["Father Roleni", "A sacrifice on the eve of the Sanctuary's passage will secure the blessing we have pursued for generations."],
+        ["Johann", "I did not come here to be an offering."]
+      ]);
+      startBattle(["doom", "dolor"], { after: "doom" });
+      return;
+    }
+    if (id === "bells7") {
+      await say("", "Seven bells for seven secrets. Roleni has tuned them toward murder.");
+      return;
+    }
+    if (id === "howa_npc") {
+      if (hasHero("howa")) { await say("Howa", "Little bird. Keep the descant high. The mountain likes to be asked nicely."); return; }
+      await story([
+        ["Howa", "Little bird! You are freezing. Come in. We vote in harmony here. Dissonance is a no."],
+        ["Howa", "Goldenrule hunted our kind nearly to extinction. You say the edict is gone. You say darkness is spreading. Then we stop hiding."],
+        ["Howa", "Rhythm, parts, a high descant — and the world remembers it can be commanded. I will walk with you."]
+      ]);
+      state.party.push(member("howa"));
+      setFlag("howa_song");
+      setFlag("met_howa");
+      toast("Howa joined the party!");
+      state.quest = "telegroq";
+      renderHud();
+      return;
+    }
+    if (id === "drum_set") {
+      healParty(true);
+      renderHud();
+      await say("", "The great drum steadies the breath. HP and MP restored.");
+      return;
+    }
+    if (id === "telegro_npc") {
+      await story([
+        ["Telegro", "I never particularly wanted this job. I entertain myself with justice that fits the offense."],
+        ["Telegro", "Drevin wore his lies on the outside. You ask for a kingdom to leave its box. That is not a small request."],
+        ["Telegro", "The Skyward Isle will take you. Plant the anchor. Fail, and you scatter beyond repair."]
+      ]);
+      setFlag("telegro_ok");
+      state.quest = "anchq";
+      renderHud();
+      return;
+    }
+    if (id === "gian_npc") {
+      await story([
+        ["Gian", "Richard, once. The Custodians will not destroy the Many-Named One. He has drunk Darkespace."],
+        ["Gian", "Empty the box. Make it a prison. The old banishment will do the rest — if the kingdom is no longer inside."]
+      ]);
+      setFlag("met_gian");
+      return;
+    }
+    if (id === "homu_npc") {
+      if (flag("homu_used")) { await say("", "A pile of sticks. One question. One answer. That is the cost of knowing."); return; }
+      await story([
+        ["", "A wooden figurine no larger than a doll. You breathe on it. It springs up singing its own instructions."],
+        ["Homuchorus", "One question. Sung truly. Then I am sticks."]
+      ]);
+      const q = await say("Homuchorus", "Ask.", [
+        { label: "How do we take the kingdom out of the box?", value: "box" },
+        { label: "Not yet", value: "no" }
+      ]);
+      if (q !== "box") return;
+      await story([
+        ["Homuchorus", "Carry the Custodians' anchor. Plant it where the Isle meets the larger world. Then the box may empty, and the empty may imprison."],
+        ["", "The figurine bows and breaks into a pile of sticks."]
+      ]);
+      setFlag("homu_used");
+      state.inventory.homu = 0;
+      renderHud();
+      return;
+    }
+    if (id === "anchor_site") {
+      if (!flag("homu_used")) { await say("", "A ring of pale stone. The Homuchorus would know what belongs here."); return; }
+      if (flag("anchor_set")) { await say("", "The anchor holds. The Skyward Isle is no longer only sky."); return; }
+      await story([
+        ["", "You plant the magical anchor. The Isle steadies against a damaged, larger world — Burgenring's country, waiting to be a home."],
+        ["Siegfried", "Now the box can empty. Then we finish him."]
+      ]);
+      setFlag("anchor_set");
+      state.quest = "darkq";
+      renderHud();
+      return;
+    }
+    if (id === "many_dark") {
+      if (!flag("anchor_set")) { await say("", "He is a chorus of stolen names. Weaken him only after the kingdom has a place to stand."); return; }
+      await story([
+        ["Voice", "I have been known by many. I have drunk the vilest. You cannot unmake me."],
+        ["Gian", "We do not unmake you. We empty the house you meant to eat."],
+        ["Johann", "Then the old banishment can do what a sword cannot."]
+      ]);
+      startBattle(["many3", "shard"], { after: "final3" });
+      return;
+    }
+    if (id === "box_prison") {
+      await say("", "A music box no larger than a loaf of bread. J und K Müller. If the kingdom leaves, this becomes a door that only closes.");
+      return;
+    }
     await say(npc.name, "...");
   }
 
@@ -2373,6 +3005,14 @@ EEEEEEEEEEEE
       g.fillStyle = e.tint || "#8ab4d8";
       g.fillRect(x + 16, y + 8, 36, 70);
       g.fillStyle = "#e8f4ff"; g.fillRect(x + 22, y + 16, 8, 8); g.fillRect(x + 38, y + 16, 8, 8);
+    } else if (e.id === "doom" || e.id === "dolor") {
+      g.fillStyle = e.tint || "#2a1020";
+      g.fillRect(x + 16, y, 36, 90);
+      g.fillStyle = "#c9a24a"; g.fillRect(x + 24, y + 18, 20, 8);
+    } else if (e.id === "shard" || e.id === "many3") {
+      g.fillStyle = "#140818"; g.fillRect(x + 8, y, 52, 90);
+      g.fillStyle = "#6a2060"; g.fillRect(x + 16, y + 16, 36, 28);
+      g.fillStyle = "#c9a24a"; g.fillRect(x + 22, y + 22, 6, 6); g.fillRect(x + 40, y + 22, 6, 6);
     } else if (e.id === "croc") {
       g.fillRect(x + 8, y + 20, 52, 60);
       g.fillRect(x + 20, y, 40, 28);
@@ -2401,6 +3041,8 @@ EEEEEEEEEEEE
     if (state.map === "middlespace") { g.fillStyle = "#eef2ff"; g.fillRect(0, 0, 960, 260); }
     if (state.map === "mountain" || state.map === "wyrmlair" || state.map === "caves") { g.fillStyle = "#1a3048"; g.fillRect(0, 0, 960, 260); }
     if (state.map === "berlin" || state.map === "eastberlin") { g.fillStyle = "#2a2420"; g.fillRect(0, 0, 960, 260); }
+    if (state.map === "greyking" || state.map === "darkespace") { g.fillStyle = "#1a1020"; g.fillRect(0, 0, 960, 260); }
+    if (state.map === "sanctuary" || state.map === "skyisle") { g.fillStyle = "#6ab8e8"; g.fillRect(0, 0, 960, 260); }
     battle.enemies.forEach((e, i) => {
       if (e.hp <= 0) return;
       const x = 90 + i * 140, y = 118;
@@ -2447,7 +3089,7 @@ EEEEEEEEEEEE
       back.onclick = () => { battle.menu = "cmd"; renderBattle(); };
       box.appendChild(back);
     } else if (battle.menu === "item") {
-      ["porridge", "sausage", "draught", "charm", "cocoa"].forEach((id) => {
+      ["porridge", "sausage", "draught", "charm", "cocoa", "feast"].forEach((id) => {
         const b = document.createElement("button");
         b.className = "cmd-btn";
         b.textContent = `${ITEMS[id].name} x${state.inventory[id] || 0}`;
@@ -2623,6 +3265,8 @@ EEEEEEEEEEEE
       if (after === "wyrm") afterWyrm();
       if (after === "final2") afterFinal2();
       if (after === "bruno_roar") afterBrunoRoar();
+      if (after === "doom") afterDoom();
+      if (after === "final3") afterFinal3();
     }
     battle = null;
     startMusic(currentMap().music);
@@ -2717,6 +3361,7 @@ EEEEEEEEEEEE
     $("endTitle").textContent = "The First Movement Ends";
     $("endBody").textContent = "The Many-Named One unravels into borrowed faces and is gone — for now. The white castle bells find their true descending scale. Queen Ellis still breathes. Brutus is not stone yet. In a workshop that is also a world, a music box marked J und K Müller keeps singing. Johann looks at Brigitta, at Siegfried, at the scrap sword that learned a canticle. Two worlds remain tangled. The song is not yet finished.";
     $("endBook2Btn").classList.remove("hidden");
+    $("endBook3Btn").classList.add("hidden");
     drawCine("end", "endArt");
     startMusic("title");
     save(true);
@@ -2729,7 +3374,33 @@ EEEEEEEEEEEE
     $("endTitle").textContent = "The Second Movement Ends";
     $("endBody").textContent = "The clear staff passes through the Many-Named One and the borrowed faces howl themselves thin. He melts into a white portal and is gone — for now. Molly still breathes. Johann still holds the Frozen Globe as if it might sing. Grandfather Richard spends his last ounce of effort on the family's behalf and is not lost: Axertes waits in the Centerspace, in a better world, with work still to do. Two worlds remain tangled. The music box keeps singing.";
     $("endBook2Btn").classList.add("hidden");
+    $("endBook3Btn").classList.remove("hidden");
     drawCine("end2", "endArt");
+    startMusic("title");
+    save(true);
+  }
+
+  async function afterDoom() {
+    setFlag("doom_down");
+    healParty(true);
+    state.quest = "howaq";
+    await story([
+      ["", "The Doom Tone cracks like a bell that has been asked to judge itself."],
+      ["Father Roleni", "Certainty without wisdom is a kind of silence."],
+      ["Howa", "Little bird! If you can still hear, the mountain is this way."]
+    ]);
+    renderHud();
+  }
+  async function afterFinal3() {
+    setFlag("won3");
+    state.quest = "done3";
+    mode = "ending";
+    $("ending").classList.remove("hidden");
+    $("endTitle").textContent = "The Last Movement Ends";
+    $("endBody").textContent = "The Custodians break the barrier. The Canticle Kingdom leaves the Müller box and stands, whole, in a larger world beside Burgenring. The old banishment returns. The Many-Named One is pulled through a great portal and trapped in the now-empty music box — an eternal prison, not a home. Five years on, Johann and Brigitta keep a realm that no longer depends on a melody to choose its queens. The song is finished. The singing is not.";
+    $("endBook2Btn").classList.add("hidden");
+    $("endBook3Btn").classList.add("hidden");
+    drawCine("end3", "endArt");
     startMusic("title");
     save(true);
   }
@@ -2762,6 +3433,7 @@ EEEEEEEEEEEE
     if (hasHero("nachtigal")) ctx.drawImage(sprites.nachtigal, Math.floor(state.x - camX - 18), Math.floor(state.y - camY - 4));
     if (hasHero("bruno")) ctx.drawImage(sprites.bruno, Math.floor(state.x - camX + 20), Math.floor(state.y - camY - 4));
     if (hasHero("richard")) ctx.drawImage(sprites.richard, Math.floor(state.x - camX + 2), Math.floor(state.y - camY - 14));
+    if (hasHero("howa")) ctx.drawImage(sprites.howa, Math.floor(state.x - camX - 22), Math.floor(state.y - camY - 2));
   }
 
   function update(dt) {
@@ -2905,9 +3577,15 @@ EEEEEEEEEEEE
     resetGame(2);
     showPrologue2(0);
   }
+  function startBook3() {
+    ensureAudio();
+    resetGame(3);
+    showPrologue3(0);
+  }
 
   $("newGameBtn").onclick = startNew;
   $("book2Btn").onclick = startBook2;
+  $("book3Btn").onclick = startBook3;
   $("continueBtn").onclick = () => { if (load()) { ensureAudio(); beginExplore(true); } };
   $("optionsBtn").onclick = () => $("options").classList.remove("hidden");
   $("closeOptions").onclick = () => $("options").classList.add("hidden");
@@ -2918,6 +3596,7 @@ EEEEEEEEEEEE
   $("quitTitleBtn").onclick = () => { save(true); $("pause").classList.add("hidden"); $("title").classList.remove("hidden"); mode = "title"; startMusic("title"); };
   $("endTitleBtn").onclick = () => { $("ending").classList.add("hidden"); $("title").classList.remove("hidden"); mode = "title"; startMusic("title"); };
   $("endBook2Btn").onclick = () => { $("ending").classList.add("hidden"); startBook2(); };
+  $("endBook3Btn").onclick = () => { $("ending").classList.add("hidden"); startBook3(); };
   $("cinematic").onclick = () => { if (mode === "cine") advanceCine(); };
   $("dialog").onclick = (e) => {
     if (e.target.closest("button")) return;
@@ -2946,6 +3625,7 @@ EEEEEEEEEEEE
       snapshot() { return { mode, map: state.map, quest: state.quest, book: state.book, party: state.party.map((p) => ({ id: p.id, hp: p.hp, atk: p.atk })), flags: { ...state.flags }, inv: { ...state.inventory }, gold: state.gold }; },
       state,
       startBook2,
+      startBook3,
       warp(map, x, y) { state.map = map; state.x = x * TILE; state.y = y * TILE; if (blocked(state.x, state.y)) { /* keep */ } renderHud(); },
       join(id) { if (!hasHero(id)) state.party.push(member(id)); },
       flag: setFlag, battle: startBattle,

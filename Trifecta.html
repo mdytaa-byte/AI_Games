@@ -146,6 +146,72 @@
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     .win-banner{position:absolute;inset:auto 8% 8%;text-align:center;pointer-events:none;z-index:6}
     .win-banner strong{display:block;font-family:Cinzel,Georgia,serif;font-size:28px;color:#f0d796;text-shadow:0 4px 18px #000}
+    html.skip-title .title-screen{display:none!important}
+    .title-screen{
+      position:fixed;inset:0;z-index:28;display:grid;place-items:center;align-content:center;
+      padding:28px 20px 36px;overflow-x:hidden;overflow-y:auto;opacity:1;transition:opacity .55s ease;
+      background:
+        radial-gradient(ellipse 90% 48% at 50% -8%,#9a4a2240 0 24%,transparent 58%),
+        radial-gradient(circle at 8% 72%,#e1544726 0 1.4%,transparent 20%),
+        radial-gradient(circle at 92% 70%,#f1bc3224 0 1.4%,transparent 20%),
+        radial-gradient(circle at 50% 100%,#4e88e116 0 12%,transparent 38%),
+        linear-gradient(180deg,#050403 0%,#0b0d12 46%,#060504 100%);
+    }
+    .title-screen.leaving{opacity:0;pointer-events:none}
+    .title-screen:after{
+      content:"";position:absolute;inset:0;pointer-events:none;
+      background:radial-gradient(ellipse at 50% 42%,transparent 28%,#000a 100%);
+    }
+    .title-filigree{position:absolute;inset:16px;pointer-events:none;border:1px solid #c69a4638;box-shadow:inset 0 0 0 7px #0005,inset 0 0 90px #0009}
+    .title-filigree i{position:absolute;width:78px;height:78px;border:2px solid #c69a4670}
+    .title-filigree .nw{top:-2px;left:-2px;border-right:none;border-bottom:none}
+    .title-filigree .ne{top:-2px;right:-2px;border-left:none;border-bottom:none}
+    .title-filigree .sw{bottom:-2px;left:-2px;border-right:none;border-top:none}
+    .title-filigree .se{bottom:-2px;right:-2px;border-left:none;border-top:none}
+    .title-torch{position:absolute;top:46%;width:150px;height:150px;border-radius:50%;pointer-events:none;opacity:.8;
+      background:radial-gradient(circle,#ffd27a 0 5%,#dc7d2a 8% 14%,#3b1d0d 26%,transparent 64%);
+      filter:blur(4px);animation:torch 4.2s ease-in-out infinite}
+    .title-torch.left{left:-58px}
+    .title-torch.right{right:-58px;animation-delay:-1.7s}
+    .title-dust{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .title-dust span{
+      position:absolute;bottom:-8%;width:3px;height:3px;border-radius:50%;
+      background:#f7e7b8;box-shadow:0 0 8px #f4df9b;opacity:0;
+      animation:titleMote linear infinite;
+    }
+    @keyframes titleMote{
+      0%{transform:translateY(0) scale(.35);opacity:0}
+      12%{opacity:.55}
+      78%{opacity:.18}
+      100%{transform:translateY(-108vh) scale(1);opacity:0}
+    }
+    .title-content{position:relative;z-index:2;text-align:center;max-width:880px;width:min(880px,100%);animation:titleRise .9s ease-out}
+    @keyframes titleRise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+    .title-eyebrow{margin:0 0 10px;font-size:12px;letter-spacing:.42em;text-transform:uppercase;color:#cbb58a}
+    .title-wordmark{
+      font-family:Cinzel,Georgia,serif;font-weight:700;margin:0;line-height:.92;
+      font-size:clamp(44px,11vw,124px);letter-spacing:.3em;padding-left:.3em;
+      color:#f6e2a8;animation:titleBreathe 5.4s ease-in-out infinite;
+      text-shadow:0 0 22px #c69a4655,0 2px 0 #5c4014,0 16px 48px #000;
+    }
+    @keyframes titleBreathe{50%{text-shadow:0 0 38px #e5bb5588,0 2px 0 #5c4014,0 16px 48px #000}}
+    .title-tagline{
+      font-family:Georgia,"Times New Roman",serif;font-style:italic;
+      color:#d2c6ad;font-size:clamp(15px,2.1vw,20px);line-height:1.5;
+      max-width:540px;margin:18px auto 4px;
+    }
+    .title-keep{margin:0;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#c9b48a;display:flex;align-items:center;justify-content:center;gap:8px}
+    .title-keep i{width:8px;height:8px;border-radius:50%;box-shadow:0 0 10px currentColor}
+    .title-keep.ember{color:#e15447;margin-top:10px}
+    .title-keep-row{display:flex;justify-content:space-between;width:min(460px,86%);margin:-6px auto 0;position:relative;z-index:3}
+    .title-keep.azure{color:#6aa0ee}
+    .title-keep.dorian{color:#f1bc32}
+    .title-sigil{width:min(520px,92vw);height:auto;display:block;margin:2px auto -8px;filter:drop-shadow(0 20px 28px #000)}
+    .title-sigil .gigas-hover{animation:hoverGigas 3.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+    .title-rule{width:min(280px,70%);height:1px;margin:16px auto 0;background:linear-gradient(90deg,transparent,#c69a46,transparent);border:0}
+    .title-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+    .title-actions .gold-btn,.title-actions .ghost-btn{min-width:220px}
+    .title-hint{margin:14px 0 0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8e8270}
     @media(max-width:1080px){
       .topbar{grid-template-columns:1fr auto}.match-status{display:none}
       .game-shell{grid-template-columns:1fr}.board-frame{min-height:600px}
@@ -157,6 +223,13 @@
       .game-shell{padding:10px;gap:10px}.board-frame{min-height:430px}.side{display:flex}
       .panel{padding:16px}.setup-grid,.legend{grid-template-columns:1fr}.modal{padding:24px 18px}
       #board{max-height:none}
+      .title-wordmark{letter-spacing:.16em;padding-left:.16em;font-size:42px}
+      .title-sigil{width:min(340px,94vw)}
+      .title-actions{flex-direction:column;align-items:stretch}
+      .title-actions .gold-btn,.title-actions .ghost-btn{min-width:0;width:100%}
+      .title-screen{padding:12px}
+      .title-filigree{inset:8px}
+      .title-torch{opacity:.55}
     }
     @media(prefers-reduced-motion:reduce){
       *,*:before,*:after{animation:none!important;transition:none!important}
@@ -164,6 +237,99 @@
   </style>
 </head>
 <body>
+  <script>if(/[?&](?:test|playtest|autostart)=1\b/.test(location.search)) document.documentElement.classList.add('skip-title');</script>
+  <div class="title-screen" id="titleScreen" role="dialog" aria-modal="true" aria-labelledby="titleWordmark">
+    <div class="title-filigree" aria-hidden="true"><i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i></div>
+    <span class="title-torch left" aria-hidden="true"></span>
+    <span class="title-torch right" aria-hidden="true"></span>
+    <div class="title-dust" aria-hidden="true">
+      <span style="left:8%;animation-duration:11s;animation-delay:-1s"></span>
+      <span style="left:14%;animation-duration:15s;animation-delay:-6s"></span>
+      <span style="left:22%;animation-duration:13s;animation-delay:-3s"></span>
+      <span style="left:31%;animation-duration:17s;animation-delay:-9s"></span>
+      <span style="left:39%;animation-duration:12s;animation-delay:-4s"></span>
+      <span style="left:47%;animation-duration:16s;animation-delay:-11s"></span>
+      <span style="left:54%;animation-duration:14s;animation-delay:-2s"></span>
+      <span style="left:61%;animation-duration:18s;animation-delay:-8s"></span>
+      <span style="left:69%;animation-duration:12.5s;animation-delay:-5s"></span>
+      <span style="left:76%;animation-duration:15.5s;animation-delay:-12s"></span>
+      <span style="left:84%;animation-duration:13.5s;animation-delay:-7s"></span>
+      <span style="left:91%;animation-duration:16.5s;animation-delay:-1.5s"></span>
+    </div>
+    <div class="title-content">
+      <p class="title-eyebrow">Chamber of Three Keeps</p>
+      <h1 class="title-wordmark" id="titleWordmark">Trifecta</h1>
+      <p class="title-tagline">Three factions. Ivory and obsidian. The first to a rival keep claims the dawn.</p>
+      <p class="title-keep ember"><i style="background:#e15447"></i>Ember</p>
+      <svg class="title-sigil" viewBox="0 0 640 430" aria-hidden="true">
+        <defs>
+          <linearGradient id="tsStone" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#3a3228"/><stop offset=".5" stop-color="#171512"/><stop offset="1" stop-color="#2d251d"/>
+          </linearGradient>
+          <linearGradient id="tsLight" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#efe3c4"/><stop offset="1" stop-color="#c4ae7d"/>
+          </linearGradient>
+          <linearGradient id="tsDark" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#3a3126"/><stop offset="1" stop-color="#0e0c0a"/>
+          </linearGradient>
+          <linearGradient id="tsGigas" x1="0" y1="0" x2="1" y2="1">
+            <stop stop-color="#11131a"/><stop offset=".18" stop-color="#d9483e"/><stop offset=".5" stop-color="#477ed4"/><stop offset="1" stop-color="#e4b43d"/>
+          </linearGradient>
+          <radialGradient id="tsRay" cx="50%" cy="8%" r="70%">
+            <stop stop-color="#e5bb5533"/><stop offset="1" stop-color="#e5bb5500"/>
+          </radialGradient>
+          <filter id="tsGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="4" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <polygon points="320,18 28,412 612,412" fill="url(#tsRay)"/>
+        <polygon points="320,22 36,408 604,408" fill="url(#tsStone)" stroke="#a37b39" stroke-width="4"/>
+        <polygon points="320,52 68,388 572,388" fill="#14110e" stroke="#5d4930" stroke-width="1.6"/>
+        <polygon points="320,64 276,140 364,140" fill="url(#tsLight)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="276,140 364,140 320,216" fill="url(#tsDark)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="276,140 232,216 320,216" fill="url(#tsLight)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="364,140 320,216 408,216" fill="url(#tsLight)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="232,216 320,216 276,292" fill="url(#tsDark)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="320,216 408,216 364,292" fill="url(#tsDark)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="232,216 188,292 276,292" fill="url(#tsLight)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="320,216 276,292 364,292" fill="url(#tsLight)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="408,216 364,292 452,292" fill="url(#tsLight)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="188,292 276,292 232,368" fill="url(#tsDark)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="276,292 364,292 320,368" fill="url(#tsDark)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="364,292 452,292 408,368" fill="url(#tsDark)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="188,292 144,368 232,368" fill="url(#tsLight)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="276,292 232,368 320,368" fill="url(#tsLight)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="364,292 320,368 408,368" fill="url(#tsLight)" stroke="#6d5735" stroke-width="1.1"/>
+        <polygon points="452,292 408,368 496,368" fill="url(#tsLight)" stroke="#6d5735" stroke-width="1.1"/>
+        <g filter="url(#tsGlow)">
+          <polygon points="320,64 276,140 364,140" fill="#e1544733" stroke="#e15447" stroke-width="2.4"/>
+          <polygon points="188,292 144,368 232,368" fill="#4e88e133" stroke="#4e88e1" stroke-width="2.4"/>
+          <polygon points="452,292 408,368 496,368" fill="#f1bc3233" stroke="#f1bc32" stroke-width="2.4"/>
+          <circle cx="320" cy="108" r="7" fill="#e15447"/>
+          <circle cx="188" cy="338" r="7" fill="#4e88e1"/>
+          <circle cx="452" cy="338" r="7" fill="#f1bc32"/>
+        </g>
+        <g class="gigas-hover" transform="translate(320 236)">
+          <ellipse cx="-28" cy="-10" rx="26" ry="20" fill="#11141c" stroke="#e15447" stroke-width="3.2"/>
+          <ellipse cx="0" cy="16" rx="26" ry="20" fill="#11141c" stroke="#4e88e1" stroke-width="3.2"/>
+          <ellipse cx="28" cy="-8" rx="26" ry="20" fill="#11141c" stroke="#f1bc32" stroke-width="3.2"/>
+          <ellipse cx="0" cy="-2" rx="22" ry="15" fill="url(#tsGigas)" stroke="#f4df9b" stroke-width="1.8"/>
+          <path d="M-10 -22 l10 -16 l10 16" fill="#0d0f14" stroke="#e4b43d" stroke-width="1.6"/>
+        </g>
+      </svg>
+      <div class="title-keep-row">
+        <p class="title-keep azure"><i style="background:#4e88e1"></i>Azure</p>
+        <p class="title-keep dorian"><i style="background:#f1bc32"></i>Dorian</p>
+      </div>
+      <hr class="title-rule">
+      <div class="title-actions">
+        <button class="gold-btn" id="enterChamberBtn" type="button">Enter the Chamber</button>
+        <button class="ghost-btn" id="titleRulesBtn" type="button">How to Play</button>
+      </div>
+      <p class="title-hint">Press Enter</p>
+    </div>
+  </div>
   <header class="topbar">
     <div class="brand"><div class="brand-mark" aria-hidden="true"><span>△</span></div><h1>Trifecta</h1></div>
     <div class="match-status">
@@ -270,7 +436,7 @@
           </select>
         </div>
       </div>
-      <div class="modal-actions"><button class="gold-btn" id="startBtn" type="button">Enter the Chamber</button></div>
+      <div class="modal-actions"><button class="gold-btn" id="startBtn" type="button">Begin the Match</button></div>
     </div>
   </div>
 
@@ -904,8 +1070,44 @@
     function toast(s){if(state.silent) return; const t=$('#toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);}
     function celebrate(){toast(`${NAMES[state.winner]} claims victory!`);}
 
+    function titleOpen(){return !$('#titleScreen').classList.contains('hidden');}
+    function showTitle(show){
+      const t=$('#titleScreen');
+      t.classList.toggle('hidden', !show);
+      t.classList.remove('leaving');
+      document.documentElement.classList.toggle('skip-title', !show);
+      ['.topbar','.game-shell'].forEach(sel=>{
+        const el=$(sel); if(!el) return;
+        if(show) el.setAttribute('inert',''); else el.removeAttribute('inert');
+      });
+    }
+    function enterChamber(){
+      const t=$('#titleScreen');
+      if(t.classList.contains('hidden')){
+        $('#setupModal').classList.remove('hidden');
+        return;
+      }
+      if(t.classList.contains('leaving')) return;
+      const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const finish=(()=>{
+        let done=false;
+        return ()=>{
+          if(done) return; done=true;
+          showTitle(false);
+          $('#setupModal').classList.remove('hidden');
+          $('#startBtn').focus();
+        };
+      })();
+      if(reduced){finish(); return;}
+      t.classList.add('leaving');
+      t.addEventListener('transitionend', finish, {once:true});
+      setTimeout(finish, 700);
+    }
+
     $('#newBtn').onclick=()=>$('#setupModal').classList.remove('hidden');
     $('#startBtn').onclick=newGame;
+    $('#enterChamberBtn').onclick=enterChamber;
+    $('#titleRulesBtn').onclick=()=>$('#rulesModal').classList.remove('hidden');
     $('#rulesBtn').onclick=()=>$('#rulesModal').classList.remove('hidden');
     $('#closeRules').onclick=()=>$('#rulesModal').classList.add('hidden');
     $('#tacticsBtn').onclick=()=>{$('#threatToggle').checked=!$('#threatToggle').checked; state.showThreats=$('#threatToggle').checked; render();};
@@ -915,7 +1117,13 @@
     [$('#rulesModal'),$('#setupModal')].forEach(m=>m.addEventListener('click',e=>{if(e.target===m&&m.id==='rulesModal') m.classList.add('hidden');}));
     document.addEventListener('keydown',e=>{
       if(e.key==='Escape') $('#rulesModal').classList.add('hidden');
-      if((e.key==='r'||e.key==='R')&&!state.busy) rotateSelected();
+      if((e.key==='r'||e.key==='R')&&!state.busy&&!titleOpen()) rotateSelected();
+      if(e.key==='Enter'&&titleOpen()&&!$('#titleScreen').classList.contains('leaving')&&
+         $('#setupModal').classList.contains('hidden')&&$('#rulesModal').classList.contains('hidden')&&
+         e.target.tagName!=='BUTTON'&&e.target.tagName!=='SELECT'){
+        e.preventDefault();
+        enterChamber();
+      }
     });
 
     function boardInvariant(){
@@ -969,6 +1177,7 @@
     function runSelfTest(){
       const fails=[];
       const ok=(cond,msg)=>{if(!cond) fails.push(msg);};
+      ok($('#titleScreen').classList.contains('hidden'),'title screen is hidden during tests');
       ok(cellList.length===N*N,`expected ${N*N} tiles, got ${cellList.length}`);
       ok(nbr('U0-0').length===1 && nbr('U0-0')[0]==='D1-0','top keep has a single gate');
       ok(nbr(`U${N-1}-0`).join()===`D${N-1}-0`,'azure keep gate');
@@ -1044,13 +1253,17 @@
     resetPieces();
     log('The board awaits your command.');
     render();
+    const skipTitle=/[?&](?:test|playtest|autostart)=1\b/.test(location.search);
+    if(skipTitle) showTitle(false);
+    else{
+      showTitle(true);
+      $('#enterChamberBtn').focus();
+    }
     if(/[?&](?:test|playtest)=1\b/.test(location.search)){
       const fails=runSelfTest();
       document.title=fails.length?`FAIL ${fails.length}`:'PASS';
       document.body.dataset.test=fails.length?fails.join(' | '):'ok';
       console.log(fails.length?fails:'PASS');
-    }else if(!/[?&]autostart=1\b/.test(location.search)){
-      $('#setupModal').classList.remove('hidden');
     }
   })();
   </script>

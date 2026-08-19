@@ -15,10 +15,9 @@ def wrap(js: str) -> str:
 
 inline = (
     "<script>\n"
-    "const CHARACTER_KIT_BUNDLE_B64 = '" + b64 + "';\n"
-    "</script>\n"
-    "<script>\n" + wrap(engine) + "\n</script>\n"
-    "<script>\n" + wrap(lab) + "\n</script>"
+    "window.CHARACTER_KIT_BUNDLE_B64 = '" + b64 + "';\n"
+    + wrap(engine) + "\n"
+    + wrap(lab) + "\n</script>"
 )
 
 portable = html.replace(

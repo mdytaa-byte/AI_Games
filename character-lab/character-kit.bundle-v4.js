@@ -136,12 +136,21 @@ function patternTexture(name, opt){
   if (name === 'plain' || typeof document === 'undefined') return null;
   const sp = Math.max(.35, Number(opt.spacing) || 1);
   const ang = Number(opt.angle) || 0;
-  const key = name + '|' + sp.toFixed(2) + '|' + (ang | 0);
+  const fg = opt.fg || '';
+  const alt = opt.alt || '';
+  const key = name + '|' + sp.toFixed(2) + '|' + (ang | 0) + '|' + fg + '|' + alt;
   if (PATTERN_CACHE[key]) return PATTERN_CACHE[key];
   const S = 256, cv = document.createElement('canvas'); cv.width = cv.height = S;
   const x = cv.getContext('2d');
-  const g = v => 'rgb(' + [v * 255 | 0, v * 255 | 0, v * 255 | 0] + ')';
-  x.fillStyle = '#fff'; x.fillRect(0, 0, S, S);
+  const mix = (hex, v) => {
+    const c = new THREE.Color(hex || '#000000');
+    const r = (255 * (c.r * (1 - v) + v)) | 0;
+    const g0 = (255 * (c.g * (1 - v) + v)) | 0;
+    const b = (255 * (c.b * (1 - v) + v)) | 0;
+    return 'rgb(' + r + ',' + g0 + ',' + b + ')';
+  };
+  const g = v => fg ? mix(fg, v) : 'rgb(' + [v * 255 | 0, v * 255 | 0, v * 255 | 0] + ')';
+  x.fillStyle = alt ? mix(alt, .92) : '#fff'; x.fillRect(0, 0, S, S);
   if (ang){
     x.translate(S / 2, S / 2); x.rotate(ang * Math.PI / 180); x.translate(-S / 2, -S / 2);
   }
@@ -391,7 +400,10 @@ const BOTTOM_LEGS = {
 };
 
 function resolveHair(cfg){
-  const base = Object.assign({}, HAIR_PRESETS[cfg.hair] || HAIR_PRESETS.crop);
+  if (cfg.hair && cfg.hair !== 'custom' && HAIR_PRESETS[cfg.hair]) {
+    return Object.assign({}, HAIR_PRESETS[cfg.hair]);
+  }
+  const base = Object.assign({}, HAIR_PRESETS.crop);
   if (cfg.hairTexture) base.texture = cfg.hairTexture;
   if (cfg.hairPart) base.part = cfg.hairPart;
   if (cfg.hairFringe) base.fringe = cfg.hairFringe;
@@ -399,13 +411,15 @@ function resolveHair(cfg){
   return base;
 }
 function resolveSleeves(cfg){
-  const layer = (cfg.outerwear && cfg.outerwear !== 'none') ? cfg.outerwear : (cfg.baseTop || 'sweater');
-  if (TOP_SLEEVES[layer]) return TOP_SLEEVES[layer];
+  if (cfg.sleeves && cfg._lockSleeves) return cfg.sleeves;
+  const layer = (cfg.outerwear && cfg.outerwear !== 'none') ? cfg.outerwear : (cfg.baseTop || '');
+  if (layer && TOP_SLEEVES[layer]) return TOP_SLEEVES[layer];
   return cfg.sleeves || 'long';
 }
 function resolveLegwear(cfg){
-  const b = cfg.bottom || 'trousers';
-  if (BOTTOM_LEGS[b]) return BOTTOM_LEGS[b] === 'short' ? 'short' : (BOTTOM_LEGS[b] === 'none' ? 'none' : 'long');
+  if (cfg.legwear && cfg._lockLegwear) return cfg.legwear;
+  const b = cfg.bottom || '';
+  if (b && BOTTOM_LEGS[b]) return BOTTOM_LEGS[b] === 'short' ? 'short' : (BOTTOM_LEGS[b] === 'none' ? 'none' : 'long');
   return cfg.legwear || 'long';
 }
 function hash32(str){
@@ -435,6 +449,15 @@ function mixHex(a, b, t){
   pa.lerp(pb, t);
   return '#' + pa.getHexString();
 }
+function colorWord(hex){
+  const c = new THREE.Color(hex || '#888888');
+  const hsl = { h: 0, s: 0, l: 0 };
+  c.getHSL(hsl);
+  if (hsl.s < .12) return hsl.l > .7 ? 'light grey' : hsl.l < .25 ? 'black' : 'grey';
+  const names = ['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink'];
+  const i = Math.round(hsl.h * 8) % 8;
+  return (hsl.l < .32 ? 'dark ' : hsl.l > .72 ? 'light ' : '') + names[i];
+}
 function describeCharacter(cfg){
   cfg = Object.assign({}, DEFAULTS, cfg || {});
   const hp = resolveHair(cfg);
@@ -446,11 +469,13 @@ function describeCharacter(cfg){
   const hairBit = hp.back === 'bald' ? 'bald' :
     ((hp.texture === 'straight' ? '' : hp.texture + ' ') +
      (hp.back === 'loose' ? 'short' : hp.back) + ' hair').replace(/\s+/g, ' ').trim();
-  bits.push(hairBit + ' in a ' + (cfg.hairColor || 'dark') + ' colour');
+  bits.push(hairBit + (hp.back === 'bald' ? '' : ' in a ' + colorWord(cfg.hairColor) + ' colour'));
   const clothes = [];
   if (cfg.baseTop && cfg.baseTop !== 'none') clothes.push(cfg.baseTop.replace('buttonup', 'button-up'));
   if (cfg.outerwear && cfg.outerwear !== 'none') clothes.push(cfg.outerwear);
   if (cfg.bottom && cfg.bottom !== 'none') clothes.push(cfg.bottom);
+  if (cfg.footwear && cfg.footwear !== 'none' && cfg.footwear !== 'bare') clothes.push(cfg.footwear);
+  if (cfg.neckwear && cfg.neckwear !== 'none') clothes.push(cfg.neckwear);
   if (clothes.length) bits.push('wearing a ' + clothes.join(' over '));
   if (cfg.headwear && cfg.headwear !== 'none') bits.push(cfg.headwear.replace('widebrim', 'wide-brim hat').replace('tophat', 'top hat'));
   if (cfg.glasses && cfg.glasses !== 'none') bits.push(cfg.glasses === 'sun' ? 'sunglasses' : cfg.glasses + ' glasses');
@@ -519,13 +544,16 @@ function attachPropSlot(bones, map, slot, id, H, cfg, P){
   if (!id || id === 'none') return;
   const def = CharacterFeatures.props[id];
   if (!def || typeof def.build !== 'function') return;
-  const boneName = def.bone || SLOT_BONE[slot] || SLOT_BONE[def.slot] || 'handL';
+  const boneName = (def.bone === 'head' || def.slot === 'head') ? 'head'
+    : (def.bone && (slot === def.slot || (slot === 'leftHand' && /L$/.test(def.bone)) || (slot === 'rightHand' && /R$/.test(def.bone))))
+      ? def.bone
+      : (SLOT_BONE[slot] || def.bone || SLOT_BONE[def.slot] || 'handL');
   const bone = bones[map[boneName]];
   if (!bone) return;
   const rig = new THREE.Group();
   rig.userData.propSlot = slot;
   bone.add(rig);
-  const place = def.slot || slot;
+  const place = boneName === 'head' ? 'head' : slot;
   if (place === 'leftHand' || place === 'rightHand'){
     const side = (place === 'rightHand' || boneName.indexOf('R') >= 0) ? 'R' : 'L';
     if (P && P['handTip' + side] && P['hand' + side]){
@@ -817,7 +845,8 @@ function buildWardrobeOverlays(cfg, bones, map, H, fat, hr){
 }
 
 function createCharacter(input){
-  const cfg = applyColorLinks(Object.assign({}, DEFAULTS, input || {}));
+  const clone = v => JSON.parse(JSON.stringify(v || {}));
+  const cfg = applyColorLinks(Object.assign(clone(DEFAULTS), clone(input || {})));
   if (!cfg.propLeft) cfg.propLeft = cfg.prop || 'none';
   const Q = QUALITY[cfg.quality] || QUALITY.standard;
   const age = THREE.MathUtils.clamp(Number(cfg.age) || 0, 0, 1);
@@ -861,6 +890,13 @@ function createCharacter(input){
   };
   const SK = { key: 'skin', pad: 1, ch: 0 }, SH = { key: 'shirt', pad: 1.07, ch: 1 };
   const PA = { key: 'pants', pad: 1.06, ch: 2 }, SO = { key: 'shoe', pad: 1.2, ch: 2 };
+  const TOP_PAD = { tshirt: 1.04, blouse: 1.09, sweater: 1.14, hoodie: 1.16, polo: 1.06,
+    buttonup: 1.08, tunic: 1.12, dress: 1.10 };
+  const OUTER_PAD = { jacket: 1.18, coat: 1.22, robe: 1.08, vest: 1.12 };
+  SH.pad = TOP_PAD[cfg.baseTop] || SH.pad;
+  if (cfg.outerwear && OUTER_PAD[cfg.outerwear]) SH.pad = Math.max(SH.pad, OUTER_PAD[cfg.outerwear]);
+  if (cfg.bottom === 'jeans' || cfg.bottom === 'cargo') PA.pad = 1.12;
+  if (cfg.bottom === 'leggings') PA.pad = 1.02;
   const SH2 = { key: 'shirt', pad: 1, ch: 1 };   // explicit radii, no padding
   const SK2 = { key: 'skin', pad: 1, ch: 0 };
   const SL = { key: 'sole', pad: 1, ch: 2 };      // sole slab, radius set explicitly
@@ -899,7 +935,7 @@ function createCharacter(input){
   });
   // neck
   tube(B, P.neck, P.head, {
-    a: map.neck, b: map.head, prev: map.chest, radial: 10, steps: 3, pscale: PS,
+    a: map.neck, b: map.head, prev: map.chest, radial: Q.rad, steps: Math.max(2, Q.steps - 2), pscale: PS,
     profile: () => ({ rx: .034 * fat * BASE.neck * H, rz: .034 * fat * BASE.neck * H }),
     region: () => SK, palette
   });
@@ -979,32 +1015,32 @@ function createCharacter(input){
         seg: 14, rows: 12, ch: chArm });
 
     tube(B, P['upperArm' + s], P['forearm' + s], {
-      a: map['upperArm' + s], b: map['forearm' + s], prev: map['shoulder' + s], radial: 10, steps: 5, pscale: PS,
+      a: map['upperArm' + s], b: map['forearm' + s], prev: map['shoulder' + s], radial: Q.rad, steps: Q.steps, pscale: PS,
       profile: t => { const r = (.040 - .010 * t) * limb * H; return { rx: r, rz: r }; },
       region: t => (t < sleeveUp ? SH : SK), palette
     });
     tube(B, P['forearm' + s], P['hand' + s], {
-      a: map['forearm' + s], b: map['hand' + s], prev: map['upperArm' + s], radial: 10, steps: 5, pscale: PS,
+      a: map['forearm' + s], b: map['hand' + s], prev: map['upperArm' + s], radial: Q.rad, steps: Q.steps, pscale: PS,
       profile: t => { const r = (.032 - .009 * t) * limb * H; return { rx: r, rz: r }; },
       region: t => (t < sleeveFore ? SH : SK), palette
     });
     tube(B, P['hand' + s], P['handTip' + s], {
-      a: map['hand' + s], b: null, prev: map['forearm' + s], radial: 10, steps: 3, pscale: PS,
+      a: map['hand' + s], b: null, prev: map['forearm' + s], radial: Q.rad, steps: Math.max(2, Q.steps - 2), pscale: PS,
       profile: t => ({ rx: (.026 + .006 * Math.sin(t * Math.PI)) * limb * H, rz: .017 * limb * H }),
       region: () => SK, palette, capB: true
     });
     tube(B, P['thigh' + s], P['shin' + s], {
-      a: map['thigh' + s], b: map['shin' + s], prev: map.hips, radial: 12, steps: 6, pscale: PS,
+      a: map['thigh' + s], b: map['shin' + s], prev: map.hips, radial: Q.rad + 2, steps: Q.steps + 1, pscale: PS,
       profile: t => { const r = (.062 - .016 * t) * limb * H; return { rx: r, rz: r }; },
       region: t => (t < pantThigh ? PA : SK), palette, capA: true
     });
     tube(B, P['shin' + s], P['foot' + s], {
-      a: map['shin' + s], b: map['foot' + s], prev: map['thigh' + s], radial: 12, steps: 6, pscale: PS,
+      a: map['shin' + s], b: map['foot' + s], prev: map['thigh' + s], radial: Q.rad + 2, steps: Q.steps + 1, pscale: PS,
       profile: t => { const r = (.048 - .016 * t) * limb * H; return { rx: r, rz: r }; },
       region: t => (t >= bootFrom ? SO : (t < pantShin ? PA : SK)), palette
     });
     tube(B, P['foot' + s], P['toe' + s], {
-      a: map['foot' + s], b: null, prev: map['shin' + s], radial: 10, steps: 4, pscale: PS,
+      a: map['foot' + s], b: null, prev: map['shin' + s], radial: Q.rad, steps: Math.max(3, Q.steps - 1), pscale: PS,
       profile: t => ({ rx: (SHOE.rx + .004 * t) * limb * H, rz: (SHOE.rz + .006 * t) * limb * H }),
       region: () => SHOE.reg, palette, capA: true, capB: true
     });
@@ -1049,7 +1085,7 @@ function createCharacter(input){
     vertexColors: true, skinning: true, roughness: map0 ? .93 : .78,
     metalness: 0, map: map0 || null
   });
-  const mats = [cloth(null), cloth(patternTexture(cfg.topPattern, { spacing: cfg.patternSpacing, angle: cfg.patternAngle })), cloth(patternTexture(cfg.legPattern, { spacing: cfg.patternSpacing, angle: cfg.patternAngle }))];
+  const mats = [cloth(null), cloth(patternTexture(cfg.topPattern, { spacing: cfg.patternSpacing, angle: cfg.patternAngle, fg: cfg.patternFg, alt: cfg.patternAlt })), cloth(patternTexture(cfg.legPattern, { spacing: cfg.patternSpacing, angle: cfg.patternAngle, fg: cfg.patternFg, alt: cfg.patternAlt }))];
   mats[0].roughness = .74;
   const mesh = new THREE.SkinnedMesh(geo, mats);
   mesh.castShadow = true; mesh.receiveShadow = true; mesh.frustumCulled = false;
@@ -1086,7 +1122,7 @@ function createCharacter(input){
     // space and only get squashed afterwards
     const asy = Number(cfg.asymmetry) || 0;
     const asySign = sx;
-    const eyeSz = (Number(cfg.eyeSize) || 1) * (1 + asy * .06 * asySign);
+    const eyeSz = (Number(cfg.eyeSize) || 1) * (1.14 - age * .24) * (1 + asy * .08 * asySign);
     const eyeSp = Number(cfg.eyeSpacing) || 1;
     const eyeLift = Number(cfg.eyeY) || 0;
     const eyeRoll = Number(cfg.eyeTilt) || 0;
@@ -1126,7 +1162,7 @@ function createCharacter(input){
     face.add(brow); brows.push(brow);
   });
 
-  const ns = Number(cfg.noseSize) || 1, nw = Number(cfg.noseWidth) || 1, np = Number(cfg.noseProjection) || 1;
+  const ns = (Number(cfg.noseSize) || 1) * (.92 + age * .18), nw = Number(cfg.noseWidth) || 1, np = Number(cfg.noseProjection) || 1;
   const nose = new THREE.Mesh(new THREE.SphereGeometry(hr * .13 * ns, 10, 8), solid(cfg.skin, .75));
   nose.position.set(0, -hry * .06, hrz * (.88 + .05 * np)); nose.scale.set(.8 * nw, .9 * ns, 1.1 * np); face.add(nose);
 
@@ -1426,7 +1462,7 @@ function createCharacter(input){
   };
 
   function hairShell(o){
-    const seg = o.seg || 28, rows = o.rows || 12, v0 = o.v0 || 0;
+    const seg = o.seg || Q.hairSeg || 28, rows = o.rows || 12, v0 = o.v0 || 0;
     const out = o.out, inn = o.inn || 1.004;
     const pos = [], idx = [], grid = [];
     const ring = (v, scale) => {
@@ -1795,15 +1831,6 @@ function createCharacter(input){
       brow: 0, browY: 0, lid: -.58, lidLow: .80, eye: 1,
       mouthW: 1, mouthOpen: .22, mouthRoll: Math.PI, mouthY: .40
     }, raw || {});
-    if (cfg.face === 'custom' || raw === cfg.expression){
-      if (cfg.exprBrow) f.brow += Number(cfg.exprBrow) || 0;
-      if (cfg.exprBrowY) f.browY += Number(cfg.exprBrowY) || 0;
-      if (cfg.exprLid) f.lid += Number(cfg.exprLid) || 0;
-      if (cfg.exprEyeScale && cfg.exprEyeScale !== 1) f.eye *= Number(cfg.exprEyeScale) || 1;
-      if (cfg.exprMouthCurve) f.mouthRoll = THREE.MathUtils.lerp(0, Math.PI, .5 + Number(cfg.exprMouthCurve) * .5);
-      if (cfg.exprMouthOpen) f.mouthOpen = Math.max(.05, f.mouthOpen + Number(cfg.exprMouthOpen));
-      if (cfg.exprMouthY) f.mouthY += Number(cfg.exprMouthY) || 0;
-    }
     const asy = Number(cfg.asymmetry) || 0;
     mouth.scale.set(f.mouthW * (Number(cfg.mouthWidth) || 1), f.mouthOpen * (Number(cfg.lipFullness) || 1), .6);
     mouth.rotation.z = f.mouthRoll + rest * Math.PI * .35;
@@ -2021,7 +2048,7 @@ if (typeof window !== 'undefined') {
   window.DEFAULTS = DEFAULTS;
   window.PATTERNS = PATTERNS;
   window.CharacterEngine = Object.freeze({
-    createCharacter, DEFAULTS, PATTERNS, HAIR_PRESETS, QUALITY,
+    createCharacter, DEFAULTS, PATTERNS, HAIR_PRESETS, hairPresets: HAIR_PRESETS, QUALITY,
     describeCharacter, compatibilityWarnings, resolveHair, resolveSleeves,
     registerProp, registerGarment, registerHair, registerExpression,
     features: CharacterFeatures, hash32, mulberry32
@@ -2355,7 +2382,7 @@ if (typeof window !== 'undefined') {
     compatibility: features.compatibilityWarnings,
     features: features.features,
     defaults: features.DEFAULTS,
-    hairPresets: features.hairPresets
+    hairPresets: features.hairPresets || features.HAIR_PRESETS
   });
   if (!customElements.get('character-viewer')) {
     customElements.define('character-viewer', CharacterViewerElement);

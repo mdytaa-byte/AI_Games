@@ -278,6 +278,7 @@
         if (live) {
           [...box.children].forEach(c => c.setAttribute('aria-pressed', 'false'));
           b.setAttribute('aria-pressed', 'true');
+          pushHistory();
         } else {
           commit();
           refreshSegs();
@@ -305,7 +306,8 @@
       ['curls', 'Curls'], ['spiky', 'Spiky'], ['mohawk', 'Mohawk'], ['bald', 'Bald']],
       () => cfg.hair, v => {
         cfg.hair = v;
-        const hp = (window.CharacterEngine && CharacterEngine.hairPresets || {})[v];
+        const table = (window.CharacterEngine && (CharacterEngine.hairPresets || CharacterEngine.HAIR_PRESETS)) || {};
+        const hp = table[v];
         if (hp) {
           cfg.hairTexture = hp.texture; cfg.hairPart = hp.part;
           cfg.hairFringe = hp.fringe; cfg.hairBack = hp.back;
@@ -390,7 +392,7 @@
     seg('quality', [['preview', 'Preview'], ['standard', 'Standard'], ['high', 'High']],
       () => cfg.quality || 'standard', v => { cfg.quality = v; });
     seg('variants', [['A', 'A'], ['B', 'B'], ['C', 'C']],
-      () => activeVariant, v => switchVariant(v));
+      () => activeVariant, v => switchVariant(v), true);
     refreshPalettes();
     refreshLinks();
     refreshStates();
@@ -434,18 +436,22 @@
     });
     s.addEventListener('change', pushHistory);
   });
+  function currentExpression() {
+    return {
+      brow: cfg.exprBrow || 0, browY: cfg.exprBrowY || 0, lid: -.58 + (cfg.exprLid || 0),
+      lidLow: .80, eye: cfg.exprEyeScale == null ? 1 : cfg.exprEyeScale,
+      mouthW: 1, mouthOpen: .22 + (cfg.exprMouthOpen || 0),
+      mouthRoll: THREE.MathUtils.lerp(0, Math.PI, .5 + (cfg.exprMouthCurve || 0) * .5),
+      mouthY: .40 + (cfg.exprMouthY || 0)
+    };
+  }
   EXPR_SLIDERS.forEach(([k, sid, vid]) => {
     const s = document.getElementById(sid), v = document.getElementById(vid);
     s.addEventListener('input', () => {
       cfg[k] = +s.value; v.textContent = (+s.value).toFixed(2);
       cfg.face = 'custom';
-      if (character) character.setExpression({
-        brow: cfg.exprBrow, browY: cfg.exprBrowY, lid: -.58 + cfg.exprLid,
-        lidLow: .80, eye: cfg.exprEyeScale,
-        mouthW: 1, mouthOpen: .22 + cfg.exprMouthOpen,
-        mouthRoll: THREE.MathUtils.lerp(0, Math.PI, .5 + cfg.exprMouthCurve * .5),
-        mouthY: .40 + cfg.exprMouthY
-      });
+      cfg.expression = currentExpression();
+      if (character) character.setExpression(cfg.expression);
     });
     s.addEventListener('change', pushHistory);
   });
@@ -475,7 +481,8 @@
   const COLORS = [['skin', 'Skin'], ['hairColor', 'Hair'], ['beardColor', 'Beard'], ['shirt', 'Top'],
     ['outerColor', 'Outer'], ['accentColor', 'Accent'], ['pants', 'Legs'],
     ['shoes', 'Shoes'], ['soleColor', 'Sole'], ['hatColor', 'Hat'],
-    ['frameColor', 'Frames'], ['propColor', 'Prop'], ['jewelColor', 'Jewelry']];
+    ['frameColor', 'Frames'], ['propColor', 'Prop'], ['jewelColor', 'Jewelry'],
+    ['patternFg', 'Pattern'], ['patternAlt', 'Pattern 2']];
   buildColorControls(document.getElementById('face-colors'), FACE_COLORS);
   buildColorControls(document.getElementById('colors'), COLORS);
   function syncColors() {
@@ -590,8 +597,9 @@
     if (section === 'hair') {
       const preset = pickN(rng, ['crop', 'crop', 'fringe', 'sidepart', 'long', 'ponytail', 'pigtails', 'braid', 'bun', 'curls', 'spiky', 'mohawk', 'bald']);
       cfg.hair = preset;
-      const hp = (window.CharacterEngine && CharacterEngine.hairPresets || {})[preset] || {};
-      cfg.hairTexture = hp.texture || pickN(rng, ['straight', 'wavy', 'curly']);
+      const table = (window.CharacterEngine && (CharacterEngine.hairPresets || CharacterEngine.HAIR_PRESETS)) || {};
+      const hp = table[preset] || {};
+      cfg.hairTexture = hp.texture || 'straight';
       cfg.hairPart = hp.part || 'none';
       cfg.hairFringe = hp.fringe || 'none';
       cfg.hairBack = hp.back || 'loose';
@@ -635,7 +643,7 @@
       cfg.propWaist = pickN(rng, ['none', 'none', 'satchel']);
       cfg.propShoulder = pickN(rng, ['none', 'none', 'headphones']);
     }
-    if (section === 'colors' || section === 'hair') {
+    if (!locks.colors && (section === 'colors' || section === 'hair')) {
       cfg.beardColor = rng() < .6 ? cfg.hairColor : pickN(rng, ['#d5d5d5', '#9a9188', '#6b4423']);
     }
   }
@@ -651,7 +659,7 @@
     document.getElementById('seed').value = cfg.seed;
     const rng = rngOf(cfg.seed);
     Object.keys(LOCK_KEYS).forEach(s => { if (!locks[s]) fillSection(s, rng); });
-    cfg.face = pickN(rng, ['happy', 'neutral', 'surprised', 'determined', 'confused']);
+    if (!locks.face) cfg.face = pickN(rng, ['happy', 'neutral', 'surprised', 'determined', 'confused']);
     syncAll(); commit();
   }
 
@@ -681,6 +689,7 @@
     return '#' + rgb.slice(0, 3).map(n => (+n).toString(16).padStart(2, '0')).join('');
   }
   document.getElementById('btn-coord').onclick = () => {
+    if (locks.colors) return;
     const h = Math.random() * 360;
     cfg.shirt = hslHex(h, 48, 42);
     cfg.pants = hslHex((h + 186) % 360, 28, 30);
@@ -739,17 +748,22 @@
   turnBtn.onclick = () => { turntable = !turntable; turnBtn.setAttribute('aria-pressed', turntable); };
   camBar.appendChild(turnBtn);
 
-  function thumbDataURL() {
-    const w = 160, h = 200;
-    const tmp = document.createElement('canvas'); tmp.width = w; tmp.height = h;
-    const holdAz = az, holdPol = pol, holdDist = dist, holdK = place.targetK;
-    az = .45; pol = 1.28; dist = 2.4; place.targetK = .52; place();
+  function renderPortraitCanvas(w, h, azVal, distVal) {
+    const prev = { az, pol, dist, k: place.targetK };
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    az = azVal; pol = 1.26; dist = distVal == null ? 2.45 : distVal; place.targetK = .52; place();
     renderer.render(scene, camera);
-    const ctx = tmp.getContext('2d');
-    ctx.fillStyle = '#0E1D33'; ctx.fillRect(0, 0, w, h);
-    ctx.drawImage(renderer.domElement, 0, 0, w, h);
-    az = holdAz; pol = holdPol; dist = holdDist; place.targetK = holdK; place();
-    return tmp.toDataURL('image/jpeg', .7);
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(renderer.domElement, 0, 0, w, h);
+    renderer.setSize(innerWidth, innerHeight, false);
+    camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+    az = prev.az; pol = prev.pol; dist = prev.dist; place.targetK = prev.k; place();
+    return c;
+  }
+  function thumbDataURL() {
+    return renderPortraitCanvas(160, 200, .45, 2.4).toDataURL('image/jpeg', .7);
   }
   function loadLib() { try { return JSON.parse(localStorage.getItem(LIB_KEY) || '[]'); } catch (e) { return []; } }
   function saveLib(items) { localStorage.setItem(LIB_KEY, JSON.stringify(items)); }
@@ -856,17 +870,14 @@
     ctx.fillStyle = '#0E1D33'; ctx.fillRect(0, 0, sheet.width, sheet.height);
     ctx.fillStyle = '#F2A93B'; ctx.font = '22px Futura, Century Gothic, sans-serif';
     ctx.fillText((cfg.name || 'Unnamed character') + (cfg.role ? '  ·  ' + cfg.role : ''), pad, 36);
-    const hold = { az, pol, dist, k: place.targetK };
-    pol = 1.28; dist = 2.6; place.targetK = .5;
     for (let i = 0; i < views.length; i++) {
-      az = views[i].az; place(); renderer.render(scene, camera);
+      const cell = renderPortraitCanvas(cellW, cellH, views[i].az, 2.55);
       const x = pad + i * (cellW + pad), y = 56;
       ctx.fillStyle = '#132743'; ctx.fillRect(x, y, cellW, cellH);
-      ctx.drawImage(renderer.domElement, x, y, cellW, cellH);
+      ctx.drawImage(cell, x, y);
       ctx.fillStyle = '#6FD3E0'; ctx.font = '12px IBM Plex Mono, monospace';
       ctx.fillText(views[i].label, x + 8, y + cellH - 10);
     }
-    az = hold.az; pol = hold.pol; dist = hold.dist; place.targetK = hold.k; place();
     const a = document.createElement('a');
     a.download = safeName(cfg.name) + '-sheet.png';
     a.href = sheet.toDataURL('image/png'); a.click();
@@ -896,9 +907,11 @@
     });
     s.addEventListener('change', pushHistory);
   });
+  let poseEditPrev = 'idle';
   document.getElementById('btn-pose-edit').onclick = () => {
     poseEdit = !poseEdit;
-    if (poseEdit) anim = 'hold';
+    if (poseEdit) { poseEditPrev = anim; anim = 'hold'; }
+    else anim = poseEditPrev || 'idle';
     applyXray(); refreshSegs();
   };
   document.getElementById('btn-mirror').onclick = () => {
@@ -936,7 +949,7 @@
         cfg.poseOffsets = deep(p.offsets || {});
         if (p.base) anim = p.base;
         if (character) character.setPoseOffsets(cfg.poseOffsets);
-        refreshSegs(); syncBoneSliders();
+        refreshSegs(); syncBoneSliders(); pushHistory();
       };
       box.appendChild(b);
     });
@@ -945,12 +958,7 @@
     const name = document.getElementById('expr-name').value.trim();
     if (!name) return;
     cfg.expressions = cfg.expressions || {};
-    cfg.expressions[name] = {
-      brow: cfg.exprBrow, browY: cfg.exprBrowY, lid: -.58 + cfg.exprLid, lidLow: .80,
-      eye: cfg.exprEyeScale, mouthW: 1, mouthOpen: .22 + cfg.exprMouthOpen,
-      mouthRoll: THREE.MathUtils.lerp(0, Math.PI, .5 + cfg.exprMouthCurve * .5),
-      mouthY: .40 + cfg.exprMouthY
-    };
+    cfg.expressions[name] = currentExpression();
     cfg.face = name;
     refreshSegs(); pushHistory();
   };
@@ -958,7 +966,10 @@
     const name = document.getElementById('state-name').value.trim();
     if (!name) return;
     cfg.states = cfg.states || {};
-    cfg.states[name] = { pose: anim, face: cfg.face, offsets: deep(cfg.poseOffsets || {}) };
+    cfg.states[name] = {
+      pose: anim, face: cfg.face, offsets: deep(cfg.poseOffsets || {}),
+      expression: cfg.face === 'custom' ? currentExpression() : undefined
+    };
     refreshStates(); pushHistory();
   };
   function refreshStates() {
@@ -1112,9 +1123,9 @@
     return new Blob([...locals, centralBlob, end], { type: 'application/zip' });
   }
   async function getBundleBytes() {
-    if (typeof CHARACTER_KIT_BUNDLE_B64 === 'string' && CHARACTER_KIT_BUNDLE_B64.length) {
-      return bytesFromBase64(CHARACTER_KIT_BUNDLE_B64);
-    }
+    const b64 = (typeof window !== 'undefined' && window.CHARACTER_KIT_BUNDLE_B64)
+      || (typeof CHARACTER_KIT_BUNDLE_B64 === 'string' ? CHARACTER_KIT_BUNDLE_B64 : '');
+    if (typeof b64 === 'string' && b64.length) return bytesFromBase64(b64);
     const r = await fetch('character-kit.bundle-v4.js');
     if (!r.ok) throw new Error('Could not load engine source');
     return new Uint8Array(await r.arrayBuffer());
@@ -1178,6 +1189,7 @@
   addEventListener('keydown', e => {
     const typing = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+      if (typing) return;
       e.preventDefault();
       if (e.shiftKey) redo(); else undo();
       return;

@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="de" data-en="an">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wohnung gesucht – KleinWohnen Kleinhausen</title>
+<style>
+:root{
+  --paper:#ffffff;
+  --mist:#f4f1ea;
+  --ink:#1c241c;
+  --ink-soft:#4a5848;
+  --forest:#1b5e3b;
+  --forest-deep:#0f3d28;
+  --leaf:#2f7a4f;
+  --wood:#8b5e3c;
+  --wood-light:#c4a484;
+  --tag:#f5c518;
+  --tag-ink:#3a2a00;
+  --ok:#1f7a45;
+  --bad:#a33a2c;
+  --line:#d9d2c5;
+  --shadow:rgba(28,36,28,.14);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1rem;
+  --radius:8px;
+}
+html[data-size="gross"]{--fs:1.14rem;}
+html[data-size="sehr-gross"]{--fs:1.28rem;}
+html[data-contrast="hoch"]{
+  --paper:#fff;--mist:#fff;--ink:#000;--ink-soft:#000;
+  --forest:#003d1f;--forest-deep:#000;--leaf:#005c2e;
+  --wood:#000;--wood-light:#ddd;--tag:#ffe100;--tag-ink:#000;
+  --ok:#00551f;--bad:#7a0000;--line:#000;--shadow:#000;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--mist);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:var(--fs);
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+.skip{
+  position:absolute;left:-9999px;top:0;z-index:200;
+  background:var(--forest);color:#fff;padding:.75em 1.1em;font-weight:700;text-decoration:none;
+}
+.skip:focus{left:0;}
+:focus-visible{outline:3px solid var(--tag);outline-offset:3px;}
+html[data-contrast="hoch"] :focus-visible{outline:4px solid #000;}
+button,input,select,label.chip{
+  font:inherit;color:inherit;
+}
+button,.set-btn,.btn,input[type="checkbox"]+span,.opt,.chip,.zone,.furn,.listing{
+  min-height:44px;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+.en.gloss{display:block;color:var(--ink-soft);font-style:italic;font-size:.9em;margin:.15em 0 0;}
+.en.gloss.inline{display:inline;}
+html:not([data-en="an"]) .en.gloss{display:none !important;}
+
+.topbar{
+  background:var(--forest);color:#fff;
+  border-bottom:6px solid var(--wood);
+}
+.topbar-in{
+  max-width:1180px;margin:0 auto;padding:.7rem 1rem;
+  display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;justify-content:space-between;
+}
+.brand{display:flex;align-items:center;gap:.7rem;}
+.brand h1{font-family:var(--serif);font-size:1.35em;margin:0;font-weight:600;}
+.brand small{display:block;font-family:var(--mono);font-size:.62em;letter-spacing:.16em;text-transform:uppercase;opacity:.85;}
+.settings{display:flex;flex-wrap:wrap;gap:.4rem;}
+.set-btn{
+  background:transparent;color:#fff;border:2px solid rgba(255,255,255,.45);
+  border-radius:999px;padding:.35em .85em;cursor:pointer;min-width:44px;
+}
+.set-btn[aria-pressed="true"]{background:#fff;color:var(--forest-deep);border-color:#fff;font-weight:700;}
+.wrap{max-width:1180px;margin:0 auto;padding:1.2rem 1rem 3rem;}
+.screen{display:none;}
+.screen.on{display:block;}
+h2{font-family:var(--serif);font-size:1.7em;margin:.1em 0 .4em;font-weight:600;}
+h2:focus{outline:none;}
+h3{font-family:var(--serif);margin:1.1em 0 .4em;}
+.eyebrow{font-family:var(--mono);font-size:.72em;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 .3em;}
+.lede{max-width:62ch;}
+.btn{
+  background:var(--forest);color:#fff;border:3px solid var(--forest-deep);
+  border-radius:var(--radius);padding:.55em 1.2em;cursor:pointer;font-weight:700;
+  box-shadow:0 3px 0 var(--forest-deep);
+}
+.btn:hover{background:var(--forest-deep);}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--ink);box-shadow:0 3px 0 var(--ink);}
+.btn-ghost:hover{background:var(--ink);color:#fff;}
+.btn-row{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem;}
+.live{min-height:1.4em;margin:.6rem 0 0;font-weight:600;}
+
+.sticky{
+  background:#fffbe6;border:2px dashed var(--wood);border-radius:2px;
+  padding:1rem 1.1rem;margin:1rem 0 1.3rem;
+  box-shadow:4px 4px 0 var(--shadow);transform:rotate(-.3deg);
+}
+.sticky h3{margin:0 0 .4em;color:var(--wood);}
+.sticky ul{margin:.3em 0 0;padding-left:1.2em;}
+
+.portal-bar{
+  background:var(--paper);border:2px solid var(--line);border-radius:var(--radius);
+  padding:.8rem;display:grid;gap:.6rem;
+  grid-template-columns:1.4fr repeat(5,minmax(0,1fr));
+  margin-bottom:1rem;
+}
+@media (max-width:900px){.portal-bar{grid-template-columns:1fr 1fr;}}
+.portal-bar label{display:flex;flex-direction:column;gap:.25em;font-size:.82em;font-weight:700;}
+.portal-bar input,.portal-bar select{
+  min-height:44px;border:2px solid var(--wood);border-radius:6px;padding:.4em .6em;background:#fff;
+}
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));}
+.listing{
+  display:flex;flex-direction:column;text-align:left;
+  background:var(--paper);border:2px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;cursor:pointer;padding:0;box-shadow:0 4px 0 var(--shadow);
+}
+.listing:hover{border-color:var(--forest);}
+.listing.picked{border-color:var(--forest);box-shadow:0 0 0 3px var(--tag);}
+.listing .photo{height:150px;display:block;}
+.listing .body{padding:.8rem .9rem 1rem;}
+.listing h3{margin:0 0 .2em;font-size:1.05em;}
+.price{
+  display:inline-block;background:var(--tag);color:var(--tag-ink);
+  font-weight:800;padding:.15em .55em;border-radius:4px;font-family:var(--mono);font-size:.92em;
+}
+.meta{font-size:.88em;color:var(--ink-soft);margin:.4em 0 0;}
+.checkrow{display:flex;align-items:center;gap:.5em;margin-top:.7em;font-weight:700;}
+.checkrow input{width:22px;height:22px;}
+.fb{border-radius:var(--radius);padding:.85rem 1rem;margin:1rem 0;border-left:8px solid var(--ok);background:#e7f4ea;}
+.fb.bad{border-left-color:var(--bad);background:#fbecea;}
+.fb[hidden]{display:none;}
+
+.mail{
+  display:grid;gap:1rem;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);
+}
+@media (max-width:800px){.mail{grid-template-columns:1fr;}}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;}
+.chip{
+  background:#fff;border:2px solid var(--wood);border-radius:999px;
+  padding:.4em .85em;cursor:pointer;
+}
+.chip[aria-pressed="true"]{background:var(--forest);color:#fff;border-color:var(--forest-deep);}
+.chip.trap-on{background:var(--bad);color:#fff;border-color:#6a1d16;}
+.letter{
+  background:#fff;border:2px solid var(--wood-light);min-height:280px;padding:1.1rem;
+  font-family:var(--serif);box-shadow:6px 6px 0 var(--shadow);
+}
+.letter .to{font-family:var(--mono);font-size:.8em;color:var(--ink-soft);}
+
+.plan-wrap{display:grid;gap:1rem;grid-template-columns:220px 1fr;}
+@media (max-width:800px){.plan-wrap{grid-template-columns:1fr;}}
+.furn-list{display:flex;flex-direction:column;gap:.45rem;}
+.furn{
+  display:flex;align-items:center;gap:.55em;background:#fff;border:2px solid var(--line);
+  border-radius:8px;padding:.35em .6em;cursor:pointer;text-align:left;
+}
+.furn[aria-pressed="true"]{border-color:var(--tag);background:#fff8d6;}
+.furn.used{opacity:.45;}
+.floor{
+  display:grid;grid-template-columns:1.2fr .8fr;grid-template-rows:1fr 1fr .7fr;
+  gap:8px;min-height:340px;background:var(--wood-light);padding:10px;border-radius:10px;
+}
+.zone{
+  background:#f7f3ec;border:3px dashed var(--wood);border-radius:8px;
+  padding:.5rem;cursor:pointer;display:flex;flex-direction:column;gap:.3rem;
+}
+.zone h4{margin:0;font-size:.95em;}
+.zone .placed{display:flex;flex-wrap:wrap;gap:.25rem;}
+.zone .placed span{
+  background:var(--forest);color:#fff;border-radius:999px;padding:.15em .5em;font-size:.8em;
+}
+.z-wohn{grid-column:1;grid-row:1/3;}
+.z-kueche{grid-column:2;grid-row:1;}
+.z-schlaf{grid-column:2;grid-row:2;}
+.z-bad{grid-column:1;grid-row:3;}
+.z-balkon{grid-column:2;grid-row:3;background:#e7f0d8;}
+
+.quiz{display:grid;gap:.7rem;margin-top:1rem;}
+.q{background:#fff;border:2px solid var(--line);border-radius:8px;padding:.9rem;}
+.opts{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.5rem;}
+.opt{
+  background:#fff;border:2px solid var(--forest);border-radius:8px;padding:.4em .8em;cursor:pointer;
+}
+.opt[aria-pressed="true"]{background:var(--forest);color:#fff;}
+.opt.good{background:var(--ok);color:#fff;border-color:var(--ok);}
+.opt.no{background:var(--bad);color:#fff;border-color:var(--bad);}
+
+.keys{width:min(280px,80%);display:block;margin:1rem auto;}
+.code-box{background:var(--forest-deep);color:#fff;padding:1rem;border-radius:8px;margin-top:1rem;}
+.code-val{font-family:var(--mono);font-size:1.1em;word-break:break-all;}
+.name-feld{margin:1rem 0;}
+.name-feld input{min-height:44px;width:min(420px,100%);border:2px solid var(--wood);border-radius:6px;padding:.4em .6em;}
+table{width:100%;border-collapse:collapse;margin:1rem 0;background:#fff;}
+th,td{border:1px solid var(--line);padding:.5em .7em;text-align:left;}
+.num{text-align:right;font-variant-numeric:tabular-nums;}
+footer{max-width:1180px;margin:0 auto;padding:0 1rem 2rem;color:var(--ink-soft);font-size:.9em;}
+kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.05em .35em;background:#fff;}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+}
+html[data-motion="aus"] *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+</style>
+</head>
+<body>
+<a class="skip" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <svg width="42" height="42" viewBox="0 0 42 42" aria-hidden="true" focusable="false">
+        <rect width="42" height="42" rx="8" fill="#f5c518"/>
+        <path d="M7 22 L21 10 L35 22 V34 H7 Z" fill="#1b5e3b"/>
+        <rect x="17" y="24" width="8" height="10" fill="#f5c518"/>
+      </svg>
+      <div>
+        <h1>KleinWohnen</h1>
+        <small>Kleinhausen · Wohnung gesucht</small>
+      </div>
+    </div>
+    <div class="settings" role="group" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">Vorlesen</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="hauptinhalt">
+  <p class="live" id="status" role="status" aria-live="polite"></p>
+  <section class="screen on" id="screen-start" aria-labelledby="h-start">
+    <p class="eyebrow">A1–A2 · Wortschatz Wohnen</p>
+    <h2 id="h-start" tabindex="-1">Wohnung gesucht in Kleinhausen</h2>
+    <p class="lede">Du ziehst nach Kleinhausen. Auf dem Portal <strong>KleinWohnen</strong> suchst du ein WG-Zimmer oder eine kleine Wohnung. Filter die Anzeigen, schreibe eine Anfrage und richte danach dein Zimmer ein.
+      <span class="en gloss">You are moving to Kleinhausen. Filter listings, write an enquiry, then furnish your room.</span></p>
+    <div class="sticky" aria-label="Deine Suche">
+      <h3>Merkzettel</h3>
+      <ul>
+        <li>WG-Zimmer oder kleine Wohnung</li>
+        <li>max. <strong>550 € kalt</strong></li>
+        <li><strong>möbliert</strong></li>
+        <li><strong>Balkon oder Garten</strong></li>
+        <li><strong>nicht im Keller</strong></li>
+        <li>Nähe <strong>Bahnhof oder Markt</strong></li>
+        <li><strong>ab sofort</strong></li>
+      </ul>
+      <span class="en gloss">Max €550 cold rent, furnished, balcony or garden, not a basement, near the station or market, available now.</span>
+    </div>
+    <ol class="lede">
+      <li>Phase 1: Anzeigen filtern und die passenden markieren. <span class="en gloss">Filter and tick matching ads.</span></li>
+      <li>Phase 2: Eine höfliche Anfrage aus Satzbausteinen legen. <span class="en gloss">Build a polite enquiry from chips.</span></li>
+      <li>Phase 3: Möbel auf den Grundriss setzen, dann Präpositionen. <span class="en gloss">Place furniture, then prepositions.</span></li>
+    </ol>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-start">Suche starten</button>
+    </div>
+    <details>
+      <summary>Tastatur <span class="en gloss">Keyboard</span></summary>
+      <ul>
+        <li><kbd>Tab</kbd> bewegt den Fokus. Alle Ziele sind mindestens 44 Pixel groß.</li>
+        <li><kbd>Enter</kbd> / <kbd>Leertaste</kbd> wählen Karten, Chips und Möbel.</li>
+        <li><strong>Vorlesen</strong> spricht Deutsch (de-DE), wenn eine Stimme installiert ist.</li>
+      </ul>
+    </details>
+  </section>
+
+  <section class="screen" id="screen-browse" aria-labelledby="h-browse">
+    <p class="eyebrow">Phase 1 · KleinWohnen Kleinhausen</p>
+    <h2 id="h-browse" tabindex="-1">Anzeigen durchsuchen</h2>
+    <div class="sticky">
+      <h3>Dein Brief</h3>
+      <p>max. 550 € kalt · möbliert · Balkon oder Garten · nicht Keller · Markt oder Bahnhof · ab sofort
+        <span class="en gloss">Keep this brief while you filter.</span></p>
+    </div>
+    <form class="portal-bar" id="filter-form" onsubmit="return false;">
+      <label>Suche <input type="search" id="f-q" placeholder="Altbau, Balkon, Markt…"></label>
+      <label>Preis kalt max.
+        <select id="f-preis">
+          <option value="9999" selected>alle</option>
+          <option value="450">450 €</option>
+          <option value="550">550 €</option>
+          <option value="700">700 €</option>
+        </select>
+      </label>
+      <label>Möbliert
+        <select id="f-moebel">
+          <option value="alle">alle</option>
+          <option value="ja">möbliert</option>
+          <option value="nein">unmöbliert</option>
+        </select>
+      </label>
+      <label>Außen
+        <select id="f-aussen">
+          <option value="alle">alle</option>
+          <option value="balkon">Balkon</option>
+          <option value="garten">Garten</option>
+          <option value="beides">Balkon oder Garten</option>
+        </select>
+      </label>
+      <label>Zimmer
+        <select id="f-zimmer">
+          <option value="0">alle</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
+      </label>
+      <label>Stadtteil
+        <select id="f-teil">
+          <option value="alle">alle</option>
+          <option value="Markt">Markt</option>
+          <option value="Bahnhof">Bahnhof</option>
+          <option value="Mühlgasse">Mühlgasse</option>
+          <option value="Industriegebiet">Industriegebiet</option>
+        </select>
+      </label>
+    </form>
+    <p id="anzahl" class="eyebrow"></p>
+    <div class="grid" id="karten"></div>
+    <div class="fb" id="browse-fb" hidden tabindex="-1"></div>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-confirm">Auswahl bestätigen</button>
+      <button type="button" class="btn btn-ghost" id="btn-clear">Auswahl löschen</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-mail" aria-labelledby="h-mail">
+    <p class="eyebrow">Phase 2 · Anfrage schreiben</p>
+    <h2 id="h-mail" tabindex="-1">E-Mail an die Vermietung</h2>
+    <p class="lede">Du schreibst wegen des Zimmers in der <strong>Marktstraße</strong>. Wähle höfliche Bausteine – nicht zu locker für einen Vermieter.
+      <span class="en gloss">Build a polite email. Two chips are too informal for a landlord.</span></p>
+    <div class="mail">
+      <div>
+        <h3>Bausteine</h3>
+        <div class="chips" id="chips"></div>
+        <div class="btn-row">
+          <button type="button" class="btn" id="btn-send">Anfrage senden</button>
+          <button type="button" class="btn btn-ghost" id="btn-mail-reset">Text leeren</button>
+        </div>
+      </div>
+      <div>
+        <div class="letter" id="letter" aria-live="polite">
+          <p class="to">An: vermietung@kleinwohnen.kh</p>
+          <p class="to">Betreff: Anfrage WG-Zimmer Marktstraße 12</p>
+          <div id="letter-body"><p class="en gloss">Click chips to assemble the letter.</p></div>
+        </div>
+        <div class="fb" id="mail-fb" hidden tabindex="-1"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-plan" aria-labelledby="h-plan">
+    <p class="eyebrow">Phase 3 · Einrichten</p>
+    <h2 id="h-plan" tabindex="-1">Dein Zimmer einrichten</h2>
+    <p class="lede">Klicke ein Möbelstück, dann eine Zone im Grundriss. Wenn fünf Dinge stehen, kommen vier Fragen zu Präpositionen.
+      <span class="en gloss">Click furniture, then a room. After five items, answer four preposition questions.</span></p>
+    <p id="plan-hint"><strong>Ausgewählt:</strong> nichts</p>
+    <div class="plan-wrap">
+      <div class="furn-list" id="furn-list"></div>
+      <div class="floor" id="floor" role="group" aria-label="Grundriss"></div>
+    </div>
+    <div class="quiz" id="quiz" hidden></div>
+    <div class="fb" id="plan-fb" hidden tabindex="-1"></div>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-quiz" hidden>Präpositionen prüfen</button>
+      <button type="button" class="btn" id="btn-finish" hidden>Zum Ergebnis</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-sum" aria-labelledby="h-sum">
+    <p class="eyebrow">Ergebnis</p>
+    <h2 id="h-sum" tabindex="-1">Schlüsselübergabe</h2>
+    <svg class="keys" viewBox="0 0 280 120" aria-hidden="true" focusable="false">
+      <rect x="8" y="28" width="264" height="64" rx="10" fill="#1b5e3b"/>
+      <circle cx="52" cy="60" r="22" fill="#f5c518" stroke="#8b5e3c" stroke-width="4"/>
+      <circle cx="52" cy="60" r="8" fill="#1b5e3b"/>
+      <rect x="72" y="54" width="70" height="12" rx="3" fill="#f5c518"/>
+      <rect x="118" y="48" width="8" height="24" fill="#f5c518"/>
+      <rect x="132" y="48" width="8" height="24" fill="#f5c518"/>
+      <circle cx="210" cy="60" r="18" fill="#c4a484"/>
+      <rect x="226" y="55" width="36" height="10" fill="#c4a484"/>
+    </svg>
+    <p class="lede" id="sum-text"></p>
+    <table>
+      <caption>Punkte</caption>
+      <thead><tr><th>Phase</th><th class="num">Punkte</th><th class="num">Max</th></tr></thead>
+      <tbody id="sum-body"></tbody>
+    </table>
+    <div class="name-feld">
+      <label for="name-in">Dein Name (für den Abgabecode) <span class="en gloss">Your name for the submission code</span></label><br>
+      <input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname">
+    </div>
+    <div class="code-box">
+      <p>Abgabecode <span class="en gloss" style="color:#c4a484">Submission code</span></p>
+      <p class="code-val" id="code-val">Bitte Namen eingeben.</p>
+      <button type="button" class="btn" id="btn-copy" style="background:#f5c518;color:#3a2a00;border-color:#8b5e3c;">Code kopieren</button>
+    </div>
+    <details>
+      <summary>Für Lehrkräfte: Code prüfen</summary>
+      <p><label for="v-name">Name</label> <input id="v-name" type="text">
+         <label for="v-code">Code</label> <input id="v-code" type="text">
+         <button type="button" class="btn" id="btn-verify">Prüfen</button></p>
+      <p id="v-out" role="status" aria-live="polite"></p>
+    </details>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-again">Nochmal spielen</button>
+    </div>
+  </section>
+</main>
+<footer>
+  <p>KleinWohnen Kleinhausen · Kaltmiete, Warmmiete, Kaution, Nebenkosten, Einbauküche, Altbau, DG, EG, möbliert. Eine Datei, keine Cookies, kein localStorage.</p>
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const S = {
+  englisch:true, audio:false, kontrast:false, size:0, motion:true,
+  picked:{}, firstConfirm:true, browsePts:0, mailPts:0, quizPts:0,
+  mailDone:false, placed:{}, holding:null, quizDone:false
+};
+const MAX = {browse:40, mail:30, quiz:40};
+
+const LISTINGS = [
+  {id:"l1", titel:"Helles WG-Zimmer, Marktstraße 12", teil:"Markt", kalt:480, warm:620, kaution:960, nk:140, zimmer:1, qm:18, moebliert:true, balkon:true, garten:false, keller:false, ab:"sofort", typ:"WG-Zimmer", tags:"Altbau · EG · Einbauküche · möbliert", wand:"#e8d5c4", fenster:"#8ecae6", text:"Kaltmiete 480 €, Warmmiete 620 €, Kaution 960 €. Möbliert, Balkon zum Markt, ab sofort. Nicht im Keller – Erdgeschoss mit hoher Decke.", en:"Cold rent 480, furnished, balcony, market, available now.", match:true},
+  {id:"l2", titel:"2-Zimmer mit Garten, Bahnhofstraße 4", teil:"Bahnhof", kalt:530, warm:680, kaution:1060, nk:150, zimmer:2, qm:48, moebliert:true, balkon:false, garten:true, keller:false, ab:"sofort", typ:"Wohnung", tags:"EG · Garten · möbliert · genossenschaftlich", wand:"#dce8d4", fenster:"#90c2a0", text:"Kleine Wohnung nahe Bahnhof. Kaltmiete 530 €, Nebenkosten 150 €. Möbliert, eigener Garten, Einbauküche, ab sofort.", en:"Two rooms, 530 cold, garden, furnished, near the station.", match:true},
+  {id:"l3", titel:"DG-Zimmer am Marktplatz", teil:"Markt", kalt:420, warm:540, kaution:840, nk:120, zimmer:1, qm:16, moebliert:true, balkon:true, garten:false, keller:false, ab:"sofort", typ:"WG-Zimmer", tags:"DG · Altbau · Balkon · möbliert", wand:"#f3e0c8", fenster:"#f4d35e", text:"Dachgeschoss (DG), möbliert, Balkon, 420 € kalt. Blick auf den Markt. Warmmiete 540 €. Ab sofort.", en:"Attic room, 420 cold, balcony, furnished, market.", match:true},
+  {id:"l4", titel:"Kellerwohnung Mühlgasse 9", teil:"Mühlgasse", kalt:390, warm:490, kaution:780, nk:100, zimmer:1, qm:22, moebliert:true, balkon:false, garten:false, keller:true, ab:"sofort", typ:"Wohnung", tags:"Souterrain · möbliert", wand:"#6b6358", fenster:"#3d3a36", text:"Günstig: 390 € kalt, möbliert, ab sofort. Leider Souterrain / Keller, wenig Licht, kein Balkon.", en:"Basement, cheap, furnished — fails the brief.", match:false, warum:"Diese Wohnung liegt im Keller – du wolltest kein Kellerzimmer.", warumEn:"This one is in the basement."},
+  {id:"l5", titel:"Unmöblierte 2-Zimmer, Bahnhofweg 7", teil:"Bahnhof", kalt:500, warm:640, kaution:1000, nk:140, zimmer:2, qm:52, moebliert:false, balkon:true, garten:false, keller:false, ab:"sofort", typ:"Wohnung", tags:"Altbau · Balkon · unmöbliert", wand:"#efeae2", fenster:"#bde0fe", text:"500 € kalt, Balkon, Nähe Bahnhof, aber unmöbliert. Du müsstest alles selbst kaufen.", en:"Unfurnished — you needed furnished.", match:false, warum:"Diese Wohnung ist unmöbliert – du brauchst möbliert.", warumEn:"It is unfurnished."},
+  {id:"l6", titel:"Altbau-Schmuckstück Markt 1", teil:"Markt", kalt:720, warm:890, kaution:2160, nk:170, zimmer:2, qm:68, moebliert:true, balkon:true, garten:false, keller:false, ab:"sofort", typ:"Wohnung", tags:"Altbau · Einbauküche · Balkon · möbliert", wand:"#e6d2e8", fenster:"#c9b1d0", text:"Traumlage am Markt, möbliert, Balkon, Einbauküche. Kaltmiete 720 € – über deinem Limit.", en:"Beautiful but 720 cold rent.", match:false, warum:"Diese Wohnung kostet 720 € kalt — über deinem Limit.", warumEn:"720 euros cold rent is over your 550 limit."},
+  {id:"l7", titel:"Loft im Industriegebiet 22", teil:"Industriegebiet", kalt:450, warm:560, kaution:900, nk:110, zimmer:1, qm:28, moebliert:true, balkon:true, garten:false, keller:false, ab:"sofort", typ:"WG-Zimmer", tags:"möbliert · Balkon", wand:"#cfd8dc", fenster:"#90a4ae", text:"450 € kalt, möbliert, Balkon, ab sofort. Weit weg: Industriegebiet, nicht Nähe Bahnhof oder Markt.", en:"Wrong neighbourhood.", match:false, warum:"Das Zimmer liegt im Industriegebiet – nicht Nähe Bahnhof oder Markt.", warumEn:"Industrial estate is too far from station or market."},
+  {id:"l8", titel:"Zwischenmiete ab Oktober, Mühlgasse", teil:"Mühlgasse", kalt:490, warm:610, kaution:980, nk:120, zimmer:1, qm:20, moebliert:true, balkon:false, garten:true, keller:false, ab:"Oktober", typ:"WG-Zimmer", tags:"Zwischenmiete · Garten · möbliert", wand:"#d7ccc8", fenster:"#a5d6a7", text:"Möbliert, Garten, 490 € kalt, genossenschaftlich. Aber erst ab Oktober, nicht ab sofort. Zwischenmiete für ein Semester.", en:"Only from October, not immediately.", match:false, warum:"Diese Wohnung ist erst ab Oktober frei – du brauchst ab sofort.", warumEn:"Available from October, not immediately."}
+];
+
+const CHIPS = [
+  {id:"c1", de:"Sehr geehrte Damen und Herren,", en:"Dear Sir or Madam,", need:true, trap:false, art:"anrede"},
+  {id:"c2", de:"Hallo,", en:"Hi (a bit casual)", need:false, trap:false, art:"anrede"},
+  {id:"c3", de:"Hi Leute,", en:"Hi folks — too informal", need:false, trap:true, art:"anrede", warum:"„Hi Leute“ ist zu locker für eine Vermieter-Anfrage."},
+  {id:"c4", de:"Ich interessiere mich für das Zimmer in der Marktstraße.", en:"I am interested in the room on Marktstraße.", need:true, trap:false, art:"kern"},
+  {id:"c5", de:"Ich bin Schüler/in am Gymnasium Kleinhausen.", en:"I am a student at the grammar school.", need:true, trap:false, art:"wer", group:"wer"},
+  {id:"c6", de:"Ich arbeite bei der Stadtbibliothek.", en:"I work at the town library.", need:true, trap:false, art:"wer", group:"wer"},
+  {id:"c7", de:"Wann kann ich besichtigen?", en:"When can I view it?", need:true, trap:false, art:"frage"},
+  {id:"c8", de:"Yo, wann kann ich kommen???", en:"Yo, when can I come??? — trap", need:false, trap:true, art:"frage", warum:"„Yo“ und drei Fragezeichen sind zu informell für einen Vermieter."},
+  {id:"c9", de:"Mit freundlichen Grüßen", en:"Yours sincerely", need:false, trap:false, art:"gruss"}
+];
+
+const FURN = [
+  {id:"tisch", de:"Tisch", en:"table"},
+  {id:"stuhl", de:"Stuhl", en:"chair"},
+  {id:"sofa", de:"Sofa", en:"sofa"},
+  {id:"bett", de:"Bett", en:"bed"},
+  {id:"lampe", de:"Lampe", en:"lamp"},
+  {id:"pflanze", de:"Pflanze", en:"plant"},
+  {id:"teppich", de:"Teppich", en:"rug"},
+  {id:"schrank", de:"Schrank", en:"wardrobe"}
+];
+const ZONES = [
+  {id:"wohn", de:"Wohnzimmer", en:"living room", cls:"z-wohn"},
+  {id:"kueche", de:"Küche", en:"kitchen", cls:"z-kueche"},
+  {id:"schlaf", de:"Schlafzimmer", en:"bedroom", cls:"z-schlaf"},
+  {id:"bad", de:"Bad", en:"bathroom", cls:"z-bad"},
+  {id:"balkon", de:"Balkon", en:"balcony", cls:"z-balkon"}
+];
+const QUIZ = [
+  {q:"Die Lampe steht ___ dem Tisch.", en:"The lamp is ___ the table.", opts:["auf","neben","unter","in"], ok:0, warum:"„auf dem Tisch“ = on the table. Dativ nach stehen + Präposition."},
+  {q:"Der Stuhl steht ___ dem Tisch.", en:"The chair is ___ the table.", opts:["auf","neben","unter","in"], ok:1, warum:"„neben dem Tisch“ = next to the table."},
+  {q:"Die Pflanze steht ___ der Küche.", en:"The plant is ___ the kitchen.", opts:["auf","neben","unter","in"], ok:3, warum:"„in der Küche“ = in the kitchen."},
+  {q:"Der Teppich liegt ___ dem Sofa.", en:"The rug is ___ the sofa.", opts:["auf","neben","unter","in"], ok:2, warum:"Ein Teppich liegt oft unter dem Sofa (under)."}
+];
+
+function sagen(t){ $("status").textContent = t; }
+function sprich(text){
+  if(!S.audio || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "de-DE"; u.rate = .9;
+    const v = window.speechSynthesis.getVoices().find(x => /^de/i.test(x.lang));
+    if(v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  }catch(e){ /* keine Stimme */ }
+}
+function zeige(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+  const h = document.querySelector("#"+id+" h2");
+  if(h) h.focus();
+  window.scrollTo({top:0, behavior: S.motion ? "smooth" : "auto"});
+}
+function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
+
+$("s-en").addEventListener("click", () => {
+  S.englisch = !S.englisch;
+  setToggle($("s-en"), S.englisch);
+  document.documentElement.setAttribute("data-en", S.englisch ? "an" : "aus");
+  sagen(S.englisch ? "Englische Hilfe ist an." : "Englische Hilfe ist aus.");
+});
+$("s-audio").addEventListener("click", () => {
+  S.audio = !S.audio; setToggle($("s-audio"), S.audio);
+  if(S.audio){ sprich("Vorlesen ist an."); sagen("Vorlesen ist an."); }
+  else { if("speechSynthesis" in window) window.speechSynthesis.cancel(); sagen("Vorlesen ist aus."); }
+});
+$("s-contrast").addEventListener("click", () => {
+  S.kontrast = !S.kontrast; setToggle($("s-contrast"), S.kontrast);
+  document.documentElement.setAttribute("data-contrast", S.kontrast ? "hoch" : "normal");
+  sagen(S.kontrast ? "Hoher Kontrast ist an." : "Normale Farben.");
+});
+$("s-size").addEventListener("click", () => {
+  S.size = (S.size + 1) % 3;
+  const namen = ["normal","gross","sehr-gross"], labels = ["A","A+","A++"];
+  document.documentElement.setAttribute("data-size", namen[S.size]);
+  $("s-size").textContent = "Schrift: " + labels[S.size];
+  sagen("Schriftgröße: " + ["normal","groß","sehr groß"][S.size] + ".");
+});
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  S.motion = false;
+  document.documentElement.setAttribute("data-motion","aus");
+}
+document.documentElement.setAttribute("data-en","an");
+
+function roomSVG(l){
+  return '<svg class="photo" viewBox="0 0 320 150" aria-hidden="true" focusable="false">'+
+    '<rect width="320" height="150" fill="'+l.wand+'"/>'+
+    '<rect x="0" y="118" width="320" height="32" fill="#8b5e3c"/>'+
+    '<rect x="18" y="22" width="70" height="58" fill="'+l.fenster+'" stroke="#1c241c" stroke-width="3"/>'+
+    '<line x1="53" y1="22" x2="53" y2="80" stroke="#1c241c" stroke-width="2"/>'+
+    '<rect x="210" y="40" width="86" height="78" fill="#6d4c41"/>'+
+    '<rect x="120" y="70" width="70" height="48" fill="#3e5c40"/>'+
+    '<circle cx="250" cy="28" r="10" fill="#f5c518"/>'+
+    (l.keller ? '<rect x="0" y="0" width="320" height="150" fill="rgba(0,0,0,.28)"/>' : "")+
+    '</svg>';
+}
+
+function sichtbar(l){
+  const q = $("f-q").value.trim().toLowerCase();
+  if(q){
+    const hay = (l.titel+" "+l.text+" "+l.tags+" "+l.teil+" "+l.typ).toLowerCase();
+    if(!hay.includes(q)) return false;
+  }
+  if(Number($("f-preis").value) < l.kalt) return false;
+  const m = $("f-moebel").value;
+  if(m === "ja" && !l.moebliert) return false;
+  if(m === "nein" && l.moebliert) return false;
+  const a = $("f-aussen").value;
+  if(a === "balkon" && !l.balkon) return false;
+  if(a === "garten" && !l.garten) return false;
+  if(a === "beides" && !(l.balkon || l.garten)) return false;
+  const z = Number($("f-zimmer").value);
+  if(z && l.zimmer !== z) return false;
+  const t = $("f-teil").value;
+  if(t !== "alle" && l.teil !== t) return false;
+  return true;
+}
+
+function renderKarten(){
+  const box = $("karten"); box.innerHTML = "";
+  const list = LISTINGS.filter(sichtbar);
+  $("anzahl").textContent = list.length + " Anzeigen";
+  list.forEach(l => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "listing" + (S.picked[l.id] ? " picked" : "");
+    b.setAttribute("aria-pressed", S.picked[l.id] ? "true" : "false");
+    b.innerHTML = roomSVG(l)+
+      '<div class="body">'+
+      '<span class="price">'+l.kalt+' € kalt</span> '+
+      '<span class="meta">'+l.warm+' € warm</span>'+
+      '<h3>'+esc(l.titel)+'</h3>'+
+      '<p>'+esc(l.text)+'</p>'+
+      '<span class="en gloss">'+esc(l.en)+'</span>'+
+      '<p class="meta">'+esc(l.teil)+' · '+l.zimmer+' Zimmer · '+l.qm+' m² · Kaution '+l.kaution+' € · NK '+l.nk+' €</p>'+
+      '<p class="meta">'+esc(l.tags)+' · '+esc(l.ab)+'</p>'+
+      '<span class="checkrow">'+(S.picked[l.id] ? "☑ Ausgewählt" : "☐ Merken")+'</span>'+
+      '</div>';
+    b.addEventListener("click", () => {
+      S.picked[l.id] = !S.picked[l.id];
+      sprich(l.titel + ". " + l.kalt + " Euro kalt.");
+      sagen((S.picked[l.id] ? "Ausgewählt: " : "Abgewählt: ") + l.titel);
+      renderKarten();
+    });
+    box.appendChild(b);
+  });
+}
+
+["f-q","f-preis","f-moebel","f-aussen","f-zimmer","f-teil"].forEach(id => {
+  $(id).addEventListener("input", renderKarten);
+  $(id).addEventListener("change", renderKarten);
+});
+
+$("btn-start").addEventListener("click", () => {
+  zeige("screen-browse");
+  renderKarten();
+  sagen("Acht Anzeigen. Markiere die drei, die zu deinem Merkzettel passen.");
+  sprich("Wohnung gesucht. Maximal fünfhundertfünfzig Euro kalt.");
+});
+$("btn-clear").addEventListener("click", () => { S.picked = {}; renderKarten(); sagen("Auswahl gelöscht."); });
+
+$("btn-confirm").addEventListener("click", () => {
+  const chosen = LISTINGS.filter(l => S.picked[l.id]);
+  const wrong = chosen.filter(l => !l.match);
+  const missing = LISTINGS.filter(l => l.match && !S.picked[l.id]);
+  const fb = $("browse-fb");
+  let html = "";
+  if(S.firstConfirm){
+    const hits = chosen.filter(l => l.match).length;
+    S.browsePts = Math.max(0, hits * 10 - wrong.length * 5);
+    if(missing.length === 0 && wrong.length === 0 && hits === 3) S.browsePts = MAX.browse;
+    S.firstConfirm = false;
+  }
+  if(wrong.length){
+    html += "<p><strong>Nicht passend:</strong></p><ul>";
+    wrong.forEach(l => {
+      html += "<li>"+esc(l.warum)+' <span class="en gloss">'+esc(l.warumEn)+"</span></li>";
+    });
+    html += "</ul>";
+  }
+  if(missing.length){
+    html += "<p><strong>Du hast etwas Passendes übersehen:</strong></p><ul>";
+    missing.forEach(l => {
+      html += "<li>"+esc(l.titel)+" — "+esc(l.text)+' <span class="en gloss">'+esc(l.en)+"</span></li>";
+    });
+    html += "</ul>";
+  }
+  if(!wrong.length && !missing.length && chosen.length === 3){
+    fb.className = "fb";
+    fb.innerHTML = "<p>Genau drei Treffer – super. Du nimmst das WG-Zimmer in der Marktstraße für die Anfrage.</p>"+
+      '<span class="en gloss">Those three match the brief. Next: write to the landlord.</span>'+
+      '<p class="btn-row"><button type="button" class="btn" id="btn-to-mail">Zur Anfrage</button></p>';
+    fb.hidden = false; fb.focus();
+    sagen("Richtig. Drei Wohnungen passen.");
+    sprich(" Super. Diese drei Wohnungen passen.");
+    $("btn-to-mail").addEventListener("click", startMail);
+    return;
+  }
+  fb.className = "fb bad";
+  fb.innerHTML = html + "<p>Korrigiere die Häkchen und bestätige noch einmal.</p>"+
+    '<span class="en gloss">Fix the ticks, then confirm again.</span>';
+  fb.hidden = false; fb.focus();
+  sagen("Noch nicht genau die drei passenden Anzeigen.");
+  sprich("Das passt noch nicht.");
+});
+
+function startMail(){
+  zeige("screen-mail");
+  S.mailSel = [];
+  renderChips();
+  renderLetter();
+  sagen("Baue eine höfliche Anfrage. Zwei Bausteine sind zu locker.");
+  sprich("Sehr geehrte Damen und Herren.");
+}
+function renderChips(){
+  const box = $("chips"); box.innerHTML = "";
+  CHIPS.forEach(c => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip";
+    b.setAttribute("aria-pressed", S.mailSel.includes(c.id) ? "true" : "false");
+    if(c.trap && S.mailSel.includes(c.id)) b.classList.add("trap-on");
+    b.innerHTML = esc(c.de)+' <span class="en gloss inline">'+esc(c.en)+"</span>";
+    b.addEventListener("click", () => {
+      if(S.mailDone) return;
+      const i = S.mailSel.indexOf(c.id);
+      if(i >= 0) S.mailSel.splice(i,1); else S.mailSel.push(c.id);
+      sprich(c.de);
+      renderChips(); renderLetter();
+    });
+    box.appendChild(b);
+  });
+}
+function renderLetter(){
+  const body = $("letter-body");
+  if(!S.mailSel.length){
+    body.innerHTML = '<p class="en gloss">Click chips to assemble the letter.</p>';
+    return;
+  }
+  body.innerHTML = S.mailSel.map(id => {
+    const c = CHIPS.find(x => x.id === id);
+    return "<p>"+esc(c.de)+"</p>";
+  }).join("");
+}
+$("btn-mail-reset").addEventListener("click", () => {
+  if(S.mailDone) return;
+  S.mailSel = []; renderChips(); renderLetter();
+});
+$("btn-send").addEventListener("click", () => {
+  const sel = S.mailSel.map(id => CHIPS.find(c => c.id === id));
+  const traps = sel.filter(c => c.trap);
+  const hasAnrede = sel.some(c => c.id === "c1");
+  const hasKern = sel.some(c => c.id === "c4");
+  const hasWer = sel.some(c => c.group === "wer");
+  const hasFrage = sel.some(c => c.id === "c7");
+  let pts = 0;
+  if(hasAnrede) pts += 8;
+  if(hasKern) pts += 8;
+  if(hasWer) pts += 7;
+  if(hasFrage) pts += 7;
+  pts -= traps.length * 8;
+  if(sel.some(c => c.id === "c2") && hasAnrede) pts -= 2;
+  S.mailPts = Math.max(0, Math.min(MAX.mail, pts));
+  S.mailDone = true;
+  const fb = $("mail-fb");
+  let html = "";
+  if(traps.length){
+    html += "<p><strong>Register:</strong></p><ul>";
+    traps.forEach(t => html += "<li>"+esc(t.warum)+' <span class="en gloss">Too informal for a landlord.</span></li>');
+    html += "</ul>";
+  }
+  if(!hasAnrede) html += "<p>Es fehlt die förmliche Anrede „Sehr geehrte Damen und Herren“.</p>";
+  if(!hasKern) html += "<p>Sag klar, wofür du dich interessierst: das Zimmer in der Marktstraße.</p>";
+  if(!hasWer) html += "<p>Stell dich vor: Schule oder Arbeit.</p>";
+  if(!hasFrage) html += "<p>Frage nach einem Besichtigungstermin.</p>";
+  if(!traps.length && hasAnrede && hasKern && hasWer && hasFrage){
+    fb.className = "fb";
+    html = "<p>Höflich und vollständig. Die Vermietung antwortet: Besichtigung morgen um 16 Uhr!</p>"+
+      '<span class="en gloss">Polite and complete. Viewing tomorrow at 4 p.m.</span>';
+  } else {
+    fb.className = "fb bad";
+    html += '<span class="en gloss">Some parts were missing or too informal. You still get the keys — next: furnish.</span>';
+  }
+  html += '<p class="btn-row"><button type="button" class="btn" id="btn-to-plan">Zimmer einrichten</button></p>';
+  fb.innerHTML = html; fb.hidden = false; fb.focus();
+  sagen("Anfrage gesendet. " + S.mailPts + " Punkte.");
+  sprich("Vielen Dank für Ihre Anfrage.");
+  $("btn-to-plan").addEventListener("click", startPlan);
+});
+
+function furnIcon(id){
+  const paths = {
+    tisch:'<rect x="8" y="22" width="32" height="8" fill="#8b5e3c"/><rect x="12" y="30" width="4" height="14" fill="#6d4c41"/><rect x="32" y="30" width="4" height="14" fill="#6d4c41"/>',
+    stuhl:'<rect x="16" y="10" width="16" height="6" fill="#8b5e3c"/><rect x="16" y="16" width="16" height="10" fill="#c4a484"/><rect x="16" y="26" width="4" height="14"/><rect x="28" y="26" width="4" height="14"/>',
+    sofa:'<rect x="6" y="18" width="36" height="16" rx="4" fill="#1b5e3b"/><rect x="6" y="14" width="8" height="12" fill="#0f3d28"/><rect x="34" y="14" width="8" height="12" fill="#0f3d28"/>',
+    bett:'<rect x="6" y="20" width="36" height="16" fill="#4a5848"/><rect x="6" y="14" width="12" height="10" fill="#e8d5c4"/>',
+    lampe:'<circle cx="24" cy="14" r="8" fill="#f5c518"/><rect x="22" y="22" width="4" height="18" fill="#333"/>',
+    pflanze:'<circle cx="24" cy="16" r="10" fill="#2f7a4f"/><rect x="21" y="24" width="6" height="16" fill="#8b5e3c"/>',
+    teppich:'<ellipse cx="24" cy="28" rx="18" ry="10" fill="#a33a2c"/>',
+    schrank:'<rect x="10" y="6" width="28" height="36" fill="#6d4c41"/><line x1="24" y1="6" x2="24" y2="42" stroke="#f5c518"/>'
+  };
+  return '<svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true">'+paths[id]+"</svg>";
+}
+function startPlan(){
+  zeige("screen-plan");
+  S.placed = {}; S.holding = null; S.quizAns = {};
+  renderFurn(); renderFloor();
+  sagen("Fünf Möbel setzen, dann Präpositionen.");
+}
+function placedCount(){ return Object.keys(S.placed).length; }
+function renderFurn(){
+  const box = $("furn-list"); box.innerHTML = "";
+  FURN.forEach(f => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "furn" + (S.placed[f.id] ? " used" : "");
+    b.setAttribute("aria-pressed", S.holding === f.id ? "true" : "false");
+    b.disabled = !!S.placed[f.id];
+    b.innerHTML = furnIcon(f.id)+"<span>"+esc(f.de)+'</span> <span class="en gloss inline">'+esc(f.en)+"</span>";
+    b.addEventListener("click", () => {
+      if(S.placed[f.id]) return;
+      S.holding = f.id;
+      $("plan-hint").innerHTML = "<strong>Ausgewählt:</strong> "+esc(f.de)+" – jetzt eine Zone klicken.";
+      sprich(f.de);
+      renderFurn();
+    });
+    box.appendChild(b);
+  });
+}
+function renderFloor(){
+  const floor = $("floor"); floor.innerHTML = "";
+  ZONES.forEach(z => {
+    const d = document.createElement("button");
+    d.type = "button"; d.className = "zone "+z.cls;
+    const items = Object.entries(S.placed).filter(([,zone]) => zone === z.id).map(([id]) => FURN.find(f => f.id === id));
+    d.innerHTML = "<h4>"+esc(z.de)+"</h4>"+
+      '<span class="en gloss">'+esc(z.en)+"</span>"+
+      '<div class="placed">'+items.map(i => "<span>"+esc(i.de)+"</span>").join("")+"</div>";
+    d.addEventListener("click", () => {
+      if(!S.holding){ sagen("Zuerst ein Möbelstück wählen."); return; }
+      S.placed[S.holding] = z.id;
+      const name = FURN.find(f => f.id === S.holding).de;
+      sagen(name + " steht jetzt " + (z.id === "kueche" || z.id === "wohn" ? "im " : "im ") + z.de + ".");
+      sprich(name);
+      S.holding = null;
+      $("plan-hint").innerHTML = "<strong>Gesetzt:</strong> "+placedCount()+" von 5";
+      renderFurn(); renderFloor();
+      if(placedCount() >= 5){
+        $("quiz").hidden = false;
+        $("btn-quiz").hidden = false;
+        buildQuiz();
+        sagen("Fünf Dinge stehen. Beantworte die vier Fragen.");
+      }
+    });
+    floor.appendChild(d);
+  });
+}
+function buildQuiz(){
+  const box = $("quiz"); box.innerHTML = "";
+  QUIZ.forEach((q, qi) => {
+    const div = document.createElement("div");
+    div.className = "q";
+    div.innerHTML = "<p><strong>"+(qi+1)+".</strong> "+esc(q.q)+'</p><span class="en gloss">'+esc(q.en)+"</span>";
+    const opts = document.createElement("div"); opts.className = "opts";
+    q.opts.forEach((o, oi) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "opt";
+      b.textContent = o;
+      b.setAttribute("aria-pressed", S.quizAns[qi] === oi ? "true" : "false");
+      b.addEventListener("click", () => {
+        if(S.quizDone) return;
+        S.quizAns[qi] = oi;
+        sprich(q.q.replace("___", o));
+        buildQuiz();
+      });
+      opts.appendChild(b);
+    });
+    div.appendChild(opts);
+    box.appendChild(div);
+  });
+}
+$("btn-quiz").addEventListener("click", () => {
+  if(Object.keys(S.quizAns).length < 4){
+    sagen("Bitte alle vier Lücken füllen.");
+    return;
+  }
+  let pts = 0;
+  const box = $("quiz"); box.innerHTML = "";
+  QUIZ.forEach((q, qi) => {
+    const gut = S.quizAns[qi] === q.ok;
+    if(gut) pts += 10;
+    const div = document.createElement("div");
+    div.className = "q";
+    div.innerHTML = "<p><strong>"+(qi+1)+".</strong> "+esc(q.q.replace("___", q.opts[q.ok]))+"</p>"+
+      "<p>"+(gut ? "Richtig. " : "Nicht ganz. ")+esc(q.warum)+'</p>'+
+      '<span class="en gloss">'+(gut ? "Correct. " : "Not quite. ")+esc(q.en)+"</span>";
+    const opts = document.createElement("div"); opts.className = "opts";
+    q.opts.forEach((o, oi) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "opt"+(oi === q.ok ? " good" : (S.quizAns[qi] === oi ? " no" : ""));
+      b.textContent = o; b.disabled = true;
+      opts.appendChild(b);
+    });
+    div.appendChild(opts);
+    box.appendChild(div);
+  });
+  S.quizPts = pts; S.quizDone = true;
+  $("btn-quiz").hidden = true;
+  $("btn-finish").hidden = false;
+  $("plan-fb").hidden = false;
+  $("plan-fb").className = pts >= 30 ? "fb" : "fb bad";
+  $("plan-fb").innerHTML = "<p>Präpositionen: "+pts+" von 40 Punkten.</p>";
+  sagen("Quiz fertig. "+pts+" Punkte.");
+  sprich(pts >= 30 ? "Sehr gut." : "Übe die Präpositionen noch einmal: auf, neben, unter, in.");
+});
+$("btn-finish").addEventListener("click", showSum);
+
+function hash32(str){
+  let h = 0x811c9dc5;
+  for(let i = 0; i < str.length; i++){
+    h ^= str.charCodeAt(i);
+    h = (h + ((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24))) >>> 0;
+  }
+  return h >>> 0;
+}
+const SALT = "kleinhausen-wohnung-v1";
+function totals(){
+  const ges = S.browsePts + S.mailPts + S.quizPts;
+  const max = MAX.browse + MAX.mail + MAX.quiz;
+  const pct = Math.round(ges / max * 100);
+  return {ges, max, pct};
+}
+function baueCode(name){
+  const t = totals();
+  const norm = name.trim().toLowerCase().replace(/\s+/g," ");
+  const pruef = hash32(norm+"|"+t.ges+"|"+t.max+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return "KH-WOHN-"+t.ges+"-"+t.pct+"-"+pruef;
+}
+function codeAkt(){
+  const name = $("name-in").value;
+  $("code-val").textContent = name.trim() ? baueCode(name) : "Bitte Namen eingeben.";
+}
+function showSum(){
+  const t = totals();
+  const body = $("sum-body");
+  body.innerHTML =
+    "<tr><td>Filter &amp; Anzeigen</td><td class='num'>"+S.browsePts+"</td><td class='num'>"+MAX.browse+"</td></tr>"+
+    "<tr><td>Anfrage</td><td class='num'>"+S.mailPts+"</td><td class='num'>"+MAX.mail+"</td></tr>"+
+    "<tr><td>Präpositionen</td><td class='num'>"+S.quizPts+"</td><td class='num'>"+MAX.quiz+"</td></tr>"+
+    "<tr><th>Gesamt</th><th class='num'>"+t.ges+"</th><th class='num'>"+t.max+"</th></tr>";
+  let lob = t.pct >= 80 ? "Die Schlüssel sind dein. Willkommen in der Marktstraße!" :
+            t.pct >= 50 ? "Du ziehst ein – mit ein paar Fragezeichen auf dem Mietvertrag." :
+            "Du hast eine Wohnung. Lies die Anzeigen nächstes Mal genauer.";
+  $("sum-text").innerHTML = "Du hast <strong>"+t.ges+" von "+t.max+" Punkten</strong> ("+t.pct+" %). "+esc(lob)+
+    ' <span class="en gloss">Enter your name for a KH-WOHN submission code.</span>';
+  $("h-sum").textContent = t.pct >= 80 ? "Schlüsselübergabe" : "Einzug mit Auflagen";
+  codeAkt();
+  zeige("screen-sum");
+  sagen("Ergebnis: "+t.ges+" von "+t.max+" Punkten.");
+  sprich("Herzlichen Glückwunsch zum Einzug in Kleinhausen.");
+}
+$("name-in").addEventListener("input", codeAkt);
+$("btn-copy").addEventListener("click", async () => {
+  const t = $("code-val").textContent;
+  if(!/^KH-WOHN-/.test(t)){ sagen("Bitte zuerst den Namen eingeben."); return; }
+  try{
+    await navigator.clipboard.writeText(t);
+    $("btn-copy").textContent = "Kopiert";
+    setTimeout(() => { $("btn-copy").textContent = "Code kopieren"; }, 2000);
+  }catch(e){
+    const r = document.createRange(); r.selectNodeContents($("code-val"));
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  }
+});
+$("btn-verify").addEventListener("click", () => {
+  const name = $("v-name").value.trim();
+  const code = $("v-code").value.trim().toUpperCase();
+  const m = /^KH-WOHN-(\d+)-(\d+)-([0-9A-Z]{7})$/.exec(code);
+  if(!name || !m){ $("v-out").textContent = "Name und Code im Format KH-WOHN-… eingeben."; return; }
+  const [, ges, pct, pruef] = m;
+  const max = MAX.browse + MAX.mail + MAX.quiz;
+  const norm = name.toLowerCase().replace(/\s+/g," ");
+  const soll = hash32(norm+"|"+ges+"|"+max+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  const echt = Math.round(Number(ges)/max*100);
+  $("v-out").textContent = (soll === pruef && Number(pct) === echt)
+    ? "Gültig. "+name+": "+ges+" von "+max+" Punkten ("+echt+" %)."
+    : "Ungültig. Name und Code passen nicht.";
+});
+$("btn-again").addEventListener("click", () => location.reload());
+
+document.addEventListener("keydown", e => {
+  if(e.key === "Enter" && $("screen-browse").classList.contains("on") && e.target.classList.contains("listing")){
+    e.target.click();
+  }
+});
+if("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = () => {};
+sagen("Willkommen bei KleinWohnen Kleinhausen.");
+</script>
+</body>
+</html>

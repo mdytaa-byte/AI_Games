@@ -89,33 +89,13 @@ button{cursor:pointer}
   position:relative;background:#dfe8f1;border:1px solid var(--line);border-radius:18px;overflow:hidden;
   box-shadow:var(--shadow);display:grid;place-items:center;min-height:660px
 }
-.scene{position:absolute;inset:0}
-.scene.classroom{
-  background:
-    linear-gradient(180deg,#d6e8f4 0 18%,#f1dcb6 18% 64%,#bc8a57 64% 100%);
-}
-.scene.classroom:before{display:none}
-.scene.classroom:after{display:none}
-.scene.station{
-  background:
-    linear-gradient(180deg,#cde7fb 0 42%,#dce1e7 42% 58%,#8d97a4 58% 67%,#d5d9de 67% 100%);
-}
-.scene.station:before{display:none}
-.scene.restaurant{
-  background:
-    linear-gradient(180deg,#f6dfbf 0 56%,#b57d5a 56% 100%);
-}
-.scene.restaurant:before{display:none}
-.scene.park{
-  background:
-    linear-gradient(180deg,#bfe7ff 0 46%,#8ac878 46% 100%);
-}
-.scene.park:before{display:none}
-.avatar-stage{position:relative;z-index:2;width:min(380px,48%);height:100%;display:flex;align-items:flex-end;justify-content:center}
-#avatarSvg{width:100%;height:92%;overflow:visible}
+.scene{position:absolute;inset:0;background:none;pointer-events:none;z-index:0}
+.scene.classroom:before,.scene.classroom:after,.scene.station:before,.scene.restaurant:before,.scene.park:before{display:none}
+.avatar-stage{position:relative;z-index:2;width:min(340px,42%);height:100%;display:flex;align-items:flex-end;justify-content:center}
+#avatarSvg{width:100%;height:86%;overflow:visible}
 .speech{
-  position:absolute;top:18px;right:18px;z-index:3;background:#fff;border:2px solid #2e3440;border-radius:26px;
-  max-width:260px;padding:14px 16px;font-size:18px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.08)
+  position:absolute;top:16px;left:50%;right:auto;transform:translateX(-50%);z-index:3;background:#fff;border:2px solid #2e3440;border-radius:26px;
+  max-width:240px;padding:14px 16px;font-size:18px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.08)
 }
 .speech small{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-top:6px}
 .tools{
@@ -181,11 +161,7 @@ button{cursor:pointer}
 .previewline{
   margin-top:14px;padding:12px;background:#f8fafc;border:1px solid var(--line);border-radius:12px;font-weight:700
 }
-@media (max-width:1200px){
-  .main{grid-template-columns:380px 1fr}
-  .right{display:none}
-}
-.scene-art{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.scene-art{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
 .canvas.no-scene .scene-art,.canvas.no-scene .scene{opacity:0}
 .canvas.studio-bg{background:
   radial-gradient(circle at 50% 18%,#fff 0 8%,transparent 42%),
@@ -230,6 +206,14 @@ button{cursor:pointer}
   position:absolute;right:4px;top:4px;border:0;background:#f2f4f7;border-radius:6px;
   width:20px;height:20px;font-size:11px;line-height:1;padding:0
 }
+details.look{
+  border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:16px;background:#fbfcfe
+}
+details.look > summary{
+  cursor:pointer;font-weight:800;list-style:none;display:flex;justify-content:space-between;align-items:center
+}
+details.look > summary::-webkit-details-marker{display:none}
+details.look .group{margin-top:12px}
 .variant .mini{height:72px;overflow:hidden;display:grid;place-items:center}
 .variant .mini svg{width:78px;height:78px}
 .empty-saved{grid-column:1/-1;color:var(--muted);font-size:12px;padding:8px}
@@ -265,7 +249,7 @@ button{cursor:pointer}
   .right{display:grid}
   .footer{overflow:auto;justify-content:flex-start}
   .canvas{min-height:620px}
-  .speech{max-width:min(280px,46vw);font-size:16px;top:10px;right:10px}
+  .speech{max-width:min(280px,70vw);font-size:16px;top:10px;left:50%;right:auto;transform:translateX(-50%)}
 }
 @media (prefers-reduced-motion:reduce){
   *,*:before,*:after{animation:none!important;transition:none!important}
@@ -297,7 +281,7 @@ button{cursor:pointer}
   <main class="main">
     <section class="left">
       <nav class="nav" id="nav">
-        <button class="active" data-pane="character">👤 Character</button>
+        <button class="active" data-pane="character" aria-current="page">👤 Character</button>
         <button data-pane="face">😊 Face</button>
         <button data-pane="hair">💇 Hair</button>
         <button data-pane="outfit">👕 Outfit</button>
@@ -333,6 +317,8 @@ button{cursor:pointer}
               </label>
             </div>
           </div>
+          <details class="look">
+            <summary>Look <span style="color:var(--muted);font-size:11px">Art direction</span></summary>
           <div class="group">
             <div class="labelrow"><span>Anime exaggeration</span><span class="style-readout" id="styleValue">65 · Anime</span></div>
             <input id="styleRange" class="range" type="range" min="0" max="100" value="65" aria-label="Anime exaggeration">
@@ -349,6 +335,7 @@ button{cursor:pointer}
             <input id="shadowRange" class="range" type="range" min="0" max="100" value="62" aria-label="Cast shadow strength">
             <div class="style-scale"><span>Subtle</span><span>Cel</span><span>Deep</span></div>
           </div>
+          </details>
         </section>
 
         <section class="section" data-section="face">
@@ -583,7 +570,7 @@ button{cursor:pointer}
     </section>
 
     <section class="canvas" id="canvasStage">
-      <svg id="sceneArt" class="scene-art" viewBox="0 0 900 780" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+      <svg id="sceneArt" class="scene-art" viewBox="0 0 900 780" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
       <div id="scene" class="scene classroom"></div>
       <div class="avatar-stage">
         <svg id="avatarSvg" viewBox="0 0 420 780" role="img" aria-label="anime avatar preview">
@@ -735,7 +722,7 @@ How are you today?</textarea>
       </button>
     </div>
     <label class="tick" style="margin-top:12px"><input type="checkbox" id="exportScene"> Include illustrated scene behind the character</label>
-    <div class="exportnote"><b>Tip:</b> 2× is the everyday default. Leave the scene off for a transparent portrait; turn it on when you want a classroom slide.
+    <div class="exportnote"><b>Tip:</b> 2× is the everyday default. Leave the scene off for a transparent portrait; turn it on when you want a classroom slide.</div>
   </div>
 </div>
 
@@ -956,8 +943,8 @@ function faceAnatomyProfile(s){
     mouthWidth:1+faceParam(s.mouthWidth)*0.22,
     // Step 18 face-core correction: keep facial features proportionally substantial
     // relative to the larger illustrated hair/head mass.
-    faceCoreX:1.10,
-    faceCoreY:1.045
+    faceCoreX:1.06,
+    faceCoreY:1.00
   };
 }
 function gazeProfile(s){
@@ -1548,8 +1535,11 @@ function buildLightingDefs(parent, s, pal, hairDataObj){
   addStops(hairSpec,[['0%','#ffffff',0],['38%',hair.highlight,0.08],['52%','#ffffff',0.34],['67%',hair.highlight,0.08],['100%','#ffffff',0]]);
   defs.appendChild(hairSpec);
 
+  const anatomy=faceAnatomyProfile(s);
   const faceClip=svgEl('clipPath',{id:'faceLightClip'});
-  faceClip.appendChild(svgEl('path',{d:facePath(s.faceShape,s.exaggeration,s.headTurn,faceAnatomyProfile(s))}));
+  const clipFace=svgEl('g',{transform:scaleAround(210,202,anatomy.faceCoreX,anatomy.faceCoreY)});
+  clipFace.appendChild(svgEl('path',{d:facePath(s.faceShape,s.exaggeration,s.headTurn,anatomy)}));
+  faceClip.appendChild(clipFace);
   defs.appendChild(faceClip);
 
   const hairClip=svgEl('clipPath',{id:'hairLightClip'});
@@ -1613,10 +1603,10 @@ function facePath(shape, exaggeration=65, headTurn=0, anatomy={faceWidth:1,cheek
   const st=styleProfile({exaggeration});
   const ft=headTurnProfile({headTurn});
   const j=st.jaw, t=ft.t, a=ft.abs;
-  let left=147,right=273,lowerR=251,chinY=299;
-  if(shape==='round'){ left=146;right=274;lowerR=252;chinY=295-j*4.0; }
-  else if(shape==='sharp'){ left=148;right=272;lowerR=250;chinY=304-j*6.0; }
-  else { chinY=299-j*5.0; lowerR=251; }
+  let left=144,right=276,lowerR=264,chinY=288;
+  if(shape==='round'){ left=143;right=277;lowerR=266;chinY=284-j*4.0; }
+  else if(shape==='sharp'){ left=146;right=274;lowerR=262;chinY=292-j*6.0; }
+  else { chinY=288-j*5.0; lowerR=264; }
   if(shape==='round') lowerR+=j*3.0;
   else if(shape==='sharp') lowerR+=j*4.5;
   else lowerR+=j*3.8;
@@ -1629,10 +1619,10 @@ function facePath(shape, exaggeration=65, headTurn=0, anatomy={faceWidth:1,cheek
   if(t>0){ left-=2*a; right-=5.5*a; lowerL-=2*a; lowerR-=6.5*a; }
   else if(t<0){ left+=5.5*a; right+=2*a; lowerL+=6.5*a; lowerR+=2*a; }
   const topX=210+t*2.2, chinX=210+ft.chinShift;
-  const templeY=shape==='sharp'?186:shape==='round'?189:188;
-  const topY=shape==='sharp'?104:shape==='round'?108:106;
-  const cheekY=236 + anatomy.cheek*0.12;
-  return `M${topX.toFixed(1)} ${topY} C${(252+t*2).toFixed(1)} ${topY} ${right.toFixed(1)} 145 ${right.toFixed(1)} ${templeY} C${right.toFixed(1)} ${cheekY.toFixed(1)} ${lowerR.toFixed(1)} 282 ${chinX.toFixed(1)} ${chinY.toFixed(1)} C${lowerL.toFixed(1)} 282 ${left.toFixed(1)} ${cheekY.toFixed(1)} ${left.toFixed(1)} ${templeY} C${left.toFixed(1)} 145 ${(168+t*2).toFixed(1)} ${topY} ${topX.toFixed(1)} ${topY} Z`;
+  const templeY=shape==='sharp'?184:shape==='round'?187:186;
+  const topY=shape==='sharp'?110:shape==='round'?114:112;
+  const cheekY=232 + anatomy.cheek*0.12;
+  return `M${topX.toFixed(1)} ${topY} C${(252+t*2).toFixed(1)} ${topY} ${right.toFixed(1)} 145 ${right.toFixed(1)} ${templeY} C${right.toFixed(1)} ${cheekY.toFixed(1)} ${lowerR.toFixed(1)} 274 ${chinX.toFixed(1)} ${chinY.toFixed(1)} C${lowerL.toFixed(1)} 274 ${left.toFixed(1)} ${cheekY.toFixed(1)} ${left.toFixed(1)} ${templeY} C${left.toFixed(1)} 145 ${(168+t*2).toFixed(1)} ${topY} ${topX.toFixed(1)} ${topY} Z`;
 }
 
 function earMarkup(skin, lines, ft={t:0,abs:0,farEarOpacity:1,nearEarScale:1}, anatomy={faceWidth:1}){
@@ -2253,8 +2243,8 @@ function garmentProfile(s){
     const style=s.schoolStyle||'blazer';
     if(style==='gakuran') return {kind:'school-gakuran',fit:'structured',sleeve:'long',lower:'pants',shoe:'loafer',sock:'dark',cuff:true};
     if(style==='sailor') return {kind:'school-sailor',fit:'relaxed',sleeve:'long',lower:'skirt',shoe:'loafer',sock:'white',cuff:true};
-    if(style==='cardigan') return {kind:'school-cardigan',fit:'relaxed',sleeve:'long',lower:s.gender==='feminine'?'skirt':'pants',shoe:'loafer',sock:s.gender==='feminine'?'white':'dark',cuff:true};
-    return {kind:'school-blazer',fit:'structured',sleeve:'long',lower:s.gender==='feminine'?'skirt':'pants',shoe:'loafer',sock:s.gender==='feminine'?'dark':'dark',cuff:true};
+    if(style==='cardigan') return {kind:'school-cardigan',fit:'relaxed',sleeve:'long',lower:s.gender==='masculine'?'pants':'skirt',shoe:'loafer',sock:s.gender==='masculine'?'dark':'white',cuff:true};
+    return {kind:'school-blazer',fit:'structured',sleeve:'long',lower:s.gender==='masculine'?'pants':'skirt',shoe:'loafer',sock:'dark',cuff:true};
   }
   if(s.outfit==='teacher') return {kind:'teacher',fit:'fitted',sleeve:'long',lower:'pants',shoe:'oxford',sock:'dark',cuff:true};
   if(s.outfit==='festival') return {kind:'festival',fit:'relaxed',sleeve:'kimono',lower:'robe',shoe:'geta',sock:'white',cuff:false};
@@ -2733,27 +2723,38 @@ function renderSceneArt(scene){
     add('rect',{width:900,height:448,fill:'#f4e6cf'});
     add('rect',{y:448,width:900,height:332,fill:'#c49a63'});
     for(let i=0;i<9;i++) add('line',{x1:0,y1:448+i*38,x2:900,y2:448+i*32,stroke:'#a67b46','stroke-width':2,opacity:.28});
-    add('rect',{x:24,y:48,width:250,height:168,rx:6,fill:'#2f5a4d',stroke:'#a68864','stroke-width':12});
-    add('rect',{x:36,y:198,width:226,height:8,fill:'#cfc6a8'});
-    sceneText(svg,{x:149,y:118,fill:'#f4f1e4','font-size':32,'font-weight':800,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'日本語');
-    sceneText(svg,{x:149,y:150,fill:'#d7eadf','font-size':16,'font-weight':700,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'にほんご');
-    add('rect',{x:690,y:52,width:150,height:118,fill:'#eef6ff',stroke:'#8d7a63','stroke-width':8});
-    add('line',{x1:765,y1:52,x2:765,y2:170,stroke:'#8d7a63','stroke-width':6});
-    add('line',{x1:690,y1:111,x2:840,y2:111,stroke:'#8d7a63','stroke-width':6});
-    add('rect',{x:698,y:60,width:58,height:42,fill:'#9fd0ef'});
-    add('rect',{x:774,y:60,width:58,height:42,fill:'#9fd0ef'});
-    add('rect',{x:698,y:120,width:58,height:40,fill:'#b7dcf2'});
-    add('rect',{x:774,y:120,width:58,height:40,fill:'#b7dcf2'});
-    add('rect',{x:760,y:186,width:116,height:128,fill:'#f6efe2',stroke:'#9b8d77','stroke-width':5});
-    sceneText(svg,{x:818,y:214,fill:'#53483d','font-size':13,'font-weight':800,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'今週の目標');
-    sceneText(svg,{x:818,y:242,fill:'#53483d','font-size':13,'font-weight':700,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'・あいさつ');
-    sceneText(svg,{x:818,y:264,fill:'#53483d','font-size':13,'font-weight':700,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'・かんじ');
-    sceneText(svg,{x:818,y:286,fill:'#53483d','font-size':13,'font-weight':700,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'・文法');
-    add('rect',{x:40,y:390,width:180,height:18,rx:3,fill:'#d7c09a'});
-    add('rect',{x:680,y:390,width:180,height:18,rx:3,fill:'#d7c09a'});
-    add('circle',{cx:120,cy:54,r:10,fill:'#ffe7a3',opacity:.7});
-    add('circle',{cx:450,cy:48,r:12,fill:'#fff3c4',opacity:.8});
-    add('circle',{cx:780,cy:54,r:10,fill:'#ffe7a3',opacity:.7});
+    add('rect',{x:80,y:28,width:740,height:10,rx:3,fill:'#d9c4a4'});
+    add('rect',{x:0,y:436,width:900,height:14,fill:'#e8d4b0'});
+    add('ellipse',{cx:160,cy:58,rx:28,ry:8,fill:'#fff6d0',opacity:.55});
+    add('ellipse',{cx:450,cy:54,rx:32,ry:9,fill:'#fff6d0',opacity:.6});
+    add('ellipse',{cx:740,cy:58,rx:28,ry:8,fill:'#fff6d0',opacity:.55});
+    add('rect',{x:48,y:52,width:220,height:150,rx:6,fill:'#2f5a4d',stroke:'#a68864','stroke-width':12});
+    add('rect',{x:58,y:192,width:200,height:8,fill:'#cfc6a8'});
+    sceneText(svg,{x:158,y:118,fill:'#f4f1e4','font-size':28,'font-weight':800,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'日本語');
+    sceneText(svg,{x:158,y:146,fill:'#d7eadf','font-size':15,'font-weight':700,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'にほんご');
+    add('rect',{x:620,y:52,width:140,height:110,fill:'#eef6ff',stroke:'#8d7a63','stroke-width':8});
+    add('line',{x1:690,y1:52,x2:690,y2:162,stroke:'#8d7a63','stroke-width':6});
+    add('line',{x1:620,y1:107,x2:760,y2:107,stroke:'#8d7a63','stroke-width':6});
+    add('rect',{x:628,y:60,width:54,height:38,fill:'#9fd0ef'});
+    add('rect',{x:698,y:60,width:54,height:38,fill:'#9fd0ef'});
+    add('rect',{x:628,y:116,width:54,height:36,fill:'#b7dcf2'});
+    add('rect',{x:698,y:116,width:54,height:36,fill:'#b7dcf2'});
+    add('rect',{x:640,y:178,width:130,height:120,fill:'#f6efe2',stroke:'#9b8d77','stroke-width':5});
+    sceneText(svg,{x:705,y:206,fill:'#53483d','font-size':13,'font-weight':800,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'今週の目標');
+    sceneText(svg,{x:705,y:232,fill:'#53483d','font-size':13,'font-weight':700,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'・あいさつ');
+    sceneText(svg,{x:705,y:254,fill:'#53483d','font-size':13,'font-weight':700,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'・かんじ');
+    sceneText(svg,{x:705,y:276,fill:'#53483d','font-size':13,'font-weight':700,'text-anchor':'middle','font-family':'Noto Sans JP, sans-serif'},'・文法');
+    add('rect',{x:70,y:455,width:150,height:12,rx:2,fill:'#d7c09a'});
+    add('rect',{x:78,y:467,width:8,height:52,fill:'#b08a55'});
+    add('rect',{x:204,y:467,width:8,height:52,fill:'#b08a55'});
+    add('rect',{x:680,y:455,width:150,height:12,rx:2,fill:'#d7c09a'});
+    add('rect',{x:688,y:467,width:8,height:52,fill:'#b08a55'});
+    add('rect',{x:814,y:467,width:8,height:52,fill:'#b08a55'});
+    add('path',{d:'M20 640 L160 640 L168 720 L12 720 Z',fill:'#b08958',opacity:.85});
+    add('path',{d:'M880 640 L740 640 L732 720 L888 720 Z',fill:'#b08958',opacity:.85});
+    add('circle',{cx:160,cy:62,r:8,fill:'#ffe7a3',opacity:.7});
+    add('circle',{cx:450,cy:58,r:10,fill:'#fff3c4',opacity:.8});
+    add('circle',{cx:740,cy:62,r:8,fill:'#ffe7a3',opacity:.7});
   } else if(scene==='station'){
     add('rect',{width:900,height:780,fill:'#cfe6fa'});
     add('rect',{y:330,width:900,height:120,fill:'#d9dee6'});
@@ -2832,16 +2833,16 @@ function refreshSavedGrid(){
     grid.appendChild(empty);
     return;
   }
-  list.slice(0,16).forEach((item, idx)=>{
+  list.slice(0,24).forEach((item, idx)=>{
     const s = item.character || item;
     const btn = document.createElement('button');
     btn.className = 'saved-card';
     btn.type = 'button';
-    btn.innerHTML = `<span class="saved-chip" style="background:${s.skin||'#f2c7a5'}"><i style="background:${s.hair||'#24242b'}"></i></span><span><b>${escapeXml(s.name||'Character')}</b><small>${escapeXml(s.role||'Student')}</small></span><span class="saved-del" data-del-saved="${idx}" title="Delete">✕</span>`;
+    btn.innerHTML = `<span class="saved-chip" style="background:${s.skin||'#f2c7a5'}"><i style="background:${s.hair||'#24242b'}"></i></span><span><b>${escapeXml(s.name||'Character')}</b><small>${escapeXml(s.role||'Student')}</small></span><button type="button" class="saved-del" data-del-saved="${idx}" title="Delete" aria-label="Delete ${escapeXml(s.name||'character')}">✕</button>`;
     btn.addEventListener('click', e=>{
       if(e.target.closest('[data-del-saved]')) return;
       snapshot();
-      Object.assign(current(), clone({...DEFAULT, ...s}));
+      Object.assign(current(), mergeCharacter(s));
       renderAvatar();
       toast(`Loaded ${s.name||'character'}`);
     });
@@ -2997,6 +2998,8 @@ function renderAvatar(){
   if($('#lineCount')) $('#lineCount').textContent = `${spoken.i+1} / ${spoken.lines.length}`;
   if(!s.altManual) s.alt = autoAltText(s);
   $('#altText').value = s.alt;
+  const avatarSvg = $('#avatarSvg');
+  if(avatarSvg) avatarSvg.setAttribute('aria-label', s.alt);
   $('#notes').value = s.notes;
   $('#charName').value = s.name;
   $('#charRole').value = s.role;
@@ -3180,12 +3183,14 @@ function mergeCharacter(raw){
   if(!Array.isArray(fresh.dialogue) || !fresh.dialogue.length){
     fresh.dialogue = [{jp:fresh.jp||DEFAULT.jp, en:fresh.en||DEFAULT.en}];
   }
+  if(!Array.isArray(fresh.accessories)) fresh.accessories = [];
   return fresh;
 }
 function saveCharacter(){
   const saved = loadSavedList();
   saved.unshift({savedAt:Date.now(), character:clone(current())});
   localStorage.setItem(SAVE_KEY, JSON.stringify(saved.slice(0,24)));
+  localStorage.removeItem(SAVE_KEY_LEGACY);
   refreshSavedGrid();
   toast(`${current().name} saved in this browser`);
 }
@@ -3287,20 +3292,21 @@ function serializedSceneSvg(width=900, height=780){
   cloneSvg.setAttribute('width', String(width));
   cloneSvg.setAttribute('height', String(height));
   cloneSvg.setAttribute('viewBox','0 0 900 780');
-  cloneSvg.setAttribute('preserveAspectRatio','xMidYMid slice');
+  cloneSvg.setAttribute('preserveAspectRatio','xMidYMid meet');
   return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(cloneSvg);
+}
+function serializedCompositeSvg(width=900, height=780){
+  const sceneInner = serializedSceneSvg(900,780).replace(/^<\?xml[^>]*>\n?/,'');
+  const avatarInner = serializedAvatarSvg(420,780).replace(/^<\?xml[^>]*>\n?/,'');
+  const body = avatarInner.replace(/<svg[^>]*>/,'').replace(/<\/svg>\s*$/,'');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 900 780">${sceneInner}<g transform="translate(255 55) scale(0.92)">${body}</g></svg>`;
 }
 function svgExport(){
   const includeScene = $('#exportScene') && $('#exportScene').checked;
-  let xml = serializedAvatarSvg(420,780);
-  if(includeScene){
-    const sceneInner = serializedSceneSvg(900,780).replace(/^<\?xml[^>]*>\n?/,'');
-    const avatarInner = serializedAvatarSvg(420,780).replace(/^<\?xml[^>]*>\n?/,'');
-    xml = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="900" height="780" viewBox="0 0 900 780">${sceneInner}<g transform="translate(240 20) scale(1.02)">${avatarInner.replace(/<svg[^>]*>/,'').replace(/<\/svg>$/,'')}</g></svg>`;
-  }
+  const xml = includeScene ? serializedCompositeSvg(900,780) : serializedAvatarSvg(420,780);
   const blob = new Blob([xml], {type:'image/svg+xml;charset=utf-8'});
   downloadBlob(blob, safeFileName(current().name) + (includeScene?'-scene':'') + '.svg');
-  toast('SVG exported');
+  toast(includeScene ? 'SVG exported with scene' : 'SVG exported');
   $('#exportModal').classList.remove('open');
 }
 function makeCrcTable(){
@@ -3351,12 +3357,11 @@ function loadSvgImage(xml){
   });
 }
 function pngExport(scale=2, printDpi=null){
-  const width = 840 * scale;
-  const height = 1560 * scale;
   const includeScene = $('#exportScene') && $('#exportScene').checked;
-  const jobs = [loadSvgImage(serializedAvatarSvg(width,height))];
-  if(includeScene) jobs.unshift(loadSvgImage(serializedSceneSvg(width,height)));
-  Promise.all(jobs).then(async images=>{
+  const width = includeScene ? 900 * scale : 840 * scale;
+  const height = includeScene ? 780 * scale : 1560 * scale;
+  const xml = includeScene ? serializedCompositeSvg(width,height) : serializedAvatarSvg(width,height);
+  loadSvgImage(xml).then(async img=>{
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
@@ -3364,12 +3369,7 @@ function pngExport(scale=2, printDpi=null){
     ctx.clearRect(0,0,width,height);
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
-    if(includeScene){
-      ctx.drawImage(images[0],0,0,width,height);
-      ctx.drawImage(images[1],0,0,width,height);
-    } else {
-      ctx.drawImage(images[0],0,0,width,height);
-    }
+    ctx.drawImage(img,0,0,width,height);
     const b = await new Promise(res=>canvas.toBlob(res, 'image/png'));
     if(!b){ toast('PNG export failed'); return; }
     let output = b;
@@ -3394,7 +3394,11 @@ document.addEventListener('click', e=>{
   const paneBtn = e.target.closest('[data-pane]');
   if(paneBtn){
     activePane = paneBtn.dataset.pane;
-    $$('#nav button').forEach(b=>b.classList.toggle('active', b===paneBtn));
+    $$('#nav button').forEach(b=>{
+      const on = b===paneBtn;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-current', on ? 'page' : 'false');
+    });
     $$('.section').forEach(s=>s.classList.toggle('active', s.dataset.section===activePane));
   }
   const setBtn = e.target.closest('[data-set]');
@@ -3483,9 +3487,17 @@ function typingTarget(el){
   return el && (el.tagName==='INPUT' || el.tagName==='TEXTAREA' || el.tagName==='SELECT' || el.isContentEditable);
 }
 
+function openDialogueStudio(){
+  const s = current();
+  const {lines} = currentLine(s);
+  $('#dialogueJP').value = lines.map(l=>l.jp).join('\n');
+  $('#dialogueEN').value = lines.map(l=>l.en).join('\n');
+  previewDialogue();
+  $('#dialogueModal').classList.add('open');
+}
 $('#helpBtn').onclick = ()=>$('#helpModal').classList.add('open');
-$('#dialogueBtn').onclick = ()=>$('#dialogueModal').classList.add('open');
-$('#dialogueFooterBtn').onclick = ()=>$('#dialogueModal').classList.add('open');
+$('#dialogueBtn').onclick = openDialogueStudio;
+$('#dialogueFooterBtn').onclick = openDialogueStudio;
 $('#applyDialogue').onclick = applyDialogueLines;
 $('#dialogueJP').addEventListener('input', previewDialogue);
 $('#dialogueEN').addEventListener('input', previewDialogue);
@@ -3540,8 +3552,8 @@ document.addEventListener('keydown', e=>{
   } else if(e.key.toLowerCase()==='p'){
     e.preventDefault();
     setPresenting(!$('#app').classList.contains('presenting'));
-  } else if(e.key==='ArrowLeft'){ stepLine(-1); }
-  else if(e.key==='ArrowRight'){ stepLine(1); }
+  } else if($('#app').classList.contains('presenting') && e.key==='ArrowLeft'){ stepLine(-1); }
+  else if($('#app').classList.contains('presenting') && e.key==='ArrowRight'){ stepLine(1); }
   else if($('#app').classList.contains('presenting') && e.key==='Escape'){ setPresenting(false); }
 });
 const styleRangeControl=$('#styleRange');

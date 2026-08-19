@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Museumsnacht Kleinhausen</title>
+<style>
+:root{
+  --void:#0a0908;--void-2:#161210;--gold:#d4af6a;--gold-deep:#8a6e32;
+  --burg:#5c1c24;--ivory:#f3ead7;--spot:#ffd78a;--ink:#1a1410;--ink-soft:#6a5e50;
+  --ok:#3d6b45;--err:#9a3b32;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1rem;--r:8px;
+  --fx:50%;--fy:40%;
+}
+html[data-size="gross"]{--fs:1.16rem} html[data-size="sehr-gross"]{--fs:1.34rem}
+html[data-contrast="hoch"]{
+  --void:#000;--void-2:#000;--gold:#fff;--gold-deep:#fff;--burg:#000;
+  --ivory:#fff;--spot:#fff;--ink:#000;--ink-soft:#000;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background:var(--void);color:var(--ivory);font-family:var(--sans);font-size:var(--fs);line-height:1.5;min-height:100vh;-webkit-text-size-adjust:100%}
+.skip{position:absolute;left:-9999px;top:0;z-index:300;background:var(--gold);color:var(--ink);padding:.7em 1.1em;font-weight:700;text-decoration:none}
+.skip:focus{left:0}
+:focus-visible{outline:4px solid var(--gold);outline-offset:3px}
+html[data-contrast="hoch"] :focus-visible{outline:5px solid #fff}
+.topbar{background:var(--void-2);border-bottom:4px solid var(--gold);color:var(--ivory)}
+.topbar-in{max-width:1180px;margin:0 auto;padding:.65rem 1rem;display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;justify-content:space-between}
+.brand h1{font-family:var(--serif);font-size:1.2em;margin:0}
+.brand .sub{font-family:var(--mono);font-size:.68em;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);display:block}
+.settings{display:flex;flex-wrap:wrap;gap:.35rem}
+.set-btn{font:inherit;font-size:.8em;background:transparent;color:var(--ivory);border:2px solid #5a4a38;border-radius:999px;padding:.35em .85em;cursor:pointer;min-height:44px}
+.set-btn[aria-pressed="true"]{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}
+.wrap{max-width:1180px;margin:0 auto;padding:1rem 1rem 3rem}
+.screen{display:none}.screen.on{display:block}
+h2{font-family:var(--serif);font-size:1.65em;margin:.15em 0 .4em} h2:focus{outline:none}
+.eyebrow{font-family:var(--mono);font-size:.72em;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0}
+.lede{max-width:64ch}
+.en{color:var(--spot);font-style:italic;opacity:.9}.en::before{content:" – "}
+html:not(.show-en) .gloss{display:none}
+.btn{font:inherit;font-weight:700;background:var(--gold);color:var(--ink);border:3px solid var(--gold-deep);border-radius:var(--r);padding:.65em 1.2em;cursor:pointer;min-height:44px}
+.btn-ghost{background:transparent;color:var(--ivory);border-color:var(--gold)}
+.btn-row{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}
+.play-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(270px,1fr);gap:1rem}
+@media(max-width:900px){.play-grid{grid-template-columns:1fr}}
+.gallery{
+  position:relative;background:#120e0c;border:6px solid var(--gold);border-radius:2px;
+  overflow:hidden;aspect-ratio:1000/520;
+}
+.gallery svg.bg{display:block;width:100%;height:100%}
+.gallery .lamp{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle 220px at var(--fx) var(--fy), transparent 0, rgba(0,0,0,.18) 40%, rgba(0,0,0,.72) 78%);
+}
+html[data-contrast="hoch"] .gallery .lamp{display:none}
+html[data-motion="aus"] .gallery .lamp{background:rgba(0,0,0,.25)}
+.exhibits{position:absolute;inset:0}
+.ex{
+  position:absolute;min-width:44px;min-height:44px;font:inherit;font-size:.75em;font-weight:700;
+  background:rgba(20,16,12,.78);color:var(--gold);border:2px solid var(--gold);border-radius:6px;cursor:pointer;
+  text-align:center;padding:.3em .45em;
+}
+.ex:hover,.ex:focus-visible{background:var(--gold);color:var(--ink)}
+.ex.stamped{border-color:#8fd4a0;color:#c8f0d4}
+.ex.rope{border-color:#c45c48;color:#f0c0b8}
+.panel{background:var(--ivory);color:var(--ink);border-radius:var(--r);padding:1rem;border:2px solid var(--gold-deep)}
+.panel h3{font-family:var(--serif);margin:.1em 0 .4em;font-size:1.15em}
+.plaque{font-family:var(--serif);margin:.3em 0}
+.choices{display:grid;gap:.5rem;margin:.6rem 0}
+.opt{text-align:left;font:inherit;background:#fff;border:2px solid #cbb89a;border-radius:8px;padding:.7em .8em .7em 2.8em;cursor:pointer;position:relative;min-height:44px;color:var(--ink)}
+.opt .key{position:absolute;left:.55em;top:.7em;width:1.5em;height:1.5em;border-radius:5px;background:var(--void-2);color:var(--gold);display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:.8em}
+.opt.right{border-color:var(--ok);background:#e7f3ea}
+.opt.wrong{border-color:var(--err);background:#fdeceb}
+.hint{background:#fff4d4;border-left:4px solid var(--gold);padding:.5em .7em;margin:.5em 0}
+.liste{
+  background:#f7efdc;color:#1a1410;border:2px solid #1a1410;padding:.8rem .9rem;
+  font-family:var(--serif);transform:rotate(-.4deg);
+}
+.liste h3{margin:0 0 .4em;font-size:1.05em}
+.liste ol{margin:.2em 0 0;padding-left:1.2em}
+.liste li.got{text-decoration:line-through;opacity:.7}
+.stamps{display:flex;flex-wrap:wrap;gap:.35rem}
+.stamp{width:2.2rem;height:2.2rem;border:2px dashed var(--gold);border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-size:.75em}
+.stamp.on{background:var(--gold);color:var(--ink);border-style:solid;font-weight:700}
+.nav-gal{display:flex;flex-wrap:wrap;gap:.35rem;margin:.5rem 0}
+.nav-gal button[aria-current="true"]{background:var(--gold);color:var(--ink)}
+.frag{font-family:var(--mono);letter-spacing:.12em;color:var(--gold)}
+.status-bar{min-height:1.4em;margin:1rem 0 0;color:var(--spot)}
+.news{background:var(--ivory);color:var(--ink);border:8px solid var(--gold);padding:1.2rem;max-width:40rem;font-family:var(--serif)}
+.code-box{background:#000;border:2px solid var(--gold);padding:1rem;margin:1rem 0;border-radius:var(--r)}
+.code-val{font-family:var(--mono);color:var(--gold);font-size:1.1em;word-break:break-all}
+input[type=text]{font:inherit;padding:.65em .8em;border:2px solid #cbb89a;border-radius:6px;min-height:44px;width:100%;max-width:22rem;background:#fff;color:var(--ink)}
+details{margin:1rem 0} summary{cursor:pointer;font-weight:700;min-height:44px}
+kbd{font-family:var(--mono);border:1px solid #5a4a38;padding:.05em .3em;border-radius:4px}
+.guard{background:#3a1014;color:#f3ead7;border:2px solid #c45c48;padding:.8rem;margin:.6em 0;border-radius:var(--r)}
+html[data-motion="aus"] *{animation:none !important;transition:none !important}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+@media print{.settings,.ex,.lamp{display:none !important}body{background:#fff;color:#000}}
+.liste li{margin:.35em 0}
+.panel .plaque{line-height:1.45}
+html[data-contrast="hoch"] .ex{background:#000;color:#fff;border-color:#fff}
+html[data-contrast="hoch"] .opt{border-color:#000}
+.nav-gal button{min-height:44px}
+.stamp[aria-label]{min-width:44px;min-height:44px}
+.gallery{box-shadow:inset 0 0 80px rgba(0,0,0,.35)}
+
+.ex.stamped::after{content:" ✓"}
+.guard p{margin:.3em 0}
+html[data-size="gross"] .ex{font-size:.82em}
+html[data-size="sehr-gross"] .ex{font-size:.9em}
+html[data-contrast="hoch"] .gallery{border-color:#fff}
+html[data-contrast="hoch"] .liste{border-color:#000;background:#fff}
+html[data-contrast="hoch"] .panel{border-color:#000}
+html[data-contrast="hoch"] .news{border-color:#000}
+.frag{margin:.5rem 0}
+@media (max-width:600px){
+  .play-grid{gap:.7rem}
+  h2{font-size:1.35em}
+  .nav-gal button{font-size:.8em}
+}
+@media (min-width:901px){
+  aside{position:sticky;top:.6rem}
+}
+.liste ol{line-height:1.4}
+.stamp.on{box-shadow:0 0 0 2px var(--void-2)}
+input[type=text]:focus-visible{outline:4px solid var(--gold);outline-offset:2px}
+details[open]{background:rgba(243,234,215,.08);padding:.4rem}
+.panel h3{color:var(--burg)}
+html[data-contrast="hoch"] .panel h3{color:#000}
+
+.btn-row .btn-ghost{min-height:44px}
+html[data-contrast="hoch"] .guard{background:#000;border-color:#fff;color:#fff}
+html[data-contrast="hoch"] .hint{background:#fff;border-color:#000}
+html[data-contrast="hoch"] .code-box{background:#000;color:#fff}
+.ex:disabled{opacity:.6}
+aside .liste{margin-bottom:.8rem}
+#panel-de{margin:.3em 0}
+@media (prefers-reduced-motion:reduce){
+  .ex,.opt,.lamp{transition:none}
+}
+@media (max-width:480px){
+  .settings{width:100%}
+  .set-btn{flex:1 1 auto;text-align:center}
+  .gallery{aspect-ratio:1000/560}
+}
+.news p{margin:.45em 0}
+.code-box p{margin:.35em 0}
+#v-out{min-height:1.3em;color:var(--ivory)}
+.skip:focus{z-index:400}
+body{text-rendering:optimizeLegibility}
+.brand h1{line-height:1.15}
+.opt.right .key{background:var(--ok);color:#fff}
+.opt.wrong .key{background:var(--err);color:#fff}
+.nav-gal{margin-bottom:.7rem}
+#fin-fb{margin:.6em 0;font-weight:700}
+#fin-frags{font-size:1.1em;margin:1rem 0}
+.stamp{box-sizing:border-box}
+html[data-size="sehr-gross"] .ex{padding:.45em .5em}
+html[data-size="sehr-gross"] body{line-height:1.6}
+@media print{
+  .topbar,.skip,.nav-gal{display:none !important}
+  .liste,.panel,.news{border-color:#000;background:#fff;color:#000}
+}
+.gallery .lamp{z-index:1}
+.exhibits{z-index:2}
+.ex{z-index:3}
+#frags{margin:.4rem 0 0}
+.panel #btn-sprich{margin-top:.4rem}
+#gallery{touch-action:manipulation}
+.ex{line-height:1.2}
+html[data-motion="aus"] .gallery .lamp{opacity:.4}
+#screen-finale .opt{max-width:36rem}
+#news h2{margin-top:0}
+#code-val{user-select:all}
+.screen.on{min-height:60vh}
+.topbar{position:sticky;top:0;z-index:50}
+h2{overflow-wrap:anywhere}
+details p{max-width:70ch}
+.liste h3{font-family:var(--serif)}
+#stamps{margin:.2rem 0 .6rem}
+button{touch-action:manipulation}
+</style>
+</head>
+<body>
+<a class="skip" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <h1>Museumsnacht Kleinhausen</h1>
+      <span class="sub">Stadtmuseum · Schnitzeljagd</span>
+    </div>
+    <div class="settings" role="group" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">Vorlesen</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</div>
+<main class="wrap" id="hauptinhalt">
+<section class="screen on" id="screen-start" aria-labelledby="h-start">
+  <p class="eyebrow">Nacht im Stadtmuseum · A2–B1</p>
+  <h2 id="h-start" tabindex="-1">Die Türen sind offen – nur für heute Nacht</h2>
+  <p class="lede">Einmal im Jahr bleibt das Stadtmuseum bis Mitternacht hell. Du bekommst eine Papierliste auf Deutsch (ohne englische Zeilen auf der Liste selbst). Finde sechs Stempel, dann das Motto aus Wortfetzen.
+    <span class="en gloss">Night at the town museum. A German scavenger list, six stamps, then a motto assembled from fragments.</span></p>
+  <p class="lede">Klicke Ausstellungen (oder <kbd>E</kbd>). Seile nicht anfassen – der Nachtwächter warnt auf Deutsch. Relativsätze und Präteritum auf den Schildern: der Maler, der … malte; Kleinhausen wurde 1320 gegründet.
+    <span class="en gloss">Plaques use relative clauses and simple past (wurde, stand, gab).</span></p>
+  <p><label for="name-in">Dein Name</label></p>
+  <p><input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname"></p>
+  <div class="btn-row"><button type="button" class="btn" id="btn-start">Ins Foyer gehen</button>
+    <button type="button" class="btn btn-ghost" id="btn-ueben">Schilder vorlesen üben</button></div>
+  <details>
+    <summary>Tastatur</summary>
+    <ul>
+      <li><kbd>1</kbd>–<kbd>9</kbd> Antworten. <kbd>E</kbd> / <kbd>Enter</kbd> untersucht. Taschenlampe folgt Maus oder Fokus.</li>
+      <li>Keine Cookies, kein CDN, keine externen Bilder.</li>
+    </ul>
+  </details>
+  <div class="panel" style="margin-top:1rem;background:var(--ivory);color:var(--ink)">
+    <h3>Was in den Sälen steht – kurz, nicht Wikipedia</h3>
+    <p><strong>Winzer:</strong> Rheinhessen ist Weinland. Reben an Hängen, Zwiebelkuchen im Herbst. Die Römer, die hier Wein kannten, sind eine Schul-Erinnerung, kein Kaiserlexikon.</p>
+    <p><strong>Römer:</strong> Nicht nur am Rhein. Funde an der Selz: Becher, Steine, eine Amphore für Öl.</p>
+    <p><strong>Fachwerk:</strong> Balken sichtbar, Gefache hell. Kleinhausens Markt hatte solche Häuser.</p>
+    <p><strong>Luther:</strong> Ein Druck aus Mainz, kurz: Worms 1521 wird genannt, Kleinhausen war keine Reformationshauptstadt.</p>
+    <p><strong>Selz:</strong> Kleinhausen liegt an der Selz, in der Nähe von Mainz – nicht am Rhein, auch wenn Gäste das denken.</p>
+    <p><strong>Motto:</strong> Geschichte zum Anfassen. Fetzen in den Galerien. Relativsätze auf Schildern: die Malerin, die …; die Urkunde, die … Präteritum: wurde, stand, gab.</p>
+    <p class="en gloss">Short cultural notes: wine-growers, Romans, timber-frame, a Luther print, the Selz. Motto: Geschichte zum Anfassen.</p>
+    <h3>Die sechs Fragen der Papierliste</h3>
+    <ol lang="de">
+      <li>Finde das Gemälde mit dem gelben Himmel. Wie heißt der Maler? (Lina Bergmann)</li>
+      <li>In welcher Vitrine liegt der römische Becher? (B)</li>
+      <li>Wann wurde Kleinhausen gegründet? (1320)</li>
+      <li>Welche Tracht trägt die Figur aus Rheinhessen? (weiße Bluse, blaue Schürze, dunkler Rock)</li>
+      <li>Welches Objekt ist weich? (die Wolle)</li>
+      <li>Wo liegt Kleinhausen – am Rhein oder an der Selz? (an der Selz)</li>
+    </ol>
+    <p>Die Liste im Spiel zeigt keine englischen Zeilen. Relativsätze: die Malerin, die Kleinhausen liebte; der Becher, der 1978 gefunden wurde; die Urkunde, die im Archiv lag. Präteritum: wurde gegründet, stand, gab, malte.</p>
+    <p>Zusatzräume ohne Stempel: Garderobe (Sie/du bei Nummern) und Museumscafé (einen Tee bestellen). Seile nicht anfassen.</p>
+    <h3>Schilder lesen – Relativsatz und Präteritum</h3>
+    <p>Die Malerin, die Kleinhausen liebte, heißt Lina Bergmann. Sie stand oft an diesem Ufer.</p>
+    <p>Der Becher, der 1978 beim Weinberg gefunden wurde, liegt in Vitrine B.</p>
+    <p>Kleinhausen wurde 1320 gegründet. Eine Urkunde nannte „Clinhusen an der Selze“.</p>
+    <p>Die Figur, die aus Rheinhessen kommt, trägt eine weiße Bluse und eine blaue Schürze.</p>
+    <p>Die Wolle, die weich ist, stammt (als Nachbildung) von einem Schaf.</p>
+    <p>Die Stadt, die an der Selz liegt, liegt nicht am Rhein.</p>
+    <p>Luther, der 1521 in Worms sprach, hängt hier nur als kleiner Druck aus Mainz.</p>
+    <p>Winzer, die Abgaben zahlten, hinterließen Münzen mit Trauben.</p>
+    <p>Das Fachwerk, das am Markt stand, ist im Modell zu sehen.</p>
+    <p>Der Nachtwächter, der das Seil sieht, sagt: Bitte nicht anfassen. Gehen Sie einen Schritt zurück.</p>
+    <p>Motto, das du zusammensetzt: Geschichte zum Anfassen.</p>
+    <p>Galerie 1 Gemälde: gelber Himmel = Lina Bergmann. Fetzen: Geschichte. Seil nicht ziehen.</p>
+    <p>Galerie 2 Römer: Becher in B. Fetzen: zum. Weinberge an der Selz, nicht nur am Rhein.</p>
+    <p>Galerie 3 Stadt: 1320. Fetzen: Anfassen. Fachwerk-Modell, Münzen mit Traube, Brunnen 1891.</p>
+    <p>Galerie 4 Tracht: weiße Bluse, blaue Schürze, dunkler Rock. Nicht Dirndl-Klischee aus Bayern.</p>
+    <p>Galerie 5 Tastsinn: Wolle weich, Stein hart, Glas glatt. Nachbildungen zum Fühlen.</p>
+    <p>Galerie 6 Karte: Stern an der Selz. Mainz am Rhein. Schulkarte, bewusst neckisch.</p>
+    <p>Räume 7–8: Garderobe und Café, keine Stempel, aber Sie/du und einen Tee.</p>
+    <p>Finale: sechs Stempel, Motto wählen. Code KH-MUS- mit NACHT oder WACH (wenn oft am Seil).</p>
+    <p>Taschenlampe: radialer Verlauf folgt der Maus oder dem Fokus. Kontrast schaltet sie aus.</p>
+    <p>Tastatur: Zahlen für Antworten, E/Enter am Exponat. Vorlesen de-DE.</p>
+    <p>Code für die Lehrkraft: KH-MUS- plus NACHT oder WACH, die sechs Stempel als Nullen und Einsen, dann die Prüfsumme.</p>
+    <p>Englisch bleibt an, bis du English ausklickst. Glossen tragen class en gloss.</p>
+    <p>Kein Cookie, kein Netz, kein WebGL. Nur diese Datei, Systemschriften, SVG-Wände.</p>
+    <p>Wenn du das Seil oft anfasst, endet die Nacht mit einem müden Wächter – das Motto gilt trotzdem.</p>
+    <p>Winzer, Römer, Fachwerk, Selz, ein Lutherblatt: genug Kultur für eine Schulnacht, kein Lexikon.</p>
+  </div>
+</section>
+
+<section class="screen" id="screen-play" aria-labelledby="h-play">
+  <p class="eyebrow" id="gal-label">Galerie 1 von 6</p>
+  <h2 id="h-play" tabindex="-1">Gemäldegalerie</h2>
+  <div class="nav-gal" id="nav-gal" role="navigation" aria-label="Galerien"></div>
+  <div class="play-grid">
+    <div>
+      <div class="gallery" id="gallery"></div>
+      <div class="panel" id="panel">
+        <h3 id="panel-h">Ein Schild lesen</h3>
+        <p class="plaque" id="panel-de" lang="de">Treten Sie näher. Die Rahmen sind Gold, die Nacht ist dunkel.</p>
+        <p class="en gloss" id="panel-en">Step closer. Gold frames, dark night.</p>
+        <div id="panel-extra"></div>
+        <p><button type="button" class="btn btn-ghost" id="btn-sprich">Text vorlesen</button></p>
+      </div>
+    </div>
+    <aside>
+      <div class="liste" id="liste">
+        <h3>Schnitzeljagd</h3>
+        <ol lang="de">
+          <li data-q="1">Finde das Gemälde mit dem gelben Himmel. Wie heißt der Maler?</li>
+          <li data-q="2">In welcher Vitrine liegt der römische Becher?</li>
+          <li data-q="3">Lies die Beschriftung: Wann wurde Kleinhausen gegründet?</li>
+          <li data-q="4">Welche Tracht trägt die Figur aus Rheinhessen?</li>
+          <li data-q="5">Der Tastsinn-Raum: welches Objekt ist weich?</li>
+          <li data-q="6">Finde die Karte: Wo liegt Kleinhausen – am Rhein oder an der Selz?</li>
+        </ol>
+        <p class="en gloss">The list itself stays German. Glosses are only here, off the paper.</p>
+      </div>
+      <p style="margin:.8rem 0 .3rem;font-family:var(--mono);font-size:.75em;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">Stempel</p>
+      <div class="stamps" id="stamps"></div>
+      <p class="frag" id="frags">Fetzen: —</p>
+    </aside>
+  </div>
+  <p class="status-bar" id="status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="screen" id="screen-finale" aria-labelledby="h-fin">
+  <p class="eyebrow">Foyer · Mitternacht</p>
+  <h2 id="h-fin" tabindex="-1">Die Stempelkarte ist voll</h2>
+  <p class="lede">Die Fetzen ergeben ein Motto. Was ist das Motto der Museumsnacht?
+    <span class="en gloss">What is the motto of Museum Night?</span></p>
+  <p class="frag" id="fin-frags"></p>
+  <div class="choices" id="fin-choices"></div>
+  <p id="fin-fb" hidden></p>
+</section>
+
+<section class="screen" id="screen-end" aria-labelledby="h-end">
+  <p class="eyebrow">Ausgang zum Markt</p>
+  <h2 id="h-end" tabindex="-1">Geschichte zum Anfassen</h2>
+  <div class="news" id="news"></div>
+  <div class="code-box">
+    <p>Abgabecode</p>
+    <p class="code-val" id="code-val"></p>
+    <p><button type="button" class="btn" id="btn-copy">Code kopieren</button></p>
+  </div>
+  <div class="btn-row"><button type="button" class="btn" id="btn-nochmal">Noch eine Nacht</button></div>
+  <details>
+    <summary>Für Lehrkräfte: Code prüfen</summary>
+    <p><label for="v-name">Name</label> <input type="text" id="v-name"></p>
+    <p><label for="v-code">Code</label> <input type="text" id="v-code"></p>
+    <p><button type="button" class="btn" id="btn-verify">Prüfen</button></p>
+    <p id="v-out" role="status" aria-live="polite"></p>
+  </details>
+</section>
+</main>
+<footer class="wrap" style="padding-bottom:2rem">
+  <p>Museumsnacht Kleinhausen · Stadtmuseum · Schnitzeljagd auf Deutsch · Relativsätze und Präteritum. Eine Datei, keine Cookies, kein Netz, kein WebGL.</p>
+  <p>Motto: Geschichte zum Anfassen. Code beginnt mit KH-MUS-.</p>
+  <p>Räume: Gemälde, Römer, Stadt, Tracht, Tastsinn, Karte, Garderobe, Café. Seile nicht anfassen.</p>
+  <p>Kultur in Kurzform: Winzer in Rheinhessen, Römer an der Selz, Fachwerk am Markt, ein Luther-Druck aus Mainz, Kleinhausen an der Selz bei Mainz.</p>
+  <p>Taschenlampe folgt Maus und Fokus. Hoher Kontrast schaltet den Verlauf aus. Schrift A, A+, A++.</p>
+  <p>Liste bleibt Deutsch. Glossen stehen daneben, nicht auf dem Papier.</p>
+  <p>Antworten nach zwei Fehlern: Hinweis auf Deutsch, kein Hartlock.</p>
+  <p>Stempel 1 bis 6 musst du in den Galerien holen. 7 und 8 sind Pause.</p>
+  <p>Für die Lehrkraft: Name plus Code KH-MUS- prüfen. Die Prüfsumme hängt am Namen.</p>
+</footer>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const S = {
+  englisch:true, audio:false, kontrast:false, size:0, motion:true,
+  name:"", gal:1, stamps:[false,false,false,false,false,false],
+  frags:[], seen:{}, tries:{}, guard:0, ending:"nacht"
+};
+
+function sagen(t){ $("status").textContent=t; }
+function sprich(text){
+  if(!S.audio || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text); u.lang="de-DE"; u.rate=.88;
+    const v=window.speechSynthesis.getVoices().find(x=>/^de/i.test(x.lang));
+    if(v) u.voice=v; window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function setToggle(btn,on){ btn.setAttribute("aria-pressed", on?"true":"false"); }
+function glossUpdate(){
+  document.documentElement.classList.toggle("show-en", S.englisch);
+  document.querySelectorAll(".gloss").forEach(el=>{ el.hidden=!S.englisch; });
+}
+function zeigeScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+  const h=document.querySelector("#"+id+" h2"); if(h) h.focus();
+  window.scrollTo({top:0,behavior:S.motion?"smooth":"auto"});
+}
+
+$("s-en").onclick=()=>{ S.englisch=!S.englisch; setToggle($("s-en"),S.englisch); glossUpdate(); sagen(S.englisch?"Englische Hilfe ist an.":"Englische Hilfe ist aus."); };
+$("s-audio").onclick=()=>{ S.audio=!S.audio; setToggle($("s-audio"),S.audio); if(S.audio) sprich("Vorlesen ist an."); else if("speechSynthesis" in window) window.speechSynthesis.cancel(); };
+$("s-contrast").onclick=()=>{ S.kontrast=!S.kontrast; setToggle($("s-contrast"),S.kontrast); document.documentElement.setAttribute("data-contrast", S.kontrast?"hoch":"normal"); };
+$("s-size").onclick=()=>{ S.size=(S.size+1)%3; const n=["normal","gross","sehr-gross"], l=["A","A+","A++"]; document.documentElement.setAttribute("data-size", n[S.size]); $("s-size").textContent="Schrift: "+l[S.size]; };
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){ S.motion=false; document.documentElement.setAttribute("data-motion","aus"); }
+
+function svgGal(n){
+  if(n===7) return svgExtra(7);
+  if(n===8) return svgExtra(8);
+  if(n===1) return `<svg class="bg" viewBox="0 0 1000 520" aria-hidden="true">
+    <rect width="1000" height="520" fill="#1a1210"/>
+    <rect x="40" y="40" width="280" height="220" fill="#2a1810" stroke="#d4af6a" stroke-width="10"/>
+    <rect x="60" y="58" width="240" height="150" fill="#3d6a9a"/>
+    <polygon points="60,208 180,120 300,208" fill="#6a8aaa"/>
+    <rect x="360" y="40" width="280" height="220" fill="#2a1810" stroke="#d4af6a" stroke-width="10"/>
+    <rect x="380" y="58" width="240" height="184" fill="#e8c84a"/>
+    <rect x="430" y="130" width="140" height="80" fill="#6a3a20"/>
+    <circle cx="500" cy="100" r="22" fill="#fff4c8"/>
+    <rect x="680" y="40" width="280" height="220" fill="#2a1810" stroke="#d4af6a" stroke-width="10"/>
+    <rect x="700" y="58" width="240" height="184" fill="#4a3040"/>
+    <circle cx="820" cy="140" r="40" fill="#c4a056" opacity=".5"/>
+    <rect x="80" y="300" width="200" height="160" fill="#1a0c08" stroke="#d4af6a" stroke-width="8"/>
+    <text x="180" y="390" text-anchor="middle" fill="#d4af6a" font-size="14" font-family="Georgia">Luther-Druck</text>
+    <rect x="400" y="420" width="200" height="12" fill="#5c1c24"/>
+  </svg>`;
+  if(n===2) return `<svg class="bg" viewBox="0 0 1000 520" aria-hidden="true">
+    <rect width="1000" height="520" fill="#12141c"/>
+    <rect x="60" y="80" width="200" height="280" fill="#0e1018" stroke="#8ec5d4" stroke-width="4"/>
+    <text x="160" y="70" text-anchor="middle" fill="#d4af6a" font-size="16" font-family="Georgia">Vitrine A</text>
+    <ellipse cx="160" cy="200" rx="40" ry="18" fill="#8a8a8a"/>
+    <rect x="400" y="80" width="200" height="280" fill="#0e1018" stroke="#d4af6a" stroke-width="5"/>
+    <text x="500" y="70" text-anchor="middle" fill="#d4af6a" font-size="16" font-family="Georgia">Vitrine B</text>
+    <path d="M460 220 Q500 160 540 220 L530 300 L470 300 Z" fill="#c4a070"/>
+    <rect x="740" y="80" width="200" height="280" fill="#0e1018" stroke="#8ec5d4" stroke-width="4"/>
+    <text x="840" y="70" text-anchor="middle" fill="#d4af6a" font-size="16" font-family="Georgia">Vitrine C</text>
+    <rect x="790" y="180" width="100" height="80" fill="#6a5340"/>
+    <rect x="200" y="400" width="600" height="40" fill="#2a241c"/>
+  </svg>`;
+  if(n===3) return `<svg class="bg" viewBox="0 0 1000 520" aria-hidden="true">
+    <rect width="1000" height="520" fill="#1c1814"/>
+    <rect x="80" y="50" width="360" height="240" fill="#efe4c8" stroke="#d4af6a" stroke-width="8"/>
+    <text x="260" y="140" text-anchor="middle" fill="#5c1c24" font-size="42" font-family="Georgia">1320</text>
+    <text x="260" y="180" text-anchor="middle" fill="#1a1410" font-size="16" font-family="Georgia">gegründet</text>
+    <polygon points="520,280 620,80 720,280" fill="#8a4a32"/>
+    <rect x="560" y="180" width="120" height="100" fill="#c4a882"/>
+    <rect x="760" y="80" width="160" height="220" fill="#3a2a20" stroke="#d4af6a"/>
+    <text x="840" y="190" text-anchor="middle" fill="#d4af6a" font-size="13" font-family="Georgia">Urkunde</text>
+    <rect x="100" y="340" width="800" height="120" fill="#2a2018"/>
+  </svg>`;
+  if(n===4) return `<svg class="bg" viewBox="0 0 1000 520" aria-hidden="true">
+    <rect width="1000" height="520" fill="#1a1418"/>
+    <ellipse cx="250" cy="90" rx="40" ry="48" fill="#f0d0b0"/>
+    <rect x="190" y="140" width="120" height="80" fill="#f3ead7"/>
+    <rect x="175" y="210" width="150" height="140" fill="#2a4a7a"/>
+    <rect x="200" y="350" width="40" height="90" fill="#3a2a20"/>
+    <rect x="270" y="350" width="40" height="90" fill="#3a2a20"/>
+    <ellipse cx="620" cy="90" rx="40" ry="48" fill="#f0d0b0"/>
+    <rect x="560" y="140" width="120" height="200" fill="#c45c48"/>
+    <rect x="500" y="80" width="240" height="320" fill="none" stroke="#d4af6a" stroke-width="8"/>
+    <rect x="820" y="200" width="80" height="180" fill="#4a3040" stroke="#d4af6a"/>
+  </svg>`;
+  if(n===5) return `<svg class="bg" viewBox="0 0 1000 520" aria-hidden="true">
+    <rect width="1000" height="520" fill="#141210"/>
+    <circle cx="200" cy="240" r="90" fill="#3a3228" stroke="#d4af6a" stroke-width="6"/>
+    <text x="200" y="248" text-anchor="middle" fill="#f3ead7" font-size="16">Stein</text>
+    <circle cx="500" cy="240" r="90" fill="#8a6a40" stroke="#d4af6a" stroke-width="6"/>
+    <text x="500" y="248" text-anchor="middle" fill="#f3ead7" font-size="16">Wolle</text>
+    <circle cx="800" cy="240" r="90" fill="#8ec5d4" opacity=".5" stroke="#d4af6a" stroke-width="6"/>
+    <text x="800" y="248" text-anchor="middle" fill="#f3ead7" font-size="16">Glas</text>
+    <rect x="80" y="40" width="840" height="50" fill="#5c1c24"/>
+    <text x="500" y="72" text-anchor="middle" fill="#f3ead7" font-size="18" font-family="Georgia">Tastsinn – bitte mit den Händen (Nachbildung)</text>
+  </svg>`;
+  return `<svg class="bg" viewBox="0 0 1000 520" aria-hidden="true">
+    <rect width="1000" height="520" fill="#101418"/>
+    <rect x="80" y="40" width="840" height="400" fill="#e8dcc0" stroke="#d4af6a" stroke-width="8"/>
+    <path d="M120 380 C 200 200, 400 220, 480 260 S 700 300, 880 180" stroke="#3d6a9a" stroke-width="10" fill="none"/>
+    <path d="M120 300 C 260 280, 400 320, 700 240" stroke="#2f6a4a" stroke-width="6" fill="none"/>
+    <circle cx="420" cy="300" r="10" fill="#5c1c24"/>
+    <text x="440" y="295" fill="#5c1c24" font-size="14" font-family="Georgia">Kleinhausen</text>
+    <text x="200" y="120" fill="#3d6a9a" font-size="14">Rhein</text>
+    <text x="520" y="340" fill="#2f6a4a" font-size="14">Selz</text>
+    <text x="780" y="160" fill="#1a1410" font-size="12">Mainz</text>
+  </svg>`;
+}
+function svgExtra(n){
+  if(n===7) return `<svg class="bg" viewBox="0 0 1000 520" aria-hidden="true">
+    <rect width="1000" height="520" fill="#1a1612"/>
+    <rect x="80" y="60" width="200" height="360" fill="#3a2a20" stroke="#d4af6a" stroke-width="4"/>
+    <rect x="320" y="60" width="200" height="360" fill="#3a2a20" stroke="#d4af6a" stroke-width="4"/>
+    <rect x="560" y="80" width="360" height="200" fill="#2a2018" stroke="#d4af6a"/>
+    <text x="740" y="180" text-anchor="middle" fill="#d4af6a" font-size="18" font-family="Georgia">Garderobe</text>
+    <circle cx="200" cy="120" r="30" fill="#c45c48"/>
+    <rect x="120" y="200" width="120" height="80" fill="#1a1410"/>
+  </svg>`;
+  return `<svg class="bg" viewBox="0 0 1000 520" aria-hidden="true">
+    <rect width="1000" height="520" fill="#201810"/>
+    <rect x="60" y="200" width="880" height="40" fill="#6b4a2e"/>
+    <circle cx="200" cy="180" r="40" fill="#c4784a"/>
+    <circle cx="400" cy="170" r="36" fill="#e8c56b"/>
+    <rect x="700" y="80" width="200" height="140" fill="#5c1c24" stroke="#d4af6a" stroke-width="6"/>
+    <text x="800" y="160" text-anchor="middle" fill="#f3ead7" font-size="16" font-family="Georgia">Café</text>
+  </svg>`;
+}
+
+const GALS = {
+  1:{
+    title:"Gemäldegalerie",
+    spots:[
+      {id:"blau", label:"Blaues Tal", x:"8%", y:"12%",
+        de:"Dieses Bild, das ein Tal bei Ingelheim zeigt, malte ein unbekannter Gast 1888. Der Himmel ist grau-blau. Es gab Regen an dem Tag.",
+        en:"A valley near Ingelheim. Grey-blue sky. Not the yellow one."},
+      {id:"gelb", label:"Gelber Himmel", x:"40%", y:"10%",
+        de:"Das Gemälde mit dem gelben Himmel zeigt die Selz am Abend. Die Malerin, die Kleinhausen liebte, heißt Lina Bergmann. Sie stand oft an diesem Ufer.",
+        en:"Yellow sky. The painter who loved Kleinhausen is Lina Bergmann.",
+        q:1, ask:"Wie heißt die Malerin?", opts:["Lina Bergmann","Paula Modersohn-Becker","Caspar David Friedrich"], ok:0,
+        frag:"Geschichte"},
+      {id:"nachtbild", label:"Nacht über Mainz", x:"72%", y:"10%",
+        de:"Ein dunkles Bild, das den Dom von Mainz nur als Schatten zeigt. Der Goldrahmen, der knarrt, ist neuer als das Bild.",
+        en:"Night over Mainz cathedral as a silhouette."},
+      {id:"luther", label:"Luther-Druck", x:"10%", y:"62%",
+        de:"Ein kleiner Druck: Luther, der 1521 auf dem Reichstag zu Worms sprach, steht nicht in Kleinhausen – aber der Drucker, der dieses Blatt machte, arbeitete in Mainz. Kurz und ehrlich: ein Blatt, kein Roman.",
+        en:"A Luther print from a Mainz shop. Brief, not a Wikipedia dump."},
+      {id:"seil1", label:"Seil", x:"44%", y:"80%", rope:true,
+        de:"Ein rotes Seil vor dem kleinen Stillleben.",
+        en:"A red rope. Don't touch."},
+      {id:"still", label:"Stillleben", x:"62%", y:"62%",
+        de:"Birnen und ein Krug, die ein Schüler 1920 malte. Das Bild, das niemand berühmt machte, bleibt trotzdem hängen: lokale Geschichte.",
+        en:"A modest still life by a local student in 1920."}
+    ]
+  },
+  2:{
+    title:"Römer in Rheinhessen",
+    spots:[
+      {id:"va", label:"Vitrine A", x:"10%", y:"20%",
+        de:"In Vitrine A liegen Steine, die man an der Selz fand. Kein Becher. Ein Schild sagt: Die Römer, die Wein an den Hängen pflanzten, blieben nicht nur am großen Strom.",
+        en:"Stones from the Selz. No cup. Romans planted vines on these slopes too."},
+      {id:"vb", label:"Vitrine B", x:"42%", y:"18%",
+        de:"In Vitrine B liegt der römische Becher, der 1978 beim Weinberg gefunden wurde. Glas, das grün schimmert. Ein Kind, das zu nah geht, hört den Wächter.",
+        en:"The Roman cup is in case B.",
+        q:2, ask:"In welcher Vitrine liegt der römische Becher?", opts:["Vitrine A","Vitrine B","Vitrine C"], ok:1,
+        frag:"zum"},
+      {id:"vc", label:"Vitrine C", x:"76%", y:"20%",
+        de:"Vitrine C zeigt eine Amphore, die leer ist. Darin gab es einmal Öl, nicht Wein. Das Schild, das gelb ist, warnt: nicht berühren.",
+        en:"An empty amphora. Once oil, not wine."},
+      {id:"bank", label:"Steinbank", x:"30%", y:"78%",
+        de:"Eine Bank, auf der Besucher sitzen dürfen. Darunter ein Zettel: Winzerfamilien in Rheinhessen erzählen, dass schon die Römer Reben kannten. Kurz, ohne Liste aller Kaiser.",
+        en:"A bench. A short note on Roman vines in Rheinhessen."},
+      {id:"seil2", label:"Seil an Vitrine B", x:"48%", y:"62%", rope:true,
+        de:"Das Seil vor Vitrine B.",
+        en:"Rope in front of case B."},
+      {id:"mosaik", label:"Mosaikstein", x:"8%", y:"72%",
+        de:"Ein Stein mit Muster, der aus einer Villa stammt, die man bei Nierstein fand. Rheinhessen, nicht Rom selbst. Das Museum, das klein ist, zeigt Originale neben Kopien – das Schild sagt ehrlich, was Kopie ist.",
+        en:"A mosaic fragment from a villa near Nierstein. The museum labels copies honestly."}
+    ]
+  },
+  3:{
+    title:"Stadtgeschichte",
+    spots:[
+      {id:"jahr", label:"Jahreszahl 1320", x:"12%", y:"14%",
+        de:"Die Beschriftung, die goldene Zahlen trägt: Kleinhausen wurde 1320 gegründet. Eine Urkunde, die im Stadtarchiv lag, nennt „Clinhusen an der Selze“.",
+        en:"Kleinhausen was founded in 1320. A charter said Clinhusen an der Selze.",
+        q:3, ask:"Wann wurde Kleinhausen gegründet?", opts:["1120","1320","1521"], ok:1,
+        frag:"Anfassen"},
+      {id:"fachwerk", label:"Fachwerk-Modell", x:"54%", y:"18%",
+        de:"Ein Modell, das ein Haus mit Balken zeigt: Fachwerk. In Rheinhessen standen solche Häuser am Markt, bevor Steine billiger wurden. Das Dach, das rot ist, ist nur Holzfarbe.",
+        en:"A half-timbered house model. Typical for the region, kept short."},
+      {id:"urkunde", label:"Urkunde", x:"78%", y:"20%",
+        de:"Die Urkunde, die hinter Glas liegt, ist eine Kopie. Das Original, das zu empfindlich ist, bleibt im Archiv. 1320 – merke die Zahl.",
+        en:"A copy of the charter. Original stays in the archive."},
+      {id:"vitrine-stadt", label:"Münzen", x:"20%", y:"70%",
+        de:"Münzen, die man am Markt fand. Eine trägt eine Traube: Winzer, die Abgaben zahlten, sind keine Erfindung von heute.",
+        en:"Coins with a grape — wine-growers paying dues."},
+      {id:"brunnen", label:"Brunnen-Modell", x:"70%", y:"68%",
+        de:"Ein Modell des Marktbrunnens, der 1891 gebaut wurde. Wasser, das die Stadt teilte, war Politik. Heute fotografieren Gäste den Brunnen, der immer noch nass ist.",
+        en:"Model of the 1891 market fountain."}
+    ]
+  },
+  4:{
+    title:"Trachtenkammer",
+    spots:[
+      {id:"rhh", label:"Figur Rheinhessen", x:"16%", y:"18%",
+        de:"Die Figur aus Rheinhessen trägt eine weiße Bluse, eine blaue Schürze und einen dunklen Rock. Die Haube, die fest sitzt, ist für den Kirchgang. Nicht Bayern, nicht Schwarzwald.",
+        en:"Rheinhessen costume: white blouse, blue apron, dark skirt.",
+        q:4, ask:"Welche Tracht trägt die Figur aus Rheinhessen?",
+        opts:["weiße Bluse, blaue Schürze, dunkler Rock","Lederhose und Hut mit Gams","rotes Dirndl mit weißen Socken"], ok:0,
+        frag:"—"},
+      {id:"pfalz", label:"Figur Pfalz", x:"52%", y:"16%",
+        de:"Eine andere Figur, die aus der Pfalz kommt, trägt mehr Rot. Das Schild warnt vor Verwechslung. Rheinhessen liegt nördlich, die Pfalz südlich – ungefähr, für den Schulgebrauch.",
+        en:"A Palatinate figure in more red. Don't mix it up with Rheinhessen."},
+      {id:"truhe", label:"Truhe", x:"82%", y:"42%",
+        de:"In der Truhe, die nach Leinen riecht, liegen Bänder. Ein Zettel: Tracht ist Sonntagskleidung, nicht Alltagshose.",
+        en:"A chest of ribbons. Costume was Sunday wear."},
+      {id:"seil4", label:"Seil vor der Figur", x:"28%", y:"70%", rope:true,
+        de:"Seil vor der Rheinhessen-Figur.",
+        en:"Rope in front of the figure."}
+    ]
+  },
+  5:{
+    title:"Tastsinn-Raum",
+    spots:[
+      {id:"stein", label:"Stein (hart)", x:"12%", y:"38%",
+        de:"Der Stein, den du (nachgebildet) anfassen darfst, ist hart und kalt. Ein Schild: hart – nicht weich.",
+        en:"The stone is hard, not soft."},
+      {id:"wolle", label:"Wolle (weich)", x:"42%", y:"38%",
+        de:"Die Wolle, die von einem Schaf aus der Region stammt (Nachbildung), ist weich. Kinder, die die Augen schließen, sagen oft: wie ein Pullover.",
+        en:"The wool is weich (soft).",
+        q:5, ask:"Welches Objekt ist weich?", opts:["der Stein","die Wolle","das Glas"], ok:1,
+        frag:"—"},
+      {id:"glas", label:"Glas (glatt)", x:"72%", y:"38%",
+        de:"Das Glas, das glatt ist, fühlt sich kühl an. Nicht weich. Ein Text: Die Römer, die Glas bliesen, kannten diesen Griff.",
+        en:"Glass is smooth and cool, not soft."},
+      {id:"schild5", label:"Regeln", x:"20%", y:"8%",
+        de:"Bitte langsam. Hände waschen danach. Der Raum, der Tastsinn heißt, ist für alle Sinne – aber heute vor allem für weich, hart, glatt.",
+        en:"Rules: go slowly. Soft, hard, smooth."}
+    ]
+  },
+  6:{
+    title:"Kartenraum",
+    spots:[
+      {id:"rhein", label:"Der Rhein (blau)", x:"14%", y:"14%",
+        de:"Die dicke blaue Linie, die nach Norden fließt, ist der Rhein. Mainz liegt daran. Kleinhausen liegt nicht am Rhein – auch wenn Gäste das gern glauben, weil alles „bei Mainz“ klingt.",
+        en:"The thick blue line is the Rhine. Kleinhausen is not on it."},
+      {id:"selz", label:"Die Selz (grün)", x:"48%", y:"58%",
+        de:"Die dünnere grüne Linie ist die Selz. Kleinhausen liegt an der Selz, in der Nähe von Mainz, in Rheinhessen. Ein Stern auf der Karte, der rot ist, markiert uns.",
+        en:"Kleinhausen is on the Selz, near Mainz.",
+        q:6, ask:"Wo liegt Kleinhausen?", opts:["am Rhein","an der Selz","an der Mosel"], ok:1,
+        frag:"—"},
+      {id:"mainz", label:"Mainz", x:"74%", y:"22%",
+        de:"Mainz, das am Rhein liegt, ist die große Nachbarin. Von dort kam man mit dem Kahn die Selz hinauf – langsam, mit Wein und Holz.",
+        en:"Mainz on the Rhine. Barges once came up the Selz."},
+      {id:"legende", label:"Legende", x:"8%", y:"70%",
+        de:"Blau = Rhein. Grün = Selz. Rot = Kleinhausen. Das Motto der Nacht steht nicht hier, sondern auf Fetzen in den anderen Räumen: Geschichte … zum … Anfassen.",
+        en:"The motto fragments live in other rooms too: Geschichte zum Anfassen."},
+      {id:"kompass", label:"Kompass", x:"82%", y:"70%",
+        de:"Ein Kompass, der nach Norden zeigt. Mainz liegt westlich-nordwestlich im Kopf der Gäste – auf dieser Schulkarte: links oben der Rhein, unten die Selz-Schleife, der Stern ist wir.",
+        en:"A compass. School-map geography: Rhine vs Selz."}
+    ]
+  },
+  7:{
+    title:"Garderobe",
+    spots:[
+      {id:"mantel", label:"Mäntel", x:"10%", y:"20%",
+        de:"Mäntel, die Gäste abgeben. Ein Schild, das höflich bleibt: Bitte die Nummer behalten. Die Nacht, die lang ist, wird draußen kalt an der Selz.",
+        en:"Coat check. Keep your number. It gets cold by the Selz."},
+      {id:"nummer", label:"Nummern", x:"36%", y:"20%",
+        de:"Holznummern, die ein Freiwilliger ausgibt. Er sagt Sie zu Erwachsenen, du zu Kindern: „Hier ist Ihre Nummer.“ / „Hier ist deine Nummer.“",
+        en:"Register switching even at the cloakroom."},
+      {id:"fundbuch", label:"Fundbuch", x:"60%", y:"22%",
+        de:"Ein Buch, in dem jemand schrieb: „Ein Schal, der rot ist, lag am Brunnen-Modell.“ Relativsatz im Alltag.",
+        en:"Lost and found with a relative clause."},
+      {id:"ausgang", label:"Notausgang", x:"12%", y:"72%",
+        de:"Der Ausgang, der im Notfall leuchtet, ist kein Seil. Hier darf man die Stange anfassen. Der Wächter, der vorhin murrte, nickt sogar.",
+        en:"Emergency exit — this handle you may touch."}
+    ]
+  },
+  8:{
+    title:"Museumscafé",
+    spots:[
+      {id:"theke", label:"Theke", x:"8%", y:"40%",
+        de:"Tee, Apfelsaft, ein Stück Zwiebelkuchen – Rheinhessen auf einem Teller. Die Bedienung fragt: „Was darf’s sein?“ Höflich: Ich hätte gern einen Tee, bitte.",
+        en:"Order tea politely. Regional onion tart."},
+      {id:"vitrine-kuchen", label:"Vitrine", x:"38%", y:"28%",
+        de:"Kuchen hinter Glas, der duftet. Ein Schild: kein Anfassen – das gilt hier aus anderen Gründen als beim Becher.",
+        en:"Cake behind glass. Don't touch, for different reasons."},
+      {id:"tisch", label:"Stammtisch", x:"70%", y:"18%",
+        de:"Ein Tisch, an dem Winzer sitzen und über das Jahr 1320 scherzen. Einer sagt: „Unsere Reben sind jünger als die Stadt, älter als mein Traktor.“",
+        en:"Wine-growers joking at a table."},
+      {id:"speise", label:"Speisekarte", x:"72%", y:"58%",
+        de:"Tee 2 €, Saft 2 €, Kuchen 3 €. Akkusativ beim Bestellen: einen Tee, einen Saft, einen Kuchen. Die Museumsnacht, die einmal im Jahr kommt, hält die Preise klein.",
+        en:"Accusative when ordering: einen Tee."}
+    ]
+  }
+};
+
+function stampUI(){
+  $("stamps").innerHTML = S.stamps.map((on,i)=>'<span class="stamp'+(on?" on":"")+'" aria-label="Stempel '+(i+1)+(on?" da":" fehlt")+'">'+(i+1)+"</span>").join("");
+  document.querySelectorAll("#liste li").forEach((li,i)=>li.classList.toggle("got", S.stamps[i]));
+  const f = ["Geschichte","zum","Anfassen"].filter(w => S.frags.indexOf(w)>=0);
+  $("frags").textContent = "Fetzen: "+(f.join(" · ")||"—");
+}
+
+function zeichneGal(){
+  const g=GALS[S.gal];
+  $("h-play").textContent=g.title;
+  $("gal-label").textContent = S.gal<=6 ? ("Galerie "+S.gal+" von 6") : GALS[S.gal].title;
+  const gal=$("gallery");
+  gal.innerHTML = svgGal(S.gal)+'<div class="lamp" id="lamp" aria-hidden="true"></div><div class="exhibits" id="exhibits"></div>';
+  g.spots.forEach(sp=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="ex"+(sp.rope?" rope":"")+(S.stamps[(sp.q||0)-1]?" stamped":"");
+    b.style.left=sp.x; b.style.top=sp.y;
+    b.textContent=sp.label;
+    b.setAttribute("aria-label", sp.label+(sp.rope?", nicht anfassen":""));
+    b.onclick=()=>untersuche(sp);
+    b.addEventListener("focus", ()=>{ moveLamp(b); if(S.audio) sprich(sp.label); });
+    $("exhibits").appendChild(b);
+  });
+  const nav=$("nav-gal"); nav.innerHTML="";
+  for(let i=1;i<=8;i++){
+    const b=document.createElement("button");
+    b.type="button"; b.className="btn btn-ghost";
+    b.textContent=i+" "+GALS[i].title.split(" ")[0];
+    b.setAttribute("aria-current", i===S.gal?"true":"false");
+    b.onclick=()=>{ S.gal=i; zeichneGal(); setPanel("Raum", GALS[i].title+". Klicke ein Exponat.", "Click an exhibit."); };
+    nav.appendChild(b);
+  }
+  stampUI(); glossUpdate();
+}
+
+function moveLamp(el){
+  const gal=$("gallery"); if(!gal||!el) return;
+  const r=gal.getBoundingClientRect(), b=el.getBoundingClientRect();
+  const x=((b.left+b.width/2-r.left)/r.width*100).toFixed(1)+"%";
+  const y=((b.top+b.height/2-r.top)/r.height*100).toFixed(1)+"%";
+  document.documentElement.style.setProperty("--fx", x);
+  document.documentElement.style.setProperty("--fy", y);
+}
+
+$("gallery") && 0;
+document.addEventListener("mousemove", e=>{
+  const gal=$("gallery"); if(!gal || !gal.closest(".screen.on")) return;
+  const r=gal.getBoundingClientRect();
+  if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) return;
+  document.documentElement.style.setProperty("--fx", ((e.clientX-r.left)/r.width*100).toFixed(1)+"%");
+  document.documentElement.style.setProperty("--fy", ((e.clientY-r.top)/r.height*100).toFixed(1)+"%");
+});
+
+function setPanel(title, de, en, extra){
+  $("panel-h").textContent=title;
+  $("panel-de").textContent=de;
+  $("panel-en").textContent=en||"";
+  $("panel-extra").innerHTML=extra||"";
+  glossUpdate();
+  if(S.audio) sprich(de);
+}
+
+function untersuche(sp){
+  S.seen[sp.id]=true;
+  if(sp.rope){
+    S.guard++;
+    setPanel("Der Nachtwächter",
+      "Eine Stimme hinter dir: „Bitte das Seil nicht anfassen. Die Exponate, die hinter der Linie stehen, sind empfindlich. Gehen Sie einen Schritt zurück. Danke.“",
+      "Night guard: please do not touch the rope. Step back. Thank you.",
+      '<div class="guard">Nachtwächter: Seil = Grenze. Du verlierst keinen Stempel, nur eine Minute Stolz.</div>');
+    sagen("Der Nachtwächter warnt dich auf Deutsch.");
+    sprich("Bitte das Seil nicht anfassen.");
+    return;
+  }
+  let extra="";
+  if(sp.q){
+    const k="q"+sp.q;
+    S.tries[k]=S.tries[k]||0;
+    extra += "<p><strong>"+esc(sp.ask)+"</strong></p><div class=\"choices\">";
+    sp.opts.forEach((o,i)=>{
+      extra += '<button type="button" class="opt" data-i="'+i+'"><span class="key">'+(i+1)+"</span>"+esc(o)+"</button>";
+    });
+    extra += "</div>";
+    if(S.tries[k]>=2 && !S.stamps[sp.q-1]) extra += '<p class="hint">Hinweis: Lies das Schild noch einmal langsam. Die Antwort steht im Text.</p>';
+  }
+  setPanel(sp.label, sp.de, sp.en, extra);
+  sagen(sp.label);
+  $("panel-extra").querySelectorAll(".opt").forEach(b=>{
+    b.onclick=()=>{
+      const i=Number(b.dataset.i);
+      if(i===sp.ok){
+        b.classList.add("right");
+        S.stamps[sp.q-1]=true;
+        if(sp.frag && sp.frag!=="—" && S.frags.indexOf(sp.frag)<0) S.frags.push(sp.frag);
+        if(sp.q===6 && S.frags.indexOf("Geschichte")<0){ /* ensure motto bits if missed */ }
+        sagen("Stempel "+sp.q+" sitzt.");
+        sprich("Richtig. Stempel "+sp.q+".");
+        stampUI();
+        if(S.stamps.every(Boolean)) openFinale();
+      }else{
+        b.classList.add("wrong");
+        S.tries["q"+sp.q]++;
+        sagen("Noch nicht. Lies die Beschriftung.");
+        if(S.tries["q"+sp.q]===2) untersuche(sp);
+      }
+    };
+  });
+}
+
+function openFinale(){
+  if(!S.frags.includes("Geschichte")) S.frags.push("Geschichte");
+  if(!S.frags.includes("zum")) S.frags.push("zum");
+  if(!S.frags.includes("Anfassen")) S.frags.push("Anfassen");
+  zeigeScreen("screen-finale");
+  $("fin-frags").textContent = S.frags.join(" · ");
+  const opts = ["Geschichte zum Anfassen","Nacht ohne Ende","Wein für alle","Mainz am Meer"];
+  $("fin-choices").innerHTML = opts.map((o,i)=>'<button type="button" class="opt" data-i="'+i+'"><span class="key">'+(i+1)+"</span>"+esc(o)+"</button>").join("");
+  glossUpdate();
+  $("fin-choices").querySelectorAll(".opt").forEach(b=>{
+    b.onclick=()=>{
+      if(b.dataset.i==="0"){ S.ending = S.guard>2 ? "wacht" : "nacht"; ende(); }
+      else {
+        S.tries.fin=(S.tries.fin||0)+1;
+        $("fin-fb").hidden=false;
+        $("fin-fb").textContent = S.tries.fin>=2 ? "Hinweis: Die drei Fetzen: Geschichte + zum + Anfassen." : "Schau auf die Fetzen.";
+        b.classList.add("wrong");
+      }
+    };
+  });
+}
+
+function hash32(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function macheCode(){
+  const name=(S.name||"Gast").trim()||"Gast";
+  const st=S.stamps.map(x=>x?"1":"0").join("");
+  const end=S.ending==="wacht"?"WACH":"NACHT";
+  const pruef=hash32(name.toLowerCase()+"|"+st+"|"+end+"|"+S.guard+"|KHMUS").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return "KH-MUS-"+end+"-"+st+"-"+pruef;
+}
+
+function ende(){
+  const t = S.ending==="wacht"
+    ? "Du weißt das Motto, und der Wächter kennt dein Gesicht: Seil-Fan. Trotzdem nickt er. Geschichte zum Anfassen – mit Abstand."
+    : "Sechs Stempel, ein Motto, der Markt draußen. Winzer, Römer, Fachwerk, ein Lutherblatt, die Selz statt des Rheins. Die Nacht endet freundlich.";
+  $("news").innerHTML = "<h2>Geschichte zum Anfassen</h2><p>"+esc(t)+"</p><p>Malerin: Lina Bergmann. Becher: Vitrine B. Gründung: 1320. Tracht: weiße Bluse, blaue Schürze, dunkler Rock. Weich: die Wolle. Lage: an der Selz.</p>";
+  $("code-val").textContent=macheCode();
+  zeigeScreen("screen-end");
+  sagen("Ende. Code bereit.");
+}
+
+$("btn-ueben").onclick=()=>{ if(!S.audio){S.audio=true; setToggle($("s-audio"),true);} uebenNaechstes(); };
+$("btn-start").onclick=()=>{ S.name=$("name-in").value.trim(); zeigeScreen("screen-play"); zeichneGal(); sagen("Foyer. Die Gemäldegalerie wartet."); sprich("Willkommen zur Museumsnacht in Kleinhausen."); };
+$("btn-sprich").onclick=()=>{ if(!S.audio){S.audio=true; setToggle($("s-audio"),true);} sprich($("panel-de").textContent); };
+$("btn-nochmal").onclick=()=>location.reload();
+$("btn-copy").onclick=()=>{ const t=$("code-val").textContent; if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>sagen("Code kopiert.")); };
+$("btn-verify").onclick=()=>{
+  const name=$("v-name").value.trim(), code=$("v-code").value.trim().toUpperCase();
+  const m=/^KH-MUS-(NACHT|WACH)-([01]{6})-([0-9A-Z]{7})$/.exec(code);
+  if(!name||!m){ $("v-out").textContent="Bitte Name und KH-MUS-Code eingeben."; return; }
+  let ok=false;
+  for(let g=0;g<8;g++){
+    const p=hash32(name.toLowerCase()+"|"+m[2]+"|"+m[1]+"|"+g+"|KHMUS").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+    if(p===m[3]) ok=true;
+  }
+  $("v-out").textContent = ok ? ("Gültig. "+name+" · "+m[1]+" · Stempel "+m[2]+".") : "Ungültig.";
+};
+
+document.addEventListener("keydown", e=>{
+  const play=$("screen-play").classList.contains("on");
+  const fin=$("screen-finale").classList.contains("on");
+  if(!play && !fin) return;
+  if((e.target.tagName||"").toLowerCase()==="input") return;
+  if(/^[1-9]$/.test(e.key)){
+    const root = fin ? $("fin-choices") : $("panel-extra");
+    const b=root && root.querySelectorAll(".opt")[Number(e.key)-1];
+    if(b){ e.preventDefault(); b.click(); }
+  }
+  if(play && (e.key==="e"||e.key==="E"||e.key==="Enter")){
+    const el=document.activeElement;
+    if(el && el.classList.contains("ex")){ e.preventDefault(); el.click(); }
+  }
+});
+
+
+const UEBEN = [
+  "Das Gemälde mit dem gelben Himmel malte Lina Bergmann.",
+  "Die Malerin, die Kleinhausen liebte, stand oft an der Selz.",
+  "In Vitrine B liegt der römische Becher.",
+  "Der Becher, der 1978 gefunden wurde, ist aus Glas.",
+  "Kleinhausen wurde 1320 gegründet.",
+  "Eine Urkunde nannte Clinhusen an der Selze.",
+  "Die Figur aus Rheinhessen trägt eine weiße Bluse.",
+  "Sie trägt auch eine blaue Schürze und einen dunklen Rock.",
+  "Die Wolle ist weich. Der Stein ist hart. Das Glas ist glatt.",
+  "Kleinhausen liegt an der Selz, nicht am Rhein.",
+  "Mainz liegt am Rhein. Wir liegen näher an der Selz.",
+  "Bitte das Seil nicht anfassen.",
+  "Gehen Sie einen Schritt zurück. Danke.",
+  "Geschichte zum Anfassen ist das Motto.",
+  "Die Römer, die Wein pflanzten, kannten diese Hänge.",
+  "Fachwerk zeigt Balken und helle Gefache.",
+  "Luther, der 1521 in Worms sprach, hängt als kleiner Druck.",
+  "Winzer, die Abgaben zahlten, hinterließen Münzen mit Trauben.",
+  "Ich hätte gern einen Tee, bitte.",
+  "Die Nacht, die lang ist, wird draußen kalt.",
+  "Hier ist Ihre Nummer. Bitte behalten.",
+  "Der Brunnen, der 1891 gebaut wurde, steht auf dem Markt.",
+  "Relativsatz: die Stadt, die an der Selz liegt.",
+  "Präteritum: wurde, stand, gab, malte, fand.",
+  "Vitrine A hat Steine. Vitrine C hat eine Amphore.",
+  "Tastsinn: weich, hart, glatt.",
+  "Rheinhessen ist Weinland. Zwiebelkuchen im Herbst.",
+  "Kopien sind als Kopien beschriftet.",
+  "Der Wächter warnt auf Deutsch, nicht auf Englisch.",
+  "Sechs Stempel, dann das Motto.",
+  "Das blaue Tal ist nicht das gelbe Bild.",
+  "Caspar David Friedrich hat Kleinhausen nicht gemalt.",
+  "Vitrine A: Steine. Vitrine C: Amphore. Becher: B.",
+  "1320, nicht 1120, nicht 1521.",
+  "Lederhose ist nicht Rheinhessen.",
+  "Die Selz ist grün auf der Karte, der Rhein ist blau.",
+  "Kleinhausen ist nicht an der Mosel.",
+  "Weich sagt man zur Wolle, nicht zum Stein.",
+  "Der Luther-Druck kommt aus einer Mainzer Werkstatt.",
+  "Eine Villa bei Nierstein, nicht in Rom.",
+  "Das Original der Urkunde bleibt im Archiv.",
+  "Tracht war Sonntagskleidung.",
+  "Bitte langsam im Tastsinn-Raum.",
+  "Hände waschen danach.",
+  "Einen Saft, einen Kuchen, einen Tee: Akkusativ.",
+  "Die Museumsnacht ist einmal im Jahr.",
+  "Goldrahmen, dunkle Wände, Taschenlampe.",
+  "Nicht anfassen: Seil, Becher, Amphore.",
+  "Anfassen (Nachbildung): Stein, Wolle, Glas.",
+  "Geschichte zum Anfassen."
+];
+function uebenNaechstes(){
+  const i = (uebenNaechstes.i||0) % UEBEN.length;
+  uebenNaechstes.i = i+1;
+  const t = UEBEN[i];
+  sagen(t); sprich(t);
+}
+
+glossUpdate();
+if("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged=()=>{};
+</script>
+</body>
+</html>

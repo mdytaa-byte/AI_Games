@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>A Wonderful Week for a Quest</title>
-<meta name="description" content="A 16-bit RPG of Michael D. Young’s A Wonderful Week for a Quest. Book I: Squires. Book II: Bellissimo. Book III: Sir Roderick and the Wunderwell.">
+<meta name="description" content="A 16-bit RPG of Michael D. Young’s A Wonderful Week for a Quest. Books I–IV: Squires, Bellissimo, Roderick, and ELM’s pirate socks.">
 <style>
   :root {
     --ink: #0a0714;
@@ -188,6 +188,7 @@
             <button id="btnNew">Book I</button>
             <button id="btnBook2">Book II</button>
             <button id="btnBook3">Book III</button>
+            <button id="btnBook4">Book IV</button>
             <button id="btnCont" class="ghost">Continue</button>
             <button id="btnMute" class="ghost">Sound: On</button>
           </div>
@@ -304,8 +305,16 @@
       skills: ["scheme", "kayak", "nether"]
     };
   }
+  function grimmaHero() {
+    return {
+      id: "grimma", name: "Grimma",
+      maxHp: 28, hp: 28, maxMp: 18, mp: 18, atk: 6, def: 4, spd: 4,
+      skills: ["nether", "peptalk"]
+    };
+  }
   function isB2() { return G.day === 2; }
   function isB3() { return G.day === 3; }
+  function isB4() { return G.day === 4; }
 
   const ITEMS = {
     luna: { name: "Luna Bean", desc: "Tastes terrible. Restores 18 HP.", heal: 18 },
@@ -317,7 +326,10 @@
     garlic: { name: "Count’s Garlic", desc: "A vampire’s favorite. The irony is the point." },
     onebean: { name: "The One Bean", desc: "Capital letters required. Do not confuse with lunch." },
     eyebean: { name: "Eye Bean", desc: "A portable mirror full of opinionated sprites." },
-    file: { name: "Needler File", desc: "Nathaniel Nadle. Most wanted. Words that kneel people." }
+    file: { name: "Needler File", desc: "Nathaniel Nadle. Most wanted. Words that kneel people." },
+    locket: { name: "Family Locket", desc: "Bean-shaped. Inscription: Complete. Fannie lives here." },
+    leftsock: { name: "Unmatched Left Sock", desc: "One of thousands. The right one is still at large." },
+    ledger: { name: "DQA Ledger", desc: "Every neglected quest in the realm. Stolen for a good cause." }
   };
 
   const SKILLS = {
@@ -346,7 +358,13 @@
     marble: { name: "Rock Beats Glass", mp: 0, desc: "Miss Marble runs in front. Volleys become pebbles.", special: "golem" },
     rezella: { name: "Call Her Rezella", mp: 0, desc: "Dragonborn fire. The golem’s lances melt.", special: "golem" },
     goatgoat: { name: "Goat-Goat Charge", mp: 0, desc: "The G.O.A.T. goat. Do not underestimate goats.", special: "golem" },
-    lunaorb: { name: "Smash the Lunar Orb", mp: 0, desc: "Felgarath’s fake moon. Werefolk would like a word.", special: "needler" }
+    lunaorb: { name: "Smash the Lunar Orb", mp: 0, desc: "Felgarath’s fake moon. Werefolk would like a word.", special: "needler" },
+    rainbow: { name: "Rainbow Signal", mp: 0, desc: "Cinder’s cue. Satyrs, then agents, then chaos.", special: "quacken" },
+    breadwalk: { name: "Walking Bread", mp: 0, desc: "Yeast and death magic. Do not butter.", special: "quacken" },
+    quacken: { name: "Release the Quacken", mp: 0, desc: "A duck-headed sea behemoth on a limited contract.", special: "quacken" },
+    crewsock: { name: "Crew Sock", mp: 0, desc: "Not sailors. A scarlet chest with white L’s.", special: "mimic" },
+    vileseed: { name: "Crush the Vile Seed", mp: 0, desc: "Grimma’s last act. Kingdoms would like her not to.", special: "mimic" },
+    bright: { name: "Bright Magic", mp: 0, desc: "ELM’s unfamiliar light. Fannie burns the rest of the way.", special: "mimic" }
   };
 
   /* ---------- maps ---------- */
@@ -596,6 +614,65 @@ RRRRRRRRRRRRRRRRRRRR
 #N            N#
 #NNNNNNNNNNDNNN#
 ################
+`),
+    fey: parseMap(`
+NNNNNNNNNNNNNNNN
+N              N
+N   WWWWWWWW   N
+N   W      W   N
+N   W      W   N
+N              N
+N=======D======N
+NNNNNNNNNNNNNNNN
+`),
+    beanshow: parseMap(`
+TTTTTTTTTTTTTTTT
+T..............T
+T....AAAAAA....T
+T....A    A....T
+T....A    A....T
+T..............T
+T=======D======T
+TTTTTTTTTTTTTTTT
+`),
+    bay: parseMap(`
+TTTTTTTTTTTTTTTT
+T..............T
+T......~~~~....T
+T.....~~~~~~...T
+T..............T
+T..............T
+T=======D======T
+TTTTTTTTTTTTTTTT
+`),
+    misfit: parseMap(`
+TTTTTTTTTTTTTTTTTTTT
+T..................T
+T......~~~~........T
+T.....~~~~~~.......T
+T........H  H......T
+T........H D H.....T
+T========D=========T
+TTTTTTTTTTTTTTTTTTTT
+`),
+    wreck: parseMap(`
+################
+#NNNNNNNNNNNNNN#
+#N            N#
+#N     P      N#
+#N            N#
+#NNNNNNNNNNDNNN#
+################
+`),
+    vault: parseMap(`
+XXXXXXXXXXXXXXXX
+X              X
+X   S      S   X
+X              X
+X      P       X
+X              X
+X=======D======X
+XXXXXXXXXXXXXXXX
 `)
   };
 
@@ -618,7 +695,13 @@ RRRRRRRRRRRRRRRRRRRR
     ebi: [8, 5],
     well: [8, 5],
     gates: [10, 4],
-    palace: [8, 4]
+    palace: [8, 4],
+    fey: [8, 5],
+    beanshow: [8, 5],
+    bay: [8, 5],
+    misfit: [10, 5],
+    wreck: [8, 4],
+    vault: [8, 5]
   };
 
   const MAPNAME = {
@@ -640,7 +723,13 @@ RRRRRRRRRRRRRRRRRRRR
     ebi: "EBI Quantiflow HQ",
     well: "The Wunderwell",
     gates: "Palace Gates",
-    palace: "The Royal Palace"
+    palace: "The Royal Palace",
+    fey: "The Black-Eyed Fey",
+    beanshow: "Three-Bean Circus",
+    bay: "EBI Bay",
+    misfit: "Misfit Island",
+    wreck: "Leftbeard’s Wreck",
+    vault: "The Hidden Hold"
   };
 
   function tileAt(map, x, y) {
@@ -685,7 +774,10 @@ RRRRRRRRRRRRRRRRRRRR
       { x: 29, y: 5, to: "circus", tx: 10, ty: 5, need: "b2dead" },
       { x: 22, y: 3, to: "ebi", tx: 8, ty: 5, need: "b3sirsi" },
       { x: 6, y: 3, to: "well", tx: 8, ty: 5, need: "b3ebi" },
-      { x: 21, y: 8, to: "gates", tx: 10, ty: 4, need: "b3wish" }
+      { x: 21, y: 8, to: "gates", tx: 10, ty: 4, need: "b3wish" },
+      { x: 36, y: 9, to: "fey", tx: 8, ty: 5, need: "b4cinder" },
+      { x: 10, y: 14, to: "beanshow", tx: 8, ty: 5, need: "b4cinder" },
+      { x: 12, y: 16, to: "bay", tx: 8, ty: 5, need: "b4grimma" }
     ],
     tower: [{ x: 12, y: 8, to: "world", tx: 28, ty: 6 }],
     forest: [
@@ -715,7 +807,18 @@ RRRRRRRRRRRRRRRRRRRR
       { x: 10, y: 6, to: "world", tx: 20, ty: 9 },
       { x: 11, y: 5, to: "palace", tx: 8, ty: 4, need: "b3golem" }
     ],
-    palace: [{ x: 11, y: 5, to: "gates", tx: 10, ty: 4 }]
+    palace: [{ x: 11, y: 5, to: "gates", tx: 10, ty: 4 }],
+    fey: [{ x: 8, y: 6, to: "world", tx: 35, ty: 9, need: "b4cinder" }],
+    beanshow: [{ x: 8, y: 6, to: "world", tx: 10, ty: 13 }],
+    bay: [{ x: 8, y: 6, to: "world", tx: 12, ty: 15 }],
+    misfit: [
+      { x: 9, y: 6, to: "world", tx: 12, ty: 15 },
+      { x: 11, y: 5, to: "wreck", tx: 8, ty: 4, need: "b4ronchi" }
+    ],
+    wreck: [
+      { x: 11, y: 5, to: "vault", tx: 8, ty: 5, need: "b4song" }
+    ],
+    vault: [{ x: 8, y: 6, to: "wreck", tx: 8, ty: 4 }]
   };
 
   function npcsFor() {
@@ -724,7 +827,9 @@ RRRRRRRRRRRRRRRRRRRR
     if (G.map === "village") {
       list.push(npc(14, 6, "jackdaw", "Jackdaw", talkJackdawVillage));
       list.push(npc(18, 7, "mordeck", "Mordeck", talkMordeck));
-      if (isB3()) {
+      if (isB4()) {
+        /* Pintoburg is the Black-Eyed Fey. Beanvale keeps Jackdaw and the ledger jokes. */
+      } else if (isB3()) {
         list.push(npc(12, 6, "sirsi", "Sirsi", talkSirsi));
         list.push(npc(22, 14, "bell", "Bellissimo", talkBellB3));
         if (G.flags.b3wish && !G.flags.b3rod) list.push(npc(11, 8, "squires", "Roddy Squires", talkSquiresB3));
@@ -744,9 +849,11 @@ RRRRRRRRRRRRRRRRRRRR
       list.push(npc(25, 11, "villager", "Innkeeper", talkInn));
     }
     if (G.map === "world") {
-      if (!isB2() && !isB3() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
+      if (!isB2() && !isB3() && !isB4() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
       if (isB3() && f.b3wish && !f.b3grim) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleB3));
-      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB3()
+      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB4()
+        ? "East grass: Pintoburg / Black-Eyed Fey. South of the trees: Three-Bean Circus. Beside the south puddles: EBI bay. Bring a necromancer."
+        : isB3()
         ? "North grass: EBI Quantiflow. Grove gap: Wunderwell. East of the golden P: palace gates. Bring a squad, not a speech."
         : isB2()
         ? "West beans: cilantro hill. NW grove: Hornfang. North puddles: Lake Ekal. South muck: swamp. Mountain foot (west of the gap): Circus Absurdus."
@@ -818,6 +925,29 @@ RRRRRRRRRRRRRRRRRRRR
       if (!f.b3needler) list.push(npc(8, 3, "needler", "The Needler", talkNeedler));
       list.push(npc(5, 4, "bell", "Bellissimo", talkBellPalace));
     }
+    if (G.map === "fey") {
+      list.push(npc(7, 3, "munch", "Count Munchausen", talkMunchausen));
+      list.push(npc(10, 3, "ruprecht", "Sir Ruprecht 2RG", talkRuprecht));
+      if (f.b4dqa) list.push(npc(8, 4, "fannie", "Fannie", talkFannie));
+      if (f.b4fannie && !f.b4quacken) list.push(npc(5, 4, "cinder", "Cinder", talkCinder));
+    }
+    if (G.map === "beanshow") {
+      if (!f.b4grimma) list.push(npc(8, 3, "grimma", "Madame Grimes", talkGrimma));
+      else list.push(npc(8, 3, "grimma", "Grimma", talkGrimma));
+    }
+    if (G.map === "bay") {
+      if (!f.b4quacken) list.push(npc(6, 3, "quacken", "The Quacken", talkQuacken));
+    }
+    if (G.map === "misfit") {
+      list.push(npc(6, 4, "ronchi", "Ronchi", talkRonchi));
+    }
+    if (G.map === "wreck") {
+      list.push(npc(8, 3, "leftbird", "Leftbird", talkLeftbird));
+    }
+    if (G.map === "vault") {
+      if (!f.b4mimic) list.push(npc(8, 3, "mimic", "Mimic Chests", talkMimic));
+      else list.push(npc(8, 3, "leftbeard", "Captain Leftbeard", talkLeftbeard));
+    }
     return list;
   }
 
@@ -871,6 +1001,18 @@ RRRRRRRRRRRRRRRRRRRR
       if (n.sprite === "pris" && !f.b3pris) return true;
       if (n.sprite === "golem" && squadReady() && !f.b3golem) return true;
       if (n.sprite === "needler" && f.b3golem && !f.b3needler) return true;
+    }
+    if (isB4()) {
+      if (n.sprite === "munch" && !f.b4rva) return true;
+      if (n.sprite === "ruprecht" && f.b4rva && !f.b4dqa) return true;
+      if (n.sprite === "fannie" && f.b4dqa && !f.b4fannie) return true;
+      if (n.sprite === "cinder" && f.b4fannie && !f.b4cinder) return true;
+      if (n.sprite === "grimma" && !f.b4grimma) return true;
+      if (n.sprite === "quacken" && f.b4grimma && !f.b4quacken) return true;
+      if (n.sprite === "ronchi" && !f.b4ronchi) return true;
+      if (n.sprite === "leftbird" && f.b4ronchi && !f.b4song) return true;
+      if (n.sprite === "mimic" && f.b4song && !f.b4mimic) return true;
+      if (n.sprite === "leftbeard" && f.b4mimic && !f.b4done) return true;
     }
     return false;
   }
@@ -940,6 +1082,7 @@ RRRRRRRRRRRRRRRRRRRR
   }
 
   function talkJackdawVillage() {
+    if (isB4()) return talkJackdawB4();
     if (isB3()) return talkJackdawB3();
     if (isB2()) return talkJackdawB2();
     if (G.flags.prophecy) {
@@ -995,6 +1138,13 @@ RRRRRRRRRRRRRRRRRRRR
   }
 
   function talkMordeck() {
+    if (isB4()) {
+      say([
+        { who: "Mordeck", text: "Left socks. I have a column for that. It is longer than the column for dragons." },
+        { who: "Mordeck", text: "If you find the missing halves, do not bring them here. The ledger is already full." }
+      ]);
+      return;
+    }
     if (isB3()) {
       say([
         { who: "Mordeck", text: "The palace went quiet. I prefer a ledger that shouts. Quiet is expensive." },
@@ -1065,6 +1215,13 @@ RRRRRRRRRRRRRRRRRRRR
   }
 
   function talkJackdawTower() {
+    if (isB4()) {
+      say([
+        { who: "Jackdaw", text: "Pirates. I told you wells were worse. I was wrong. Unmatched laundry is worse." },
+        { who: "Jackdaw", text: "If a skeletal bird asks for a song, sing. If a chest asks for a guess, do not. I have footnotes about both." , note: "Leftbeard collected only left socks. The right ones remain a domestic tragedy." }
+      ]);
+      return;
+    }
     if (isB3()) {
       say([
         { who: "Jackdaw", text: "Wells. I told you wells were worse. One wish per person, blessing plus curse, and the well has a lawyer." },
@@ -1893,6 +2050,243 @@ RRRRRRRRRRRRRRRRRRRR
     ]);
   }
 
+  function talkJackdawB4() {
+    say([
+      { who: "Jackdaw", text: "Beanvale is off-duty. Pintoburg has a tavern that rehabiliates villains and assigns laundry quests. That is not a metaphor." },
+      { who: "Jackdaw", text: "East grass for the Black-Eyed Fey if you already left. If you are here, you are lost. I respect that. It is on-brand." }
+    ]);
+  }
+
+  function talkMunchausen() {
+    if (G.flags.b4rva) {
+      say([
+        { who: "Count Munchausen", text: "It’s never too late to change direction. I put it on a mug. The dogs knock the mug over. The motto survives." },
+        { who: "Count Munchausen", text: "Sir Ruprecht has the ledger. Productive mischief. Elevated tomfoolery. No ruined villages." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Count Munchausen", text: "Welcome to Recovering Villains Anonymous. I am Count Munchausen. One brown eye, one yellow. The dogs are larger than the agenda." },
+      { who: "ELM", text: "I am tired of failed conquest. I am not ready to become cheerful. Or respectable. Or cape-less." },
+      { who: "Count Munchausen", text: "Good. I do not recruit imitations of Sir Roderick. Redirect what you already are. It’s never too late to change direction." },
+      { who: "Count Munchausen", text: "The Day Questing Agency handles problems celebrity heroes ignore. Sir Ruprecht 2RG is at the bar. He looks like a knight who took a second job, because he did." , note: "V.I.C.E. minutes are taken. Attendance is optional. Relapse into world domination is discouraged." }
+    ], () => {
+      G.flags.b4rva = true;
+      G.quest = "Sir Ruprecht 2RG at the bar. Ask for a quest that does not require a prophecy.";
+      save();
+    });
+  }
+
+  function talkRuprecht() {
+    if (!G.flags.b4rva) {
+      say([{ who: "Sir Ruprecht 2RG", text: "Ledger’s closed until Munchausen finishes the motto. House policy. Also I am pouring." }]);
+      return;
+    }
+    if (G.flags.b4dqa) {
+      say([
+        { who: "Sir Ruprecht 2RG", text: "Left socks. Entire realm. Nothing else taken. Leftbeard, if the rumors still have a peg leg." },
+        { who: "Sir Ruprecht 2RG", text: "Everyone who knew the hiding place is dead. That is a research problem. I am a bartender. I recommend a necromancer." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Sir Ruprecht 2RG", text: "Day Quest Administration. I am Sir Ruprecht the Really Great. I shortened it to 2RG. The 3RG already had the trumpets." },
+      { who: "Sir Ruprecht 2RG", text: "Case: left socks disappearing throughout the Beandom. Rights remain. Victims are hopping. The pattern is pirate-shaped." },
+      { who: "ELM", text: "I require a quest with a positive mark. Also a dramatic entrance. Those are compatible if nobody writes a hymn." },
+      { who: "Sir Ruprecht 2RG", text: "Recover Leftbeard’s Treasure. Return the socks. Do not become a dark lord about it. The ledger is very large. Try not to steal it until later." , note: "He will steal it later. The ledger knows." }
+    ], () => {
+      G.flags.b4dqa = true;
+      G.quest = "A light is hovering near the locket shelf. Phantasms hate being ignored.";
+      save();
+    });
+  }
+
+  function talkFannie() {
+    if (G.flags.b4fannie) {
+      say([
+        { who: "Fannie", text: "I can be what you remember. A finch. A shrimp. A song. Ask first. Memories have opinions." },
+        { who: "Fannie", text: "The locket says Complete. I am practicing being a person who fits inside that word." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Fannie", text: "(a small hovering ball of bright light, dimming when shy, blazing when curious)" },
+      { who: "Fannie", text: "I am a phantasm. I copy remembered forms. I would like a home that is not a rumor." },
+      { who: "ELM", text: "Family locket. Bean-shaped. Tarnished on purpose. The inscription is Complete. Do not make it a metaphor." },
+      { who: "Fannie", text: "I will scout. I will become inconvenient animals. I already remember a pirate shanty I have not been asked to sing yet." , note: "She will be asked. Leftbird is union." }
+    ], () => {
+      G.flags.b4fannie = true;
+      give("locket");
+      G.quest = "Cinder is pretending to be severe in the corner. Summoning her is optional. Survival is not.";
+      save();
+    });
+  }
+
+  function talkCinder() {
+    if (G.flags.b4cinder) {
+      say([
+        { who: "Cinder", text: "Pink underneath. Black on purpose. I plotted islands. The EBI is guarding something worse than socks." },
+        { who: "Cinder", text: "South of the trees: your grandmother’s circus. Then the bay. I will make a rainbow. You will pretend you did not miss me." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Cinder", text: "You did not call. I interpreted that as rejection and then came anyway. That is called loyalty. Also poor planning." },
+      { who: "ELM", text: "The book has an incantation. The incantation has sparkles. I have a reputation." },
+      { who: "Cinder", text: "I scouted. Satyrs, a blockade, a wreck painted half black and half white. I can teleport you in pink. You will complain. I will do it anyway." },
+      { who: "Cinder", text: "Three-Bean Circus, south of the trees on the world map. Recruit Grimma. Then the bay. When I throw a rainbow, the plan has started." , note: "Nymphs in black spikes are still nymphs. The pink leaks." }
+    ], () => {
+      G.flags.b4cinder = true;
+      G.quest = "Leave by the south door. Three-Bean Circus, south of the trees. Yeast is involved. Do not be brave about bread.";
+      save();
+    });
+  }
+
+  function talkGrimma() {
+    if (G.flags.b4grimma) {
+      say([{ who: "Grimma", text: "Walking bread is ready. Satyrs will chase it. I will wake something with a duck’s head. Try to keep your socks." }]);
+      return;
+    }
+    say([{
+      who: "Madame Grimes",
+      text: "Beanling Brothers. Death magic. Seasonal spectacle. I am your grandmother. The riddle is in the yeast. What raises the bread after it has been buried?",
+      choices: [
+        { label: "Yeast (and death magic)", fn: () => grimmaJoin() },
+        { label: "Hope", fn: () => say([{ who: "Madame Grimes", text: "Hope does not brown at four hundred degrees. Try an ingredient." }], () => talkGrimma()) },
+        { label: "A very motivational speech", fn: () => say([{ who: "Madame Grimes", text: "I left the Viler Villains Society’s toastmasters years ago. Yeast." }], () => talkGrimma()) }
+      ]
+    }]);
+  }
+  function grimmaJoin() {
+    say([
+      { who: "Grimma", text: "Correct. Walking bread: fritters, cookies, pies. Yeast and a graveyard. Everyone who knew Leftbeard’s map is dead. I consider that a filing system." },
+      { who: "ELM", text: "I need a sea-born distraction and a grandmother who does not mind being called Grimma." },
+      { who: "Grimma", text: "Grimma, then. The EBI bay is south, beside the puddles. I will raise the bread. Cinder will raise the satyrs. You will raise your eyebrows. That is the foil-proof plan." }
+    ], () => {
+      G.flags.b4grimma = true;
+      join(grimmaHero());
+      G.quest = "EBI bay, south puddles. Rainbow, bread, Quacken. Cinder hates goodbyes she has not scheduled.";
+      save();
+    });
+  }
+
+  function talkQuacken() {
+    if (G.flags.b4quacken) {
+      say([{ who: "Shore", text: "The Quacken has requested a vacation. The destination is not recorded. Grimma considers that wise." }]);
+      return;
+    }
+    if (!G.flags.b4grimma) {
+      say([{ who: "The Quacken", text: "(a rumble that wants to be a quack and has not been invited yet)" }]);
+      return;
+    }
+    say([
+      { who: "Cinder", text: "Rainbow up. Satyrs in. Agents confused. Fannie is cycling phoenix and Jumbo Shrimp because of course she is." },
+      { who: "Grimma", text: "The duck-headed one is next. It has been between life and death, which is my specialty." },
+      { who: "The Quacken", text: "(the bay remembers a blockade and would like a second opinion)" }
+    ], () => startBattle([enemy("quacken")], { canFlee: false, boss: true, heal: true, onWin: () => {
+      say([
+        { who: "Cinder", text: "The blockade is breaking. I can get you across. I—" },
+        { who: "Narrator", text: "The water takes the rest of the sentence. Pink sparks go out like a lantern in rain. She does not get a second cue." },
+        { who: "Fannie", text: "I can hold a piece of her. In the locket. Not enough. Enough to deliver a message later." },
+        { who: "The Quacken", text: "(a tentacle, carefully. a vacation, afterward.)" },
+        { who: "Grimma", text: "Misfit Island. Hold on. Do not name the duck." }
+      ], () => {
+        G.flags.b4quacken = true;
+        G.quest = "Misfit Island. Ronchi will try to keep you. Leftbeard’s wreck is half black, half white, entirely stuck.";
+        save();
+        warp("misfit", 10, 5);
+      });
+    }}));
+  }
+
+  function talkRonchi() {
+    if (G.flags.b4ronchi) {
+      say([{ who: "Ronchi", text: "The wreck is in the harbor. Any treasure is to be shared. We are very serious about sharing. We are less serious about doors." }]);
+      return;
+    }
+    say([
+      { who: "Ronchi", text: "Misfits. I can tell. Local law would like you to stay permanently. We have a village, a harbor, and a category problem." },
+      { who: "ELM", text: "I am reforming. I am also looking for a pirate. Those are sequential, not contradictory." },
+      { who: "Ronchi", text: "Leftbeard’s ship is grounded. Half black, half white. You may search it. Treasure is communal. If you find a portal, we will pretend we discussed that." , note: "Misfit Island is a preserve for creatures who did not fit their paperwork." }
+    ], () => {
+      G.flags.b4ronchi = true;
+      G.quest = "The wreck’s door. A skeletal bird wants a song. Fannie has been waiting to be asked.";
+      save();
+    });
+  }
+
+  function talkLeftbird() {
+    if (G.flags.b4song) {
+      say([{ who: "Leftbird", text: "Chute for the stars. Down the hatch. The door remembers you. Try not to guess chests." }]);
+      return;
+    }
+    say([{
+      who: "Leftbird",
+      text: "(a skeletal bird, union, patient) Pass-song. The captain’s favorite. No humming. No approximations.",
+      choices: [
+        { label: "Let Fannie sing Leftbeard’s shanty", fn: () => {
+          say([
+            { who: "Fannie", text: "I remember this from someone else’s throat. It is not pretty. It is correct." },
+            { who: "Leftbird", text: "(the door agrees)" },
+            { who: "Chart", text: "Chute for the stars. Down the hatch. The portal is a left-sided joke that became architecture." }
+          ], () => {
+            G.flags.b4song = true;
+            G.quest = "Down the hatch. Look for the crew. Not sailors. Socks.";
+            save();
+          });
+        }},
+        { label: "Offer a villainous aria", fn: () => say([{ who: "Leftbird", text: "No. The captain was a prince. He had standards. Ask the light." }], () => talkLeftbird()) },
+        { label: "Charge the door", fn: () => say([{ who: "Leftbird", text: "That is a Roderick solution. This is a Leftbeard door." }], () => talkLeftbird()) }
+      ]
+    }]);
+  }
+
+  function talkMimic() {
+    if (G.flags.b4mimic) return;
+    say([
+      { who: "Leftbird", text: "Look for the crew." },
+      { who: "Fannie", text: "Not sailors. Crew socks. Scarlet. White L’s. The rest are hungry furniture." },
+      { who: "Grimma", text: "And that pod is the Vile Seed. I have been waiting to be Death for a very long time." },
+      { who: "Mimic Chests", text: "(six nesting boxes that used to be a captain and a crew)" }
+    ], () => startBattle([enemy("mimic")], { canFlee: false, boss: true, heal: true, onWin: () => {
+      G.flags.b4mimic = true;
+      G.party = G.party.filter((p) => p.id !== "grimma");
+      give("leftsock");
+      G.quest = "Captain Leftbeard would like a word. Then a ship. Then a better profession.";
+      save();
+      say([
+        { who: "Fannie", text: "I will take Cinder’s face long enough to say she did not mean the hurtful words. She still loves you. Then I have to be light again." },
+        { who: "Narrator", text: "She flies into the chests one by one and grows dimmer. ELM, who has only ever packed darkness, finds a brighter spell by accident." },
+        { who: "Grimma", text: "The Seed is crushed. I am ash. If Death has an inner circle, I am already late for it." },
+        { who: "Captain Leftbeard", text: "Thank you. One cannot take a hoard into the dark. I have tested this thoroughly." }
+      ]);
+    }}));
+  }
+
+  function talkLeftbeard() {
+    if (G.flags.b4done) {
+      say([{ who: "Captain Leftbeard", text: "The Cinder is yours. Return the socks. Steal the ledger if you must. Anti-hero is a perfectly respectable category." }]);
+      return;
+    }
+    say([
+      { who: "Captain Leftbeard", text: "I was a prince. Then a pirate. Then furniture. The beard grows only on the left. The hat is half. The flag is half. The socks were always left, because I had one ordinary foot." },
+      { who: "Captain Leftbeard", text: "Ship, stores, treasure, hold. I cannot take them. You may. Rename her if you have someone to name her for." },
+      { who: "ELM", text: "The Cinder." },
+      { who: "Fannie", text: "(dimmer now, inside the locket, still Complete)" },
+      { who: "ELM", text: "The DQA ledger has neglected quests. I will steal it. We will return the socks and finish the rest. I am not a villain. I am an anti-hero. The cape stays." },
+      { who: "Jackdaw", text: "And many of them lived reasonably happy for some time thereafter. Book V involves Humble Pie, which is a location and a warning." , note: "Rightbeard will want the locket. Grimblewaith will want a giant’s missing left sock. Fannie will want a phoenix." }
+    ], () => {
+      G.flags.b4done = true;
+      give("ledger");
+      G.quest = "Return the socks. Book V: Humble Pie. Keep the locket closed until a phoenix says otherwise.";
+      save();
+      G.mode = "credits";
+      G.creditT = 0;
+      $("hud").classList.remove("show");
+      $("dialog").classList.remove("show");
+    });
+  }
+
   function updateQuestSecrets() {
     const a = [G.flags.secretL && "Louisa", G.flags.secretE && "Elisabeth", G.flags.secretM && "Meriwether"].filter(Boolean);
     if (a.length === 3) G.quest = "Return to Jackdaw’s tower. The name is complete. (It is a terrible villain name.)";
@@ -1916,7 +2310,9 @@ RRRRRRRRRRRRRRRRRRRR
       dead: { name: "The Living Dead", hp: 44, maxHp: 44, atk: 9, def: 5, xp: 32, gold: 10, spr: "dead", boss: true },
       ox: { name: "Moronic Ox", hp: 48, maxHp: 48, atk: 10, def: 5, xp: 36, gold: 20, spr: "ox", boss: true },
       golem: { name: "Glass Golem", hp: 60, maxHp: 60, atk: 11, def: 8, xp: 45, gold: 0, spr: "golem", boss: true },
-      needler: { name: "The Needler", hp: 58, maxHp: 58, atk: 9, def: 4, xp: 50, gold: 30, spr: "needler", boss: true }
+      needler: { name: "The Needler", hp: 58, maxHp: 58, atk: 9, def: 4, xp: 50, gold: 30, spr: "needler", boss: true },
+      quacken: { name: "The Quacken", hp: 62, maxHp: 62, atk: 11, def: 6, xp: 48, gold: 0, spr: "quacken", boss: true },
+      mimic: { name: "Nesting Mimics", hp: 64, maxHp: 64, atk: 10, def: 7, xp: 52, gold: 40, spr: "mimic", boss: true }
     };
     return Object.assign({ stun: 0, confuse: 0 }, E[type]);
   }
@@ -1980,6 +2376,18 @@ RRRRRRRRRRRRRRRRRRRR
         else if (ns === 1) opts.unshift("Thick Skin");
         else opts.unshift("Smash the Lunar Orb");
       }
+      if (b.foes.some((f) => f.spr === "quacken" && f.hp > 0)) {
+        const qs = b.qstep || 0;
+        if (qs === 0) opts.unshift("Rainbow Signal");
+        else if (qs === 1) opts.unshift("Walking Bread");
+        else opts.unshift("Release the Quacken");
+      }
+      if (b.foes.some((f) => f.spr === "mimic" && f.hp > 0)) {
+        const ms = b.mstep || 0;
+        if (ms === 0) opts.unshift("Crew Sock");
+        else if (ms === 1) opts.unshift("Crush the Vile Seed");
+        else opts.unshift("Bright Magic");
+      }
     } else if (b.menu === "skill") {
       const p = G.party[b.i];
       opts = p.skills.map((id) => SKILLS[id].name + " (" + SKILLS[id].mp + " MP)");
@@ -2022,6 +2430,12 @@ RRRRRRRRRRRRRRRRRRRR
       else if (c === "You’ve Got This") { b.pending = { type: "skill", id: "gotthis" }; resolvePlayer(); return; }
       else if (c === "Thick Skin") { b.pending = { type: "skill", id: "thickskin" }; resolvePlayer(); return; }
       else if (c === "Smash the Lunar Orb") { b.pending = { type: "skill", id: "lunaorb" }; resolvePlayer(); return; }
+      else if (c === "Rainbow Signal") { b.pending = { type: "skill", id: "rainbow" }; resolvePlayer(); return; }
+      else if (c === "Walking Bread") { b.pending = { type: "skill", id: "breadwalk" }; resolvePlayer(); return; }
+      else if (c === "Release the Quacken") { b.pending = { type: "skill", id: "quacken" }; resolvePlayer(); return; }
+      else if (c === "Crew Sock") { b.pending = { type: "skill", id: "crewsock" }; resolvePlayer(); return; }
+      else if (c === "Crush the Vile Seed") { b.pending = { type: "skill", id: "vileseed" }; resolvePlayer(); return; }
+      else if (c === "Bright Magic") { b.pending = { type: "skill", id: "bright" }; resolvePlayer(); return; }
       else if (c === "Attack") {
         b.pending = { type: "atk" };
         b.menu = "target";
@@ -2080,6 +2494,8 @@ RRRRRRRRRRRRRRRRRRRR
       else if (f.spr === "ox") { b.log = "The ox is unmoved. It has not heard a father joke yet."; }
       else if (f.spr === "golem") { b.log = "Steel rings off glass. Miss Marble. Rezella. Goat-Goat. In that order."; }
       else if (f.spr === "needler") { b.log = "Swords bounce. He kneels people with sentences. Try confidence, then scales, then the moon."; }
+      else if (f.spr === "quacken") { b.log = "Steel is a condiment to a sea behemoth. Rainbow. Bread. Then the duck."; }
+      else if (f.spr === "mimic") { b.log = "The chests eat guesses. Crew sock. Vile Seed. Bright magic."; }
       else if (f.evade && Math.random() * 100 < f.evade) { b.log = f.name + " skipped aside. (Skipping beans. It’s a whole thing.)"; }
       else {
         const n = dmg(p.atk, f.def);
@@ -2144,6 +2560,30 @@ RRRRRRRRRRRRRRRRRRRR
         b.foes.forEach((f) => { if (f.spr === "needler") f.hp = 0; });
         b.log = "The lunar orb — Felgarath’s fake moon — comes down in powder. Nathaniel Nadle has nothing left to hang a night on.";
         sfx("magic");
+      } else if (act.id === "rainbow") {
+        b.qstep = Math.max(b.qstep || 0, 1);
+        b.log = "Cinder throws a rainbow. Satyrs chase. Agents chase satyrs. The blockade develops a scheduling conflict.";
+        sfx("magic");
+      } else if (act.id === "breadwalk") {
+        b.qstep = Math.max(b.qstep || 0, 2);
+        b.log = "Walking bread. Fritters with opinions. The satyrs are occupied. Grimma nods like a professional.";
+        sfx("magic");
+      } else if (act.id === "quacken") {
+        b.foes.forEach((f) => { if (f.spr === "quacken") f.hp = 0; });
+        b.log = "The Quacken wakes, quacks, and takes the bay personally. The blockade is now a rumor.";
+        sfx("magic");
+      } else if (act.id === "crewsock") {
+        b.mstep = Math.max(b.mstep || 0, 1);
+        b.log = "Scarlet chest. White L’s. Crew sock, not crew. The true treasure is unmatched laundry.";
+        sfx("magic");
+      } else if (act.id === "vileseed") {
+        b.mstep = Math.max(b.mstep || 0, 2);
+        b.log = "Grimma crushes the Vile Seed. The mimics flinch. She is already becoming ash and does not apologize.";
+        sfx("magic");
+      } else if (act.id === "bright") {
+        b.foes.forEach((f) => { if (f.spr === "mimic") f.hp = 0; });
+        b.log = "Fannie burns through the nesting chests. ELM’s magic comes out light-colored, to his professional dismay.";
+        sfx("magic");
       } else {
         const targets = sk.all ? b.foes.filter((f) => f.hp > 0) : [b.foes[b.target]];
         let msg = p.name + " uses " + sk.name + "! ";
@@ -2156,6 +2596,8 @@ RRRRRRRRRRRRRRRRRRRR
           if (f.spr === "ox" && act.id !== "dadjoke") { msg += "Unamused. "; return; }
           if (f.spr === "golem") { msg += "Glass ignores that. "; return; }
           if (f.spr === "needler") { msg += "He would like a sentence, not a dance. "; return; }
+          if (f.spr === "quacken") { msg += "The duck is unmoved. "; return; }
+          if (f.spr === "mimic") { msg += "The chest chews the spell. "; return; }
           if (f.evade && Math.random() * 100 < f.evade / 2) { msg += f.name + " hops. "; return; }
           const n = dmg(sk.dmg, f.def);
           f.hp = Math.max(0, f.hp - n);
@@ -2294,10 +2736,12 @@ RRRRRRRRRRRRRRRRRRRR
   }
 
   function tryWarp(w) {
-    if (isB3() && w.need && (String(w.need).startsWith("b2") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
-    if (isB2() && w.need && String(w.need).startsWith("b3")) return;
-    if (!isB2() && !isB3() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3"))) return;
+    if (isB4() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
+    if (isB3() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b4") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
+    if (isB2() && w.need && (String(w.need).startsWith("b3") || String(w.need).startsWith("b4"))) return;
+    if (!isB2() && !isB3() && !isB4() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b4"))) return;
     if (w.need === "grimbleJoin" && !G.flags.rejected) {
+      if (isB4()) { warp(w.to, w.tx, w.ty); return; }
       if (isB3()) {
         if (!G.flags.b3sirsi) {
           say([{ who: "Sirsi", text: "Jackdaw first is traditional. I am standing in the square. I am the tradition this time." }]);
@@ -2382,6 +2826,22 @@ RRRRRRRRRRRRRRRRRRRR
       say([{ who: "Glass Golem", text: "(the door is a reflection until the core is sand)" }]);
       return;
     }
+    if (w.need === "b4cinder" && !G.flags.b4cinder) {
+      say([{ who: "Cinder", text: "I plotted the door. Talk to me first. The pink is non-negotiable." }]);
+      return;
+    }
+    if (w.need === "b4grimma" && !G.flags.b4grimma) {
+      say([{ who: "Bay", text: "The blockade is not taking visitors until a necromancer raises the bread." }]);
+      return;
+    }
+    if (w.need === "b4ronchi" && !G.flags.b4ronchi) {
+      say([{ who: "Ronchi", text: "Search the wreck after we have identified you as misfits. House policy." }]);
+      return;
+    }
+    if (w.need === "b4song" && !G.flags.b4song) {
+      say([{ who: "Leftbird", text: "Pass-song. Then the hatch. I do not accept humming." }]);
+      return;
+    }
     warp(w.to, w.tx, w.ty);
   }
   function warp(map, x, y) {
@@ -2418,7 +2878,7 @@ RRRRRRRRRRRRRRRRRRRR
       tryWarp(standing);
     }
     if (!standing) G.warpKey = null;
-    if (["world", "forest", "hornfang", "swamp"].includes(G.map) && ((G.flags.quest && !G.flags.saved) || (isB2() && G.flags.b2grossina && !G.flags.b2done) || (isB3() && G.flags.b3ebi && !G.flags.b3done))) {
+    if (["world", "forest", "hornfang", "swamp"].includes(G.map) && ((G.flags.quest && !G.flags.saved) || (isB2() && G.flags.b2grossina && !G.flags.b2done) || (isB3() && G.flags.b3ebi && !G.flags.b3done) || (isB4() && G.flags.b4cinder && !G.flags.b4done))) {
       if (here.x !== lastTile.x || here.y !== lastTile.y) {
         lastTile = here;
         G.enc += 1;
@@ -2629,9 +3089,52 @@ RRRRRRRRRRRRRRRRRRRR
       col("#6a6a70"); r(px + 3, py + 6, 10, 8);
       col("#2a6aaa"); r(px + 5, py + 8, 6, 4);
       col("#c8d0d8"); r(px + 4, py + 5, 8, 2);
+    } else if (kind === "munch") {
+      col("#2a1a28"); r(px + 3, py + 7, 10, 8);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#112"); r(px + 4, py + 2, 8, 3);
+      col("#c9962e"); r(px + 6, py + 6, 2, 1); r(px + 9, py + 6, 2, 1);
+    } else if (kind === "ruprecht") {
+      col("#dde"); r(px + 4, py + 8, 8, 7);
+      col("#6a3"); r(px + 5, py + 7, 6, 3);
+      col(PAL.skin); r(px + 5, py + 3, 6, 5);
+      col("#c8b070"); r(px + 5, py + 1, 6, 3);
+    } else if (kind === "fannie") {
+      col("#fff6"); r(px + 5, py + 5, 6, 6);
+      col("#ffe080"); r(px + 6, py + 6, 4, 4);
+    } else if (kind === "cinder") {
+      col("#112"); r(px + 4, py + 8, 8, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#f6a"); r(px + 4, py + 2, 8, 3);
+      col("#c45"); r(px + 2, py + 9, 3, 1); r(px + 11, py + 9, 3, 1);
+    } else if (kind === "grimma") {
+      col("#3a2a48"); r(px + 4, py + 8, 8, 7);
+      col("#c8b8d0"); r(px + 5, py + 4, 6, 5);
+      col("#eee"); r(px + 4, py + 2, 8, 4);
+    } else if (kind === "ronchi") {
+      col("#5a7a3a"); r(px + 3, py + 7, 10, 8);
+      col("#8ab05a"); r(px + 5, py + 3, 6, 5);
+      col("#3a4"); r(px + 1, py + 8, 3, 4); r(px + 12, py + 8, 3, 4);
+    } else if (kind === "leftbird") {
+      col("#c8d0d8"); r(px + 5, py + 6, 6, 6);
+      col("#eee"); r(px + 9, py + 4, 4, 3);
+      col("#112"); r(px + 12, py + 5, 3, 1);
+    } else if (kind === "quacken") {
+      col("#2a6a4a"); r(px + 1, py + 6, 14, 8);
+      col("#f0d060"); r(px + 4, py + 2, 8, 7);
+      col("#112"); r(px + 6, py + 5, 2, 2); r(px + 9, py + 5, 2, 2);
+    } else if (kind === "mimic") {
+      col("#8a4a20"); r(px + 2, py + 6, 12, 8);
+      col("#c45"); r(px + 4, py + 8, 8, 3);
+      col("#e6c15a"); r(px + 7, py + 4, 2, 3);
+    } else if (kind === "leftbeard") {
+      col("#112"); r(px + 3, py + 8, 5, 7);
+      col("#eee"); r(px + 8, py + 8, 5, 7);
+      col(PAL.skin); r(px + 5, py + 3, 6, 5);
+      col("#c8c0a0"); r(px + 4, py + 1, 4, 4);
     }
     // eyes
-    if (!["sign", "bug", "skip", "spoon", "bean", "ox", "well"].includes(kind)) {
+    if (!["sign", "bug", "skip", "spoon", "bean", "ox", "well", "fannie", "leftbird", "mimic"].includes(kind)) {
       col("#112"); r(px + 6, py + 6, 1, 1); r(px + 9, py + 6, 1, 1);
     }
   }
@@ -2642,10 +3145,10 @@ RRRRRRRRRRRRRRRRRRRR
     G.camY = G.py * T - H / 2 + 8;
     G.camX = Math.max(0, Math.min(m.w * T - W, G.camX));
     G.camY = Math.max(0, Math.min(m.h * T - H, G.camY));
-    const bg = G.map === "tower" || G.map === "ebi" || G.map === "palace" ? "#0c1230"
-      : (G.map === "cave" || G.map === "lair" || G.map === "pub" || G.map === "swamp" || G.map === "crater") ? "#120c14"
-      : (G.map === "arena" || G.map === "circus" || G.map === "gates") ? "#3a3428"
-      : G.map === "lake" || G.map === "well" ? "#4a7aaa"
+    const bg = G.map === "tower" || G.map === "ebi" || G.map === "palace" || G.map === "fey" || G.map === "wreck" ? "#0c1230"
+      : (G.map === "cave" || G.map === "lair" || G.map === "pub" || G.map === "swamp" || G.map === "crater" || G.map === "vault") ? "#120c14"
+      : (G.map === "arena" || G.map === "circus" || G.map === "gates" || G.map === "beanshow") ? "#3a3428"
+      : G.map === "lake" || G.map === "well" || G.map === "bay" || G.map === "misfit" ? "#4a7aaa"
       : "#87b";
     col(bg); r(0, 0, W, H);
     const x0 = Math.max(0, (G.camX / T) | 0);
@@ -2658,11 +3161,12 @@ RRRRRRRRRRRRRRRRRRRR
     const sprites = npcsFor().map((n) => ({ kind: n.sprite, x: n.x * T - G.camX, y: n.y * T - G.camY, z: n.y, bang: questBang(n) }));
     const lead = (G.party[0] && G.party[0].id === "bell") ? "bell"
       : (G.party[0] && G.party[0].id === "roderick") ? "roderick"
+      : (G.party[0] && G.party[0].id === "elm") ? "elm"
       : "squires";
     sprites.push({ kind: lead, x: G.px * T - G.camX, y: G.py * T - G.camY, z: G.py, me: true });
     if (G.mode === "explore" && G.party[1]) {
       const fid = G.party[1].id;
-      const kind = fid === "grimble" ? "grimble" : fid === "roderick" ? "roderick" : fid === "elm" ? "elm" : fid === "squires" ? "squires" : fid === "bell" ? "bell" : null;
+      const kind = fid === "grimble" ? "grimble" : fid === "roderick" ? "roderick" : fid === "elm" ? "elm" : fid === "squires" ? "squires" : fid === "bell" ? "bell" : fid === "grimma" ? "grimma" : null;
       if (kind) {
         const ox = [0, -6, 0, 6][G.dir], oy = [8, 0, -8, 0][G.dir];
         sprites.push({ kind, x: G.px * T - G.camX + ox, y: G.py * T - G.camY + oy, z: G.py - 0.1 });
@@ -2694,7 +3198,31 @@ RRRRRRRRRRRRRRRRRRRR
 
   function drawCredits(t) {
     col("#0a0714"); r(0, 0, W, H);
-    const lines = isB3() ? [
+    const lines = isB4() ? [
+      "A WONDERFUL WEEK FOR A QUEST",
+      "Book IV  ·  Leftbeard’s Treasure",
+      "",
+      "Adapted from the novel by",
+      "Michael D. Young",
+      "",
+      "ELM             -  anti-hero, cape intact",
+      "Fannie          -  Complete, and dimmer",
+      "Cinder          -  the ship wears her name",
+      "Grimma          -  inner circle of Death",
+      "Count Munchausen -  it is never too late",
+      "Sir Ruprecht 2RG -  ledger, regrettably stolen",
+      "Captain Leftbeard -  left socks, left beard",
+      "The Quacken     -  on vacation",
+      "",
+      "The Cinder has a crew of misfits.",
+      "Book V: Humble Pie.",
+      "",
+      "And many of them lived",
+      "reasonably happy",
+      "for some time thereafter.",
+      "",
+      "Press Enter"
+    ] : isB3() ? [
       "A WONDERFUL WEEK FOR A QUEST",
       "Book III  ·  A Quest That Doesn’t Go…Well",
       "",
@@ -2784,7 +3312,7 @@ RRRRRRRRRRRRRRRRRRRR
     });
     G.party.forEach((p, i) => {
       if (p.hp <= 0) return;
-      drawChar(p.id === "grimble" ? "grimble" : p.id === "bell" ? "bell" : p.id === "roderick" ? "roderick" : p.id === "elm" ? "elm" : "squires", 40 + i * 28, 100, 1, 0, true);
+      drawChar(p.id === "grimble" ? "grimble" : p.id === "bell" ? "bell" : p.id === "roderick" ? "roderick" : p.id === "elm" ? "elm" : p.id === "grimma" ? "grimma" : "squires", 40 + i * 28, 100, 1, 0, true);
     });
   }
 
@@ -2807,14 +3335,16 @@ RRRRRRRRRRRRRRRRRRRR
     $("menu").classList.add("show");
     const body = G.party.map((p) => p.name + "  HP " + p.hp + "/" + p.maxHp + "  MP " + p.mp + "/" + p.maxMp).join("\n");
     const items = G.inv.length ? G.inv.map((i) => ((ITEMS[i.id] && ITEMS[i.id].name) || i.id) + " ×" + i.n).join("\n") : "(empty pockets, full destiny)";
-    const secrets = isB3()
+    const secrets = isB4()
+      ? ["RVA", "DQA", "Fannie", "Cinder", "Grimma"].filter((_, i) => [G.flags.b4rva, G.flags.b4dqa, G.flags.b4fannie, G.flags.b4cinder, G.flags.b4grimma][i]).join(", ")
+      : isB3()
       ? ["Squires", "Grimblewaith", "Glocke", "Priscilla", "Miss Marble"].filter((_, i) => [G.flags.b3rod, G.flags.b3grim, G.flags.b3glocke, G.flags.b3pris, G.flags.b3marble][i]).join(", ")
       : isB2()
       ? ["Little Giant", "Jumbo Shrimp", "Living Dead", "Moronic Ox"].filter((_, i) => [G.flags.b2lg, G.flags.b2prawn, G.flags.b2dead, G.flags.b2ox][i]).join(", ")
       : ["Louisa", "Elisabeth", "Meriwether"].filter((_, i) => [G.flags.secretL, G.flags.secretE, G.flags.secretM][i]).join(", ");
     $("mBody").innerHTML = "<pre style='white-space:pre-wrap;font:inherit'>" +
       body + "\n\nInventory\n" + items + "\n\nQuest\n" + G.quest +
-      "\n\n" + (isB3() ? "Rod Squad: " : isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
+      "\n\n" + (isB4() ? "Crew: " : isB3() ? "Rod Squad: " : isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
       "\n\nArrows move · Enter talk · Esc menu</pre>";
   }
 
@@ -2943,6 +3473,26 @@ RRRRRRRRRRRRRRRRRRRR
     ]);
     save();
   }
+  function startBook4() {
+    audioInit();
+    G.day = 4;
+    G.flags = { saved: true };
+    G.gold = 16;
+    G.inv = [{ id: "luna", n: 2 }, { id: "magic", n: 2 }];
+    G.party = [elmHero()];
+    G.map = "fey";
+    G.px = 8.5; G.py = 5.5; G.dir = 0;
+    G.quest = "Recovering Villains Anonymous. Count Munchausen has a motto and two differently colored eyes.";
+    G.mode = "explore";
+    $("titleui").classList.remove("show");
+    hud();
+    say([
+      { who: "Jackdaw", text: "Book IV. A former dark lord, a tavern for recovery, and a treasure made of left socks. I refuse to call this a step down." },
+      { who: "ELM", text: "I am Elisabeth Louisa Meriwether. I would like a positive mark on the Beandom. I will keep the cloak. The cloak is non-negotiable." },
+      { who: "Jackdaw", text: "Count Munchausen is running the meeting. Sir Ruprecht is pouring. Try listening. Pirates later." }
+    ]);
+    save();
+  }
   function continueGame() {
     audioInit();
     if (!load()) { startNew(); return; }
@@ -2993,6 +3543,7 @@ RRRRRRRRRRRRRRRRRRRR
   $("btnNew").onclick = startNew;
   $("btnBook2").onclick = startBook2;
   $("btnBook3").onclick = startBook3;
+  $("btnBook4").onclick = startBook4;
   $("btnCont").onclick = continueGame;
   $("btnMute").onclick = toggleMute;
   $("btnSave").onclick = () => { save(); $("mBody").insertAdjacentHTML("afterbegin", "<p style='color:var(--gold)'>Saved in this browser.</p>"); };
@@ -3041,7 +3592,8 @@ RRRRRRRRRRRRRRRRRRRR
     blocked: (x, y) => blocked(G.map, x, y),
     mapSize: () => ({ w: MAPS[G.map].w, h: MAPS[G.map].h, id: G.map }),
     startBook2,
-    startBook3
+    startBook3,
+    startBook4
   };
 })();
 </script>

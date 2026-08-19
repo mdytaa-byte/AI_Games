@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="de" data-en="an">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beim Arzt / In der Apotheke – Kleinhausen</title>
+<style>
+:root{
+  --klinik:#F7FBFA;
+  --mint:#C8E8DE;
+  --mint-tief:#2A8F78;
+  --kreuz:#C81E1E;
+  --kreuz-tief:#8E1212;
+  --kittel:#FFFFFF;
+  --tinte:#1A2B2E;
+  --soft:#4A6468;
+  --rezept:#FFF8E8;
+  --strasse:#E8DCC8;
+  --ok:#1B7A4A;
+  --fs:1rem;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+}
+html[data-size="gross"]{--fs:1.16rem}
+html[data-size="sehr-gross"]{--fs:1.34rem}
+html[data-contrast="hoch"]{
+  --klinik:#fff; --mint:#fff; --mint-tief:#005544; --kreuz:#B00000; --tinte:#000; --soft:#000; --rezept:#fff; --strasse:#fff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans); font-size:var(--fs); line-height:1.5; color:var(--tinte);
+  background:var(--klinik);
+  background-image:radial-gradient(circle at 12% 8%, var(--mint) 0 18%, transparent 19%),
+    linear-gradient(180deg,#f4faf8, #eef6f3);
+  min-height:100vh; -webkit-text-size-adjust:100%;
+}
+html[data-contrast="hoch"] body{background:#fff}
+.skip{position:absolute;left:-9999px;top:0;z-index:300;background:var(--kreuz);color:#fff;padding:.7em 1.1em;font-weight:800;text-decoration:none}
+.skip:focus{left:0}
+:focus-visible{outline:3px solid var(--mint-tief);outline-offset:3px}
+html[data-contrast="hoch"] :focus-visible{outline:4px solid #000}
+.en.gloss{display:none;font-style:italic;color:var(--soft);font-size:.86em;margin:.15em 0 0}
+html[data-en="an"] .en.gloss{display:block}
+.topbar{background:#fff;border-bottom:4px solid var(--kreuz);box-shadow:0 1px 0 var(--mint)}
+.topbar-in{max-width:1100px;margin:0 auto;padding:.6rem 1rem;display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:.65rem}
+.brand h1{margin:0;font-family:var(--serif);font-size:1.2em;font-weight:600}
+.brand .sub{font-size:.72em;letter-spacing:.14em;text-transform:uppercase;color:var(--kreuz)}
+.settings{display:flex;flex-wrap:wrap;gap:.35rem}
+.set-btn{
+  font:inherit;font-size:.8em;min-height:44px;min-width:44px;padding:.3em .8em;cursor:pointer;
+  background:#fff;border:2px solid var(--mint-tief);color:var(--tinte);border-radius:999px;
+}
+.set-btn[aria-pressed="true"]{background:var(--mint-tief);color:#fff;font-weight:800}
+.wrap{max-width:1100px;margin:0 auto;padding:1.2rem 1rem 3rem}
+.screen{display:none}
+.screen.on{display:block}
+h2{font-family:var(--serif);font-size:1.7em;margin:0 0 .4em;font-weight:600}
+.lede{max-width:64ch}
+.btn{
+  font:inherit;font-weight:800;min-height:44px;min-width:44px;padding:.55em 1.1em;cursor:pointer;
+  border:0;border-radius:8px;background:var(--mint-tief);color:#fff;
+}
+.btn.rot{background:var(--kreuz)}
+.btn.ghost{background:#fff;color:var(--tinte);border:2px solid var(--mint-tief)}
+.karte-symptom table{width:100%;border-collapse:collapse;margin-top:.6rem;font-size:.92em}
+.karte-symptom td,.karte-symptom th{text-align:left;padding:.25em .3em;border-bottom:1px solid var(--mint)}
+.produkt .flasche{min-height:36px}
+html[data-contrast="hoch"] .doktor,html[data-contrast="hoch"] .rezept{border:2px solid #000}
+.chip{display:inline-block;background:var(--mint);color:var(--tinte);padding:.3em .7em;border-radius:999px;font-weight:700;font-size:.85em}
+.how{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin:1.1rem 0}
+.how article{background:#fff;padding:1rem;border-radius:10px;border:1px solid var(--mint);box-shadow:0 8px 20px rgba(42,143,120,.08)}
+.karte-symptom{
+  background:#fff;border:2px dashed var(--kreuz);border-radius:12px;padding:1.1rem 1.2rem;max-width:36rem;
+  box-shadow:4px 6px 0 rgba(200,30,30,.12);
+}
+.dialog{display:grid;gap:.55rem;margin:1rem 0}
+.wahl{
+  text-align:left;font:inherit;min-height:48px;padding:.7em 1em;cursor:pointer;
+  background:#fff;border:2px solid var(--mint-tief);border-radius:10px;
+}
+.wahl:hover{background:var(--mint)}
+.wahl.falsch{border-color:var(--kreuz);background:#fde8e8}
+.wahl.gut{border-color:var(--ok);background:#e5f6ec}
+.fb{margin:.8rem 0;padding:.8rem;border-left:5px solid var(--kreuz);background:#fff}
+.fb.ok{border-color:var(--ok)}
+.body-wrap{display:grid;grid-template-columns:220px 1fr;gap:1rem;align-items:start}
+@media (max-width:720px){.body-wrap{grid-template-columns:1fr}}
+.body-svg{width:100%;max-width:220px;height:auto;background:#fff;border-radius:16px;border:2px solid var(--mint)}
+.body-svg .teil{cursor:pointer;fill:#d7efe8;stroke:#2A8F78;stroke-width:2}
+.body-svg .teil:hover,.body-svg .teil:focus{fill:#9fd4c6;outline:none}
+.body-svg .teil.aktiv{fill:#f4b4b4;stroke:var(--kreuz)}
+.body-svg .teil.richtig{fill:#8fd9b0;stroke:var(--ok)}
+.body-svg .teil.falsch{fill:#f0a0a0;stroke:var(--kreuz)}
+.strasse{
+  background:linear-gradient(#cfe8f2 0 42%, var(--strasse) 42%);
+  border-radius:12px;padding:1rem;min-height:140px;position:relative;overflow:hidden;margin:1rem 0;
+}
+.laeufer{width:48px;height:64px;position:absolute;bottom:18px;left:8%;
+  animation:lauf 2.4s ease-in-out forwards}
+@keyframes lauf{to{left:78%}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  .laeufer{animation:none;left:78%}
+}
+.regal{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.55rem}
+.produkt{
+  min-height:92px;font:inherit;cursor:pointer;border-radius:8px;border:2px solid #c9ddd6;
+  background:#fff;padding:.5em;text-align:left;display:flex;flex-direction:column;gap:.2em;
+}
+.produkt[aria-pressed="true"]{border-color:var(--mint-tief);box-shadow:inset 0 0 0 3px var(--mint)}
+.produkt.falsch{border-color:var(--kreuz);background:#fde8e8}
+.produkt.gut{border-color:var(--ok);background:#e5f6ec}
+.akte{background:#fff;border:1px solid #d5e4df;padding:1rem;border-radius:8px}
+.akte table{width:100%;border-collapse:collapse}
+.akte th,.akte td{text-align:left;padding:.4em .3em;border-bottom:1px solid #e4eeea}
+.footer{margin-top:2rem;font-size:.86em;color:var(--soft);border-top:1px solid var(--mint);padding-top:1rem}
+.name-row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:end;margin:1rem 0}
+input[type=text]{min-height:44px;padding:.4em .6em;font:inherit;border:2px solid var(--mint-tief);min-width:220px}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;background:#1A2B2E;color:#C8E8DE;padding:.8rem;word-break:break-all}
+.live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.rezept{background:var(--rezept);border:1px solid #e0d2a8;padding:1rem;font-family:var(--serif);margin:1rem 0}
+.phase{font-size:.78em;letter-spacing:.16em;text-transform:uppercase;color:var(--mint-tief);margin:0 0 .3em}
+.doktor{display:flex;gap:.8rem;align-items:flex-start;background:#fff;padding:1rem;border-radius:12px;border:1px solid var(--mint);margin:.8rem 0}
+.bodies{display:flex;flex-wrap:wrap;gap:1rem}
+.body-svg text.lbl{font-size:9px;fill:#2A8F78;pointer-events:none}
+.wartenummer{font-size:2rem;font-weight:800;color:var(--kreuz);letter-spacing:.12em;margin:.3rem 0}
+.flasche{display:flex;align-items:center;gap:.45rem}
+.verify{background:#fff;border:2px solid var(--mint);padding:1rem;margin-top:1rem;border-radius:10px}
+.vocab{display:flex;flex-wrap:wrap;gap:.35rem;margin:.5rem 0}
+.vocab span{background:var(--mint);padding:.3em .55em;border-radius:999px;font-size:.85em;font-weight:700}
+.ampel{display:flex;gap:.3rem}
+.ampel b{width:12px;height:12px;border-radius:50%;display:inline-block;background:#ccc}
+.ampel b.on{background:var(--ok)}
+html[data-contrast="hoch"] .wahl,html[data-contrast="hoch"] .produkt,html[data-contrast="hoch"] .karte-symptom{border-color:#000;background:#fff}
+html[data-contrast="hoch"] .body-svg .teil{fill:#fff;stroke:#000}
+</style>
+</head>
+<body>
+<a class="skip" href="#inhalt">Zum Inhalt springen</a>
+<div class="live" id="status" role="status" aria-live="polite"></div>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><circle cx="17" cy="17" r="16" fill="#fff" stroke="#C81E1E" stroke-width="2"/><rect x="15" y="7" width="4" height="20" fill="#C81E1E"/><rect x="7" y="15" width="20" height="4" fill="#C81E1E"/></svg>
+      <div>
+        <div class="sub">Praxis &amp; Apotheke Kleinhausen</div>
+        <h1>Beim Arzt / In der Apotheke</h1>
+      </div>
+    </div>
+    <div class="settings" role="toolbar" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">Vorlesen</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</header>
+<main class="wrap" id="inhalt">
+  <section class="screen on" id="screen-start" aria-labelledby="h-start">
+    <p class="chip">A1–A2 · formales Sie</p>
+    <h2 id="h-start" tabindex="-1">Vier Patientenfälle in Kleinhausen</h2>
+    <p class="lede">Du sitzt im Wartezimmer, sprichst mit Frau Dr. Keller (immer <strong>Sie</strong>), zeigst wo es weh tut, nimmst das Rezept und holst das Richtige in der Apotheke.</p>
+    <p class="en gloss">Waiting room → formal doctor talk → body diagram → prescription → pharmacy shelf.</p>
+    <div class="how">
+      <article><h3>Wartezimmer</h3><p>Lies die Symptomkarte auf Deutsch.</p><p class="en gloss">Read the symptom card.</p></article>
+      <article><h3>Beim Arzt</h3><p>Nicht „Du“ sagen. Beschreibe den Schmerz, „Seit wann?“, „Wo tut es weh?“</p><p class="en gloss">Use Sie, not Du. Answer since when / where it hurts.</p></article>
+      <article><h3>Körperplan</h3><p>Klick auf die richtige Stelle: Kopf, Hals, Brust, Bauch, Arm, Hand, Knie, Fuß, Rücken.</p><p class="en gloss">Click the correct body region.</p></article>
+      <article><h3>Apotheke</h3><p>Wähle die Produkte vom Rezept. Hustensaft hilft nicht bei einem Fuß!</p><p class="en gloss">Pick the products on the prescription, not distractors.</p></article>
+    </div>
+    <p><button type="button" class="btn" id="btn-los">Los geht’s</button></p>
+    <aside class="karte-symptom" style="margin-top:1.2rem">
+      <h3>Sie, nicht Du</h3>
+      <p>Zur Ärztin und zum Apotheker sagst du <strong>Sie</strong>: Guten Tag, ich habe … / Wo tut es weh? / Seit wann?</p>
+      <p>Falsch: „Du, wo ist der Arzt?“ Das kostet Punkte.</p>
+      <p class="en gloss">Always use formal Sie with the doctor and pharmacist. Informal Du is marked wrong.</p>
+      <table>
+        <thead><tr><th>Körper</th><th>Deutsch</th></tr></thead>
+        <tbody>
+          <tr><td>head</td><td>der Kopf</td></tr>
+          <tr><td>throat</td><td>der Hals</td></tr>
+          <tr><td>chest</td><td>die Brust</td></tr>
+          <tr><td>stomach</td><td>der Bauch</td></tr>
+          <tr><td>foot</td><td>der Fuß</td></tr>
+        </tbody>
+      </table>
+    </aside>
+  </section>
+
+  <section class="screen" id="screen-play" aria-labelledby="h-play">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+      <h2 id="h-play" tabindex="-1">Praxis Kleinhausen</h2>
+      <p><span class="chip" id="scorechip">Punkte: 0</span> · Fall <span id="fall-nr">1</span>/4</p>
+    </div>
+    <p class="phase" id="phase-lab">Wartezimmer</p>
+    <div id="play"></div>
+  </section>
+
+  <section class="screen" id="screen-summary" aria-labelledby="h-sum">
+    <h2 id="h-sum" tabindex="-1">Patientenakte</h2>
+    <p class="lede" id="sum-text"></p>
+    <div class="akte" id="akte"></div>
+    <h3>Wortschatz</h3>
+    <div class="vocab">
+      <span>Kopfschmerzen</span><span>Fieber</span><span>Husten</span><span>Schnupfen</span><span>Bauchschmerzen</span><span>umknicken</span><span>Rezept</span><span>Tablette</span><span>Saft</span><span>Salbe</span><span>Pflaster</span><span>Sie</span>
+    </div>
+    <p class="en gloss">headache · fever · cough · cold · stomachache · sprain · prescription · tablet · syrup · ointment · plaster · formal you</p>
+    <div class="name-row">
+      <label><span>Name (optional)</span><input type="text" id="name-in" autocomplete="name" maxlength="60"></label>
+      <button type="button" class="btn" id="btn-code">Code erzeugen</button>
+      <button type="button" class="btn ghost" id="btn-copy">Code kopieren</button>
+    </div>
+    <p class="code" id="code-val">KH-ARZT-…</p>
+    <div class="verify">
+      <h3>Prüfung (Lehrkraft)</h3>
+      <div class="name-row">
+        <label><span>Name</span><input type="text" id="v-name" maxlength="60"></label>
+        <label><span>Code</span><input type="text" id="v-code" maxlength="40"></label>
+        <button type="button" class="btn rot" id="btn-verify">Prüfen</button>
+      </div>
+      <p id="v-out" role="status"></p>
+    </div>
+    <p><button type="button" class="btn" id="btn-nochmal">Noch einmal spielen</button></p>
+  </section>
+</main>
+<footer class="footer wrap">Eine Datei, keine Cookies, kein localStorage. Sitzung nur. Vocab: Schmerz, Fieber, Rezept, Apotheke, Sie. Michael Young (Designer)</footer>
+<script>
+"use strict";
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
+function sprich(text){ if(!S.audio || !("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="de-DE"; speechSynthesis.speak(u); }
+
+const PRODUKTE = [
+  {id:"schmerz", de:"Schmerztablette", en:"painkiller"},
+  {id:"husten", de:"Hustensaft", en:"cough syrup"},
+  {id:"pflaster", de:"Pflaster", en:"plaster / bandage"},
+  {id:"salbe", de:"Salbe", en:"ointment"},
+  {id:"tee", de:"Magentee", en:"stomach tea"},
+  {id:"nase", de:"Nasenspray", en:"nasal spray"},
+  {id:"fieber", de:"Fieberthermometer", en:"thermometer"},
+  {id:"vitamin", de:"Vitamin", en:"vitamins"}
+];
+const FAELLE = [
+  {
+    id:"grippe", name:"Fall A · grippeartig",
+    karte:"Seit gestern: starke Kopfschmerzen und Fieber. Der Körper ist heiß, der Kopf pocht.",
+    karteEn:"Since yesterday: strong headache and fever. The body is hot, the head throbs.",
+    wo:"kopf", woDe:"Kopf",
+    seit:"gestern",
+    diagnose:"Grippeartige Infektion. Fieber messen und Schmerztablette.",
+    diagnoseEn:"Flu-like infection. Measure fever and take a painkiller.",
+    rezept:["fieber","schmerz"],
+    dialog:[
+      {q:"Begrüßung. Was sagst du zur Ärztin?", qEn:"Greeting. What do you say to the doctor?",
+        opts:[
+          {t:"Guten Tag, Frau Doktor Keller. Ich habe Kopfschmerzen und Fieber.", ok:true},
+          {t:"Du, wo ist der Arzt?", ok:false, warum:"Beim Arzt sagt man Sie, nicht Du. „Du, wo ist der Arzt?“ ist unhöflich und falsch.", warumEn:"With the doctor you use Sie, not Du."},
+          {t:"Hey, mein Kopf ist kaputt, Alter.", ok:false, warum:"Zu salopp. In der Praxis: Guten Tag + Sie.", warumEn:"Too slangy. Use Guten Tag and Sie."}
+        ]},
+      {q:"Wo tut es weh? Beschreibe den Schmerz.", qEn:"Where does it hurt?",
+        opts:[
+          {t:"Der Kopf tut weh. Ich habe auch Fieber.", ok:true},
+          {t:"Der Fuß ist umgeknickt.", ok:false, warum:"Das ist ein anderer Fall. Hier pocht der Kopf, nicht der Fuß.", warumEn:"Wrong case — this is the head, not the foot."},
+          {t:"Mir ist nur langweilig.", ok:false, warum:"Du bist krank: Kopfschmerzen und Fieber.", warumEn:"You are ill: headache and fever."}
+        ]},
+      {q:"Seit wann?", qEn:"Since when?",
+        opts:[
+          {t:"Seit gestern.", ok:true},
+          {t:"Seit drei Wochen ohne Pause.", ok:false, warum:"Die Karte sagt: seit gestern.", warumEn:"The card says since yesterday."},
+          {t:"Seit einer Minute, egal.", ok:false, warum:"Zu kurz und ungenau. Richtig: seit gestern.", warumEn:"Too short. Correct: since yesterday."}
+        ]}
+    ]
+  },
+  {
+    id:"fuss", name:"Fall B · Fußball",
+    karte:"Beim Fußball umgeknickt. Der rechte Fuß ist dick und tut weh, besonders beim Gehen.",
+    karteEn:"Twisted the ankle at football. The right foot is swollen and hurts when walking.",
+    wo:"fuss", woDe:"Fuß",
+    seit:"heute",
+    diagnose:"Umgeknickter Fuß. Pflaster und Salbe, kein Hustensaft.",
+    diagnoseEn:"Sprained foot. Plaster and ointment — not cough syrup.",
+    rezept:["pflaster","salbe"],
+    dialog:[
+      {q:"Begrüßung", qEn:"Greeting",
+        opts:[
+          {t:"Guten Tag. Ich habe mir den Fuß umgeknickt.", ok:true},
+          {t:"Du, wo ist der Arzt?", ok:false, warum:"Formell bleiben: Sie. Nicht Du zur Ärztin.", warumEn:"Stay formal: Sie, not Du."},
+          {t:"Ich will nur Bonbons.", ok:false, warum:"Das ist die Praxis, nicht der Kiosk.", warumEn:"This is the clinic, not a kiosk."}
+        ]},
+      {q:"Was ist passiert?", qEn:"What happened?",
+        opts:[
+          {t:"Ich habe beim Fußball den Fuß umgeknickt. Er ist dick.", ok:true},
+          {t:"Ich habe Husten und Schnupfen.", ok:false, warum:"Das ist eine Erkältung. Hier ist der Fuß das Problem.", warumEn:"That is a cold. Here the foot is the problem."},
+          {t:"Der Bauch tut weh nach Pommes.", ok:false, warum:"Falsches Symptom. Hier: umgeknickter Fuß.", warumEn:"Wrong symptom."}
+        ]},
+      {q:"Seit wann?", qEn:"Since when?",
+        opts:[
+          {t:"Seit heute, nach dem Spiel.", ok:true},
+          {t:"Seit Weihnachten.", ok:false, warum:"Die Karte: beim Fußball, also heute.", warumEn:"The card: at football, so today."},
+          {t:"Seit gestern Fieber.", ok:false, warum:"Kein Fieber in diesem Fall.", warumEn:"No fever in this case."}
+        ]}
+    ]
+  },
+  {
+    id:"kaelte", name:"Fall C · Erkältung",
+    karte:"Husten und Schnupfen. Die Nase läuft, der Hals kratzt, besonders abends.",
+    karteEn:"Cough and runny nose. The throat is scratchy, especially in the evening.",
+    wo:"hals", woDe:"Hals",
+    seit:"drei Tagen",
+    diagnose:"Erkältung. Hustensaft und Nasenspray.",
+    diagnoseEn:"Cold. Cough syrup and nasal spray.",
+    rezept:["husten","nase"],
+    dialog:[
+      {q:"Begrüßung", qEn:"Greeting",
+        opts:[
+          {t:"Guten Tag. Ich bin erkältet: Husten und Schnupfen.", ok:true},
+          {t:"Du, wo ist der Arzt?", ok:false, warum:"Wieder Du – falsch. Bitte Sie.", warumEn:"Du is wrong. Use Sie."},
+          {t:"Mein Fuß ist kaputt.", ok:false, warum:"Heute: Husten und Schnupfen, nicht der Fuß.", warumEn:"Today: cough and cold, not the foot."}
+        ]},
+      {q:"Wo tut es weh?", qEn:"Where does it hurt?",
+        opts:[
+          {t:"Der Hals kratzt und die Nase läuft. Ich huste.", ok:true},
+          {t:"Nur der Bauch nach dem Jahrmarkt.", ok:false, warum:"Das ist Fall D. Hier: Hals, Nase, Husten.", warumEn:"Wrong case."},
+          {t:"Nichts. Ich bin nur müde von Vitaminen.", ok:false, warum:"Die Karte nennt Husten und Schnupfen.", warumEn:"The card names cough and a runny nose."}
+        ]},
+      {q:"Seit wann?", qEn:"Since when?",
+        opts:[
+          {t:"Seit drei Tagen.", ok:true},
+          {t:"Seit einer Stunde nach dem Fußball.", ok:false, warum:"Drei Tage, sagt die Karte.", warumEn:"Three days, says the card."},
+          {t:"Seit gestern nur Fieber, kein Husten.", ok:false, warum:"Hier steht Husten, nicht in erster Linie Fieber.", warumEn:"This case is cough, not mainly fever."}
+        ]}
+    ]
+  },
+  {
+    id:"bauch", name:"Fall D · Jahrmarkt",
+    karte:"Nach dem Jahrmarkt: Bauchschmerzen. Zu viel Zuckerwatte und Bratwurst. Der Magen knurrt unangenehm.",
+    karteEn:"After the fair: stomachache. Too much candyfloss and sausage. The stomach feels unpleasant.",
+    wo:"bauch", woDe:"Bauch",
+    seit:"seit dem Jahrmarkt",
+    diagnose:"Magenverstimmung. Magentee, keine Schmerztablette als Erstes.",
+    diagnoseEn:"Upset stomach. Stomach tea — not painkillers first.",
+    rezept:["tee"],
+    dialog:[
+      {q:"Begrüßung", qEn:"Greeting",
+        opts:[
+          {t:"Guten Tag. Der Bauch tut weh, nach dem Jahrmarkt.", ok:true},
+          {t:"Du, wo ist der Arzt?", ok:false, warum:"Du zur Ärztin ist falsch. Sage Sie.", warumEn:"Du to the doctor is wrong."},
+          {t:"Ich brauche Nasenspray für den Fuß.", ok:false, warum:"Unlogisch. Hier schmerzt der Bauch.", warumEn:"Illogical. Here the stomach hurts."}
+        ]},
+      {q:"Was hast du gegessen?", qEn:"What did you eat?",
+        opts:[
+          {t:"Zuckerwatte und Bratwurst auf dem Jahrmarkt.", ok:true},
+          {t:"Nur Salat, ganz wenig.", ok:false, warum:"Die Karte sagt Zuckerwatte und Bratwurst.", warumEn:"The card says candyfloss and sausage."},
+          {t:"Nichts, ich habe Fieber.", ok:false, warum:"Kein Fieber – Bauch nach dem Jahrmarkt.", warumEn:"No fever — stomach after the fair."}
+        ]},
+      {q:"Seit wann?", qEn:"Since when?",
+        opts:[
+          {t:"Seit dem Jahrmarkt, heute Nachmittag.", ok:true},
+          {t:"Seit drei Wochen Husten.", ok:false, warum:"Falsche Zeit und falsches Symptom.", warumEn:"Wrong time and symptom."},
+          {t:"Seit gestern der Kopf.", ok:false, warum:"Heute: Bauch, nicht Kopf.", warumEn:"Today: stomach, not head."}
+        ]}
+    ]
+  }
+];
+
+const S = {
+  englisch:true, audio:false, kontrast:false, size:0,
+  motion:!window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  i:0, phase:"warte", dIdx:0, punkte:0, max:80, fehler:0, auswahl:[], akte:[], bodyOk:false
+};
+
+function sagen(t){ $("status").textContent = t; }
+function glossUpdate(){
+  document.documentElement.setAttribute("data-en", S.englisch ? "an" : "aus");
+  document.querySelectorAll(".en.gloss").forEach(el => { el.hidden = !S.englisch; });
+}
+$("s-en").addEventListener("click", ()=>{ S.englisch=!S.englisch; setToggle($("s-en"), S.englisch); glossUpdate(); sagen(S.englisch?"English on.":"Englisch aus."); });
+$("s-audio").addEventListener("click", ()=>{
+  S.audio=!S.audio; setToggle($("s-audio"), S.audio);
+  if(S.audio){ sprich("Vorlesen ist an."); sagen("Vorlesen an."); }
+  else { if("speechSynthesis" in window) speechSynthesis.cancel(); sagen("Vorlesen aus."); }
+});
+$("s-contrast").addEventListener("click", ()=>{
+  S.kontrast=!S.kontrast; setToggle($("s-contrast"), S.kontrast);
+  document.documentElement.setAttribute("data-contrast", S.kontrast?"hoch":"normal");
+  sagen(S.kontrast?"Hoher Kontrast.":"Normaler Kontrast.");
+});
+$("s-size").addEventListener("click", ()=>{
+  S.size=(S.size+1)%3;
+  const n=["normal","gross","sehr-gross"], l=["A","A+","A++"];
+  document.documentElement.setAttribute("data-size", n[S.size]);
+  $("s-size").textContent="Schrift: "+l[S.size];
+  sagen("Schrift "+l[S.size]);
+});
+function zeige(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+  const h=document.querySelector("#"+id+" h2"); if(h) h.focus();
+  window.scrollTo({top:0, behavior:S.motion?"smooth":"auto"});
+}
+function hash32(str){
+  let h=0x811c9dc5;
+  for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=(h+((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24)))>>>0; }
+  return h>>>0;
+}
+function baueCode(name){
+  const pct=S.max?Math.round(S.punkte/S.max*100):0;
+  const norm=String(name||"gast").trim().toLowerCase().replace(/\s+/g," ")||"gast";
+  const p=hash32(norm+"|"+S.punkte+"|"+S.max+"|"+pct+"|kleinhausen-arzt-v1").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return "KH-ARZT-"+S.punkte+"-"+pct+"-"+p;
+}
+
+function startGame(){
+  S.i=0; S.punkte=0; S.akte=[]; startFall(); zeige("screen-play");
+}
+function startFall(){
+  S.phase="warte"; S.dIdx=0; S.fehler=0; S.auswahl=[]; S.bodyOk=false;
+  $("fall-nr").textContent=String(S.i+1);
+  $("scorechip").textContent="Punkte: "+S.punkte;
+  render();
+}
+function setPhase(name){ $("phase-lab").textContent=name; }
+
+function render(){
+  const f=FAELLE[S.i];
+  if(S.phase==="warte") renderWarte(f);
+  else if(S.phase==="dialog") renderDialog(f);
+  else if(S.phase==="koerper") renderKoerper(f);
+  else if(S.phase==="rezept") renderRezept(f);
+  else if(S.phase==="strasse") renderStrasse(f);
+  else renderApo(f);
+  glossUpdate();
+}
+
+function renderWarte(f){
+  setPhase("Wartezimmer");
+  const nr = ["A-12","B-04","C-21","D-08"][S.i];
+  $("play").innerHTML =
+    "<p class=\"phase\">Wartenummer</p><p class=\"wartenummer\">"+nr+"</p>"+
+    "<p>Durchsage: <em>Nummer "+nr+", bitte zu Frau Dr. Keller.</em></p>"+
+    "<p class=\"en gloss\">Announcement: number "+nr+", please see Dr Keller.</p>"+
+    "<div class=\"karte-symptom\"><p class=\"phase\">Symptomkarte</p><h3>"+esc(f.name)+"</h3><p lang=\"de\">"+esc(f.karte)+"</p><p class=\"en gloss\">"+esc(f.karteEn)+"</p></div>"+
+    "<p style=\"margin-top:1rem\"><button type=\"button\" class=\"btn\" id=\"go\">Zur Ärztin (Sie!)</button></p>";
+  sprich("Wartezimmer. Nummer "+nr+". "+f.karte);
+  sagen("Lies die Symptomkarte. Nummer "+nr+".");
+  $("go").addEventListener("click", ()=>{ S.phase="dialog"; render(); });
+}
+
+function renderDialog(f){
+  setPhase("Sprechzimmer · Sie");
+  const d=f.dialog[S.dIdx];
+  $("play").innerHTML =
+    "<div class=\"doktor\"><svg width=\"56\" height=\"56\" viewBox=\"0 0 56 56\" aria-hidden=\"true\"><circle cx=\"28\" cy=\"28\" r=\"26\" fill=\"#C8E8DE\"/><circle cx=\"28\" cy=\"20\" r=\"8\" fill=\"#1A2B2E\"/><path d=\"M12 48c2-12 10-18 16-18s14 6 16 18\" fill=\"#fff\" stroke=\"#2A8F78\"/></svg>"+
+    "<div><strong>Frau Dr. Keller</strong><p>"+esc(d.q)+"</p><p class=\"en gloss\">"+esc(d.qEn)+"</p></div></div>"+
+    "<div class=\"dialog\" id=\"opts\"></div><div id=\"fb\"></div>";
+  const box=$("opts");
+  d.opts.forEach((o,i)=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="wahl"; b.textContent=o.t; b.dataset.i=String(i);
+    b.addEventListener("click", ()=>dialogWahl(f,i,b));
+    box.appendChild(b);
+  });
+  sprich(d.q);
+  sagen(d.q);
+}
+function dialogWahl(f, i, btn){
+  const d=f.dialog[S.dIdx];
+  const o=d.opts[i];
+  if(!o.ok){
+    S.fehler++;
+    btn.classList.add("falsch");
+    $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(o.warum)+"</strong><p class=\"en gloss\">"+esc(o.warumEn)+"</p></div>";
+    sprich(o.warum);
+    sagen(o.warum);
+    glossUpdate();
+    return;
+  }
+  btn.classList.add("gut");
+  S.dIdx++;
+  if(S.dIdx < f.dialog.length){
+    $("fb").innerHTML="<div class=\"fb ok\">Gut. Weiter.</div>";
+    setTimeout(()=>render(), S.motion?500:0);
+  } else {
+    S.phase="koerper";
+    render();
+  }
+}
+
+function bodySVG(){
+  return "<div class=\"bodies\">"+
+    "<svg class=\"body-svg\" viewBox=\"0 0 200 430\" role=\"img\" aria-label=\"Körper vorn\">"+
+    "<text x=\"100\" y=\"16\" text-anchor=\"middle\" class=\"lbl\">VORN</text>"+
+    "<circle class=\"teil\" data-teil=\"kopf\" cx=\"100\" cy=\"48\" r=\"30\" tabindex=\"0\" role=\"button\" aria-label=\"Kopf\"></circle>"+
+    "<text x=\"100\" y=\"52\" text-anchor=\"middle\" class=\"lbl\">Kopf</text>"+
+    "<rect class=\"teil\" data-teil=\"hals\" x=\"90\" y=\"78\" width=\"20\" height=\"22\" rx=\"6\" tabindex=\"0\" role=\"button\" aria-label=\"Hals\"></rect>"+
+    "<text x=\"148\" y=\"94\" class=\"lbl\">Hals</text>"+
+    "<rect class=\"teil\" data-teil=\"brust\" x=\"70\" y=\"100\" width=\"60\" height=\"68\" rx=\"10\" tabindex=\"0\" role=\"button\" aria-label=\"Brust\"></rect>"+
+    "<text x=\"100\" y=\"138\" text-anchor=\"middle\" class=\"lbl\">Brust</text>"+
+    "<rect class=\"teil\" data-teil=\"bauch\" x=\"72\" y=\"170\" width=\"56\" height=\"58\" rx=\"8\" tabindex=\"0\" role=\"button\" aria-label=\"Bauch\"></rect>"+
+    "<text x=\"100\" y=\"202\" text-anchor=\"middle\" class=\"lbl\">Bauch</text>"+
+    "<rect class=\"teil\" data-teil=\"arm\" x=\"22\" y=\"104\" width=\"42\" height=\"100\" rx=\"16\" tabindex=\"0\" role=\"button\" aria-label=\"Arm\"></rect>"+
+    "<text x=\"42\" y=\"150\" text-anchor=\"middle\" class=\"lbl\">Arm</text>"+
+    "<rect class=\"teil\" data-teil=\"hand\" x=\"18\" y=\"206\" width=\"34\" height=\"28\" rx=\"8\" tabindex=\"0\" role=\"button\" aria-label=\"Hand\"></rect>"+
+    "<text x=\"35\" y=\"248\" text-anchor=\"middle\" class=\"lbl\">Hand</text>"+
+    "<rect x=\"78\" y=\"228\" width=\"18\" height=\"70\" fill=\"#d7efe8\" stroke=\"#2A8F78\" stroke-width=\"2\"></rect>"+
+    "<rect x=\"104\" y=\"228\" width=\"18\" height=\"70\" fill=\"#d7efe8\" stroke=\"#2A8F78\" stroke-width=\"2\"></rect>"+
+    "<rect class=\"teil\" data-teil=\"knie\" x=\"76\" y=\"300\" width=\"48\" height=\"36\" rx=\"8\" tabindex=\"0\" role=\"button\" aria-label=\"Knie\"></rect>"+
+    "<text x=\"100\" y=\"322\" text-anchor=\"middle\" class=\"lbl\">Knie</text>"+
+    "<rect class=\"teil\" data-teil=\"fuss\" x=\"68\" y=\"382\" width=\"64\" height=\"28\" rx=\"10\" tabindex=\"0\" role=\"button\" aria-label=\"Fuß\"></rect>"+
+    "<text x=\"100\" y=\"400\" text-anchor=\"middle\" class=\"lbl\">Fuß</text>"+
+    "</svg>"+
+    "<svg class=\"body-svg\" viewBox=\"0 0 200 430\" role=\"img\" aria-label=\"Körper Rücken\">"+
+    "<text x=\"100\" y=\"16\" text-anchor=\"middle\" class=\"lbl\">RÜCKEN</text>"+
+    "<circle cx=\"100\" cy=\"48\" r=\"28\" fill=\"#eef6f3\" stroke=\"#2A8F78\" stroke-width=\"2\"></circle>"+
+    "<rect class=\"teil\" data-teil=\"ruecken\" x=\"68\" y=\"100\" width=\"64\" height=\"140\" rx=\"14\" tabindex=\"0\" role=\"button\" aria-label=\"Rücken\"></rect>"+
+    "<text x=\"100\" y=\"172\" text-anchor=\"middle\" class=\"lbl\">Rücken</text>"+
+    "<rect x=\"78\" y=\"242\" width=\"18\" height=\"90\" fill=\"#d7efe8\" stroke=\"#2A8F78\" stroke-width=\"2\"></rect>"+
+    "<rect x=\"104\" y=\"242\" width=\"18\" height=\"90\" fill=\"#d7efe8\" stroke=\"#2A8F78\" stroke-width=\"2\"></rect>"+
+    "</svg></div>";
+}
+function renderKoerper(f){
+  setPhase("Wo tut es weh?");
+  $("play").innerHTML =
+    "<p>Klicke auf die Stelle. Richtig ist: du zeigst, nicht nur redest.</p><p class=\"en gloss\">Click the body region that hurts.</p>"+
+    "<div class=\"body-wrap\">"+bodySVG()+"<div><p>Frau Dr. Keller: <em>Bitte zeigen Sie: Wo tut es weh?</em></p><div id=\"fb\"></div></div></div>";
+  sprich("Bitte zeigen Sie: Wo tut es weh?");
+  $("play").querySelectorAll(".teil").forEach(el=>{
+    const go=()=>klickTeil(f, el.dataset.teil, el);
+    el.addEventListener("click", go);
+    el.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); }});
+  });
+}
+function klickTeil(f, teil, el){
+  if(S.bodyOk) return;
+  if(teil !== f.wo){
+    S.fehler++;
+    el.classList.add("falsch");
+    const map={kopf:"Kopf",hals:"Hals",brust:"Brust",bauch:"Bauch",arm:"Arm",hand:"Hand",knie:"Knie",fuss:"Fuß",ruecken:"Rücken"};
+    $("fb").innerHTML="<div class=\"fb\"><strong>Nicht "+esc(map[teil]||teil)+".</strong> Die Karte zeigt: <em>"+esc(f.woDe)+"</em>.</div><p class=\"en gloss\">Not that region. The card points to the "+esc(f.woDe)+".</p>";
+    sprich("Nicht dort. Es tut am "+f.woDe+" weh.");
+    sagen("Falsche Körperstelle.");
+    glossUpdate();
+    return;
+  }
+  S.bodyOk=true;
+  el.classList.add("richtig");
+  $("fb").innerHTML="<div class=\"fb ok\">Genau, der "+esc(f.woDe)+".</div><p><button type=\"button\" class=\"btn\" id=\"go\">Diagnose hören</button></p>";
+  sprich("Genau, der "+f.woDe+".");
+  $("go").addEventListener("click", ()=>{ S.phase="rezept"; render(); });
+}
+
+function renderRezept(f){
+  setPhase("Diagnose & Rezept");
+  const namen=f.rezept.map(id=>PRODUKTE.find(p=>p.id===id).de).join(", ");
+  $("play").innerHTML =
+    "<div class=\"doktor\"><div><strong>Frau Dr. Keller</strong><p>"+esc(f.diagnose)+"</p><p class=\"en gloss\">"+esc(f.diagnoseEn)+"</p></div></div>"+
+    "<div class=\"rezept\"><p class=\"phase\">Rezept</p><p>Praxis Kleinhausen · Dr. Keller</p><p lang=\"de\"><strong>"+esc(namen)+"</strong></p><p>Bitte in der Apotheke um die Ecke abholen.</p></div>"+
+    "<p><button type=\"button\" class=\"btn\" id=\"go\">Zur Apotheke gehen</button></p>";
+  sprich(f.diagnose);
+  $("go").addEventListener("click", ()=>{ S.phase="strasse"; render(); });
+}
+
+function renderStrasse(f){
+  setPhase("Unterwegs");
+  $("play").innerHTML =
+    "<div class=\"strasse\" aria-hidden=\"true\"><svg class=\"laeufer\" viewBox=\"0 0 48 64\"><circle cx=\"24\" cy=\"10\" r=\"8\" fill=\"#1A2B2E\"/><rect x=\"16\" y=\"20\" width=\"16\" height=\"24\" fill=\"#2A8F78\"/><rect x=\"14\" y=\"44\" width=\"8\" height=\"18\" fill=\"#1A2B2E\"/><rect x=\"26\" y=\"44\" width=\"8\" height=\"18\" fill=\"#1A2B2E\"/></svg>"+
+    "<p style=\"position:absolute;top:10px;left:12px\">Praxis</p><p style=\"position:absolute;top:10px;right:12px\">Apotheke ✚</p></div>"+
+    "<p>Sie gehen in die Apotheke um die Ecke.</p><p class=\"en gloss\">You walk round the corner to the pharmacy.</p>"+
+    "<p><button type=\"button\" class=\"btn\" id=\"go\">Apotheke betreten</button></p>";
+  sprich("Sie gehen in die Apotheke um die Ecke.");
+  $("go").addEventListener("click", ()=>{ S.phase="apo"; render(); });
+}
+
+function renderApo(f){
+  setPhase("In der Apotheke");
+  $("play").innerHTML =
+    "<p><strong>Herr Özkan, Apotheker:</strong> Guten Tag. Was brauchen Sie? Bitte das Rezept.</p>"+
+    "<p class=\"en gloss\">Hello. What do you need? Please the prescription.</p>"+
+    "<p>Wähle alle richtigen Produkte (nicht mehr).</p>"+
+    "<div class=\"regal\" id=\"regal\"></div>"+
+    "<p style=\"margin-top:.8rem\"><button type=\"button\" class=\"btn\" id=\"kasse\">Zur Kasse</button></p><div id=\"fb\"></div>";
+  const regal=$("regal");
+  PRODUKTE.forEach(p=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="produkt"; b.setAttribute("aria-pressed","false"); b.dataset.id=p.id;
+    b.innerHTML="<strong>"+esc(p.de)+"</strong><span class=\"en gloss\">"+esc(p.en)+"</span>"+icon(p.id);
+    b.addEventListener("click", ()=>{
+      const on=b.getAttribute("aria-pressed")!=="true";
+      b.setAttribute("aria-pressed", on?"true":"false");
+      if(on){ if(!S.auswahl.includes(p.id)) S.auswahl.push(p.id); }
+      else S.auswahl=S.auswahl.filter(x=>x!==p.id);
+    });
+    regal.appendChild(b);
+  });
+  sprich("Guten Tag. Was brauchen Sie?");
+  glossUpdate();
+  $("kasse").addEventListener("click", ()=>kasse(f));
+}
+function icon(id){
+  const map = {
+    schmerz:"<svg width=\"40\" height=\"36\" viewBox=\"0 0 40 36\" aria-hidden=\"true\"><rect x=\"12\" y=\"4\" width=\"16\" height=\"28\" rx=\"3\" fill=\"#c81e1e\"/><circle cx=\"20\" cy=\"18\" r=\"4\" fill=\"#fff\"/></svg>",
+    husten:"<svg width=\"40\" height=\"36\" viewBox=\"0 0 40 36\" aria-hidden=\"true\"><rect x=\"14\" y=\"2\" width=\"12\" height=\"10\" fill=\"#2A8F78\"/><rect x=\"10\" y=\"12\" width=\"20\" height=\"22\" rx=\"6\" fill=\"#49b394\"/></svg>",
+    pflaster:"<svg width=\"40\" height=\"36\" viewBox=\"0 0 40 36\" aria-hidden=\"true\"><rect x=\"4\" y=\"14\" width=\"32\" height=\"10\" rx=\"4\" fill=\"#e8d27a\"/><rect x=\"16\" y=\"14\" width=\"8\" height=\"10\" fill=\"#fff8d0\"/></svg>",
+    salbe:"<svg width=\"40\" height=\"36\" viewBox=\"0 0 40 36\" aria-hidden=\"true\"><rect x=\"10\" y=\"8\" width=\"20\" height=\"24\" rx=\"4\" fill=\"#6bb7a0\"/><rect x=\"16\" y=\"2\" width=\"8\" height=\"8\" fill=\"#2A8F78\"/></svg>",
+    tee:"<svg width=\"40\" height=\"36\" viewBox=\"0 0 40 36\" aria-hidden=\"true\"><path d=\"M8 14h20v14H8z\" fill=\"#c47a2c\"/><path d=\"M28 16h6v8c0 2-2 4-4 4\" fill=\"none\" stroke=\"#c47a2c\" stroke-width=\"3\"/></svg>",
+    nase:"<svg width=\"40\" height=\"36\" viewBox=\"0 0 40 36\" aria-hidden=\"true\"><rect x=\"16\" y=\"4\" width=\"8\" height=\"18\" fill=\"#4a90c8\"/><rect x=\"12\" y=\"20\" width=\"16\" height=\"12\" rx=\"3\" fill=\"#7eb3e0\"/></svg>",
+    fieber:"<svg width=\"40\" height=\"36\" viewBox=\"0 0 40 36\" aria-hidden=\"true\"><rect x=\"18\" y=\"2\" width=\"4\" height=\"22\" fill=\"#888\"/><circle cx=\"20\" cy=\"28\" r=\"7\" fill=\"#c81e1e\"/></svg>",
+    vitamin:"<svg width=\"40\" height=\"36\" viewBox=\"0 0 40 36\" aria-hidden=\"true\"><ellipse cx=\"20\" cy=\"18\" rx=\"12\" ry=\"8\" fill=\"#e0b000\"/></svg>"
+  };
+  return "<span class=\"flasche\">"+(map[id]||"")+"</span>";
+}
+function kasse(f){
+  const need=f.rezept.slice().sort().join(",");
+  const got=S.auswahl.slice().sort().join(",");
+  const buttons=[...$("regal").querySelectorAll(".produkt")];
+  buttons.forEach(b=>{
+    const id=b.dataset.id;
+    if(f.rezept.includes(id) && S.auswahl.includes(id)) b.classList.add("gut");
+    else if(S.auswahl.includes(id)) b.classList.add("falsch");
+  });
+  if(need===got){
+    const p=Math.max(8, 20-S.fehler*3);
+    S.punkte+=p;
+    S.akte.push({name:FAELLE[S.i].name, p:p, fehler:S.fehler, rezept:f.rezept});
+    $("fb").innerHTML="<div class=\"fb ok\">Richtig abgeholt. +"+p+" Punkte.</div><p><button type=\"button\" class=\"btn\" id=\"go\">"+(S.i<FAELLE.length-1?"Nächster Fall":"Patientenakte")+"</button></p>";
+    sprich("Richtig. Gute Besserung.");
+    $("scorechip").textContent="Punkte: "+S.punkte;
+    $("go").addEventListener("click", nextFall);
+  } else {
+    S.fehler++;
+    const fehl=f.rezept.filter(id=>!S.auswahl.includes(id)).map(id=>PRODUKTE.find(p=>p.id===id).de);
+    const extra=S.auswahl.filter(id=>!f.rezept.includes(id)).map(id=>PRODUKTE.find(p=>p.id===id).de);
+    let de="Schau aufs Rezept. ";
+    if(fehl.length) de+="Es fehlt: "+fehl.join(", ")+". ";
+    if(extra.length) de+="Das gehört nicht dazu: "+extra.join(", ")+". Hustensaft hilft nicht bei jedem Schmerz.";
+    $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(de)+"</strong><p class=\"en gloss\">Check the prescription. Extra items are distractors.</p></div>";
+    sprich(de);
+    sagen(de);
+    glossUpdate();
+  }
+}
+function nextFall(){
+  if(S.i<FAELLE.length-1){ S.i++; startFall(); $("h-play").focus(); }
+  else zeigeSumme();
+}
+function zeigeSumme(){
+  const pct=Math.round(S.punkte/S.max*100);
+  let lob="Übe noch Sie gegen Du und die Produktnamen.";
+  if(pct>=90) lob="Ausgezeichnet. Die Apotheke und die Praxis sind stolz.";
+  else if(pct>=70) lob="Sehr gut. Die Rezepte sitzen.";
+  else if(pct>=50) lob="Gut. Denk an formales Sie und das Rezept.";
+  $("sum-text").innerHTML="Du hast <strong>"+S.punkte+" von "+S.max+" Punkten</strong> ("+pct+" %). "+esc(lob);
+  let html="<table><thead><tr><th>Fall</th><th>Punkte</th><th>Rezept</th></tr></thead><tbody>";
+  S.akte.forEach(a=>{
+    html+="<tr><td>"+esc(a.name)+"</td><td>"+a.p+"</td><td>"+esc(a.rezept.map(id=>PRODUKTE.find(p=>p.id===id).de).join(", "))+"</td></tr>";
+  });
+  html+="</tbody></table>";
+  $("akte").innerHTML=html;
+  $("code-val").textContent=baueCode($("name-in").value);
+  zeige("screen-summary");
+  sprich("Fertig. "+S.punkte+" Punkte.");
+}
+
+$("btn-los").addEventListener("click", startGame);
+$("btn-nochmal").addEventListener("click", startGame);
+$("btn-code").addEventListener("click", ()=>{ $("code-val").textContent=baueCode($("name-in").value); });
+$("name-in").addEventListener("input", ()=>{ $("code-val").textContent=baueCode($("name-in").value); });
+$("btn-copy").addEventListener("click", async ()=>{
+  const t=$("code-val").textContent;
+  if(!/^KH-ARZT-/.test(t)){ sagen("Zuerst Name eingeben."); return; }
+  try{ await navigator.clipboard.writeText(t); sagen("Code kopiert."); }
+  catch(err){ sagen("Bitte markieren und kopieren."); }
+});
+$("btn-verify").addEventListener("click", ()=>{
+  const name=$("v-name").value.trim();
+  const code=$("v-code").value.trim().toUpperCase();
+  const m=/^KH-ARZT-(\d+)-(\d+)-([0-9A-Z]{7})$/.exec(code);
+  if(!name||!m){ $("v-out").textContent="Name und Code im Format KH-ARZT-Punkte-Prozent-Hash."; return; }
+  const ges=Number(m[1]), pct=Number(m[2]), pruef=m[3];
+  const norm=name.toLowerCase().replace(/\s+/g," ");
+  const soll=hash32(norm+"|"+ges+"|"+S.max+"|"+pct+"|kleinhausen-arzt-v1").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  $("v-out").textContent=(soll===pruef)?"Gültig. "+name+": "+ges+" Punkte ("+pct+" %).":"Ungültig. Name und Code passen nicht.";
+});
+
+document.addEventListener("keydown", e=>{
+  if(!$("screen-play").classList.contains("on")) return;
+  if(/^[1-9]$/.test(e.key)){
+    const btns=[...$("play").querySelectorAll(".wahl, .produkt")];
+    const b=btns[Number(e.key)-1];
+    if(b){ e.preventDefault(); b.click(); b.focus(); }
+  }
+});
+glossUpdate();
+</script>
+</body>
+</html>

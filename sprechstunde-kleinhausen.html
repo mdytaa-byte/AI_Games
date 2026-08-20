@@ -174,7 +174,9 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 .schild-name{font-family:var(--serif);font-size:1.7rem;margin:0}
 .schild-ort{letter-spacing:.18em;text-transform:uppercase;font-size:.72rem;opacity:.75;font-weight:700}
 .modi{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin-top:.4rem}
-@media (max-width:700px){.modi{grid-template-columns:1fr}}
+.modi.zwei{grid-template-columns:repeat(2,1fr)}
+@media (max-width:700px){.modi,.modi.zwei{grid-template-columns:1fr}}
+.modus[aria-pressed="true"]{border-color:var(--tanne);background:#e7efeb;box-shadow:inset 0 0 0 2px var(--tanne)}
 .modus{
   text-align:left;background:var(--kittel);border:2px solid var(--linie);
   border-radius:12px;padding:1rem;cursor:pointer;font:inherit;color:var(--tinte);
@@ -263,6 +265,33 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 .werkzeug{
   margin-top:1rem;background:var(--karte);border:1px solid var(--linie);
   border-radius:var(--radius);padding:.9rem 1rem 1.1rem;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;
+}
+#aktionen, #sagen-panel{
+  overflow-y:auto;
+  max-height:min(46vh, 440px);
+  -webkit-overflow-scrolling:touch;
+}
+.werkzeug-fuss{
+  flex:none;
+  background:var(--karte);
+  padding-top:.65rem;
+  margin-top:.45rem;
+  border-top:1px solid var(--linie);
+}
+@media (max-width:700px){
+  .chat{max-height:200px}
+  #aktionen, #sagen-panel{max-height:min(38vh, 320px)}
+  .werkzeug-fuss{
+    position:sticky;bottom:0;z-index:6;
+    box-shadow:0 -10px 18px -14px rgba(22,63,56,.55);
+    padding-bottom:.15rem;
+  }
+}
+.frage.hinweis{border-color:var(--messing);box-shadow:inset 4px 0 0 var(--messing)}
+.frage .a2-mark{
+  display:inline-block;margin-left:.35rem;font-size:.68rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--moos);font-weight:800;vertical-align:middle;
 }
 .tabs{display:flex;gap:.35rem;flex-wrap:wrap;margin-bottom:.7rem}
 .tab{
@@ -368,6 +397,7 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 .koerper-svg .teil:hover,.koerper-svg .teil:focus{fill:var(--messing);outline:none}
 .koerper-svg .teil[data-asked="1"]{fill:#b7c9c1;cursor:default;pointer-events:none}
 .koerper-svg .teil[data-hit="1"]{fill:#e8c4a0}
+.koerper-svg .teil[data-hint="1"]{stroke:var(--messing);stroke-width:3;fill:#f4e6c4}
 .koerper-wrap{display:grid;grid-template-columns:220px 1fr;gap:1rem;align-items:center}
 @media (max-width:640px){.koerper-wrap{grid-template-columns:1fr}}
 #sagen-panel .wahl{
@@ -385,6 +415,38 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
   padding:.5rem .7rem;background:var(--kittel);border-radius:8px;
 }
 .satz-luecke b{border-bottom:2px solid var(--messing)}
+
+.lehrer-tabelle{width:100%;border-collapse:collapse;margin-top:.8rem;font-size:.92rem}
+.lehrer-tabelle th,.lehrer-tabelle td{text-align:left;padding:.5rem .4rem;border-bottom:1px solid var(--linie);vertical-align:top}
+.lehrer-tabelle th{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--weich)}
+.lehrer-tabelle .hin{font-size:.86rem;color:var(--weich)}
+#lehrer-dialog{width:min(860px,100%)}
+
+@media print{
+  .skip, header.top, #ansage, #def-card, #woerter-box, .no-print{display:none!important}
+  body[data-print="lehrer"] main{display:none!important}
+  body[data-print="lehrer"] #lehrer-box{
+    display:block!important;position:static;background:none;padding:0;overflow:visible;
+  }
+  body[data-print="lehrer"] #lehrer-dialog{
+    box-shadow:none;border:none;width:100%;max-width:none;margin:0;padding:0;
+  }
+  body[data-print="rezept"] #s-start,
+  body[data-print="rezept"] #s-warte,
+  body[data-print="rezept"] #s-play,
+  body[data-print="rezept"] #s-diag,
+  body[data-print="rezept"] #s-end,
+  body[data-print="rezept"] #lehrer-box{display:none!important}
+  body[data-print="rezept"] #s-result{
+    display:block!important;position:static;
+  }
+  body[data-print="rezept"] #s-result .karte,
+  body[data-print="rezept"] #s-result .btn-row{display:none!important}
+  body[data-print="rezept"] .ergebnis{display:block;grid-template-columns:1fr}
+  body[data-print="rezept"] #rezept{
+    display:block!important;box-shadow:none;border:2px dashed #c9b27a;
+  }
+}
 
 </style>
 </head>
@@ -412,6 +474,7 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
       <button type="button" class="wz" id="b-kontrast" aria-pressed="false" lang="de">Kontrast</button>
       <button type="button" class="wz" id="b-schrift" aria-pressed="false" lang="de">Große Schrift</button>
       <button type="button" class="wz" id="b-woerter" lang="de" aria-haspopup="dialog" aria-controls="woerter-box">Wörter</button>
+      <button type="button" class="wz" id="b-lehrer" lang="de" aria-haspopup="dialog" aria-controls="lehrer-box" aria-label="Lehrkräfte, Lösungen">Lehrkräfte</button>
     </div>
   </div>
 </header>
@@ -446,7 +509,21 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
       </aside>
     </div>
     <div class="karte">
-      <p class="eyebrow" lang="de">Dienstplan</p>
+      <p class="eyebrow" lang="de">Niveau</p>
+      <h2 lang="de" style="font-size:1.4rem">A2 oder B1?</h2>
+      <div class="modi zwei" role="radiogroup" lang="de" aria-label="Sprachniveau">
+        <button type="button" class="modus niveau" data-level="a2" id="n-a2" lang="de" aria-pressed="true">
+          <span class="m-t" lang="de">A2 — mit Hilfen</span>
+          <span class="m-d" lang="de">Vier Diagnosen, wichtige Fragen gold umrandet.</span>
+          <span class="en" lang="en">Four diagnoses, key questions outlined in gold.</span>
+        </button>
+        <button type="button" class="modus niveau" data-level="b1" id="n-b1" lang="de" aria-pressed="false">
+          <span class="m-t" lang="de">B1 — mit Ablenkern</span>
+          <span class="m-d" lang="de">Volle Liste, extra Fehldiagnosen, keine markierten Hinweise.</span>
+          <span class="en" lang="en">Full list, extra red herrings, no highlighted clues.</span>
+        </button>
+      </div>
+      <p class="eyebrow" lang="de" style="margin-top:1.2rem">Dienstplan</p>
       <h2 lang="de" style="font-size:1.4rem">Wie lang ist deine Sprechstunde?</h2>
       <div class="modi" role="group" lang="de" aria-label="Länge der Sprechstunde">
         <button type="button" class="modus" data-n="3" lang="de">
@@ -563,11 +640,13 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
             </div>
           </div>
           <div id="aktionen" role="tabpanel" lang="de" aria-labelledby="tab-fragen"></div>
+          <div class="werkzeug-fuss">
           <p id="diag-pflicht" class="hinweis-fragen" lang="de">Die Diagnose ist frei, sobald du drei Fragen oder Untersuchungen gestellt hast.</p>
           <p class="en" lang="en">You can diagnose after three questions or exams.</p>
           <div class="btn-row">
             <button type="button" class="btn btn-kreuz" id="b-diagnose" lang="de" disabled aria-describedby="diag-pflicht">Diagnose stellen</button>
             <button type="button" class="btn btn-ghost" id="b-abbruch" lang="de">Sprechstunde beenden</button>
+          </div>
           </div>
         </div>
       </div>
@@ -589,7 +668,7 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
       <p class="eyebrow" lang="de">Befund</p>
       <h2 id="diag-h" tabindex="-1" lang="de">Welche Diagnose stellen Sie?</h2>
       <p class="lede" id="diag-lede" lang="de"></p>
-      <p class="en" lang="en">Choose the illness that fits the clues. Similar illnesses are on the list on purpose.</p>
+      <p class="en" id="diag-lede-en" lang="en">Choose the illness that fits the clues. Similar illnesses are on the list on purpose.</p>
       <div class="karte" id="diag-noten" lang="de" style="background:var(--kittel);margin-bottom:1rem;padding:.9rem 1rem">
         <p class="eyebrow" lang="de" style="margin:0 0 .35rem">Dein Klemmbrett</p>
         <dl id="diag-notizen" lang="de" style="margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.35rem .8rem;font-size:.92rem"></dl>
@@ -634,6 +713,10 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
         </div>
         <div class="btn-row" id="next-reihe">
           <button type="button" class="btn" id="b-weiter" lang="de">Nächster Patient</button>
+          <button type="button" class="btn btn-ghost" id="b-druck" lang="de">
+            Rezept drucken
+            <span class="en" lang="en">Print the prescription</span>
+          </button>
         </div>
       </div>
       <div class="rezept" id="rezept" lang="de"></div>
@@ -655,6 +738,7 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
       </table>
       <div class="btn-row">
         <button type="button" class="btn" id="b-nochmal" lang="de">Neue Sprechstunde</button>
+        <button type="button" class="btn btn-ghost" id="b-lehrer-ende" lang="de">Lösungen für Lehrkräfte</button>
       </div>
     </div>
   </section>
@@ -681,6 +765,30 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
     <div class="btn-row">
       <button type="button" class="btn" id="b-woerter-zu" lang="de">Schließen</button>
     </div>
+  </div>
+</div>
+
+<div class="overlay" id="lehrer-box" hidden>
+  <div class="karte" id="lehrer-dialog" role="dialog" aria-labelledby="lehrer-h" aria-modal="true" lang="de" tabindex="-1">
+    <p class="eyebrow" lang="de">Nur für Lehrkräfte</p>
+    <h2 id="lehrer-h" lang="de">Lösungen und Rezepte</h2>
+    <p lang="de">Patient, Diagnose, wichtige Hinweise. Nicht während der Stunde offen lassen.</p>
+    <p class="en" lang="en">Patient, diagnosis, key clues. Do not leave this open during the lesson.</p>
+    <div class="btn-row no-print">
+      <button type="button" class="btn" id="b-lehrer-druck" lang="de">Lösungsblatt drucken</button>
+      <button type="button" class="btn btn-ghost" id="b-lehrer-zu" lang="de">Schließen</button>
+    </div>
+    <table class="lehrer-tabelle" id="lehrer-tabelle" lang="de">
+      <caption class="sr" lang="de">Lösungsschlüssel</caption>
+      <thead>
+        <tr>
+          <th scope="col" lang="de">Patient</th>
+          <th scope="col" lang="de">Diagnose</th>
+          <th scope="col" lang="de">Wichtige Hinweise</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 </div>
 
@@ -756,8 +864,31 @@ const DIAGNOSEN = [
   {id:"heu", de:"Heuschnupfen", en:"hay fever", art:"einen", kurz:"Niesen, juckende Augen, klare Nase — ohne Fieber, oft im Frühling.", enKurz:"sneezing, itchy eyes, clear runny nose — no fever, often in spring."},
   {id:"ruecken", de:"Hexenschuss", en:"a sudden catch in the lower back", art:"einen", kurz:"Unterer Rücken nach Heben oder Bücken, ohne Fieber oder Taubheit.", enKurz:"lower back after lifting or bending, no fever or numbness."},
   {id:"mandeln", de:"Mandelentzündung", en:"tonsillitis", art:"eine", kurz:"Sehr starker Halsschmerz, Fieber, Schlucken fast unmöglich, keine laufende Nase.", enKurz:"severe sore throat, fever, swallowing almost impossible, no runny nose."},
-  {id:"sonne", de:"Sonnenbrand", en:"sunburn", art:"einen", kurz:"Rote, heiße Haut nach zu viel Sonne.", enKurz:"red, hot skin after too much sun."}
+  {id:"sonne", de:"Sonnenbrand", en:"sunburn", art:"einen", kurz:"Rote, heiße Haut nach zu viel Sonne.", enKurz:"red, hot skin after too much sun."},
+  {id:"bronchitis", de:"Bronchitis", en:"bronchitis", art:"eine", kurz:"Länger Husten, oft nach einer Erkältung, die Lunge rauscht.", enKurz:"A longer cough, often after a cold; the lungs sound rattly."},
+  {id:"blinddarm", de:"Blinddarmentzündung", en:"appendicitis", art:"eine", kurz:"Starker Schmerz rechts unten im Bauch, oft Fieber, Bauch hart.", enKurz:"Severe pain in the lower right abdomen, often fever, abdomen hard."}
 ];
+
+const A2_LISTEN = {
+  lena:["erkaltung","grippe","mandeln","heu"],
+  klaus:["migraene","grippe","heu","sonne"],
+  mira:["magen","vergiftung","grippe","erkaltung"],
+  tim:["knoechel","ruecken","sonne","grippe"],
+  elke:["heu","erkaltung","grippe","migraene"],
+  otto:["ruecken","grippe","knoechel","sonne"],
+  nina:["mandeln","erkaltung","grippe","heu"],
+  yusuf:["vergiftung","magen","grippe","erkaltung"],
+  helga:["grippe","erkaltung","mandeln","migraene"]
+};
+
+const HINWEIS_LABELS = {
+  wo:"Ort", was:"Beschwerden", seit:"Seit wann", staerke:"Stärke",
+  fieber:"Fieber", husten:"Husten / Nase", magen:"Magen", uebel:"Übelkeit / Kopf",
+  schlucken:"Schlucken", augen:"Augen / Licht", muede:"Müdigkeit", schon:"Vorgeschichte",
+  essen:"Essen / Unfall", wohin:"Auslöser", andere:"Umgebung",
+  temp:"Temperatur", hals:"Hals", lunge:"Lunge", bauch:"Bauch", fuss:"Fuß", augenexam:"Augen-Check",
+  kopf:"Kopf", brust:"Brust", ruecken:"Rücken", bein:"Bein", knoechel:"Knöchel"
+};
 
 const DEFAULT_A = {
   wo:{de:"Eigentlich nirgendwo besonders. Ich fühle mich nur nicht wohl.", en:"Nowhere in particular. I just don't feel well.", note:"kein klarer Ort"},
@@ -1201,7 +1332,7 @@ function portraitSVG(p){
 
 /* ---------- state ---------- */
 const S = {
-  en:false, laut:true, kontrast:false, size:0,
+  en:false, laut:true, kontrast:false, size:0, level:"a2",
   queue:[], i:0, asked:new Set(), notes:{}, chat:[], results:[], score:0, tab:"fragen",
   greeted:false, guessId:null, langPts:0, diagTries:0, lastSatz:"", called:false
 };
@@ -1212,6 +1343,25 @@ function txt(item){ return patient().anrede==="du" ? item.du : item.sie; }
 function diagLabel(d){ return d.name || d.de; }
 function diagSatz(d){
   return patient().anrede==="du" ? `Du hast ${d.art} ${d.de}.` : `Sie haben ${d.art} ${d.de}.`;
+}
+function clueLabel(k){
+  if(HINWEIS_LABELS[k]) return HINWEIS_LABELS[k];
+  const f = FRAGEN.find(x=>x.id===k) || EXAMS.find(x=>x.id===k) || KOERPERTEILE.find(x=>x.id===k);
+  return f ? (f.kurz || f.de || txt(f)) : k;
+}
+function isA2Hint(id){
+  return S.level==="a2" && patient() && patient().schluessel.includes(id);
+}
+function diagAuswahl(){
+  if(S.level==="a2"){
+    const ids = A2_LISTEN[patient().id] || [patient().diagnose];
+    const list = ids.map(id => DIAGNOSEN.find(d => d.id===id)).filter(Boolean);
+    if(!list.some(d => d.id===patient().diagnose)){
+      list.push(DIAGNOSEN.find(d => d.id===patient().diagnose));
+    }
+    return shuffle(list);
+  }
+  return shuffle(DIAGNOSEN.slice());
 }
 function showGram(key){
   const g = GRAMMATIK[key];
@@ -1314,11 +1464,12 @@ function applySettings(){
   const v = ["","gross","sehr-gross"][S.size] || "";
   document.documentElement.setAttribute("data-size", v);
   setPressed($("b-schrift"), S.size>0);
+  document.querySelectorAll(".niveau").forEach(b => setPressed(b, b.dataset.level===S.level));
 }
 function saveSettings(){
   try{
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-      en:S.en, laut:S.laut, kontrast:S.kontrast, size:S.size
+      en:S.en, laut:S.laut, kontrast:S.kontrast, size:S.size, level:S.level
     }));
   }catch(e){}
 }
@@ -1331,6 +1482,7 @@ function loadSettings(){
     if(typeof o.laut === "boolean") S.laut = o.laut;
     if(typeof o.kontrast === "boolean") S.kontrast = o.kontrast;
     if(typeof o.size === "number" && o.size>=0 && o.size<=2) S.size = o.size;
+    if(o.level==="a2" || o.level==="b1") S.level = o.level;
   }catch(e){}
 }
 
@@ -1359,6 +1511,13 @@ $("b-schrift").onclick = function(){
 };
 loadSettings();
 applySettings();
+document.querySelectorAll(".niveau").forEach(btn => {
+  btn.onclick = () => {
+    S.level = btn.dataset.level==="b1" ? "b1" : "a2";
+    applySettings();
+    saveSettings();
+  };
+});
 
 let lastFocus = null;
 function openWoerter(){
@@ -1377,23 +1536,54 @@ function closeWoerter(){
 $("b-woerter").onclick = openWoerter;
 $("b-woerter-zu").onclick = closeWoerter;
 $("woerter-box").addEventListener("click", e => { if(e.target.id==="woerter-box") closeWoerter(); });
-$("woerter-box").addEventListener("keydown", e => {
-  if($("woerter-box").hidden) return;
-  if(e.key === "Tab"){
-    const f = [...$("woerter-box").querySelectorAll("button, [href], [tabindex]:not([tabindex='-1'])")].filter(x => !x.disabled && x.offsetParent !== null);
-    if(!f.length) return;
-    const first = f[0], last = f[f.length-1];
-    if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
-    else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
-  }
-});
+$("woerter-box").addEventListener("keydown", e => trapTab(e, "woerter-box"));
+
+function trapTab(e, boxId){
+  if($(boxId).hidden || e.key!=="Tab") return;
+  const f = [...$(boxId).querySelectorAll("button, [href], [tabindex]:not([tabindex='-1'])")].filter(x => !x.disabled && x.offsetParent !== null);
+  if(!f.length) return;
+  const first = f[0], last = f[f.length-1];
+  if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+  else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+}
+
+function openLehrer(){
+  if(!$("woerter-box").hidden) closeWoerter();
+  lastFocus = document.activeElement;
+  $("lehrer-box").hidden = false;
+  $("inhalt").inert = true;
+  document.querySelector("header.top").inert = true;
+  ($("lehrer-dialog") || $("b-lehrer-zu")).focus();
+}
+function closeLehrer(){
+  $("lehrer-box").hidden = true;
+  $("inhalt").inert = false;
+  document.querySelector("header.top").inert = false;
+  (lastFocus || $("b-lehrer")).focus();
+}
+$("b-lehrer").onclick = openLehrer;
+$("b-lehrer-ende").onclick = openLehrer;
+$("b-lehrer-zu").onclick = closeLehrer;
+$("lehrer-box").addEventListener("click", e => { if(e.target.id==="lehrer-box") closeLehrer(); });
+$("lehrer-box").addEventListener("keydown", e => trapTab(e, "lehrer-box"));
+
+function printNow(mode){
+  document.body.setAttribute("data-print", mode);
+  const clear = () => document.body.removeAttribute("data-print");
+  window.addEventListener("afterprint", clear, {once:true});
+  window.print();
+}
+$("b-lehrer-druck").onclick = () => printNow("lehrer");
+$("b-druck").onclick = () => printNow("rezept");
+
 document.addEventListener("keydown", e => {
   if(e.key==="Escape" && !$("woerter-box").hidden) closeWoerter();
+  if(e.key==="Escape" && !$("lehrer-box").hidden) closeLehrer();
   if(e.key==="Escape" && !$("def-card").hidden) closeDef();
 });
 
 /* start */
-document.querySelectorAll(".modus").forEach(btn => {
+document.querySelectorAll(".modus[data-n]").forEach(btn => {
   btn.onclick = () => startShift(btn.dataset.n);
 });
 
@@ -1600,20 +1790,12 @@ function addChat(who, name, de, en){
 }
 
 function renderNotes(){
-  const labels = {
-    wo:"Ort", was:"Beschwerden", seit:"Seit wann", staerke:"Stärke",
-    fieber:"Fieber", husten:"Husten / Nase", magen:"Magen", uebel:"Übelkeit / Kopf",
-    schlucken:"Schlucken", augen:"Augen / Licht", muede:"Müdigkeit", schon:"Vorgeschichte",
-    essen:"Essen / Unfall", wohin:"Auslöser", andere:"Umgebung",
-    temp:"Temperatur", hals:"Hals", lunge:"Lunge", bauch:"Bauch", fuss:"Fuß", augenexam:"Augen-Check",
-    kopf:"Kopf", brust:"Brust", ruecken:"Rücken", bein:"Bein", knoechel:"Knöchel"
-  };
   const keys = Object.keys(S.notes);
   if(!keys.length){
     $("notizen").innerHTML = `<dd class="leer" lang="de">Noch leer — stell Fragen.</dd><dd class="en" lang="en">Still empty — ask questions.</dd>`;
     return;
   }
-  $("notizen").innerHTML = keys.map(k => `<dt lang="de">${labels[k]||k}</dt><dd lang="de">${S.notes[k]}</dd>`).join("");
+  $("notizen").innerHTML = keys.map(k => `<dt lang="de">${clueLabel(k)}</dt><dd lang="de">${S.notes[k]}</dd>`).join("");
 }
 
 function setTab(tab){
@@ -1635,8 +1817,12 @@ function setTab(tab){
     return;
   }
   if(tab==="fragen"){
-    $("tab-hinweis").textContent = "Wähle ein Thema, dann die richtige deutsche Frage.";
-    $("tab-hinweis-en").textContent = "Pick a topic, then the correct German question.";
+    $("tab-hinweis").textContent = S.level==="a2"
+      ? "A2: goldene Ränder markieren oft wichtige Fragen. Wähle dann die richtige Formulierung."
+      : "Wähle ein Thema, dann die richtige deutsche Frage.";
+    $("tab-hinweis-en").textContent = S.level==="a2"
+      ? "A2: gold outlines often mark key questions. Then pick the correct phrasing."
+      : "Pick a topic, then the correct German question.";
     $("aktionen").innerHTML = "";
     FRAGE_GRUPPEN.forEach(g => {
       const list = FRAGEN.filter(f => f.gruppe===g.id);
@@ -1653,12 +1839,13 @@ function setTab(tab){
       list.forEach(f => {
         const b = document.createElement("button");
         b.type = "button";
-        b.className = "frage";
+        b.className = "frage" + (isA2Hint(f.id) ? " hinweis" : "");
         b.disabled = S.asked.has("q-"+f.id);
         b.setAttribute("lang", "de");
         const asked = S.asked.has("q-"+f.id);
-        b.setAttribute("aria-label", (f.kurz||txt(f)) + (asked ? " (bereits gefragt)" : "") + (S.en ? ". " + f.en : ""));
-        b.innerHTML = `<span class="qde" lang="de">${f.kurz||txt(f)}</span><span class="en" lang="en">${f.en}</span>`;
+        const hint = isA2Hint(f.id) ? " Wichtiger Hinweis." : "";
+        b.setAttribute("aria-label", (f.kurz||txt(f)) + hint + (asked ? " (bereits gefragt)" : "") + (S.en ? ". " + f.en : ""));
+        b.innerHTML = `<span class="qde" lang="de">${f.kurz||txt(f)}</span>${isA2Hint(f.id)?`<span class="a2-mark" lang="de">A2</span>`:""}<span class="en" lang="en">${f.en}</span>`;
         b.onclick = () => startFrage(f);
         grid.appendChild(b);
       });
@@ -1666,18 +1853,23 @@ function setTab(tab){
       $("aktionen").appendChild(sec);
     });
   } else if(tab==="untersuchen"){
-    $("tab-hinweis").textContent = "Nicht jede Untersuchung ist nötig. Wähle, was zum Bericht passt.";
-    $("tab-hinweis-en").textContent = "Not every exam is needed. Choose what fits the story.";
+    $("tab-hinweis").textContent = S.level==="a2"
+      ? "A2: gold markiert oft die Untersuchung, die zählt. Nicht jede ist nötig."
+      : "Nicht jede Untersuchung ist nötig. Wähle, was zum Bericht passt.";
+    $("tab-hinweis-en").textContent = S.level==="a2"
+      ? "A2: gold often marks the exam that counts. Not every exam is needed."
+      : "Not every exam is needed. Choose what fits the story.";
     $("aktionen").innerHTML = "";
     EXAMS.forEach(f => {
       const b = document.createElement("button");
       b.type = "button";
-      b.className = "frage";
+      b.className = "frage" + (isA2Hint(f.id) ? " hinweis" : "");
       b.disabled = S.asked.has("e-"+f.id);
       b.setAttribute("lang", "de");
       const asked = S.asked.has("e-"+f.id);
-      b.setAttribute("aria-label", txt(f) + (asked ? " (bereits gemacht)" : "") + (S.en ? ". " + f.en : ""));
-      b.innerHTML = `<span class="qde" lang="de">${txt(f)}</span><span class="en" lang="en">${f.en}</span>`;
+      const hint = isA2Hint(f.id) ? " Wichtiger Hinweis." : "";
+      b.setAttribute("aria-label", txt(f) + hint + (asked ? " (bereits gemacht)" : "") + (S.en ? ". " + f.en : ""));
+      b.innerHTML = `<span class="qde" lang="de">${txt(f)}</span>${isA2Hint(f.id)?`<span class="a2-mark" lang="de">A2</span>`:""}<span class="en" lang="en">${f.en}</span>`;
       b.onclick = () => ask("e-"+f.id, f, patient().untersuchungen[f.id]);
       $("aktionen").appendChild(b);
     });
@@ -1701,10 +1893,11 @@ function setTab(tab){
       const id = el.getAttribute("data-part");
       if(S.asked.has("k-"+id)) el.setAttribute("data-asked", "1");
       if(SCHMERZ[patient().id] && SCHMERZ[patient().id][id]) el.setAttribute("data-hit", "1");
+      if(isA2Hint(id)) el.setAttribute("data-hint", "1");
       el.setAttribute("tabindex", S.asked.has("k-"+id) ? "-1" : "0");
       el.setAttribute("role", "button");
       const part = KOERPERTEILE.find(x=>x.id===id);
-      el.setAttribute("aria-label", part.de + (S.en ? ", "+part.en : ""));
+      el.setAttribute("aria-label", part.de + (isA2Hint(id) ? ", wichtiger Hinweis" : "") + (S.en ? ", "+part.en : ""));
       const go = () => askBody(id);
       el.onclick = go;
       el.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); go(); } };
@@ -1809,11 +2002,16 @@ function openDiagnose(){
   $("diag-sagen").hidden = true;
   $("diag-grid").hidden = false;
   $("diag-lede").setAttribute("lang", "de");
-  $("diag-lede").textContent = `Sie haben ${S.asked.size} Hinweise gesammelt. Was hat ${p.name}?`;
+  $("diag-lede").textContent = S.level==="a2"
+    ? `A2: ${S.asked.size} Hinweise. Vier Diagnosen — was hat ${p.name}?`
+    : `Sie haben ${S.asked.size} Hinweise gesammelt. Was hat ${p.name}?`;
+  $("diag-lede-en").textContent = S.level==="a2"
+    ? "A2: four look-alike illnesses. Gold-marked questions were the important ones."
+    : "Choose the illness that fits the clues. Similar illnesses are on the list on purpose.";
   $("diag-notizen").innerHTML = $("notizen").innerHTML;
   const grid = $("diag-grid");
   grid.innerHTML = "";
-  DIAGNOSEN.forEach(d => {
+  diagAuswahl().forEach(d => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "diag";
@@ -1887,9 +2085,8 @@ function judge(id, satz, giveUp){
   $("res-text").setAttribute("lang", "de");
   $("res-en").setAttribute("lang", "en");
   $("res-clues").innerHTML = p.schluessel.map(k => {
-    const f = FRAGEN.find(x=>x.id===k) || EXAMS.find(x=>x.id===k) || KOERPERTEILE.find(x=>x.id===k);
     const got = found.includes(k);
-    const label = f ? (f.kurz || txt(f) || f.de) : k;
+    const label = clueLabel(k);
     return `<li lang="de"><span aria-hidden="true">${got?"✓":"○"}</span> <span class="sr" lang="de">${got?"gefunden:":"nicht gefragt:"}</span> ${label}</li>`;
   }).join("");
 
@@ -1994,6 +2191,15 @@ document.addEventListener("click", e => {
     dd.innerHTML = `${g.en}${g.tip?` — <i lang="de">${g.tip.de}</i>`:""}`;
     dl.append(dt, dd);
   });
+})();
+
+(function fillLehrer(){
+  const tb = $("lehrer-tabelle").querySelector("tbody");
+  tb.innerHTML = PATIENTEN.map(p => {
+    const d = DIAGNOSEN.find(x => x.id===p.diagnose);
+    const clues = p.schluessel.map(clueLabel).join(", ");
+    return `<tr lang="de"><th scope="row" lang="de">${p.name}<div class="hin" lang="de">${p.alter}, ${p.rolle}</div></th><td lang="de">${diagLabel(d)}</td><td class="hin" lang="de">${clues}</td></tr>`;
+  }).join("");
 })();
 
 if(window.speechSynthesis) speechSynthesis.onvoiceschanged = () => {};

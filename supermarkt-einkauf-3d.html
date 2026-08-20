@@ -57,8 +57,33 @@ body.no-en .en{display:none}
 .count{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
 .cart-row{margin-top:12px;padding-top:10px;border-top:2px dashed var(--line);display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:13px}
 #cartBadge{font-weight:700}
-#cartBadge.bump{animation:bump .32s ease}
+#cartBadge.bump,#chipCount.bump{animation:bump .32s ease}
 @keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.45)}100%{transform:scale(1)}}
+body.walking #zettelBox{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;pointer-events:none
+}
+#zettelChip{
+  display:none;position:absolute;top:56px;left:10px;width:min(250px,46vw);
+  background:var(--paper);color:var(--ink);text-align:left;border-radius:6px;
+  padding:10px 12px 11px;box-shadow:0 5px 0 rgba(0,0,0,.32);
+  border:1px solid #e2d6c0;pointer-events:auto!important
+}
+body.walking #zettelChip{display:block}
+body.zettel-up #zettelChip{opacity:.42}
+#zettelChip .chip-kicker{
+  display:block;font-family:var(--display);letter-spacing:.14em;text-transform:uppercase;
+  font-size:10px;color:var(--ink-soft);margin-bottom:2px
+}
+#zettelChip b{display:block;font-size:15px;line-height:1.25;font-weight:700}
+#zettelChip .chip-hint{display:block;font-size:11px;color:var(--ink-soft);margin-top:6px}
+#zettelChip .chip-cart{position:absolute;top:10px;right:12px;font-family:var(--mono);font-size:13px;font-weight:700}
+.zettel-btn{
+  display:none;position:absolute;bottom:128px;right:22px;width:64px;height:64px;border-radius:50%;
+  background:var(--paper);color:var(--ink);font-family:var(--display);text-transform:uppercase;
+  letter-spacing:.06em;font-weight:700;font-size:11px;box-shadow:0 3px 0 rgba(0,0,0,.3)
+}
+body.touch .zettel-btn{display:block}
+.zettel-btn[aria-pressed="true"]{background:var(--sign-yellow)}
 .mmap-wrap{
   position:absolute;top:56px;right:10px;background:rgba(251,247,239,.92);border-radius:8px;padding:6px;
   box-shadow:0 4px 0 rgba(0,0,0,.3)
@@ -211,6 +236,7 @@ body.no-en .steps .tr{display:none}
 @media (max-width:820px){
   .zettel{width:min(196px,40vw);padding:8px}
   .mmap-wrap{display:none}
+  body.walking #zettelChip{width:min(188px,44vw);padding:8px 10px}
 }
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
 </style>
@@ -238,6 +264,12 @@ body.no-en .steps .tr{display:none}
     <ul class="list" id="listEl"></ul>
     <div class="cart-row"><span>🛒 Einkaufswagen</span><span id="cartBadge">0</span></div>
   </aside>
+  <button class="zettel-chip" id="zettelChip" type="button" aria-pressed="false">
+    <span class="chip-kicker">Noch auf dem Zettel</span>
+    <b id="chipNext">—</b>
+    <span class="chip-hint">Q halten · Zettel ansehen</span>
+    <span class="chip-cart">🛒 <span id="chipCount">0</span></span>
+  </button>
 
   <div class="mmap-wrap">
     <canvas id="mmap" width="222" height="180" aria-label="Lageplan des Marktes"></canvas>
@@ -250,7 +282,7 @@ body.no-en .steps .tr{display:none}
   <div id="pa" role="status"></div>
   <div id="toast" role="status"></div>
   <div id="hint"></div>
-  <div id="lookhint">Klicken und Maus bewegen zum Umschauen · WASD zum Gehen</div>
+  <div id="lookhint">Klicken und Maus bewegen zum Umschauen · WASD gehen · Q Zettel</div>
 
   <div class="pad" aria-hidden="true">
     <button class="u" data-dir="up">▲</button>
@@ -259,6 +291,7 @@ body.no-en .steps .tr{display:none}
     <button class="d" data-dir="down">▼</button>
   </div>
   <button class="act" id="btnAct">Aktion</button>
+  <button class="zettel-btn" id="btnZettel" aria-pressed="false">Zettel</button>
 </div>
 
 <div class="veil on" id="veilStart">
@@ -269,7 +302,7 @@ body.no-en .steps .tr{display:none}
       <p>Lauf durch den Supermarkt, nimm, was auf dem Zettel steht, und bezahle an der Kasse.</p>
     </div>
     <ol class="steps">
-      <li><span class="n">1</span><span><b>WASD</b> oder Pfeiltasten zum Gehen, Maus zum Umschauen.<span class="tr">Walk with WASD, look with the mouse.</span></span></li>
+      <li><span class="n">1</span><span><b>WASD</b> gehen, Maus umschauen. Den <b>Zettel</b> siehst du im Wagen — oder halte <b>Q</b>, um ihn hochzunehmen.<span class="tr">Walk with WASD. Your list sits in the cart — hold Q to lift it.</span></span></li>
       <li><span class="n">2</span><span>Ziel auf ein Produkt und drücke <b>E</b> — es hebt sich, der Artikel (<i>die Milch</i>) sitzt darauf, dann fällt es in den Wagen. Falsches bleibt im Regal.<span class="tr">Aim and press E: the pack lifts, the German article sits on it, then it drops into the cart. Wrong items stay on the shelf.</span></span></li>
       <li><span class="n">3</span><span>An der <b>Bäckerei</b> und der <b>Fleischtheke</b> bestellst du: <i>Ich hätte gern …</i><span class="tr">At the bakery and meat counter you order with “Ich hätte gern…”</span></span></li>
       <li><span class="n">4</span><span>Alles da? Geh zur <b>Kasse</b> und sprich mit der Kassiererin.<span class="tr">Then check out and talk to the cashier.</span></span></li>
@@ -453,12 +486,13 @@ function nomPhrase(item){ return NOM[item.g] + " " + item.de; }
 const S = {
   list: [], cart: [], seen: new Set(), mistakes: 0, dialogRight: 0, dialogTotal: 0,
   running: false, openSection: null, kasseStep: 0, total: 0, payWords: "",
-  bag: null, payment: "EC-Karte", flash: null, flashUntil: 0, catalog: false
+  bag: null, payment: "EC-Karte", flash: null, flashUntil: 0, catalog: false,
+  zettelRaise: 0, zettelPin: false, zettelPeekUntil: 0
 };
 
 const player = {x:0, y:1.64, z:9.4, yaw:0, pitch:0.08, r:0.34, walk:0, moving:false};
 const keys = {};
-const held = {up:false, down:false, left:false, right:false};
+const held = {up:false, down:false, left:false, right:false, zettel:false};
 let soundOn = true, actx = null;
 let renderer, scene, camera, clock;
 let colliders = [];
@@ -469,6 +503,7 @@ let hintHalos = [];
 let cartGrp = null;
 let viewmodel = null;
 let grab = null;
+let zettelTex = null, zettelWorld = null, zettelHeld = null;
 let lookObj = null;
 let reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let _camHold = null, _basket = null;
@@ -490,6 +525,7 @@ const sndRight = () => { beep(660,.09,"triangle",.07); setTimeout(()=>beep(990,.
 const sndWrong = () => beep(150, .22, "sawtooth", .05);
 const sndDoor  = () => beep(420, .12, "sine", .04);
 const sndGrab  = () => { beep(380,.07,"sine",.04); setTimeout(()=>beep(520,.09,"sine",.035),70); };
+const sndPaper = () => beep(240, .05, "triangle", .03);
 
 function speak(text){
   if(!CONFIG.speak || !soundOn || !window.speechSynthesis) return;
@@ -550,12 +586,28 @@ function renderList(){
   cartBadge.classList.remove("bump");
   void cartBadge.offsetWidth;
   cartBadge.classList.add("bump");
+  const chipCount = document.getElementById("chipCount");
+  if(chipCount){
+    chipCount.textContent = S.cart.length;
+    chipCount.classList.remove("bump");
+    void chipCount.offsetWidth;
+    chipCount.classList.add("bump");
+  }
+  const chipNext = document.getElementById("chipNext");
+  if(chipNext){
+    const m = missing();
+    chipNext.textContent = m.length
+      ? phrase(byId[m[0].id], m[0].qty - m[0].got)
+      : (S.list.length ? "Alles da — zur Kasse" : "—");
+  }
+  paintZettel();
   updateHalos();
 }
 
 function applyEnglish(){
   document.body.classList.toggle("no-en", !CONFIG.english);
   document.getElementById("btnEN").setAttribute("aria-pressed", CONFIG.english);
+  paintZettel();
 }
 
 /* ---------- 3D helpers ---------- */
@@ -1084,6 +1136,7 @@ function finishGrab(){
   grab = null;
   showGrabWord("");
   restockCart();
+  peekZettel();
 }
 
 function updateGrab(dt){
@@ -1146,11 +1199,17 @@ function updateViewmodel(dt){
     else reach = 1 - Math.min(1, grab.t / 0.44);
   }
   const L = viewmodel.userData.left, R = viewmodel.userData.right;
-  L.position.set(L.userData.rest.x + reach*0.05, L.userData.rest.y + walk*0.006 + reach*0.08, L.userData.rest.z - reach*0.1);
+  const z = S.zettelRaise || 0;
+  L.position.set(
+    L.userData.rest.x + reach*0.05 - z*0.04,
+    L.userData.rest.y + walk*0.006 + reach*0.08 + z*0.14,
+    L.userData.rest.z - reach*0.1 - z*0.06
+  );
   R.position.set(R.userData.rest.x - reach*0.08, R.userData.rest.y - walk*0.006 + reach*0.12, R.userData.rest.z - reach*0.22);
-  L.rotation.x = 0.58 - reach*0.25;
+  L.rotation.x = 0.58 - reach*0.25 - z*0.85;
+  L.rotation.z = -0.16 + z*0.2;
   R.rotation.x = 0.58 - reach*0.55;
-  viewmodel.userData.handle.visible = reach < 0.85;
+  viewmodel.userData.handle.visible = reach < 0.85 && z < 0.85;
   viewmodel.userData.handle.position.y = walk * 0.004;
   void dt;
 }
@@ -1166,6 +1225,140 @@ function restockCart(){
     m.position.set((i%3-1)*0.1, Math.floor(i/3)*0.08, (i%2)*0.08-0.04);
     hold.add(m);
   }
+}
+
+function drawZettel(g, W, H){
+  g.fillStyle = "#f3e6c8"; g.fillRect(0,0,W,H);
+  const gd = g.createLinearGradient(0,0,W,0);
+  gd.addColorStop(0, "#efe0be"); gd.addColorStop(0.5, "#f6ead0"); gd.addColorStop(1, "#ead9b4");
+  g.fillStyle = gd; g.fillRect(0,0,W,H);
+  g.fillStyle = "rgba(180,80,40,.08)";
+  g.beginPath(); g.ellipse(W-90, 70, 70, 40, 0.4, 0, 7); g.fill();
+  g.strokeStyle = "rgba(70,110,170,.28)"; g.lineWidth = 2;
+  const lineH = S.list.length > 5 ? 78 : 88;
+  for(let y=128; y<H-36; y+=lineH){ g.beginPath(); g.moveTo(28,y); g.lineTo(W-24,y); g.stroke(); }
+  g.strokeStyle = "#d46a6a"; g.lineWidth = 3;
+  g.beginPath(); g.moveTo(58, 12); g.lineTo(58, H-12); g.stroke();
+  g.fillStyle = "#c0392b";
+  g.font = "700 34px Arial Narrow, Arial, sans-serif";
+  g.textAlign = "left"; g.textBaseline = "alphabetic";
+  g.fillText("EINKAUFSZETTEL", 74, 48);
+  g.fillStyle = "#6a6256";
+  g.font = "16px Georgia, serif";
+  g.fillText("Supermarkt Kleinhausen", 74, 74);
+  g.strokeStyle = "rgba(80,60,40,.35)"; g.lineWidth = 1;
+  g.beginPath(); g.moveTo(74, 92); g.lineTo(W-36, 92); g.stroke();
+  (S.list||[]).forEach((e, i) => {
+    const it = byId[e.id]; if(!it) return;
+    const y = 148 + i * lineH;
+    const done = e.got >= e.qty;
+    g.save();
+    g.translate(0, (i%2?1:-1)*1.2);
+    g.strokeStyle = done ? "#2F9E44" : "#2a241c";
+    g.lineWidth = 3;
+    g.strokeRect(74, y-28, 28, 28);
+    if(done){
+      g.strokeStyle = "#2F9E44"; g.lineWidth = 4;
+      g.beginPath(); g.moveTo(80, y-14); g.lineTo(86, y-6); g.lineTo(98, y-24); g.stroke();
+    }
+    g.fillStyle = done ? "#7a756c" : "#1b1712";
+    g.font = "700 32px Georgia, 'Palatino Linotype', serif";
+    g.textAlign = "left";
+    const de = phrase(it, e.qty);
+    g.fillText(de, 116, y-4);
+    if(done){
+      const tw = Math.min(g.measureText(de).width, W-160);
+      g.strokeStyle = "#c0392b"; g.lineWidth = 3;
+      g.beginPath(); g.moveTo(114, y-10); g.lineTo(116+tw, y-10); g.stroke();
+    }
+    g.fillStyle = "#8a8174";
+    g.font = "600 18px ui-monospace, monospace";
+    g.fillText(e.got + "/" + e.qty, W-86, y-6);
+    if(CONFIG.english){
+      g.fillStyle = "rgba(90,84,76,.75)";
+      g.font = "italic 18px Georgia, serif";
+      g.fillText(phraseEN(it, e.qty), 116, y+20);
+    }
+    g.restore();
+  });
+  g.fillStyle = "#5c554c";
+  g.font = "16px Georgia, serif";
+  g.fillText((S.cart ? S.cart.length : 0) + " im Wagen", 74, H-28);
+  g.fillStyle = "#c0392b";
+  g.font = "700 14px Arial Narrow, Arial, sans-serif";
+  g.textAlign = "right";
+  g.fillText("HAUSMARKT", W-36, H-28);
+}
+
+function paintZettel(){
+  if(typeof THREE === "undefined") return;
+  if(!zettelTex){
+    zettelTex = canvasTex(512, 768, drawZettel);
+    zettelTex.wrapS = zettelTex.wrapT = THREE.ClampToEdgeWrapping;
+    zettelTex.anisotropy = 8;
+  } else {
+    const c = zettelTex.userData.canvas;
+    drawZettel(c.getContext("2d"), c.width, c.height);
+    zettelTex.needsUpdate = true;
+  }
+}
+
+function makePaperMesh(mat){
+  const g = new THREE.Group();
+  const paper = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 0.27), mat);
+  paper.castShadow = true;
+  g.add(paper);
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 0.27), B({color:0xe4d4b4}));
+  back.rotation.y = Math.PI; back.position.z = -0.003;
+  g.add(back);
+  const clip = B({color:0x9aa6b5});
+  g.add(box(0.04, 0.018, 0.012, clip, 0, 0.128, 0.004));
+  g.add(box(0.01, 0.034, 0.01, clip, -0.012, 0.14, 0.004));
+  g.add(box(0.01, 0.034, 0.01, clip,  0.012, 0.14, 0.004));
+  return g;
+}
+
+function attachZettel(){
+  paintZettel();
+  if(cartGrp && !zettelWorld){
+    zettelWorld = makePaperMesh(M({map:zettelTex, roughness:0.82, color:0xffffff}));
+    zettelWorld.position.set(-0.09, 0.5, 0.2);
+    zettelWorld.rotation.set(-0.92, 0.1, -0.05);
+    cartGrp.add(zettelWorld);
+  }
+  if(viewmodel && !zettelHeld){
+    zettelHeld = makePaperMesh(B({map:zettelTex}));
+    zettelHeld.traverse(o => { if(o.isMesh){ o.castShadow = false; o.receiveShadow = false; o.frustumCulled = false; } });
+    viewmodel.add(zettelHeld);
+  }
+}
+
+function peekZettel(){
+  S.zettelPeekUntil = performance.now() + 2400;
+}
+
+function updateZettel(dt){
+  const walking = !!(S.running && !overlayOpen() && !S.catalog);
+  document.body.classList.toggle("walking", walking);
+  const peek = S.zettelPeekUntil && performance.now() < S.zettelPeekUntil;
+  const key = !!(keys["q"] || keys["tab"] || held.zettel);
+  const busy = grab && grab.kind === "take";
+  const want = (walking && !busy && (key || S.zettelPin || peek)) ? 1 : 0;
+  const k = reduced ? 1 : (1 - Math.pow(0.00025, dt || 0.016));
+  S.zettelRaise += (want - S.zettelRaise) * k;
+  document.body.classList.toggle("zettel-up", S.zettelRaise > 0.55);
+  document.getElementById("zettelChip").setAttribute("aria-pressed", S.zettelPin ? "true" : "false");
+  document.getElementById("btnZettel").setAttribute("aria-pressed", (key || S.zettelPin) ? "true" : "false");
+  const hint = document.querySelector("#zettelChip .chip-hint");
+  if(hint) hint.textContent = S.zettelPin ? "Q · Zettel weglegen" : "Q halten · Zettel ansehen";
+  if(zettelHeld){
+    const r = S.zettelRaise;
+    zettelHeld.visible = walking;
+    zettelHeld.position.set(-0.22 + r*0.11, -0.33 + r*0.28, -0.45 + r*0.08);
+    zettelHeld.rotation.set(-1.18 + r*1.08, 0.38 - r*0.3, -0.22 + r*0.16);
+    zettelHeld.scale.setScalar(0.7 + r*0.62);
+  }
+  if(zettelWorld) zettelWorld.visible = walking && S.zettelRaise < 0.62;
 }
 
 /* ---------- Store ---------- */
@@ -1653,6 +1846,7 @@ function init3D(){
     viewmodel = makeHands();
     camera.add(viewmodel);
     viewmodel.visible = false;
+    attachZettel();
     try{
       const pmrem = new THREE.PMREMGenerator(renderer);
       const envSc = new THREE.Scene();
@@ -1719,6 +1913,7 @@ function updateCamera(dt){
     cartGrp.visible = player.pitch < 0.95;
   }
   updateViewmodel(dt);
+  updateZettel(dt);
 }
 
 function movePlayer(dt){
@@ -1876,6 +2071,7 @@ function pickItem(it, mesh){
       '<span class="tr">Correct — ' + it.en + " added.</span>", "ok", 2800);
     renderList();
     startGrab(it, mesh);
+    if(!mesh || reduced) peekZettel();
     return;
   }
   if(e && e.got >= e.qty){
@@ -2048,6 +2244,7 @@ function answer(o, btn){
       const e = o.give, it = byId[e.id];
       while(e.got < e.qty){ e.got++; S.cart.push({id: it.id}); }
       renderList(); restockCart();
+      peekZettel();
       toast("Bitte sehr! <b>" + phrase(it, e.qty) + "</b>." + '<span class="tr">Here you are.</span>', "ok", 2400);
     }
     setTimeout(() => { S.kasseStep++; nextKasse(); }, 620);
@@ -2121,6 +2318,7 @@ function newGame(){
   S.dialogRight = 0; S.dialogTotal = 0; S.kasseStep = 0;
   S.bag = null; S.payment = "EC-Karte"; S.openSection = null;
   S.flash = null; S.flashUntil = 0; S._counter = false; S.catalog = false;
+  S.zettelRaise = 0; S.zettelPin = false; S.zettelPeekUntil = 0;
   player.x = 0; player.z = 9.4; player.yaw = 0; player.pitch = 0.08;
   cancelGrab();
   if(viewmodel) viewmodel.visible = true;
@@ -2135,6 +2333,14 @@ document.addEventListener("keydown", e => {
   keys[e.key] = true;
   if(e.key === " " || e.key === "e" || e.key === "E" || e.key === "Enter"){
     if(!overlayOpen()){ e.preventDefault(); interact(); }
+  }
+  if(e.key === "q" || e.key === "Q" || e.key === "Tab"){
+    if(S.running && !overlayOpen()){
+      e.preventDefault();
+      if(e.repeat) return;
+      if(e.key === "Tab"){ S.zettelPin = !S.zettelPin; sndPaper(); }
+      else if(!S.zettelPin) sndPaper();
+    }
   }
   if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
 });
@@ -2177,9 +2383,20 @@ document.getElementById("buehne").addEventListener("touchmove", e => {
 }, {passive:true});
 document.getElementById("buehne").addEventListener("touchend", () => { lookTouch = null; });
 document.getElementById("btnAct").addEventListener("click", interact);
+(function(){
+  const zBtn = document.getElementById("btnZettel");
+  zBtn.addEventListener("pointerdown", e => { e.preventDefault(); held.zettel = true; sndPaper(); });
+  ["pointerup","pointerleave","pointercancel"].forEach(ev => zBtn.addEventListener(ev, () => { held.zettel = false; }));
+})();
+document.getElementById("zettelChip").addEventListener("click", e => {
+  e.preventDefault();
+  if(!S.running || overlayOpen()) return;
+  S.zettelPin = !S.zettelPin;
+  sndPaper();
+});
 if(window.matchMedia("(pointer: coarse)").matches) document.body.classList.add("touch");
 
-document.getElementById("btnEN").addEventListener("click", () => { CONFIG.english = !CONFIG.english; applyEnglish(); });
+document.getElementById("btnEN").addEventListener("click", () => { CONFIG.english = !CONFIG.english; applyEnglish(); renderList(); });
 document.getElementById("btnTips").addEventListener("click", e => {
   CONFIG.hints = !CONFIG.hints; e.currentTarget.setAttribute("aria-pressed", CONFIG.hints); updateHalos();
 });

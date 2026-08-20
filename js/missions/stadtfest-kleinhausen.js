@@ -29,8 +29,8 @@ KH.start({
     { de: 'die Tradition', en: 'tradition' }
   ],
   build: function (w) {
-    w.box(30, 0.08, 30, { x: 0, y: 0.02, z: -1, map: KH.tex.gras(), repeat: [14, 14], collide: false });
-    w.box(8, 0.04, 10, { x: 0, y: 0.05, z: 1, map: KH.tex.pflaster(), repeat: [4, 5], collide: false });
+    w.box(30, 0.08, 30, { x: 0, y: 0.02, z: -1, map: KH.tex.gras(), repeat: [14, 14], collide: false, cast: false });
+    w.box(8, 0.04, 10, { x: 0, y: 0.05, z: 1, map: KH.tex.pflaster(), repeat: [4, 5], collide: false, cast: false });
     KH.furn.stall(w, -5, 2, 0x8B1E1E, 'Bratwurst', '#8B1E1E', '#F2C230');
     KH.furn.stall(w, 5, 2, 0x2A63A8, 'Karussell', '#2A63A8', '#F2C230');
     KH.furn.stall(w, -5, -5, 0x6B2D5B, 'Bühne / Musik', '#6B2D5B', '#e8dcc8');
@@ -57,6 +57,7 @@ KH.start({
     KH.furn.tree(w, -9.2, -8);
     KH.furn.tree(w, 9.2, -8);
     KH.furn.tree(w, -9.2, 6.2);
+    KH.furn.tree(w, 10.4, 5.4);
     KH.furn.bench(w, 0, -0.8);
     KH.furn.bench(w, -1.6, 6.6);
     KH.furn.bench(w, 1.6, 6.6);
@@ -65,12 +66,13 @@ KH.start({
     for (var i = -4; i <= 4; i++) {
       w.box(0.18, 0.22, 0.04, { x: i * 0.7, y: 2.7, z: 5.4, color: i % 2 ? 0xF2C230 : 0x8B1E1E, collide: false });
     }
-    /* lanterns along the path */
-    [-3.2, -1.1, 1.1, 3.2].forEach(function (lx) {
-      w.cyl(0.04, 1.6, { x: lx, z: 0.4, color: 0x3a2a18, collide: false, seg: 6 });
-      w.cyl(0.12, 0.16, { x: lx, y: 1.7, z: 0.4, color: 0xf2c230, collide: false, emissive: 0x442200, seg: 8 });
-      w.lamps.push({ x: lx, y: 1.7, z: 0.4, color: 0xffd9a0, int: 0.28, dist: 4 });
-    });
+    KH.furn.laterne(w, -3.2, 0.4);
+    KH.furn.laterne(w, 3.2, 0.4);
+    KH.furn.laterne(w, -3.2, -3.4);
+    KH.furn.laterne(w, 3.2, -3.4);
+    KH.furn.haus(w, -10.2, -9.2, { stil: 'fachwerk', wand: '#E8DCC0', dach: '#6B3A32', ry: 0.4, w: 4.6, d: 3.6 });
+    KH.furn.haus(w, 10.2, -9.0, { stil: 'ziegel', wand: '#C45C4A', dach: '#4A4038', laden: '#8B1E1E', markise: '#8B1E1E', ry: -0.35, w: 4.8, d: 3.5 });
+    KH.furn.haus(w, -10.4, 8.2, { stil: 'putz', wand: '#D4C4A8', dach: '#7A3E32', ry: Math.PI - 0.2, w: 4.4, d: 3.4, tuer: 0x123E77 });
     KH.furn.pastry(w, -5.15, 1.12, 2.35, 0xc45c4a);
     KH.furn.pastry(w, -4.85, 1.12, 2.4, 0xc9a227);
     w.lamps.push({ x: -5, y: 2.4, z: 2, color: 0xffd9a0, int: 0.4, dist: 6 });

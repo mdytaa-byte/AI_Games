@@ -30,12 +30,13 @@ KH.start({
     { de: 'weil / deshalb', en: 'because / therefore' }
   ],
   build: function (w) {
-    w.box(34, 0.08, 18, { x: 0, y: 0.02, z: 4, map: KH.tex.gras(), repeat: [16, 8], collide: false });
-    var water = w.box(34, 0.08, 16, { x: 0, y: 0.02, z: -10, map: KH.tex.wasser(), repeat: [6, 3], collide: false });
+    w.box(34, 0.08, 18, { x: 0, y: 0.02, z: 4, map: KH.tex.gras(), repeat: [16, 8], collide: false, cast: false });
+    var water = w.box(34, 0.08, 16, { x: 0, y: 0.02, z: -10, map: KH.tex.wasser(), repeat: [6, 3], collide: false, cast: false, roughness: 0.18, metalness: 0.08 });
     w.tickers.push(function (now) {
       if (water && water.material && water.material.map) {
-        water.material.map.offset.x = Math.sin(now * 0.00035) * 0.04;
-        water.material.map.offset.y = (now * 0.00004) % 1;
+        var ox = Math.sin(now * 0.00035) * 0.04, oy = (now * 0.00004) % 1;
+        water.material.map.offset.set(ox, oy);
+        if (water.material.normalMap) water.material.normalMap.offset.set(ox, oy);
       }
     });
     w.obstacles.push({ kind: 'circ', x: 0, z: -10, r: 7.5 });
@@ -50,6 +51,8 @@ KH.start({
     KH.furn.tree(w, 9.4, 0.8);
     KH.furn.tree(w, -10.2, 6.4);
     KH.furn.tree(w, 11.2, 5.6);
+    KH.furn.laterne(w, -4.5, 6.8);
+    KH.furn.laterne(w, 4.8, 6.6);
     w.hotspot({ id: 'baum', x: -6.2, z: 5.1, r: 1.5, label: 'ein Baum' });
     /* ducks */
     [[3.3, -0.55], [2.6, -0.95], [4.1, -0.2]].forEach(function (d) {

@@ -64,9 +64,12 @@ KH.start({
     w.label('Klassenzimmer 12', { x: -6.4, y: 2.85, z: 0.6, scale: 1.15 });
     w.pendant(-6.4, 0.6, 3.05);
     w.pendant(-6.4, 3.2, 3.05);
-    w.box(16, 0.06, 8, { x: 0, y: 0.02, z: -5.5, map: KH.tex.gras(), repeat: [8, 4], collide: false });
+    w.box(16, 0.06, 8, { x: 0, y: 0.02, z: -5.5, map: KH.tex.gras(), repeat: [8, 4], collide: false, cast: false });
     KH.furn.tree(w, 3, -6.5);
+    KH.furn.tree(w, 5.4, -7.2);
     KH.furn.bench(w, -2, -6.2);
+    KH.furn.laterne(w, 1.2, -6.4);
+    KH.furn.haus(w, 7.4, -6.8, { stil: 'putz', wand: '#D8D0C0', dach: '#6B3A32', ry: Math.PI, w: 4.2, d: 3.2, stock: 2 });
   },
   tasks: [
     {

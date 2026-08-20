@@ -31,7 +31,9 @@ KH.start({
     { de: 'Gleis 3', en: 'platform 3' }
   ],
   build: function (w) {
-    w.box(24, 0.08, 26, { x: 0, y: 0.02, z: -1, map: KH.tex.pflaster(), repeat: [12, 12], collide: false });
+    w.box(24, 0.08, 26, { x: 0, y: 0.02, z: -1, map: KH.tex.pflaster(), repeat: [12, 12], collide: false, cast: false });
+    w.box(6, 0.04, 22, { x: -9.2, y: 0.05, z: -1, map: KH.tex.gehweg(), repeat: [3, 10], collide: false, cast: false });
+    w.box(6, 0.04, 22, { x: 9.2, y: 0.05, z: -1, map: KH.tex.gehweg(), repeat: [3, 10], collide: false, cast: false });
     w.room({ id: 'halle', x: 0, z: 4, w: 14, d: 10, h: 4.2, wallHex: '#d5dee4',
       floorMap: KH.tex.pflaster(),
       doors: [{ wall: 'n', width: 3.2 }, { wall: 's', width: 2.4 }],
@@ -69,6 +71,13 @@ KH.start({
     w.box(6.2, 1.55, 1.45, { x: 0, y: 0.9, z: -9.45, color: 0xb13228, collideR: 1.5 });
     w.box(5.6, 0.55, 0.08, { x: 0, y: 1.35, z: -8.7, color: 0xcfe3ef, collide: false, transparent: true, opacity: 0.45 });
     w.label('RE 72', { x: 0, y: 1.85, z: -9.45, scale: 0.9 });
+    KH.furn.laterne(w, -7.2, 7.6);
+    KH.furn.laterne(w, 7.2, 7.6);
+    KH.furn.laterne(w, -7.2, -2.2);
+    KH.furn.haus(w, -9.6, 8.4, { stil: 'putz', wand: '#C5CCD0', dach: '#5E5B56', ry: Math.PI / 2, w: 4.2, d: 3.2, stock: 2 });
+    KH.furn.haus(w, 9.8, 8.2, { stil: 'fachwerk', wand: '#E4D5C0', dach: '#6B3A32', ry: -Math.PI / 2, w: 4.0, d: 3.2 });
+    KH.furn.tree(w, -9.5, -5.5);
+    KH.furn.tree(w, 9.6, -5.2);
   },
   tasks: [
     {

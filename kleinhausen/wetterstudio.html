@@ -160,14 +160,14 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
     <p class="eyebrow">A1–A2 · Wetter · Abendschau</p>
     <h2 id="h-start" tabindex="-1">Du bist die Abendmoderation</h2>
     <p class="lede">Willkommen im Studio von <strong>Lindenfernsehen</strong>. Vier Phasen: Daten prüfen, Karte bauen, Text legen, live gehen. Manche Karten widersprechen sich – nimm die <strong>Messung vom DWD-Kasten am Markt</strong>.
-      <span class="en gloss">You present the evening forecast. Trust the official DWD box on the market square when sources clash.</span></p>
+      <span class="en gloss" lang="en">You present the evening forecast. Trust the official DWD box on the market square when sources clash.</span></p>
     <ul class="lede">
       <li>Wortschatz: sonnig, bewölkt, Regen, Schnee, windig, Gewitter, neblig, Grad, minus, Gewitterwarnung, Schirm, Jacke.</li>
       <li>Satzbau: Heute <em>ist</em> es… / Morgen <em>wird</em> es… — Verb an Position 2.</li>
     </ul>
     <div class="btn-row"><button type="button" class="btn" id="btn-go">In die Redaktion</button></div>
     <details>
-      <summary>Tastatur <span class="en gloss">Keyboard</span></summary>
+      <summary>Tastatur <span class="en gloss" lang="en">Keyboard</span></summary>
       <ul>
         <li><kbd>Tab</kbd>, <kbd>Enter</kbd>, <kbd>Leertaste</kbd>. Karten und Chips sind 44 Pixel groß.</li>
         <li><strong>Vorlesen</strong> spricht dein Skript on air (de-DE).</li>
@@ -179,7 +179,7 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
     <p class="eyebrow">Phase 1 · Redaktion</p>
     <h2 id="h-news" tabindex="-1">Welche Daten sind offiziell?</h2>
     <p class="lede">Sechs Karten. Markiere die, die du in die Sendung nimmst. Bei Widerspruch gilt der <strong>DWD-Kasten am Markt</strong>.
-      <span class="en gloss">Select the official cards. Reject blog/app contradictions for the same slot.</span></p>
+      <span class="en gloss" lang="en">Select the official cards. Reject blog/app contradictions for the same slot.</span></p>
     <div class="cards" id="news-cards"></div>
     <div class="fb" id="news-fb" hidden tabindex="-1"></div>
     <div class="btn-row">
@@ -191,7 +191,7 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
     <p class="eyebrow">Phase 2 · Wetterkarte Rheinhessen</p>
     <h2 id="h-map" tabindex="-1">Icons auf die Karte</h2>
     <p class="lede">Wähle ein Wetter-Icon und eine Temperatur, dann klicke Kleinhausen, Mainz oder Frankfurt.
-      <span class="en gloss">Pick an icon and temperature, then click a town.</span></p>
+      <span class="en gloss" lang="en">Pick an icon and temperature, then click a town.</span></p>
     <div class="map-grid">
       <div>
         <svg class="map-svg" viewBox="0 0 420 320" role="img" aria-label="Karte Rheinhessen">
@@ -209,7 +209,7 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
           <text x="300" y="94" text-anchor="middle" fill="#0b1d3a" font-size="10" pointer-events="none">FF</text>
           <g id="map-icons"></g>
         </svg>
-        <p id="map-legend" class="en gloss">KH Kleinhausen · MZ Mainz · FF Frankfurt. Keyboard: buttons below the map.</p>
+        <p id="map-legend" class="en gloss" lang="en">KH Kleinhausen · MZ Mainz · FF Frankfurt. Keyboard: buttons below the map.</p>
         <div class="icon-row" id="map-keys" style="margin-top:.6rem;">
           <button type="button" class="icon-btn" data-ort="kh">Kleinhausen setzen</button>
           <button type="button" class="icon-btn" data-ort="mz">Mainz setzen</button>
@@ -234,7 +234,7 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
     <p class="eyebrow">Phase 3 · Teleprompter schreiben</p>
     <h2 id="h-script" tabindex="-1">Das Skript legen</h2>
     <p class="lede">Baue Sätze mit <strong>Heute ist es…</strong>, <strong>Morgen wird es…</strong>, <strong>Es gibt / es regnet / die Sonne scheint</strong>, <strong>Im Westen / im Osten</strong> und <strong>18 Grad</strong>. Falsche englische Wortstellung wird abgelehnt.
-      <span class="en gloss">Chip order must keep German verb-second.</span></p>
+      <span class="en gloss" lang="en">Chip order must keep German verb-second.</span></p>
     <div class="chips" id="chips"></div>
     <div class="script" id="script-out" aria-live="polite"></div>
     <div class="fb" id="script-fb" hidden tabindex="-1"></div>
@@ -256,7 +256,7 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
     <div id="qbox" hidden>
       <h3>Zuschauerfragen</h3>
       <p id="q-text"></p>
-      <span class="en gloss" id="q-en"></span>
+      <span class="en gloss" lang="en" id="q-en"></span>
       <div class="opts" id="q-opts"></div>
       <div class="fb" id="q-fb" hidden></div>
       <div class="btn-row"><button type="button" class="btn" id="btn-q-next" hidden>Nächste Frage</button></div>
@@ -274,7 +274,7 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
       <tbody id="sum-body"></tbody>
     </table>
     <div class="name-feld">
-      <label for="name-in">Dein Name (Abgabecode) <span class="en gloss">Your name</span></label><br>
+      <label for="name-in">Dein Name (Abgabecode) <span class="en gloss" lang="en">Your name</span></label><br>
       <input type="text" id="name-in" autocomplete="name" spellcheck="false">
     </div>
     <div class="code-box">
@@ -297,6 +297,18 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
 
 <script>
 "use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const S = {
@@ -416,7 +428,7 @@ function renderNews(){
     b.innerHTML = '<svg width="56" height="40" viewBox="0 0 56 40" aria-hidden="true">'+wxIcon(c.wx,28,18)+"</svg>"+ '<div class="grad">'+c.t+'°</div>'+
       "<strong>"+esc(c.ort)+" · "+esc(c.wann)+"</strong>"+
       "<p>"+esc(c.src)+"</p><p>"+esc(WX.find(w=>w.id===c.wx).de)+"</p>"+
-      '<span class="en gloss">'+esc(c.en)+"</span>";
+      '<span class="en gloss" lang="en">'+esc(c.en)+"</span>";
     b.addEventListener("click", () => {
       S.picked[c.id] = !S.picked[c.id];
       sprich(c.ort + ", " + c.t + " Grad, " + WX.find(w=>w.id===c.wx).de);
@@ -444,7 +456,7 @@ $("btn-news").addEventListener("click", () => {
     S.newsOk = true;
     fb.className = "fb";
     fb.innerHTML = "<p>Redaktion klar. Offiziell: Kleinhausen heute 18 Grad sonnig, morgen 12 Grad Regen. Mainz bewölkt 16°, Frankfurt sonnig 17°. Worms übermorgen 9 Grad neblig. Der Blog (Regen heute in KH) fliegt raus.</p>"+
-      '<span class="en gloss">You trusted the DWD box. Next: place icons on the map.</span>'+
+      '<span class="en gloss" lang="en">You trusted the DWD box. Next: place icons on the map.</span>'+
       '<p class="btn-row"><button type="button" class="btn" id="btn-to-map">Zur Karte</button></p>';
     fb.hidden = false; fb.focus();
     $("btn-to-map").addEventListener("click", startMap);
@@ -453,7 +465,7 @@ $("btn-news").addEventListener("click", () => {
   } else {
     S.blooper.push("Datenchaos in der Redaktion");
     let html = "";
-    extra.forEach(c => html += "<p>"+esc(c.warum || "Diese Quelle widerspricht der offiziellen Messung.")+' <span class="en gloss">'+esc(c.en)+"</span></p>");
+    extra.forEach(c => html += "<p>"+esc(c.warum || "Diese Quelle widerspricht der offiziellen Messung.")+' <span class="en gloss" lang="en">'+esc(c.en)+"</span></p>");
     miss.forEach(c => html += "<p>Es fehlt: "+esc(c.src)+" – "+esc(c.ort)+" "+esc(c.wann)+".</p>");
     fb.className = "fb bad";
     fb.innerHTML = html + "<p>Korrigiere die Stecknadeln und prüfe noch einmal.</p>";
@@ -475,7 +487,7 @@ function renderWxTools(){
     b.type = "button"; b.className = "icon-btn";
     b.setAttribute("aria-pressed", S.holdWx === w.id ? "true" : "false");
     b.innerHTML = '<svg width="36" height="28" viewBox="0 0 36 28">'+wxIcon(w.id,18,14)+"</svg> "+esc(w.de)+
-      ' <span class="en gloss inline">'+esc(w.en)+"</span>";
+      ' <span class="en gloss inline" lang="en">'+esc(w.en)+"</span>";
     b.addEventListener("click", () => { S.holdWx = w.id; sprich(w.de); renderWxTools(); });
     box.appendChild(b);
   });
@@ -556,7 +568,7 @@ $("btn-map").addEventListener("click", () => {
   const fb = $("map-fb");
   fb.className = pts >= 24 ? "fb" : "fb bad";
   fb.innerHTML = "<p>Karte übernommen: "+pts+" von 30 Punkten. Offiziell heute KH sonnig 18°, Mainz bewölkt 16°, Frankfurt sonnig 17°. Morgen KH Regen 12°.</p>"+
-    '<span class="en gloss">Scoring vs official DWD. Your map still goes on air — viewer questions follow YOUR forecast too.</span>'+
+    '<span class="en gloss" lang="en">Scoring vs official DWD. Your map still goes on air — viewer questions follow YOUR forecast too.</span>'+
     '<p class="btn-row"><button type="button" class="btn" id="btn-to-script">Skript schreiben</button></p>';
   fb.hidden = false; fb.focus();
   $("btn-to-script").addEventListener("click", startScript);
@@ -587,7 +599,7 @@ function renderChips(){
 }
 function renderScript(){
   const parts = S.chips.map(id => CHIPDATA.find(c => c.id === id).de);
-  $("script-out").innerHTML = parts.length ? "<p>"+esc(parts.join(" · "))+"</p>" : '<span class="en gloss">Assemble chips here.</span>';
+  $("script-out").innerHTML = parts.length ? "<p>"+esc(parts.join(" · "))+"</p>" : '<span class="en gloss" lang="en">Assemble chips here.</span>';
   S.scriptText = parts.join(" ");
 }
 $("btn-script-clear").addEventListener("click", () => { S.chips = []; renderChips(); renderScript(); });
@@ -610,7 +622,7 @@ $("btn-script").addEventListener("click", () => {
   if(!bads.length && miss.filter(n => ["heute","sonnig","grad","morgen","west","ost"].includes(n)).length === 0){
     fb.className = "fb";
     html = "<p>Skript sendefähig. Heute ist es sonnig, 18 Grad. Morgen wird es regnen. Im Westen / im Osten bleibt die Karte klar.</p>"+
-      '<span class="en gloss">Required frames are in. Going on air.</span>';
+      '<span class="en gloss" lang="en">Required frames are in. Going on air.</span>';
   } else fb.className = "fb bad";
   html += '<p class="btn-row"><button type="button" class="btn" id="btn-to-air">ON AIR</button></p>';
   fb.innerHTML = html; fb.hidden = false; fb.focus();
@@ -704,7 +716,7 @@ function showQ(){
       const gut = i === q.ok;
       if(gut) S.qPts += 10; else S.blooper.push("Live-Patzer: "+q.q);
       $("q-fb").className = gut ? "fb" : "fb bad";
-      $("q-fb").innerHTML = "<p>"+(gut?"Richtig. ":"Nicht passend. ")+esc(q.warum)+'</p><span class="en gloss">'+esc(q.fbEn)+"</span>";
+      $("q-fb").innerHTML = "<p>"+(gut?"Richtig. ":"Nicht passend. ")+esc(q.warum)+'</p><span class="en gloss" lang="en">'+esc(q.fbEn)+"</span>";
       $("q-fb").hidden = false;
       $("btn-q-next").hidden = false;
       $("btn-q-next").textContent = S.q < 2 ? "Nächste Frage" : "Abspann";
@@ -752,7 +764,7 @@ function showSum(){
   if(t.pct < 80 && S.blooper.length){
     b.hidden = false;
     b.innerHTML = "<h3>Blooper-Reel</h3><ul>"+S.blooper.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>"+
-      '<span class="en gloss">Outtakes from this broadcast.</span>';
+      '<span class="en gloss" lang="en">Outtakes from this broadcast.</span>';
     $("h-sum").textContent = "Blooper-Reel";
   } else {
     b.hidden = true;
@@ -761,7 +773,7 @@ function showSum(){
   const lob = t.pct >= 80 ? "Saubere Abendschau. Kleinhausen weiß, ob der Schirm mit muss." :
               "Die Sendung lief – mit ein paar Versprechern. Morgen Probe um 16 Uhr.";
   $("sum-text").innerHTML = "Du hast <strong>"+t.ges+" von "+t.max+" Punkten</strong> ("+t.pct+" %). "+esc(lob)+
-    ' <span class="en gloss">Enter your name for KH-WETT-…</span>';
+    ' <span class="en gloss" lang="en">Enter your name for KH-WETT-…</span>';
   codeAkt(); zeige("screen-sum");
   sprich(t.pct >= 80 ? "Sendung geschafft. Gute Nacht, Kleinhausen." : "Ende der Sendung.");
 }

@@ -189,13 +189,13 @@ html[data-motion="aus"] .speed-bar.run span,html[data-motion="aus"] .stamp{anima
     <div class="speed-bar" id="timer" hidden><span></span></div>
     <div class="scene">
       <p id="scene-de" lang="de"></p>
-      <p class="en gloss" id="scene-en" lang="en"></p>
+      <p class="en gloss" lang="en" id="scene-en" lang="en"></p>
     </div>
     <div class="choices" id="choices"></div>
     <div class="stamp" id="stamp">
       <h3>Remember!</h3>
       <p class="rule" id="stamp-rule"></p>
-      <p class="en gloss" id="stamp-en" lang="en"></p>
+      <p class="en gloss" lang="en" id="stamp-en" lang="en"></p>
     </div>
     <div class="btn-row">
       <button type="button" class="btn" id="btn-next" hidden>Nächste Karte</button>
@@ -255,6 +255,18 @@ html[data-motion="aus"] .speed-bar.run span,html[data-motion="aus"] .stamp{anima
 </footer>
 <script>
 "use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
 

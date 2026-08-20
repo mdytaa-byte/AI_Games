@@ -205,9 +205,9 @@ button{touch-action:manipulation}
   <p class="eyebrow">Nacht im Stadtmuseum · A2–B1</p>
   <h2 id="h-start" tabindex="-1">Die Türen sind offen – nur für heute Nacht</h2>
   <p class="lede">Einmal im Jahr bleibt das Stadtmuseum bis Mitternacht hell. Du bekommst eine Papierliste auf Deutsch (ohne englische Zeilen auf der Liste selbst). Finde sechs Stempel, dann das Motto aus Wortfetzen.
-    <span class="en gloss">Night at the town museum. A German scavenger list, six stamps, then a motto assembled from fragments.</span></p>
+    <span class="en gloss" lang="en">Night at the town museum. A German scavenger list, six stamps, then a motto assembled from fragments.</span></p>
   <p class="lede">Klicke Ausstellungen (oder <kbd>E</kbd>). Seile nicht anfassen – der Nachtwächter warnt auf Deutsch. Relativsätze und Präteritum auf den Schildern: der Maler, der … malte; Kleinhausen wurde 1320 gegründet.
-    <span class="en gloss">Plaques use relative clauses and simple past (wurde, stand, gab).</span></p>
+    <span class="en gloss" lang="en">Plaques use relative clauses and simple past (wurde, stand, gab).</span></p>
   <p><label for="name-in">Dein Name</label></p>
   <p><input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname"></p>
   <div class="btn-row"><button type="button" class="btn" id="btn-start">Ins Foyer gehen</button>
@@ -224,7 +224,7 @@ button{touch-action:manipulation}
     <p>Rheinhessen ist Weinland: Reben an Hängen, Zwiebelkuchen im Herbst. Die Römer kannten die Selz, nicht nur den Rhein. Am Markt stand Fachwerk. Ein kleiner Luther-Druck aus Mainz hängt neben den Gemälden – Kleinhausen war keine Reformationshauptstadt.</p>
     <p>Deine Papierliste bleibt auf Deutsch. Lies die Schilder: Relativsätze und Präteritum (wurde, stand, gab). Seile nicht anfassen – der Nachtwächter warnt auf Deutsch.</p>
     <p>Zusatzräume ohne Stempel: Garderobe (Sie und du) und Museumscafé (einen Tee bestellen).</p>
-    <p class="en gloss">Wine country, Romans on the Selz, timber-frame, a small Luther print. The hunt list stays German. Don’t touch the ropes.</p>
+    <p class="en gloss" lang="en">Wine country, Romans on the Selz, timber-frame, a small Luther print. The hunt list stays German. Don’t touch the ropes.</p>
   </div>
 </section>
 
@@ -238,7 +238,7 @@ button{touch-action:manipulation}
       <div class="panel" id="panel">
         <h3 id="panel-h">Ein Schild lesen</h3>
         <p class="plaque" id="panel-de" lang="de">Treten Sie näher. Die Rahmen sind Gold, die Nacht ist dunkel.</p>
-        <p class="en gloss" id="panel-en">Step closer. Gold frames, dark night.</p>
+        <p class="en gloss" lang="en" id="panel-en">Step closer. Gold frames, dark night.</p>
         <div id="panel-extra"></div>
         <p><button type="button" class="btn btn-ghost" id="btn-sprich">Text vorlesen</button></p>
       </div>
@@ -254,7 +254,7 @@ button{touch-action:manipulation}
           <li data-q="5">Der Tastsinn-Raum: welches Objekt ist weich?</li>
           <li data-q="6">Finde die Karte: Wo liegt Kleinhausen – am Rhein oder an der Selz?</li>
         </ol>
-        <p class="en gloss">The list itself stays German. Glosses are only here, off the paper.</p>
+        <p class="en gloss" lang="en">The list itself stays German. Glosses are only here, off the paper.</p>
       </div>
       <p style="margin:.8rem 0 .3rem;font-family:var(--mono);font-size:.75em;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">Stempel</p>
       <div class="stamps" id="stamps"></div>
@@ -268,7 +268,7 @@ button{touch-action:manipulation}
   <p class="eyebrow">Foyer · Mitternacht</p>
   <h2 id="h-fin" tabindex="-1">Die Stempelkarte ist voll</h2>
   <p class="lede">Die Fetzen ergeben ein Motto. Was ist das Motto der Museumsnacht?
-    <span class="en gloss">What is the motto of Museum Night?</span></p>
+    <span class="en gloss" lang="en">What is the motto of Museum Night?</span></p>
   <p class="frag" id="fin-frags"></p>
   <div class="choices" id="fin-choices"></div>
   <p id="fin-fb" hidden></p>
@@ -298,6 +298,18 @@ button{touch-action:manipulation}
 </footer>
 <script>
 "use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 

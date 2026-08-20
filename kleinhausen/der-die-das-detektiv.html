@@ -336,7 +336,7 @@ html[data-motion="aus"] *{
     <h3 id="modal-title">Fundstück</h3>
     <p id="modal-obj"></p>
     <p id="modal-prompt" lang="de"></p>
-    <p class="en gloss" id="modal-en" lang="en"></p>
+    <p class="en gloss" lang="en" id="modal-en" lang="en"></p>
     <div class="opts" id="modal-opts" role="group" aria-label="Artikel wählen"></div>
     <div class="fb" id="modal-fb" hidden tabindex="-1"></div>
     <div class="btn-row">
@@ -353,6 +353,18 @@ html[data-motion="aus"] *{
 
 <script>
 "use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
 

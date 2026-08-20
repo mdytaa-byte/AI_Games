@@ -155,9 +155,9 @@ footer.mini p{margin:.3em 0}
   <p class="eyebrow">Ein Schultag · Register, Fälle, Verbzweit</p>
   <h2 id="h-start" tabindex="-1">Der Wecker klingelt</h2>
   <p class="lede">Du wohnst in Kleinhausen. Heute entscheidest du: aufstehen oder liegen bleiben, Bus oder zu Fuß, helfen oder ignorieren, Mensa oder Café Linde. Jede Wahl ist zwei oder drei Sätze auf Deutsch. Manche klingen wie Englisch – und sind falsch.
-    <span class="en gloss">You live in Kleinhausen. Each choice is two or three German sentences. Some sound like English — and are wrong.</span></p>
+    <span class="en gloss" lang="en">You live in Kleinhausen. Each choice is two or three German sentences. Some sound like English — and are wrong.</span></p>
   <p class="lede">Falsche Grammatik beendet das Spiel nicht (außer du bist grob zum Rektor). Du siehst eine Korrektur und gehst einen Umweg.
-    <span class="en gloss">Wrong grammar is a detour, not game over — except rudeness to the principal.</span></p>
+    <span class="en gloss" lang="en">Wrong grammar is a detour, not game over — except rudeness to the principal.</span></p>
   <div class="kultur">
     <h3>Was du übst</h3>
     <ul>
@@ -167,7 +167,7 @@ footer.mini p{margin:.3em 0}
       <li><strong>Verbzweit:</strong> Heute lerne ich. In Kleinhausen gibt es ein Fest.</li>
       <li><strong>Nicht:</strong> *ich bin spät → ich komme zu spät.</li>
     </ul>
-    <p class="en gloss">Register, accusative, dative, verb-second. A2–B1 Kleinhausen.</p>
+    <p class="en gloss" lang="en">Register, accusative, dative, verb-second. A2–B1 Kleinhausen.</p>
     <p>Enden: Held des Tages · Chaos-Tag · Stammgast · Nachsitzen-Ende. Der Code beginnt mit KH-TAG- und nennt das Ende.</p>
   </div>
   <details>
@@ -194,7 +194,7 @@ footer.mini p{margin:.3em 0}
   <div class="kultur">
     <h3>Mini-Lexikon für den Tag</h3>
     <p><strong>der Rucksack</strong> – backpack · <strong>die Fahrkarte</strong> – ticket · <strong>der Rektor</strong> – principal · <strong>nachsitzen</strong> – detention · <strong>die Mensa</strong> – cafeteria · <strong>der Kuchen</strong> – cake · <strong>der Verein</strong> – club · <strong>das Fest</strong> – festival · <strong>die Hausaufgaben</strong> – homework · <strong>die Selz</strong> – local river · <strong>der Winzer</strong> – wine-grower · <strong>Entschuldigung</strong> – sorry (polite) · <strong>gerne</strong> – gladly · <strong>leider</strong> – unfortunately</p>
-    <p class="en gloss">A compact word list for the day. English is in the glosses, not instead of German choices.</p>
+    <p class="en gloss" lang="en">A compact word list for the day. English is in the glosses, not instead of German choices.</p>
   </div>
   <details>
     <summary>Fälle und Register – Beispiele zum Nachlesen</summary>
@@ -257,7 +257,7 @@ footer.mini p{margin:.3em 0}
   <div class="scene-art" id="art" aria-hidden="true"></div>
   <div class="story">
     <div id="story-de" lang="de"></div>
-    <p class="en gloss" id="story-en"></p>
+    <p class="en gloss" lang="en" id="story-en"></p>
     <p><button type="button" class="btn btn-ghost" id="btn-sprich">Text vorlesen</button></p>
     <div class="choices" id="choices"></div>
     <div id="recast" hidden></div>
@@ -271,7 +271,7 @@ footer.mini p{margin:.3em 0}
   <h2 id="h-end" tabindex="-1">Ende</h2>
   <div class="news" id="news"></div>
   <div class="code-box">
-    <p>Dein Abgabecode <span class="en gloss" style="color:#ffe7a8">includes which ending</span></p>
+    <p>Dein Abgabecode <span class="en gloss" lang="en" style="color:#ffe7a8">includes which ending</span></p>
     <p class="code-val" id="code-val"></p>
     <p><button type="button" class="btn" id="btn-copy">Code kopieren</button></p>
   </div>
@@ -292,6 +292,18 @@ footer.mini p{margin:.3em 0}
 </footer>
 <script>
 "use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
@@ -782,7 +794,7 @@ function gehe(id){
     const b=document.createElement("button");
     b.type="button"; b.className="opt";
     b.innerHTML = '<span class="key">'+(i+1)+'</span>'+ch.de.map(s=>esc(fill(s))).join(" ")+
-      (S.englisch && ch.en ? '<span class="en gloss">'+esc(ch.en)+'</span>' : "");
+      (S.englisch && ch.en ? '<span class="en gloss" lang="en">'+esc(ch.en)+'</span>' : "");
     b.setAttribute("aria-label","Wahl "+(i+1));
     b.onclick=()=>waehle(ch,b);
     box.appendChild(b);
@@ -795,7 +807,7 @@ function waehle(ch, btn){
   if(ch.recast){
     btn.classList.add("wrong");
     $("recast").hidden=false;
-    $("recast").innerHTML = '<div class="recast"><strong>So sagt man es klarer:</strong> '+esc(ch.recast)+' <span class="en gloss">A recast, then the story continues.</span></div>';
+    $("recast").innerHTML = '<div class="recast"><strong>So sagt man es klarer:</strong> '+esc(ch.recast)+' <span class="en gloss" lang="en">A recast, then the story continues.</span></div>';
     glossUpdate();
     sagen(ch.recast);
     sprich(ch.recast);
@@ -819,7 +831,7 @@ function finish(){
   S.ending = pickEnding();
   const E = ENDS[S.ending];
   $("h-end").textContent = E.title;
-  $("news").innerHTML = '<p class="mast">Kleinhausener Bote · Tageskarte</p><h2>'+esc(E.title)+'</h2><p>'+esc(E.de)+'</p><p class="en gloss">'+esc(E.en)+'</p><p>Chaos '+S.chaos+' · Gute Sätze '+S.gut+(S.late?" · zu spät":"")+(S.helped?" · geholfen":"")+(S.cafe?" · Café":"")+(S.football?" · Verein":"")+(S.v2?" · Verbzweit":"")+"</p>";
+  $("news").innerHTML = '<p class="mast">Kleinhausener Bote · Tageskarte</p><h2>'+esc(E.title)+'</h2><p>'+esc(E.de)+'</p><p class="en gloss" lang="en">'+esc(E.en)+'</p><p>Chaos '+S.chaos+' · Gute Sätze '+S.gut+(S.late?" · zu spät":"")+(S.helped?" · geholfen":"")+(S.cafe?" · Café":"")+(S.football?" · Verein":"")+(S.v2?" · Verbzweit":"")+"</p>";
   $("code-val").textContent = macheCode();
   zeigeScreen("screen-end");
   sagen("Ende: "+E.title);

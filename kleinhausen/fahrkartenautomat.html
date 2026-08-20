@@ -191,11 +191,11 @@ html[data-contrast="hoch"] .opt{background:#000;border-color:#fff}
     <p class="scorechip">A1–A2 · Kleinhausen</p>
     <h2 id="h-start" tabindex="-1">Fahrkarte lösen am Automaten</h2>
     <p class="lede">Du stehst am Bahnhof Kleinhausen. Der Fahrkartenautomat blinkt gelb. Eine Notiz (oder die Durchsage) sagt dir, wohin du musst. Bedjene den Automaten Schritt für Schritt: Ziel, Ticket, Klasse, Zeit, Bezahlen.</p>
-    <p class="en gloss">You are at Kleinhausen station. Operate the ticket machine: destination, ticket type, class, time, payment.</p>
+    <p class="en gloss" lang="en">You are at Kleinhausen station. Operate the ticket machine: destination, ticket type, class, time, payment.</p>
     <div class="how">
-      <article><h3>1. Notiz lesen</h3><p>Jede Fahrt hat ein Ziel und ein Ticketwort: <em>Einzelfahrschein, Hin und zurück, Tageskarte, Gruppenkarte</em>.</p><p class="en gloss">Read the sticky note. Watch the key ticket words.</p></article>
-      <article><h3>2. Richtig tippen</h3><p>Kleinhausen ist kein Ziel – du bist schon hier. PIN für die Übungskarte: <strong>1234</strong>.</p><p class="en gloss">Kleinhausen is invalid (you are already here). Practice PIN: 1234.</p></article>
-      <article><h3>3. Ticket drucken</h3><p>Falsche Tasten erklären das Wort auf Deutsch. Du kannst korrigieren und bekommst Teilpunkte.</p><p class="en gloss">Wrong taps explain the missed word. Partial credit if you fix it.</p></article>
+      <article><h3>1. Notiz lesen</h3><p>Jede Fahrt hat ein Ziel und ein Ticketwort: <em>Einzelfahrschein, Hin und zurück, Tageskarte, Gruppenkarte</em>.</p><p class="en gloss" lang="en">Read the sticky note. Watch the key ticket words.</p></article>
+      <article><h3>2. Richtig tippen</h3><p>Kleinhausen ist kein Ziel – du bist schon hier. PIN für die Übungskarte: <strong>1234</strong>.</p><p class="en gloss" lang="en">Kleinhausen is invalid (you are already here). Practice PIN: 1234.</p></article>
+      <article><h3>3. Ticket drucken</h3><p>Falsche Tasten erklären das Wort auf Deutsch. Du kannst korrigieren und bekommst Teilpunkte.</p><p class="en gloss" lang="en">Wrong taps explain the missed word. Partial credit if you fix it.</p></article>
     </div>
     <p><button type="button" class="btn" id="btn-los">Los geht’s</button></p>
   </section>
@@ -248,7 +248,7 @@ html[data-contrast="hoch"] .opt{background:#000;border-color:#fff}
     <div class="vocab" id="vocab">
       <span>hin</span><span>zurück</span><span>Gleis</span><span>Bahnhof</span><span>Klasse</span><span>Einzelfahrschein</span><span>Tageskarte</span><span>Gruppenkarte</span><span>Ziel</span>
     </div>
-    <p class="en gloss">there · back · platform · station · class · single ticket · day ticket · group ticket · destination</p>
+    <p class="en gloss" lang="en">there · back · platform · station · class · single ticket · day ticket · group ticket · destination</p>
     <div class="name-row">
       <label><span>Name (optional)</span><input type="text" id="name-in" autocomplete="name" maxlength="60"></label>
       <button type="button" class="btn" id="btn-code">Code erzeugen</button>
@@ -274,6 +274,18 @@ html[data-contrast="hoch"] .opt{background:#000;border-color:#fff}
 </footer>
 <script>
 "use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
 function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
@@ -400,7 +412,7 @@ function startMission(){
 }
 function renderZettel(){
   const m = MISSIONS[S.i];
-  $("zettel").innerHTML = "<p style=\"font-family:var(--mono);font-size:.72em;letter-spacing:.12em;text-transform:uppercase;margin:0 0 .3em\">Dispatch / Notiz</p><h3>"+esc(m.titel)+"</h3><p>"+esc(m.zettel)+"</p><p class=\"en gloss\">"+esc(m.zettelEn)+"</p>";
+  $("zettel").innerHTML = "<p style=\"font-family:var(--mono);font-size:.72em;letter-spacing:.12em;text-transform:uppercase;margin:0 0 .3em\">Dispatch / Notiz</p><h3>"+esc(m.titel)+"</h3><p>"+esc(m.zettel)+"</p><p class=\"en gloss\" lang=\"en\">"+esc(m.zettelEn)+"</p>";
   glossUpdate();
 }
 function stepButtons(){
@@ -431,13 +443,13 @@ function bindOpts(fn){
   });
 }
 function fehlerBox(de, en, wort){
-  return "<div class=\"fb\" id=\"err\"><strong>"+esc(de)+"</strong><p class=\"en gloss\">"+esc(en)+"</p>"+(wort?"<p>Wort: <em>"+esc(wort)+"</em></p>":"")+"</div>";
+  return "<div class=\"fb\" id=\"err\"><strong>"+esc(de)+"</strong><p class=\"en gloss\" lang=\"en\">"+esc(en)+"</p>"+(wort?"<p>Wort: <em>"+esc(wort)+"</em></p>":"")+"</div>";
 }
 
 function renderZiel(prompt){
-  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Wähle eine Stadt. Nicht Kleinhausen – du bist schon hier.</p><p class=\"en gloss\">Choose a city. Not Kleinhausen — you are already here.</p><div class=\"grid-opts\" id=\"opts\"></div><div id=\"fbslot\"></div>";
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Wähle eine Stadt. Nicht Kleinhausen – du bist schon hier.</p><p class=\"en gloss\" lang=\"en\">Choose a city. Not Kleinhausen — you are already here.</p><div class=\"grid-opts\" id=\"opts\"></div><div id=\"fbslot\"></div>";
   const box = $("lcd").querySelector("#opts");
-  ZIELE.forEach(z => { box.insertAdjacentHTML("beforeend", optBtn(z.id, z.id, "<span class=\"en gloss\">Track "+z.gleis+"</span>")); });
+  ZIELE.forEach(z => { box.insertAdjacentHTML("beforeend", optBtn(z.id, z.id, "<span class=\"en gloss\" lang=\"en\">Track "+z.gleis+"</span>")); });
   glossUpdate();
   bindOpts((id, btn)=>{
     const m = MISSIONS[S.i];
@@ -472,9 +484,9 @@ function renderZiel(prompt){
   });
 }
 function renderTicket(prompt){
-  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Einzelfahrschein, Hin und zurück, Tageskarte oder Gruppenkarte?</p><p class=\"en gloss\">Single, return, day ticket or group ticket?</p><div class=\"grid-opts\" id=\"opts\"></div><div id=\"fbslot\"></div>";
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Einzelfahrschein, Hin und zurück, Tageskarte oder Gruppenkarte?</p><p class=\"en gloss\" lang=\"en\">Single, return, day ticket or group ticket?</p><div class=\"grid-opts\" id=\"opts\"></div><div id=\"fbslot\"></div>";
   const box = $("lcd").querySelector("#opts");
-  TICKETS.forEach(t => { box.insertAdjacentHTML("beforeend", optBtn(t.de, t.id, "<span class=\"en gloss\">"+t.en+"</span>")); });
+  TICKETS.forEach(t => { box.insertAdjacentHTML("beforeend", optBtn(t.de, t.id, "<span class=\"en gloss\" lang=\"en\">"+t.en+"</span>")); });
   glossUpdate();
   bindOpts((id, btn)=>{
     const m = MISSIONS[S.i];
@@ -494,7 +506,7 @@ function renderTicket(prompt){
   });
 }
 function renderKlasse(prompt){
-  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">1. Klasse ist teurer und ruhiger. 2. Klasse ist normal.</p><p class=\"en gloss\">1st class is dearer and quieter. 2nd class is standard.</p><div class=\"grid-opts\"><button type=\"button\" class=\"opt\" data-id=\"1\">1. Klasse<span class=\"en gloss\">1st class</span></button><button type=\"button\" class=\"opt\" data-id=\"2\">2. Klasse<span class=\"en gloss\">2nd class</span></button></div><div id=\"fbslot\"></div>";
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">1. Klasse ist teurer und ruhiger. 2. Klasse ist normal.</p><p class=\"en gloss\" lang=\"en\">1st class is dearer and quieter. 2nd class is standard.</p><div class=\"grid-opts\"><button type=\"button\" class=\"opt\" data-id=\"1\">1. Klasse<span class=\"en gloss\" lang=\"en\">1st class</span></button><button type=\"button\" class=\"opt\" data-id=\"2\">2. Klasse<span class=\"en gloss\" lang=\"en\">2nd class</span></button></div><div id=\"fbslot\"></div>";
   glossUpdate();
   bindOpts((id, btn)=>{
     const m = MISSIONS[S.i];
@@ -519,12 +531,12 @@ function renderZeit(prompt){
   const m = MISSIONS[S.i];
   let extra = "";
   if(m.ticket === "gruppe"){
-    extra = "<p class=\"prompt\">Wie viele Personen? (Gruppenkarte)</p><p class=\"en gloss\">How many people?</p><div class=\"grid-opts\" id=\"pers\">"+[1,2,3,4].map(n=>"<button type=\"button\" class=\"opt\" data-id=\""+n+"\">"+n+" Person"+(n>1?"en":"")+"</button>").join("")+"</div>";
+    extra = "<p class=\"prompt\">Wie viele Personen? (Gruppenkarte)</p><p class=\"en gloss\" lang=\"en\">How many people?</p><div class=\"grid-opts\" id=\"pers\">"+[1,2,3,4].map(n=>"<button type=\"button\" class=\"opt\" data-id=\""+n+"\">"+n+" Person"+(n>1?"en":"")+"</button>").join("")+"</div>";
   }
   $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><div class=\"grid-opts\" id=\"opts\">"+
-    optBtn("heute","heute","<span class=\"en gloss\">today</span>")+
-    optBtn("morgen","morgen","<span class=\"en gloss\">tomorrow</span>")+
-    optBtn("am Wochenende","wochenende","<span class=\"en gloss\">at the weekend</span>")+
+    optBtn("heute","heute","<span class=\"en gloss\" lang=\"en\">today</span>")+
+    optBtn("morgen","morgen","<span class=\"en gloss\" lang=\"en\">tomorrow</span>")+
+    optBtn("am Wochenende","wochenende","<span class=\"en gloss\" lang=\"en\">at the weekend</span>")+
     "</div>"+extra+"<div id=\"fbslot\"></div>";
   glossUpdate();
   bindOpts((id, btn)=>{
@@ -658,7 +670,7 @@ function drucke(){
   if(printBtn) printBtn.disabled = true;
   $("schlitz").innerHTML = ticketHTML(m, true);
   const gleis = ZIELE.find(z=>z.id===m.ziel).gleis;
-  $("lcd").insertAdjacentHTML("beforeend", "<div class=\"fb ok\"><p>Fahrkarte gedruckt. Bitte zu <strong>Gleis "+gleis+"</strong> gehen.</p><p class=\"en gloss\">Please go to platform "+gleis+".</p><p>+"+p+" Punkte"+(S.fehler? " (Abzug wegen "+S.fehler+" Korrektur"+(S.fehler===1?"":"en")+")":"")+".</p><p><button type=\"button\" class=\"btn\" id=\"btn-next\">"+(S.i<MISSIONS.length-1?"Nächste Fahrt":"Zur Auswertung")+"</button></p></div>");
+  $("lcd").insertAdjacentHTML("beforeend", "<div class=\"fb ok\"><p>Fahrkarte gedruckt. Bitte zu <strong>Gleis "+gleis+"</strong> gehen.</p><p class=\"en gloss\" lang=\"en\">Please go to platform "+gleis+".</p><p>+"+p+" Punkte"+(S.fehler? " (Abzug wegen "+S.fehler+" Korrektur"+(S.fehler===1?"":"en")+")":"")+".</p><p><button type=\"button\" class=\"btn\" id=\"btn-next\">"+(S.i<MISSIONS.length-1?"Nächste Fahrt":"Zur Auswertung")+"</button></p></div>");
   setLed(true, "Gleis "+gleis);
   glossUpdate();
   $("scorechip").textContent = "Punkte: " + S.punkte;

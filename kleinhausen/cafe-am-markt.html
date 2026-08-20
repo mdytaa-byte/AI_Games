@@ -152,14 +152,14 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
     <p class="eyebrow">A1–A2 · Bestellen, reklamieren, zahlen</p>
     <h2 id="h-start" tabindex="-1">Im Café am Markt</h2>
     <p class="lede">Du sitzt im <strong>Café Linde</strong> am Marktplatz von Kleinhausen. Der Kellner spricht Sie – förmlich. Drei Besuche: Frühstück mit einer Freundin, ein Durcheinander beim Mittagessen, dann Kuchen und Smalltalk.
-      <span class="en gloss">Three café visits. Use polite Sie-forms. Order, complain politely, pay with a tip.</span></p>
+      <span class="en gloss" lang="en">Three café visits. Use polite Sie-forms. Order, complain politely, pay with a tip.</span></p>
     <ul class="lede">
       <li>Nützliche Wörter: Speisekarte, bestellen, empfehlen, Allergien, vegetarisch, die Rechnung, Trinkgeld, Entschuldigung, hätte gern, noch etwas.</li>
       <li>Jede Runde hat drei Antworten: eine beste, eine grammatisch kaputt, eine zu grob.</li>
     </ul>
     <div class="btn-row"><button type="button" class="btn" id="btn-go">Platz nehmen</button></div>
     <details>
-      <summary>Tastatur <span class="en gloss">Keyboard</span></summary>
+      <summary>Tastatur <span class="en gloss" lang="en">Keyboard</span></summary>
       <ul>
         <li><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> wählen die Antwort.</li>
         <li><kbd>Tab</kbd> und <kbd>Enter</kbd> funktionieren überall. Ziele sind 44 Pixel groß.</li>
@@ -172,7 +172,7 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
     <p class="eyebrow">Café Linde · Stammplatz am Fenster</p>
     <h2 id="h-hub" tabindex="-1">Welchen Besuch spielst du?</h2>
     <p class="lede">Spiele alle drei Besuche. Die Speisekarte bleibt auf dem Tisch.
-      <span class="en gloss">Play all three visits.</span></p>
+      <span class="en gloss" lang="en">Play all three visits.</span></p>
     <div class="visits" id="visits"></div>
     <div class="btn-row">
       <button type="button" class="btn" id="btn-sum" hidden>Zur Stammgastkarte</button>
@@ -190,7 +190,7 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
         </div>
         <div class="speech" id="npc">
           <p id="npc-de"></p>
-          <span class="en gloss" id="npc-en"></span>
+          <span class="en gloss" lang="en" id="npc-en"></span>
           <p><button type="button" class="btn btn-ghost" id="btn-sprich" style="margin-top:.5rem;">Kellner vorlesen</button></p>
         </div>
         <div class="opts" id="opts"></div>
@@ -228,7 +228,7 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
       <tbody id="sum-body"></tbody>
     </table>
     <div class="name-feld">
-      <label for="name-in">Dein Name (Abgabecode) <span class="en gloss">Your name for the code</span></label><br>
+      <label for="name-in">Dein Name (Abgabecode) <span class="en gloss" lang="en">Your name for the code</span></label><br>
       <input type="text" id="name-in" autocomplete="name" spellcheck="false">
     </div>
     <div class="code-box">
@@ -251,6 +251,18 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
 
 <script>
 "use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const S = {englisch:true, audio:false, kontrast:false, size:0, motion:true, visit:0, beat:0, pts:[0,0,0], done:[false,false,false], table:{}, firstTry:true};
@@ -530,7 +542,7 @@ function drawTable(){
 
 function renderMenu(){
   $("speise").innerHTML = MENU.map(m =>
-    '<span class="menu-item">'+esc(m.de)+' <span class="en gloss inline">'+esc(m.en)+"</span></span>"
+    '<span class="menu-item">'+esc(m.de)+' <span class="en gloss inline" lang="en">'+esc(m.en)+"</span></span>"
   ).join("");
 }
 
@@ -540,7 +552,7 @@ function renderHub(){
     const b = document.createElement("button");
     b.type = "button"; b.className = "vcard" + (S.done[i] ? " done" : "");
     b.innerHTML = "<strong>Besuch "+(i+1)+"</strong><h3>"+esc(v.titel)+"</h3>"+
-      '<span class="en gloss">'+esc(v.en)+"</span>"+
+      '<span class="en gloss" lang="en">'+esc(v.en)+"</span>"+
       (S.done[i] ? "<p>Gespielt: "+S.pts[i]+" Punkte</p>" : "<p>Noch offen</p>");
     b.addEventListener("click", () => startVisit(i));
     box.appendChild(b);
@@ -572,7 +584,7 @@ function showBeat(){
   b.opts.forEach((o, oi) => {
     const btn = document.createElement("button");
     btn.type = "button"; btn.className = "opt";
-    btn.innerHTML = "<span>"+esc(o.de)+'</span><span class="en gloss">'+esc(o.en)+"</span>";
+    btn.innerHTML = "<span>"+esc(o.de)+'</span><span class="en gloss" lang="en">'+esc(o.en)+"</span>";
     btn.addEventListener("click", () => pick(oi));
     box.appendChild(btn);
   });
@@ -605,7 +617,7 @@ function pick(oi){
   S.firstTry = o.best;
   const fb = $("play-fb");
   fb.className = o.best ? "fb" : "fb bad";
-  fb.innerHTML = "<p>"+esc(o.fb)+'</p><span class="en gloss">'+esc(o.fbEn)+"</span>";
+  fb.innerHTML = "<p>"+esc(o.fb)+'</p><span class="en gloss" lang="en">'+esc(o.fbEn)+"</span>";
   fb.hidden = false; fb.focus();
   const bill = o.bill || (b.opts.find(x => x.best) || {}).bill;
   if(bill){
@@ -614,7 +626,7 @@ function pick(oi){
       bill.zeilen.map(z => "<div>"+esc(z)+"</div>").join("")+
       "<div><strong>Summe "+esc(bill.summe)+" €</strong></div>"+
       "<div>"+esc(bill.tip)+"</div>"+
-      '<span class="en gloss">Printed bill at the end of the visit.</span>';
+      '<span class="en gloss" lang="en">Printed bill at the end of the visit.</span>';
   }
   sagen(o.best ? "Gute Wahl." : "Schau dir die Erklärung an.");
   sprich(o.fb);
@@ -672,7 +684,7 @@ function showSum(){
               t.pct >= 50 ? "Guter Besuch. Übe noch „Ich hätte gern“ und die Rechnung." :
               "Nächstes Mal langsamer bestellen – der Kellner hat Zeit.";
   $("sum-text").innerHTML = "Du hast <strong>"+t.ges+" von "+t.max+" Punkten</strong> ("+t.pct+" %). "+esc(lob)+
-    ' <span class="en gloss">Name → KH-CAFE submission code.</span>';
+    ' <span class="en gloss" lang="en">Name → KH-CAFE submission code.</span>';
   $("h-sum").textContent = t.pct >= 80 ? "Stammgastkarte" : "Noch kein Stammplatz";
   codeAkt(); zeige("screen-sum");
   sprich("Vielen Dank für Ihren Besuch im Café Linde.");

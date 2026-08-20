@@ -191,14 +191,14 @@ html[data-motion="aus"] *{animation:none !important;transition:none !important}
   <p class="eyebrow">Point-and-click · Kleinhausen</p>
   <h2 id="h-start" tabindex="-1">Du bist zu lange geblieben</h2>
   <p class="lede">Du hast im Archiv des Rathauses gearbeitet. Plötzlich ist es still. Die große Tür ist zu. Draußen wartet der Nachtwächter – aber er öffnet nur, wenn du die <strong>vier Ziffern</strong> und die <strong>Codephrase</strong> auf Deutsch kennst.
-    <span class="en gloss">You stayed too late in the town-hall archive. The building is locked. The night watch expects a German code phrase.</span></p>
+    <span class="en gloss" lang="en">You stayed too late in the town-hall archive. The building is locked. The night watch expects a German code phrase.</span></p>
   <p class="lede">Untersuche jeden Raum. Klicke auf Gegenstände (oder drücke <kbd>E</kbd> / <kbd>Enter</kbd>). Zahlen <kbd>1</kbd>–<kbd>9</kbd> wählen Antworten.
-    <span class="en gloss">Search each room. Click objects, or press E / Enter. Number keys choose answers.</span></p>
+    <span class="en gloss" lang="en">Search each room. Click objects, or press E / Enter. Number keys choose answers.</span></p>
   <ol class="lede">
-    <li>Eingangshalle – Bürowörter zuordnen. <span class="en gloss">Match office nouns.</span></li>
-    <li>Sitzungssaal – Konjunktionen im Protokoll. <span class="en gloss">Fill conjunctions in the minutes.</span></li>
-    <li>Archiv – das richtige Datum und der Dativ. <span class="en gloss">The right date and the dative.</span></li>
-    <li>Turmzimmer – Code und Phrase. <span class="en gloss">Code and passphrase.</span></li>
+    <li>Eingangshalle – Bürowörter zuordnen. <span class="en gloss" lang="en">Match office nouns.</span></li>
+    <li>Sitzungssaal – Konjunktionen im Protokoll. <span class="en gloss" lang="en">Fill conjunctions in the minutes.</span></li>
+    <li>Archiv – das richtige Datum und der Dativ. <span class="en gloss" lang="en">The right date and the dative.</span></li>
+    <li>Turmzimmer – Code und Phrase. <span class="en gloss" lang="en">Code and passphrase.</span></li>
   </ol>
   <p><label for="name-in">Dein Name (für den Abgabecode)</label></p>
   <p><input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname"></p>
@@ -232,7 +232,7 @@ html[data-motion="aus"] *{animation:none !important;transition:none !important}
       <div class="panel" id="panel">
         <h3 id="panel-h">Schau dich um</h3>
         <p class="de" id="panel-de">Klicke auf einen Gegenstand in der Halle. Die Uhr steht still. Die Glastür ist zu.</p>
-        <p class="en gloss" id="panel-en">Click an object in the hall. The clock has stopped. The glass door is locked.</p>
+        <p class="en gloss" lang="en" id="panel-en">Click an object in the hall. The clock has stopped. The glass door is locked.</p>
         <div id="panel-extra"></div>
         <p class="fb" id="panel-fb" hidden></p>
         <p><button type="button" class="speak-btn btn btn-ghost" id="btn-sprich">Text vorlesen</button></p>
@@ -242,7 +242,7 @@ html[data-motion="aus"] *{animation:none !important;transition:none !important}
       <div class="box">
         <h3>Code</h3>
         <div class="ziffern" id="ziffern" aria-label="Vier Ziffern"><span>?</span><span>?</span><span>?</span><span>?</span></div>
-        <p class="en gloss">Four digits, one from each room.</p>
+        <p class="en gloss" lang="en">Four digits, one from each room.</p>
       </div>
       <div class="box">
         <h3>Inventar</h3>
@@ -262,7 +262,7 @@ html[data-motion="aus"] *{animation:none !important;transition:none !important}
   <h2 id="h-end" tabindex="-1">Der Marktplatz im Morgenlicht</h2>
   <div class="news" id="news"></div>
   <div class="code-box">
-    <p><strong>Dein Abgabecode</strong> <span class="en gloss" style="color:var(--lamp-soft)">Your submission code</span></p>
+    <p><strong>Dein Abgabecode</strong> <span class="en gloss" lang="en" style="color:var(--lamp-soft)">Your submission code</span></p>
     <p class="code-val" id="code-val">Bitte Namen eingeben.</p>
     <p><button type="button" class="btn" id="btn-copy">Code kopieren</button></p>
   </div>
@@ -284,6 +284,18 @@ html[data-motion="aus"] *{animation:none !important;transition:none !important}
 
 <script>
 "use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
@@ -790,14 +802,14 @@ function puzzleMatch(){
     {id:"schluessel", de:"der Schlüssel", en:"the key", svg:'<svg class="pic-svg" viewBox="0 0 80 48"><circle cx="22" cy="24" r="8" fill="none" stroke="#c4a056" stroke-width="3"/><rect x="30" y="21" width="36" height="6" fill="#c4a056"/></svg>'}
   ];
   const words = items.map(x => x.de);
-  let html = '<p class="en gloss">Match each German office noun to its picture. Click a word, then a picture.</p>';
+  let html = '<p class="en gloss" lang="en">Match each German office noun to its picture. Click a word, then a picture.</p>';
   html += '<div class="match-grid">';
   items.forEach(it => {
     html += '<button type="button" class="match-pic'+(S.r1.matched[it.id]?" ok":"")+'" data-pic="'+it.id+'" aria-label="Bild: '+it.de+'">'+it.svg+'<span class="sr">'+esc(it.de)+'</span></button>';
   });
   words.forEach(w => {
     const id = items.find(i => i.de===w).id;
-    html += '<button type="button" class="match-word'+(S.r1.matched[id]?" ok":"")+'" data-word="'+id+'">'+esc(w)+' <span class="en gloss">'+esc(items.find(i=>i.id===id).en)+'</span></button>';
+    html += '<button type="button" class="match-word'+(S.r1.matched[id]?" ok":"")+'" data-word="'+id+'">'+esc(w)+' <span class="en gloss" lang="en">'+esc(items.find(i=>i.id===id).en)+'</span></button>';
   });
   html += '</div>';
   if(S.r1.tries>=2 && !S.r1.done){
@@ -854,7 +866,7 @@ function puzzleKonj(){
   ];
   let html = "";
   rows.forEach((row,i) => {
-    html += '<p lang="de">'+esc(row.q)+'</p><p class="en gloss">'+esc(row.en)+'</p><div class="choices">';
+    html += '<p lang="de">'+esc(row.q)+'</p><p class="en gloss" lang="en">'+esc(row.en)+'</p><div class="choices">';
     ["weil","dass","obwohl"].forEach((opt,j) => {
       const sel = S.r2[row.k]===opt ? " aria-pressed=\"true\"" : "";
       html += '<button type="button" class="opt" data-k="'+row.k+'" data-v="'+opt+'" data-n="'+(i*3+j+1)+'"><span class="key">'+(j+1)+'</span>'+opt+'</button>';
@@ -905,7 +917,7 @@ function puzzleBox(which){
   }
   S.r3.box = "3";
   let html = '<p lang="de">Im Karton liegt ein Brief: „Liebe Lena, ich schreibe _____ einen Brief aus dem Archiv.“</p>';
-  html += '<p class="en gloss">In the box is a letter: “I am writing a letter to a friend.” Choose the dative.</p>';
+  html += '<p class="en gloss" lang="en">In the box is a letter: “I am writing a letter to a friend.” Choose the dative.</p>';
   html += '<div class="choices">';
   [["einem Freund","ok"],["ein Freund","x"],["einen Freund","akk"]].forEach((opt,i) => {
     html += '<button type="button" class="opt" data-d="'+opt[1]+'" data-n="'+(i+1)+'"><span class="key">'+(i+1)+'</span>'+esc(opt[0])+'</button>';

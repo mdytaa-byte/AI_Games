@@ -209,7 +209,7 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;animation-iterati
       </svg>
       <div>
         <p class="bubble" id="clerk-de" lang="de"></p>
-        <p class="en gloss" id="clerk-en" lang="en"></p>
+        <p class="en gloss" lang="en" id="clerk-en" lang="en"></p>
       </div>
     </div>
     <div id="play-body"></div>
@@ -270,6 +270,18 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;animation-iterati
 </footer>
 <script>
 "use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
 

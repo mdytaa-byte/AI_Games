@@ -170,19 +170,19 @@ html[data-contrast="hoch"] .body-btns button{border-color:#000}
     <p class="chip">A1–A2 · formales Sie</p>
     <h2 id="h-start" tabindex="-1">Vier Patientenfälle in Kleinhausen</h2>
     <p class="lede">Du sitzt im Wartezimmer, sprichst mit Frau Dr. Keller (immer <strong>Sie</strong>), zeigst wo es weh tut, nimmst das Rezept und holst das Richtige in der Apotheke.</p>
-    <p class="en gloss">Waiting room → formal doctor talk → body diagram → prescription → pharmacy shelf.</p>
+    <p class="en gloss" lang="en">Waiting room → formal doctor talk → body diagram → prescription → pharmacy shelf.</p>
     <div class="how">
-      <article><h3>Wartezimmer</h3><p>Lies die Symptomkarte auf Deutsch.</p><p class="en gloss">Read the symptom card.</p></article>
-      <article><h3>Beim Arzt</h3><p>Nicht „Du“ sagen. Beschreibe den Schmerz, „Seit wann?“, „Wo tut es weh?“</p><p class="en gloss">Use Sie, not Du. Answer since when / where it hurts.</p></article>
-      <article><h3>Körperplan</h3><p>Klick auf die richtige Stelle: Kopf, Hals, Brust, Bauch, Arm, Hand, Knie, Fuß, Rücken.</p><p class="en gloss">Click the correct body region.</p></article>
-      <article><h3>Apotheke</h3><p>Wähle die Produkte vom Rezept. Hustensaft hilft nicht bei einem Fuß!</p><p class="en gloss">Pick the products on the prescription, not distractors.</p></article>
+      <article><h3>Wartezimmer</h3><p>Lies die Symptomkarte auf Deutsch.</p><p class="en gloss" lang="en">Read the symptom card.</p></article>
+      <article><h3>Beim Arzt</h3><p>Nicht „Du“ sagen. Beschreibe den Schmerz, „Seit wann?“, „Wo tut es weh?“</p><p class="en gloss" lang="en">Use Sie, not Du. Answer since when / where it hurts.</p></article>
+      <article><h3>Körperplan</h3><p>Klick auf die richtige Stelle: Kopf, Hals, Brust, Bauch, Arm, Hand, Knie, Fuß, Rücken.</p><p class="en gloss" lang="en">Click the correct body region.</p></article>
+      <article><h3>Apotheke</h3><p>Wähle die Produkte vom Rezept. Hustensaft hilft nicht bei einem Fuß!</p><p class="en gloss" lang="en">Pick the products on the prescription, not distractors.</p></article>
     </div>
     <p><button type="button" class="btn" id="btn-los">Los geht’s</button></p>
     <aside class="karte-symptom" style="margin-top:1.2rem">
       <h3>Sie, nicht Du</h3>
       <p>Zur Ärztin und zum Apotheker sagst du <strong>Sie</strong>: Guten Tag, ich habe … / Wo tut es weh? / Seit wann?</p>
       <p>Falsch: „Du, wo ist der Arzt?“ Das kostet Punkte.</p>
-      <p class="en gloss">Always use formal Sie with the doctor and pharmacist. Informal Du is marked wrong.</p>
+      <p class="en gloss" lang="en">Always use formal Sie with the doctor and pharmacist. Informal Du is marked wrong.</p>
       <table>
         <thead><tr><th>Körper</th><th>Deutsch</th></tr></thead>
         <tbody>
@@ -213,7 +213,7 @@ html[data-contrast="hoch"] .body-btns button{border-color:#000}
     <div class="vocab">
       <span>Kopfschmerzen</span><span>Fieber</span><span>Husten</span><span>Schnupfen</span><span>Bauchschmerzen</span><span>umknicken</span><span>Rezept</span><span>Tablette</span><span>Saft</span><span>Salbe</span><span>Pflaster</span><span>Sie</span>
     </div>
-    <p class="en gloss">headache · fever · cough · cold · stomachache · sprain · prescription · tablet · syrup · ointment · plaster · formal you</p>
+    <p class="en gloss" lang="en">headache · fever · cough · cold · stomachache · sprain · prescription · tablet · syrup · ointment · plaster · formal you</p>
     <div class="name-row">
       <label><span>Name (optional)</span><input type="text" id="name-in" autocomplete="name" maxlength="60"></label>
       <button type="button" class="btn" id="btn-code">Code erzeugen</button>
@@ -235,6 +235,18 @@ html[data-contrast="hoch"] .body-btns button{border-color:#000}
 <footer class="footer wrap">Eine Datei, keine Cookies, kein localStorage. Sitzung nur. Vocab: Schmerz, Fieber, Rezept, Apotheke, Sie. Michael Young (Designer)</footer>
 <script>
 "use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
 function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
@@ -447,8 +459,8 @@ function renderWarte(f){
   $("play").innerHTML =
     "<p class=\"phase\">Wartenummer</p><p class=\"wartenummer\">"+nr+"</p>"+
     "<p>Durchsage: <em>Nummer "+nr+", bitte zu Frau Dr. Keller.</em></p>"+
-    "<p class=\"en gloss\">Announcement: number "+nr+", please see Dr Keller.</p>"+
-    "<div class=\"karte-symptom\"><p class=\"phase\">Symptomkarte</p><h3>"+esc(f.name)+"</h3><p lang=\"de\">"+esc(f.karte)+"</p><p class=\"en gloss\">"+esc(f.karteEn)+"</p></div>"+
+    "<p class=\"en gloss\" lang=\"en\">Announcement: number "+nr+", please see Dr Keller.</p>"+
+    "<div class=\"karte-symptom\"><p class=\"phase\">Symptomkarte</p><h3>"+esc(f.name)+"</h3><p lang=\"de\">"+esc(f.karte)+"</p><p class=\"en gloss\" lang=\"en\">"+esc(f.karteEn)+"</p></div>"+
     "<p style=\"margin-top:1rem\"><button type=\"button\" class=\"btn\" id=\"go\">Zur Ärztin (Sie!)</button></p>";
   sprich("Wartezimmer. Nummer "+nr+". "+f.karte);
   sagen("Lies die Symptomkarte. Nummer "+nr+".");
@@ -460,7 +472,7 @@ function renderDialog(f){
   const d=f.dialog[S.dIdx];
   $("play").innerHTML =
     "<div class=\"doktor\"><svg width=\"56\" height=\"56\" viewBox=\"0 0 56 56\" aria-hidden=\"true\"><circle cx=\"28\" cy=\"28\" r=\"26\" fill=\"#C8E8DE\"/><circle cx=\"28\" cy=\"20\" r=\"8\" fill=\"#1A2B2E\"/><path d=\"M12 48c2-12 10-18 16-18s14 6 16 18\" fill=\"#fff\" stroke=\"#2A8F78\"/></svg>"+
-    "<div><strong>Frau Dr. Keller</strong><p>"+esc(d.q)+"</p><p class=\"en gloss\">"+esc(d.qEn)+"</p></div></div>"+
+    "<div><strong>Frau Dr. Keller</strong><p>"+esc(d.q)+"</p><p class=\"en gloss\" lang=\"en\">"+esc(d.qEn)+"</p></div></div>"+
     "<div class=\"dialog\" id=\"opts\"></div><div id=\"fb\"></div>";
   const box=$("opts");
   d.opts.forEach((o,i)=>{
@@ -479,7 +491,7 @@ function dialogWahl(f, i, btn){
   if(!o.ok){
     S.fehler++;
     btn.classList.add("falsch");
-    $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(o.warum)+"</strong><p class=\"en gloss\">"+esc(o.warumEn)+"</p></div>";
+    $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(o.warum)+"</strong><p class=\"en gloss\" lang=\"en\">"+esc(o.warumEn)+"</p></div>";
     sprich(o.warum);
     sagen(o.warum);
     glossUpdate();
@@ -543,7 +555,7 @@ function bodyButtons(){
 function renderKoerper(f){
   setPhase("Wo tut es weh?");
   $("play").innerHTML =
-    "<p>Klicke auf die Stelle. Richtig ist: du zeigst, nicht nur redest.</p><p class=\"en gloss\">Click the body region that hurts. You can tap the drawing or the name buttons.</p>"+
+    "<p>Klicke auf die Stelle. Richtig ist: du zeigst, nicht nur redest.</p><p class=\"en gloss\" lang=\"en\">Click the body region that hurts. You can tap the drawing or the name buttons.</p>"+
     "<div class=\"body-wrap\">"+bodySVG()+"<div><p>Frau Dr. Keller: <em>Bitte zeigen Sie: Wo tut es weh?</em></p>"+bodyButtons()+"<div id=\"fb\"></div></div></div>";
   sprich("Bitte zeigen Sie: Wo tut es weh?");
   $("play").querySelectorAll("[data-teil]").forEach(el=>{
@@ -558,7 +570,7 @@ function klickTeil(f, teil){
     S.fehler++;
     $("play").querySelectorAll('[data-teil="'+teil+'"]').forEach(n=>n.classList.add("falsch"));
     const map={kopf:"Kopf",hals:"Hals",brust:"Brust",bauch:"Bauch",arm:"Arm",hand:"Hand",knie:"Knie",fuss:"Fuß",ruecken:"Rücken"};
-    $("fb").innerHTML="<div class=\"fb\"><strong>Nicht "+esc(map[teil]||teil)+".</strong> Die Karte zeigt: <em>"+esc(f.woDe)+"</em>.</div><p class=\"en gloss\">Not that region. The card points to the "+esc(f.woDe)+".</p>";
+    $("fb").innerHTML="<div class=\"fb\"><strong>Nicht "+esc(map[teil]||teil)+".</strong> Die Karte zeigt: <em>"+esc(f.woDe)+"</em>.</div><p class=\"en gloss\" lang=\"en\">Not that region. The card points to the "+esc(f.woDe)+".</p>";
     sprich("Nicht dort. Es tut am "+f.woDe+" weh.");
     sagen("Falsche Körperstelle.");
     glossUpdate();
@@ -575,7 +587,7 @@ function renderRezept(f){
   setPhase("Diagnose & Rezept");
   const namen=f.rezept.map(id=>PRODUKTE.find(p=>p.id===id).de).join(", ");
   $("play").innerHTML =
-    "<div class=\"doktor\"><div><strong>Frau Dr. Keller</strong><p>"+esc(f.diagnose)+"</p><p class=\"en gloss\">"+esc(f.diagnoseEn)+"</p></div></div>"+
+    "<div class=\"doktor\"><div><strong>Frau Dr. Keller</strong><p>"+esc(f.diagnose)+"</p><p class=\"en gloss\" lang=\"en\">"+esc(f.diagnoseEn)+"</p></div></div>"+
     "<div class=\"rezept\"><p class=\"phase\">Rezept</p><p>Praxis Kleinhausen · Dr. Keller</p><p lang=\"de\"><strong>"+esc(namen)+"</strong></p><p>Bitte in der Apotheke um die Ecke abholen.</p></div>"+
     "<p><button type=\"button\" class=\"btn\" id=\"go\">Zur Apotheke gehen</button></p>";
   sprich(f.diagnose);
@@ -587,7 +599,7 @@ function renderStrasse(f){
   $("play").innerHTML =
     "<div class=\"strasse\" aria-hidden=\"true\"><svg class=\"laeufer\" viewBox=\"0 0 48 64\"><circle cx=\"24\" cy=\"10\" r=\"8\" fill=\"#1A2B2E\"/><rect x=\"16\" y=\"20\" width=\"16\" height=\"24\" fill=\"#2A8F78\"/><rect x=\"14\" y=\"44\" width=\"8\" height=\"18\" fill=\"#1A2B2E\"/><rect x=\"26\" y=\"44\" width=\"8\" height=\"18\" fill=\"#1A2B2E\"/></svg>"+
     "<p style=\"position:absolute;top:10px;left:12px\">Praxis</p><p style=\"position:absolute;top:10px;right:12px\">Apotheke ✚</p></div>"+
-    "<p>Sie gehen in die Apotheke um die Ecke.</p><p class=\"en gloss\">You walk round the corner to the pharmacy.</p>"+
+    "<p>Sie gehen in die Apotheke um die Ecke.</p><p class=\"en gloss\" lang=\"en\">You walk round the corner to the pharmacy.</p>"+
     "<p><button type=\"button\" class=\"btn\" id=\"go\">Apotheke betreten</button></p>";
   sprich("Sie gehen in die Apotheke um die Ecke.");
   $("go").addEventListener("click", ()=>{ S.phase="apo"; render(); });
@@ -597,7 +609,7 @@ function renderApo(f){
   setPhase("In der Apotheke");
   $("play").innerHTML =
     "<p><strong>Herr Özkan, Apotheker:</strong> Guten Tag. Was brauchen Sie? Bitte das Rezept.</p>"+
-    "<p class=\"en gloss\">Hello. What do you need? Please the prescription.</p>"+
+    "<p class=\"en gloss\" lang=\"en\">Hello. What do you need? Please the prescription.</p>"+
     "<p>Wähle alle richtigen Produkte (nicht mehr).</p>"+
     "<div class=\"regal\" id=\"regal\"></div>"+
     "<p style=\"margin-top:.8rem\"><button type=\"button\" class=\"btn\" id=\"kasse\">Zur Kasse</button></p><div id=\"fb\"></div>";
@@ -605,7 +617,7 @@ function renderApo(f){
   PRODUKTE.forEach(p=>{
     const b=document.createElement("button");
     b.type="button"; b.className="produkt"; b.setAttribute("aria-pressed","false"); b.dataset.id=p.id;
-    b.innerHTML="<strong>"+esc(p.de)+"</strong><span class=\"en gloss\">"+esc(p.en)+"</span>"+icon(p.id);
+    b.innerHTML="<strong>"+esc(p.de)+"</strong><span class=\"en gloss\" lang=\"en\">"+esc(p.en)+"</span>"+icon(p.id);
     b.addEventListener("click", ()=>{
       const on=b.getAttribute("aria-pressed")!=="true";
       b.setAttribute("aria-pressed", on?"true":"false");
@@ -658,7 +670,7 @@ function kasse(f){
     let de="Schau aufs Rezept. ";
     if(fehl.length) de+="Es fehlt: "+fehl.join(", ")+". ";
     if(extra.length) de+="Das gehört nicht dazu: "+extra.join(", ")+". Hustensaft hilft nicht bei jedem Schmerz.";
-    $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(de)+"</strong><p class=\"en gloss\">Check the prescription. Extra items are distractors.</p></div>";
+    $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(de)+"</strong><p class=\"en gloss\" lang=\"en\">Check the prescription. Extra items are distractors.</p></div>";
     sprich(de);
     sagen(de);
     glossUpdate();

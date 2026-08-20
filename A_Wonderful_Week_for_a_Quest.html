@@ -3573,7 +3573,7 @@ NNNNNNNNNNNNNNNN
     if (isB6() && w.need && (
       String(w.need).startsWith("b2") ||
       String(w.need).startsWith("b5") ||
-      (String(w.need).startsWith("b4") && w.to !== "fey") ||
+      (String(w.need).startsWith("b4") && w.to !== "fey" && G.map !== "fey") ||
       (String(w.need).startsWith("b3") && w.to !== "gates" && w.to !== "palace") ||
       w.need === "allSecrets" ||
       (w.need === "quest" && w.to !== "arena")

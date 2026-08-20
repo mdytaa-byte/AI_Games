@@ -64,6 +64,7 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
 .partybox .row{display:grid;grid-template-columns:52px 1fr 28px;gap:4px;align-items:center;margin:2px 0}
 .partybox .row.dead{opacity:.4}
 .partybox .nm{color:var(--gold)}
+.partybox .st{color:#d07850;font-size:5px;letter-spacing:.04em}
 #blog{position:absolute;left:4px;right:4px;top:4px;z-index:12;padding:5px 7px;font-size:8px;min-height:28px;line-height:1.4}
 #touch{position:absolute;left:0;right:0;bottom:0;height:0;z-index:9;pointer-events:none}
 @media(pointer:coarse){
@@ -140,7 +141,7 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
     <p style="margin-top:8px">The tale follows the trilogy: Pompeii and the Fortuna house; Jarom and Clara against Beelzebub; Olympus, Cain, and the All-Seeing Eye.</p>
     <p style="margin-top:8px">Isda the Whisperer waits in the Cherub Fortress. Ask her, then choose a road: Nod, the Forgotten Tower, the Vault of Avarice, London, Blacker Forest, or Nineveh.</p>
     <p style="margin-top:8px">Only four may walk. From the Party page, Z changes who marches. Yearti will wait if the road is already full.</p>
-    <p style="margin-top:8px">A chapter card names each place as the books do. Bosses keep their own silhouettes: Ganosh’s mismatched eyes, Lucifer as light, the Tree of Death as a counterfeit tree.</p>
+    <p style="margin-top:8px">Combat is a conversation with knives. Judy’s Purify clears burn and venom. Sparkslinger sets the house alight. The Tree of Death offers fruit. If you brought Druiel’s extra links, they tighten around the Prince each round.</p>
     <button class="back" id="btnHowBack">Back</button>
   </div>
   <div id="end" class="screen hidden">
@@ -200,7 +201,7 @@ const SKILLS={
   crush:{name:"Crush",mp:0,pow:1.45,el:"phys",tgt:"enemy",desc:"A giant does not tap."},
   roar:{name:"Giant's Roar",mp:10,pow:0.9,el:"wind",tgt:"enemies",desc:"The mound answers."},
   clight:{name:"Little Light",mp:12,pow:1.6,el:"holy",tgt:"enemy",desc:"Jarom's name for her, made weapon."},
-  hymn:{name:"Guardian Hymn",mp:10,pow:0,el:"heal",tgt:"allies",heal:40,desc:"Judy keeps her promise."},
+  hymn:{name:"Guardian Hymn",mp:10,pow:0,el:"heal",tgt:"allies",heal:40,cleanse:true,desc:"Judy keeps her promise. The venom lifts."},
   purify:{name:"Purify",mp:6,pow:0,el:"heal",tgt:"ally",heal:20,cleanse:true,desc:"Demons loathe a clean house."},
   ice:{name:"Ice Fist",mp:0,pow:1.3,el:"ice",tgt:"enemy",desc:"Yearti's handshake."},
   avalanche:{name:"Avalanche",mp:14,pow:1.65,el:"ice",tgt:"enemies",desc:"Two peaks over, trouble arrives."},
@@ -213,9 +214,9 @@ const ITEMS={
   water:{name:"Serche Water",mp:40,price:25,desc:"Restores 40 MP. Named for a city that sank toward the Jaws."},
   diamond:{name:"Death Diamond",dmg:90,price:120,desc:"Cuts a foe for 90. The Den of Thieves still trades in these."},
   wish:{name:"Wishbone",rnd:true,price:15,desc:"Judy would rather you not ask."},
-  harp:{name:"Jubal's Strain",mpAll:35,price:0,desc:"Let the music take you away. Restores 35 MP to all."},
-  flask:{name:"Antidote Flask",heal:45,mp:15,price:40,desc:"Jertel arranged it. Restores 45 HP and 15 MP."},
-  fruit:{name:"Death Fruit",dmg:140,price:0,desc:"Green, rotting, almost finished. The counterfeit tree's work."},
+  harp:{name:"Jubal's Strain",mpAll:35,song:true,price:0,desc:"Let the music take you away. Restores 35 MP to all and dazes the dark."},
+  flask:{name:"Antidote Flask",heal:45,mp:15,cleanse:true,price:40,desc:"Jertel's arrangement. Restores 45 HP and 15 MP, and clears burn and venom."},
+  fruit:{name:"Death Fruit",dmg:140,price:0,desc:"Green, rotting, almost finished. Especially cruel to its own tree."},
   link:{name:"Chain Link",price:0,desc:"One of eleven. Forged to hold the Prince when Heaven cast him down."}
 };
 
@@ -290,7 +291,7 @@ M("heaven","Court of Light",[],0,{floor:"#d8d0c0",wall:"#c8b888",dec:"#fff8c0",b
 `,{npcs:[{id:"center",x:9,y:3,spr:"pillar",name:"The Columns"},{id:"seraph0",x:14,y:7,spr:"seraph",name:"High Seraph"}],
   warps:[]});
 
-M("pompeii","Pompeii, 79 A.D.",["ash","ash","shade"],0.06,{floor:"#c8b090",wall:"#8a6040",dec:"#d07030",bg:"#f0a060"},`
+M("pompeii","Pompeii, 79 A.D.",["ash","ash","shade"],0.038,{floor:"#c8b090",wall:"#8a6040",dec:"#d07030",bg:"#f0a060"},`
 ############################
 #^^^^##^^^^................#
 #^^^####^^^....TTT.........#
@@ -307,7 +308,7 @@ M("pompeii","Pompeii, 79 A.D.",["ash","ash","shade"],0.06,{floor:"#c8b090",wall:
 `,{npcs:[{id:"seraph",x:18,y:5,spr:"seraph",name:"High Seraph"},{id:"citizen",x:22,y:9,spr:"human",name:"Pompeian"}],
   warps:[{x:24,y:10,to:"nyc",tx:22,ty:7,need:"pompeiiDone"}]});
 
-M("nyc","New York, 2012",["imp","suit","imp"],0.06,{floor:"#3a3a48",wall:"#2a2a38",dec:"#4060a0",bg:"#12121c"},`
+M("nyc","New York, 2012",["imp","suit","imp"],0.038,{floor:"#3a3a48",wall:"#2a2a38",dec:"#4060a0",bg:"#12121c"},`
 ############################
 #BBBBBB##BBBBBB##BBBBBBBBBB#
 #B....B##B....B##B........B#
@@ -340,7 +341,7 @@ M("fortuna","Fortuna House",[],0,{floor:"#c8a878",wall:"#6a4030",dec:"#a05040",b
 `,{npcs:[{id:"eden",x:6,y:6,spr:"eden",name:"Eden"},{id:"judy",x:12,y:5,spr:"judy",name:"Judy"},{id:"daren",x:10,y:3,spr:"daren",name:"Daren"},{id:"westover",x:3,y:7,spr:"human",name:"Michael Westover"},{id:"thief",x:14,y:7,spr:"human",name:"Den Runner"}],
   warps:[{x:8,y:9,to:"nyc",tx:3,ty:5}]});
 
-M("forest","The Giant Wood",["thorn","thorn","wretch"],0.07,{floor:"#2a4a28",wall:"#143018",dec:"#1a3820",bg:"#0c2010"},`
+M("forest","The Giant Wood",["thorn","thorn","wretch"],0.044,{floor:"#2a4a28",wall:"#143018",dec:"#1a3820",bg:"#0c2010"},`
 ##########################
 #TTTTTTTTTTTTTTTTTTTTTTTT#
 #T....T....T....T....T..T#
@@ -358,7 +359,7 @@ M("forest","The Giant Wood",["thorn","thorn","wretch"],0.07,{floor:"#2a4a28",wal
 `,{npcs:[{id:"absalom",x:6,y:7,spr:"seraph",name:"Absalom"},{id:"yearti",x:12,y:11,spr:"yearti",name:"Yearti"}],
   warps:[{x:2,y:8,to:"nyc",tx:25,ty:8},{x:22,y:3,to:"tunnels",tx:2,ty:17,need:"yeartiJoined"}]});
 
-M("tunnels","Tubal's Tunnels",["wretch","ach","wretch"],0.08,{floor:"#3a3428",wall:"#1c1810",dec:"#5a4030",bg:"#100c08"},`
+M("tunnels","Tubal's Tunnels",["wretch","ach","wretch"],0.05,{floor:"#3a3428",wall:"#1c1810",dec:"#5a4030",bg:"#100c08"},`
 ############################
 #..........................#
 #.##.##.####.##.####.##.##.#
@@ -381,7 +382,7 @@ M("tunnels","Tubal's Tunnels",["wretch","ach","wretch"],0.08,{floor:"#3a3428",wa
 `,{npcs:[{id:"jubal",x:14,y:1,spr:"jubal",name:"Jubal"},{id:"tubal",x:24,y:8,spr:"giant",name:"Tubal"},{id:"dusteater",x:24,y:15,spr:"boss",name:"Dusteater"}],
   warps:[{x:1,y:17,to:"forest",tx:3,ty:8},{x:26,y:1,to:"hell",tx:2,ty:13,need:"dusteaterDown"}]});
 
-M("hell","A Cold Day in Hell",["flame","pool","ach"],0.07,{floor:"#4a2020",wall:"#2a1010",dec:"#c04020",bg:"#180808"},`
+M("hell","A Cold Day in Hell",["flame","pool","ach"],0.044,{floor:"#4a2020",wall:"#2a1010",dec:"#c04020",bg:"#180808"},`
 ########################
 #^^^^#..........#^^^^^^#
 #^^^^#...TTTT...#^^^^^^#
@@ -417,7 +418,7 @@ M("fortress","The Cherub Fortress",[],0,{floor:"#d8d0b0",wall:"#a09060",dec:"#f0
 `,{npcs:[{id:"clara",x:8,y:6,spr:"clara",name:"Clara"},{id:"shop",x:16,y:5,spr:"human",name:"Manna Keeper"},{id:"judy2",x:4,y:9,spr:"judy",name:"Judy"},{id:"rest",x:16,y:9,spr:"seraph",name:"Cherub Healer"},{id:"isda",x:12,y:7,spr:"isda",name:"Isda"}],
   warps:[{x:1,y:6,to:"rome",tx:2,ty:8,need:"claraJoined"},{x:20,y:6,to:"olympus",tx:20,ty:9,need:"jenningsDown"},{x:10,y:1,to:"cainhall",tx:9,ty:10,need:"armor3"}]});
 
-M("rome","Rome Away from Rome",["legion","horse","legion"],0.07,{floor:"#b09070",wall:"#704030",dec:"#c04020",bg:"#402010"},`
+M("rome","Rome Away from Rome",["legion","horse","legion"],0.044,{floor:"#b09070",wall:"#704030",dec:"#c04020",bg:"#402010"},`
 ########################
 #BBBB^^^^BBBB^^^^BBBBBB#
 #B..B^^^^B..B^^^^B....B#
@@ -435,7 +436,7 @@ M("rome","Rome Away from Rome",["legion","horse","legion"],0.07,{floor:"#b09070"
 `,{npcs:[{id:"jennings",x:12,y:9,spr:"jennings",name:"President Jennings"},{id:"nero",x:18,y:6,spr:"human",name:"Nero's Echo"},{id:"horsemen",x:12,y:5,spr:"boss",name:"Four Horsemen"}],
   warps:[{x:1,y:8,to:"fortress",tx:2,ty:6}]});
 
-M("olympus","Olympus Mons, 2020",["oly","oly","horse"],0.06,{floor:"#88b868",wall:"#c8b060",dec:"#f0e090",bg:"#88c8f0"},`
+M("olympus","Olympus Mons, 2020",["oly","oly","horse"],0.038,{floor:"#88b868",wall:"#c8b060",dec:"#f0e090",bg:"#88c8f0"},`
 ##########################
 #TTTT,,,,,,,,,,,,,,,,TTTT#
 #T,,,,,,,,,,,,,,,,,,,,,,T#
@@ -453,7 +454,7 @@ M("olympus","Olympus Mons, 2020",["oly","oly","horse"],0.06,{floor:"#88b868",wal
 `,{npcs:[{id:"ares",x:7,y:4,spr:"ares",name:"Ares"},{id:"zeus",x:19,y:4,spr:"seraph",name:"Zeus"},{id:"xandir2",x:12,y:8,spr:"xandir",name:"Xandir"},{id:"hermes",x:16,y:7,spr:"human",name:"Hermes"},{id:"armor",x:6,y:10,spr:"chest",name:"Belt of Truth"},{id:"armor2",x:19,y:9,spr:"chest",name:"Breastplate"},{id:"armor3",x:12,y:11,spr:"chest",name:"Shield of Faith"}],
   warps:[{x:2,y:8,to:"fortress",tx:19,ty:6}]});
 
-M("cainhall","Throne of Master Mahan",["marked","ach","snake"],0.07,{floor:"#2a2018",wall:"#181410",dec:"#603018",bg:"#0c0808"},`
+M("cainhall","Throne of Master Mahan",["marked","ach","snake"],0.044,{floor:"#2a2018",wall:"#181410",dec:"#603018",bg:"#0c0808"},`
 ####################
 #..................#
 #....##########....#
@@ -470,7 +471,7 @@ M("cainhall","Throne of Master Mahan",["marked","ach","snake"],0.07,{floor:"#2a2
 `,{npcs:[{id:"cain",x:9,y:4,spr:"cain",name:"Cain"},{id:"ridnax",x:7,y:7,spr:"boss",name:"Ridnax"},{id:"prince",x:12,y:4,spr:"lucifer",name:"The Prince"}],
   warps:[{x:10,y:11,to:"fortress",tx:10,ty:2},{x:1,y:8,to:"tartarus",tx:2,ty:18,need:"cainDown"}]});
 
-M("tartarus","Tartarus / The Eye",["snake","eye","marked"],0.08,{floor:"#1a1830",wall:"#0c0a18",dec:"#c8e8f0",bg:"#080814"},`
+M("tartarus","Tartarus / The Eye",["snake","eye","marked"],0.05,{floor:"#1a1830",wall:"#0c0a18",dec:"#c8e8f0",bg:"#080814"},`
 ############################
 #..........................#
 #.##.##.########.##.##.##.##
@@ -510,7 +511,7 @@ M("nod","The Land of Nod",[],0,{floor:"#c8b890",wall:"#6a5038",dec:"#f0e080",bg:
 `,{npcs:[{id:"echo",x:6,y:4,spr:"jarom",name:"A Lullaby"},{id:"cola",x:12,y:4,spr:"chest",name:"Cola Cache"}],
   warps:[{x:16,y:10,to:"fortress",tx:10,ty:11}]});
 
-M("tower","The Forgotten Tower",["ach","marked","ach"],0.06,{floor:"#3a3428",wall:"#1c1810",dec:"#8a4030",bg:"#100c08"},`
+M("tower","The Forgotten Tower",["ach","marked","ach"],0.038,{floor:"#3a3428",wall:"#1c1810",dec:"#8a4030",bg:"#100c08"},`
 ####################
 #..................#
 #..####......####..#
@@ -528,7 +529,7 @@ M("tower","The Forgotten Tower",["ach","marked","ach"],0.06,{floor:"#3a3428",wal
 `,{npcs:[{id:"infernis",x:4,y:3,spr:"boss",name:"Infernis"},{id:"mark",x:15,y:3,spr:"chest",name:"Mark of Cain"}],
   warps:[{x:1,y:7,to:"fortress",tx:10,ty:11}]});
 
-M("vault","Vault of Avarice",["suit","wretch","ach"],0.07,{floor:"#4a3a28",wall:"#2a2018",dec:"#c8a040",bg:"#140c08"},`
+M("vault","Vault of Avarice",["suit","wretch","ach"],0.044,{floor:"#4a3a28",wall:"#2a2018",dec:"#c8a040",bg:"#140c08"},`
 ####################
 #..................#
 #.####........####.#
@@ -545,7 +546,7 @@ M("vault","Vault of Avarice",["suit","wretch","ach"],0.07,{floor:"#4a3a28",wall:
 `,{npcs:[{id:"prisoner",x:15,y:3,spr:"old",name:"Johannes"},{id:"avarice",x:8,y:1,spr:"chest",name:"Avarice Cache"}],
   warps:[{x:18,y:11,to:"fortress",tx:10,ty:11}]});
 
-M("london","London Falling",["imp","horse","legion"],0.07,{floor:"#3a3a48",wall:"#2a2a38",dec:"#c04040",bg:"#12121c"},`
+M("london","London Falling",["imp","horse","legion"],0.044,{floor:"#3a3a48",wall:"#2a2a38",dec:"#c04040",bg:"#12121c"},`
 ##########################
 #BBBBBB##BBBB##BBBBBBBBBB#
 #B....B##B..B##B........B#
@@ -563,7 +564,7 @@ M("london","London Falling",["imp","horse","legion"],0.07,{floor:"#3a3a48",wall:
 `,{npcs:[{id:"queen",x:18,y:6,spr:"queen",name:"Queen of Light"},{id:"beelzebub",x:8,y:7,spr:"boss",name:"Beelzebub"}],
   warps:[{x:1,y:11,to:"fortress",tx:10,ty:11}]});
 
-M("blacker","Blacker Forest",["thorn","wretch","snake"],0.07,{floor:"#1a2a18",wall:"#0c180c",dec:"#244028",bg:"#081008"},`
+M("blacker","Blacker Forest",["thorn","wretch","snake"],0.044,{floor:"#1a2a18",wall:"#0c180c",dec:"#244028",bg:"#081008"},`
 ########################
 #TTTTTTTTTTTTTTTTTTTTTT#
 #T....................T#
@@ -581,7 +582,7 @@ M("blacker","Blacker Forest",["thorn","wretch","snake"],0.07,{floor:"#1a2a18",wa
 `,{npcs:[{id:"wilhelm",x:6,y:7,spr:"old",name:"Wilhelm"},{id:"jakob",x:10,y:7,spr:"old",name:"Jakob"},{id:"azazel",x:12,y:11,spr:"boss",name:"Azazel"}],
   warps:[{x:2,y:8,to:"fortress",tx:10,ty:11}]});
 
-M("nineveh","Nineveh Sands",["snake","marked","flame"],0.07,{floor:"#c8b070",wall:"#8a7040",dec:"#203818",bg:"#c8a060"},`
+M("nineveh","Nineveh Sands",["snake","marked","flame"],0.044,{floor:"#c8b070",wall:"#8a7040",dec:"#203818",bg:"#c8a060"},`
 ######################
 #....................#
 #....^^^^............#
@@ -1440,11 +1441,41 @@ function onStep(){
   encounterLock--;
   const m=map();
   if(m.encRate && encounterLock<=0 && m.enc.length && Math.random()<m.encRate && !window.TLA?.noEnc){
-    encounterLock=12;
+    encounterLock=16;
     const group=[]; const n=1+Math.floor(Math.random()*Math.min(3,m.enc.length));
     for(let i=0;i<n;i++) group.push(m.enc[Math.floor(Math.random()*m.enc.length)]);
     startBattle(group);
   }
+}
+
+function stOf(u){ if(!u.st) u.st={}; return u.st; }
+function inflict(u,kind,n){ const s=stOf(u); s[kind]=Math.max(s[kind]||0,n); }
+function cleanse(u){ if(!u) return; u.st={}; }
+function statusLabel(u){
+  const s=u&&u.st||{}; const t=[];
+  if(s.burn) t.push("BRN"); if(s.poison) t.push("PSN"); if(s.song) t.push("SNG");
+  if(s.sleep) t.push("SLP"); if(s.mute) t.push("MUT"); if(s.mark) t.push("MRK");
+  return t.join(" ");
+}
+function tickStatus(u){
+  const s=stOf(u); const notes=[];
+  if(s.burn){ const d=Math.max(3,Math.min(10,Math.round(u.maxHp*0.055))); u.hp=Math.max(0,u.hp-d); s.burn--; notes.push("burn "+d); if(!s.burn) delete s.burn; }
+  if(s.poison){ const d=Math.max(2,Math.min(8,Math.round(u.maxHp*0.04))); u.hp=Math.max(0,u.hp-d); s.poison--; notes.push("venom "+d); if(!s.poison) delete s.poison; }
+  if(s.song){ s.song--; if(!s.song) delete s.song; }
+  if(s.mute){ s.mute--; if(!s.mute) delete s.mute; }
+  if(s.mark){ s.mark--; if(!s.mark) delete s.mark; }
+  if(u.hp<=0) u.alive=false;
+  return notes;
+}
+function hurt(atk,def,pow,el){
+  const defStat=def.defending?def.def*2:def.def;
+  let d=dmgCalc(atk.atk,defStat,pow,el||atk.el,def.el);
+  if(def.st&&def.st.mark) d=Math.round(d*1.4);
+  def.hp=Math.max(0,def.hp-d);
+  if(def.hp<=0) def.alive=false;
+  def.defending=false;
+  if(def.st&&def.st.sleep) delete def.st.sleep;
+  return d;
 }
 
 function cloneEnemy(id){
@@ -1453,7 +1484,7 @@ function cloneEnemy(id){
   const sc=e.boss?1+(Math.max(0,lv-8)*0.03):1+(lv-1)*0.07;
   const hp=Math.round(e.hp*sc);
   return {sid:id,name:e.name,hp,maxHp:hp,atk:Math.round(e.atk*sc),def:Math.round(e.def*sc),spd:e.spd,
-    exp:Math.round(e.exp*sc),manna:Math.round(e.manna*sc),el:e.el,pal:e.pal,boss:!!e.boss,alive:true};
+    exp:Math.round(e.exp*sc),manna:Math.round(e.manna*sc),el:e.el,pal:e.pal,boss:!!e.boss,alive:true,st:{}};
 }
 
 function startBattle(ids,onWin){
@@ -1461,17 +1492,19 @@ function startBattle(ids,onWin){
   hideCard();
   if(mode==="battle" && battle && !battle.over) return;
   show(els.dialog,false); show(els.menu,false); show(els.prompt,false);
-  state.party.forEach(id=>{const h=state.heroes[id]; if(h.hp<=0) h.hp=Math.max(1,Math.floor(h.maxHp*0.3)); h.alive=h.hp>0; h.defending=false;});
+  state.party.forEach(id=>{const h=state.heroes[id]; if(h.hp<=0) h.hp=Math.max(1,Math.floor(h.maxHp*0.3)); h.alive=h.hp>0; h.defending=false; h.st={};});
   const foes=ids.map(cloneEnemy).filter(Boolean);
   if(!foes.length){ toast("Nothing answers."); return; }
-  if(foes.some(e=>e.sid==="lucifer") && (state.flags.links||0)>=3){
+  const links=state.flags.links||0;
+  if(foes.some(e=>e.sid==="lucifer") && links>=3){
     toast("Druiel's chain tightens!");
     foes.forEach(e=>{
       if(e.sid==="lucifer"){ e.def=Math.max(4,e.def-8); e.maxHp=Math.max(80,e.maxHp-80); e.hp=e.maxHp; }
     });
   }
   battle={enemies:foes, heroes:state.party.map(id=>state.heroes[id]),
-    queue:[], sel:0, menu:"main", target:0, log:"A presence bars the way!", onWin:onWin||null, flash:0};
+    queue:[], sel:0, menu:"main", target:0, log:"A presence bars the way!", onWin:onWin||null, flash:0,
+    chain:links, tighten:0};
   buildQueue();
   mode="battle";
   show(els.bui,true); show(els.blog,true); show(els.hud,false);
@@ -1496,7 +1529,7 @@ function checkEnd(){
 }
 
 function nextTurn(){
-  if(!battle || mode!=="battle") return;
+  if(!battle || mode!=="battle" || battle.over) return;
   if(checkEnd()) return;
   if(!battle.queue.length) buildQueue();
   let t=battle.queue.shift();
@@ -1508,23 +1541,126 @@ function nextTurn(){
   if(!t){ if(!checkEnd()){ buildQueue(); t=battle.queue.shift(); } else return; }
   if(!t) return;
   battle.cur=t;
+  const u=t.side==="h"?battle.heroes[t.i]:battle.enemies[t.i];
+  const notes=tickStatus(u);
+  if(notes.length) battle.log=u.name+" suffers "+notes.join(", ")+".";
+  if(u.hp<=0){ if(notes.length) paintBattle(); setTimeout(nextTurn, notes.length?420:40); return; }
+  if(u.st&&u.st.sleep){
+    if(Math.random()<0.3){ delete u.st.sleep; battle.log=u.name+" stirs."; paintBattle(); }
+    else {
+      u.st.sleep--; if(!u.st.sleep) delete u.st.sleep;
+      battle.log=u.name+" sleeps."; paintBattle(); setTimeout(nextTurn, 420); return;
+    }
+  }
+  if(t.side==="e" && u.st&&u.st.song){
+    battle.log=u.name+" sways to Jubal's strain.";
+    paintBattle(); setTimeout(nextTurn, 450); return;
+  }
   if(t.side==="h"){ battle.menu="main"; battle.sel=0; paintBattle(); }
-  else setTimeout(()=>{ if(battle&&mode==="battle") enemyAct(t); }, 420);
+  else setTimeout(()=>{ if(battle&&mode==="battle"&&!battle.over) enemyAct(t); }, 420);
+}
+
+function pickHero(){ const hs=alive("h"); return hs[Math.floor(Math.random()*hs.length)]; }
+
+function finishEnemy(msg){
+  if(!battle||battle.over) return;
+  battle.log=msg; sfx("hurt"); battle.flash=8; paintBattle();
+  setTimeout(nextTurn, 520);
 }
 
 function enemyAct(t){
-  if(!battle||mode!=="battle") return;
+  if(!battle||mode!=="battle"||battle.over) return;
   const e=battle.enemies[t.i]; if(!e||e.hp<=0){ nextTurn(); return; }
-  const hs=alive("h"); if(!hs.length) return;
-  const tgt=hs[Math.floor(Math.random()*hs.length)];
-  const def=tgt.defending?tgt.def*2:tgt.def;
-  const dmg=dmgCalc(e.atk,def,1,e.el,null);
-  tgt.hp=Math.max(0,tgt.hp-dmg);
-  if(tgt.hp<=0) tgt.alive=false;
-  tgt.defending=false;
-  battle.log=e.name+" strikes "+tgt.name+" for "+dmg+"!";
-  sfx("hurt"); battle.flash=8; paintBattle();
-  setTimeout(nextTurn, 500);
+  if(!alive("h").length) return;
+  if(e.sid==="tree"){
+    battle.menu="tree"; battle.sel=0;
+    battle.log="The Tree of Death offers its fruit. Green. Rotting. Almost finished.";
+    paintBattle(); return;
+  }
+  const tgt=pickHero(); if(!tgt) return;
+  const sid=e.sid;
+  if(sid==="vesuvius"){
+    const hits=alive("h").map(h=>{ inflict(h,"burn",2); return hurt(e,h,0.68,"fire"); });
+    finishEnemy("The mountain's grief falls on everyone. "+hits[0]+" and a light burn.");
+    return;
+  }
+  if(sid==="spark"){
+    alive("h").forEach(h=>{ inflict(h,"burn",3); hurt(e,h,0.52,"fire"); });
+    finishEnemy("Sparkslinger sets the house alight.");
+    return;
+  }
+  if(sid==="ashb"){
+    alive("h").forEach(h=>{ h.mp=Math.max(0,h.mp-6); });
+    inflict(tgt,"burn",2);
+    const d=hurt(e,tgt,1.0,"fire");
+    finishEnemy("Ashbreather fills the lungs. "+tgt.name+" takes "+d+".");
+    return;
+  }
+  if(sid==="dusteater"){
+    if(Math.random()<0.55){ inflict(tgt,"sleep",2); const d=hurt(e,tgt,0.55,"dark"); finishEnemy("Dusteater breathes dust. "+tgt.name+" sways. "+d+"."); }
+    else { const d=hurt(e,tgt,1.15,"dark"); finishEnemy("Dusteater strikes "+tgt.name+" for "+d+"."); }
+    return;
+  }
+  if(sid==="jennings"||sid==="beelzebub"){
+    inflict(tgt,"poison",3);
+    const d=hurt(e,tgt,1.05,"dark");
+    finishEnemy((sid==="beelzebub"?"Beelzebub":"Puppet Jennings")+" sends the flies. "+tgt.name+" takes "+d+" and venom.");
+    return;
+  }
+  if(sid==="ares"){
+    e.atk=Math.min(40,e.atk+2);
+    const d=hurt(e,tgt,1.15,"phys");
+    finishEnemy("Ares grows hungrier. "+tgt.name+" takes "+d+".");
+    return;
+  }
+  if(sid==="cain"){
+    inflict(tgt,"mark",3);
+    const d=hurt(e,tgt,1.12,"dark");
+    finishEnemy("Cain writes the first murder on "+tgt.name+". "+d+".");
+    return;
+  }
+  if(sid==="ridnax"){
+    const pow=0.4+Math.random()*1.45;
+    const d=hurt(e,tgt,pow,"dark");
+    finishEnemy("Ridnax's blow comes crooked. "+tgt.name+" takes "+d+".");
+    return;
+  }
+  if(sid==="ganosh"){
+    const rage=e.hp<e.maxHp*0.5;
+    const d=hurt(e,tgt,rage?1.55:1.08,"phys");
+    finishEnemy(rage?("Ganosh: anger is a virtue. "+d+"."):(e.name+" strikes "+tgt.name+" for "+d+"."));
+    return;
+  }
+  if(sid==="infernis"){
+    if(Math.random()<0.4){ finishEnemy("The collar of Cain yanks Infernis still."); return; }
+    inflict(tgt,"mute",2);
+    const d=hurt(e,tgt,1.05,"fire");
+    finishEnemy("Infernis burns "+tgt.name+" for "+d+". The collar bites him too.");
+    return;
+  }
+  if(sid==="azazel"){
+    inflict(tgt,"mute",3);
+    const d=hurt(e,tgt,1.12,"holy");
+    finishEnemy("Azazel takes the tongue. "+tgt.name+" takes "+d+".");
+    return;
+  }
+  if(sid==="lucifer"){
+    if((battle.chain||0)>=3){
+      battle.tighten=(battle.tighten||0)+1;
+      e.atk=Math.max(12,e.atk-1);
+      e.def=Math.max(4,e.def-1);
+      e.hp=Math.max(1,e.hp-Math.round(e.maxHp*0.04));
+      if(e.hp<=0){ e.alive=false; finishEnemy("The gold chain finishes what Heaven began."); return; }
+      const d=hurt(e,tgt,0.9,"holy");
+      finishEnemy("The chain tightens. Light still cuts "+tgt.name+" for "+d+".");
+      return;
+    }
+    const d=hurt(e,tgt,1.05,"holy");
+    finishEnemy("The Son of the Morning strikes "+tgt.name+" for "+d+".");
+    return;
+  }
+  const d=hurt(e,tgt,1,e.el);
+  finishEnemy(e.name+" strikes "+tgt.name+" for "+d+"!");
 }
 
 function dmgCalc(atk,def,pow,el,tgtEl){
@@ -1534,14 +1670,42 @@ function dmgCalc(atk,def,pow,el,tgtEl){
 }
 
 function heroCommand(which){
-  if(mode!=="battle"||!battle||battle.over||!battle.cur||battle.cur.side!=="h") return;
+  if(mode!=="battle"||!battle||battle.over) return;
+  if(battle.menu==="tree"){
+    if(which==="up"||which==="down"||which==="left"||which==="right") battle.sel=1-battle.sel;
+    if(which==="cancel"){ battle.sel=1; which="ok"; }
+    if(which==="ok"){
+      const tree=battle.enemies.find(e=>e.sid==="tree"&&e.hp>0);
+      const eater=alive("h").slice().sort((a,b)=>b.hp-a.hp)[0];
+      if(!tree||!eater){ battle.menu="main"; nextTurn(); return; }
+      if(battle.sel===0){
+        const bite=Math.max(8,Math.round(eater.maxHp*0.22));
+        eater.hp=Math.max(0,eater.hp-bite);
+        if(eater.hp<=0) eater.alive=false;
+        inflict(eater,"poison",3);
+        tree.hp=Math.max(0,tree.hp-(70+Math.floor(Math.random()*25)));
+        if(tree.hp<=0) tree.alive=false;
+        battle.log=eater.name+" tastes the fruit. It was never quite finished. The tree still screams.";
+      } else {
+        const d=hurt(tree,eater,1.25,"dark");
+        battle.log="The branches close like an arthritic hand. "+eater.name+" takes "+d+".";
+      }
+      battle.menu="main"; sfx("hurt"); battle.flash=8; paintBattle();
+      setTimeout(nextTurn, 520);
+    }
+    paintBattle(); return;
+  }
+  if(!battle.cur||battle.cur.side!=="h") return;
   const h=battle.heroes[battle.cur.i];
   if(battle.menu==="main"){
     if(which==="ok"){
       const opts=["Fight","Skill","Item","Defend"];
       const c=opts[battle.sel];
       if(c==="Fight"){battle.menu="target"; battle.skill=null; battle.item=null; battle.target=firstLive("e");}
-      if(c==="Skill"){battle.menu="skill"; battle.sel=0;}
+      if(c==="Skill"){
+        if(h.st&&h.st.mute){ battle.log=h.name+" cannot shape a word."; sfx("hurt"); }
+        else { battle.menu="skill"; battle.sel=0; }
+      }
       if(c==="Item"){battle.menu="item"; battle.sel=0;}
       if(c==="Defend"){h.defending=true; battle.log=h.name+" stands ready."; sfx("ok"); setTimeout(nextTurn,350);}
     }
@@ -1555,6 +1719,7 @@ function heroCommand(which){
     if(which==="ok"){
       const sid=sk[battle.sel], S=SKILLS[sid];
       if(h.mp<S.mp){battle.log="Not enough spirit."; sfx("hurt"); paintBattle(); return;}
+      if(h.st&&h.st.mute){battle.log=h.name+" cannot shape a word."; sfx("hurt"); paintBattle(); return;}
       battle.skill=sid;
       if(S.tgt==="enemy"||S.tgt==="enemies"){battle.menu="target"; battle.target=firstLive("e");}
       else if(S.tgt==="ally"){battle.menu="targetH"; battle.target=0;}
@@ -1603,23 +1768,42 @@ function resolveHero(){
     if(it.healAll){battle.heroes.forEach(x=>{if(x.hp>0)x.hp=Math.min(x.maxHp,x.hp+it.heal);}); battle.log="The feast is shared.";}
     if(it.mp){tgt.mp=Math.min(tgt.maxMp,tgt.mp+it.mp); battle.log=tgt.name+" drinks Serche.";}
     if(it.mpAll){battle.heroes.forEach(x=>{if(x.hp>0)x.mp=Math.min(x.maxMp,x.mp+it.mpAll);}); battle.log="Let the music take you away.";}
-    if(it.dmg){const e=battle.enemies[battle.target]||alive("e")[0]; if(e){e.hp=Math.max(0,e.hp-it.dmg); battle.log="The diamond bites "+e.name+"!";}}
+    if(it.cleanse){
+      if(it.healAll||it.mpAll) battle.heroes.forEach(cleanse); else cleanse(tgt);
+      battle.log=(tgt.name||h.name)+" is clean of burn and venom.";
+    }
+    if(it.song){ alive("e").forEach(e=>inflict(e,"song",2)); battle.log="Let the music take you away. The dark forgets its purpose."; }
+    if(it.dmg){
+      const e=battle.enemies[battle.target]||alive("e")[0];
+      if(e){
+        let d=it.dmg;
+        if(battle.item==="fruit"&&e.sid==="tree") d=Math.round(d*1.75);
+        e.hp=Math.max(0,e.hp-d);
+        if(e.hp<=0) e.alive=false;
+        battle.log=(battle.item==="fruit"&&e.sid==="tree")?"The unfinished fruit turns on its tree. "+d+".":("The diamond bites "+e.name+"!");
+      }
+    }
     if(it.rnd){const k=Math.random(); if(k<.5){h.hp=Math.min(h.maxHp,h.hp+40); battle.log="The wishbone blesses.";} else {alive("e").forEach(e=>e.hp=Math.max(0,e.hp-25)); battle.log="The wishbone... interprets Judy."}}
-    state.items[battle.item]--; sfx("heal");
+    state.items[battle.item]--; sfx(it.dmg?"hit":"heal");
   } else if(battle.skill){
     const S=SKILLS[battle.skill]; h.mp-=S.mp;
     if(S.heal){
       const apply=u=>{if(u.hp>0) u.hp=Math.min(u.maxHp,u.hp+S.heal);};
       if(S.tgt==="allies") battle.heroes.forEach(apply); else if(S.tgt==="self") apply(h); else apply(battle.heroes[battle.target]||h);
-      battle.log=h.name+" uses "+S.name+".";
+      if(S.cleanse){
+        if(S.tgt==="allies") battle.heroes.forEach(cleanse);
+        else if(S.tgt==="self") cleanse(h);
+        else cleanse(battle.heroes[battle.target]||h);
+      }
+      battle.log=h.name+" uses "+S.name+(S.cleanse?" The house is clean.":".");
       sfx("heal");
     } else {
       const tgts=S.tgt==="enemies"?alive("e"):[battle.enemies[battle.target]].filter(e=>e&&e.hp>0);
       let last=0;
       tgts.forEach(e=>{
         if(!e) return;
-        const d=dmgCalc(h.atk,e.def,S.pow,S.el,e.el);
-        e.hp=Math.max(0,e.hp-d); last=d;
+        const d=hurt(h,e,S.pow,S.el);
+        last=d;
         if(S.drain) h.hp=Math.min(h.maxHp,h.hp+Math.round(d*0.35));
       });
       battle.log=h.name+" "+S.name+"! "+last+" damage.";
@@ -1629,8 +1813,7 @@ function resolveHero(){
     const e=battle.enemies[battle.target];
     if(!e||e.hp<=0){ battle.target=firstLive("e"); if(battle.target<0){ nextTurn(); return; } }
     const foe=battle.enemies[battle.target];
-    const d=dmgCalc(h.atk,foe.def,1,"phys",foe.el);
-    foe.hp=Math.max(0,foe.hp-d);
+    const d=hurt(h,foe,1,"phys");
     battle.log=h.name+" attacks! "+d+" damage.";
     sfx("hit");
   }
@@ -1642,6 +1825,7 @@ function resolveHero(){
 function winBattle(){
   if(!battle || battle.over) return;
   battle.over=true;
+  battle.heroes.forEach(h=>{h.st={}; h.defending=false;});
   const exp=battle.enemies.reduce((a,e)=>a+e.exp,0);
   const man=battle.enemies.reduce((a,e)=>a+e.manna,0);
   state.manna+=man;
@@ -1662,6 +1846,7 @@ function winBattle(){
 function loseBattle(){
   if(!battle || battle.over) return;
   battle.over=true;
+  battle.heroes.forEach(h=>{h.st={}; h.defending=false;});
   battle.log="The party falls...";
   paintBattle();
   setTimeout(()=>{
@@ -1685,11 +1870,16 @@ function paintBattle(){
   } else if(battle.menu==="item"){
     itemList().forEach((it,i)=>{cmds+=`<button class="${i===battle.sel?"on":""}">${it.name} x${it.n}</button>`;});
     if(!itemList().length) cmds="<button class='on'>None</button>";
+  } else if(battle.menu==="tree"){
+    ["Taste the fruit","Refuse"].forEach((c,i)=>{cmds+=`<button class="${i===battle.sel?"on":""}">${c}</button>`;});
   } else {
     cmds="<button class='on'>Choose</button>";
   }
   els.cmds.innerHTML=cmds;
-  els.bp.innerHTML=battle.heroes.map((h,i)=>`<div class="row ${h.hp<=0?"dead":""}"><span class="nm">${h.name}</span><span>${h.hp}/${h.maxHp}</span><span>MP ${h.mp}</span></div>`).join("");
+  els.bp.innerHTML=battle.heroes.map((h,i)=>{
+    const tag=statusLabel(h);
+    return `<div class="row ${h.hp<=0?"dead":""}"><span class="nm">${h.name}${tag?`<span class="st"> ${tag}</span>`:""}</span><span>${h.hp}/${h.maxHp}</span><span>MP ${h.mp}</span></div>`;
+  }).join("");
 }
 
 function openMenu(){
@@ -1805,6 +1995,7 @@ function useFieldItem(id){
   else if(it.mp){wounded.mp=Math.min(wounded.maxMp,wounded.mp+it.mp); toast(wounded.name+" drinks.");}
   else {toast(id==="link"?"The links are not for the living to spend.":"Save that for battle."); return;}
   if(it.mp && it.heal){wounded.mp=Math.min(wounded.maxMp,wounded.mp+it.mp);}
+  if(it.cleanse){ cleanse(wounded); toast(wounded.name+" is clean of burn and venom."); }
   state.items[id]--; sfx("heal"); renderHUD();
 }
 
@@ -2102,7 +2293,15 @@ function drawBattleScene(){
     const x=big?148:150+i*28, y=big?32:48+(i%2)*18;
     if(battle.menu==="target"&&battle.target===i && anim%20<12){ctx.strokeStyle="#e4c56a"; ctx.strokeRect(x-3,y-3,big?26:22,big?34:26);}
     drawFoe(e.sid, x, y, big);
+    if(e.sid==="lucifer" && (battle.chain||0)>=3){
+      ctx.strokeStyle="#e4c56a"; ctx.lineWidth=2;
+      ctx.strokeRect(x+1,y+7,big?20:14,big?18:12);
+      ctx.strokeRect(x+4,y+11,big?14:8,big?10:6);
+      ctx.fillStyle="#e4c56a"; ctx.fillRect(x+6,y+5,4,3);
+    }
     ctx.fillStyle="#f8f0d8"; ctx.font="6px monospace"; ctx.fillText(e.name.slice(0,12),x-4,y-4);
+    const tag=statusLabel(e);
+    if(tag){ ctx.fillStyle="#d07850"; ctx.fillText(tag,x-4,y-10); }
     ctx.fillStyle="#000"; ctx.fillRect(x,y+(big?30:22),16,2);
     ctx.fillStyle="#d04048"; ctx.fillRect(x,y+(big?30:22),Math.max(1,16*e.hp/e.maxHp),2);
   });
@@ -2231,18 +2430,20 @@ window.TLA={
       flags:state&&Object.assign({},state.flags), manna:state&&state.manna,
       hp:state&&state.party.map(id=>({id,hp:state.heroes[id].hp,lv:state.heroes[id].lv})),
       dialog:mode==="dialog"&&dialogQ[dialogI]?{n:dialogQ[dialogI].n,t:dialogQ[dialogI].t,i:dialogI,len:dialogQ.length}:null,
-      battle:battle&&{log:battle.log,over:!!battle.over,menu:battle.menu,ehp:battle.enemies.map(e=>e.hp),hhp:battle.heroes.map(h=>h.hp)},
+      battle:battle&&{log:battle.log,over:!!battle.over,menu:battle.menu,ehp:battle.enemies.map(e=>e.hp),hhp:battle.heroes.map(h=>h.hp),
+        st:battle.heroes.map(h=>statusLabel(h)),est:battle.enemies.map(e=>statusLabel(e)),chain:battle.chain||0,tighten:battle.tighten||0},
       lore:state&&(state.lore||[]).map(l=>l.t),
       choice:mode==="choice"&&choice?{who:choice.who,prompt:choice.prompt,sel:choice.sel,opts:choice.opts.map(o=>o.label)}:null,
       card:cardT>0&&state?state.map:null};
   },
   warp, startGame,
   flag(k,v){ if(state) state.flags[k]=v; },
-  kill(){ if(battle && !battle.over){ battle.enemies.forEach(e=>e.hp=0); nextTurn(); } },
+  kill(){ if(battle && !battle.over){ battle.menu="main"; battle.enemies.forEach(e=>e.hp=0); nextTurn(); } },
   talk(id){ const pages=script(id); if(pages&&pages.length) queueDialog(pages, pages._done); },
   pick(i){ if(mode==="choice"&&choice){ choice.sel=Math.max(0,Math.min(choice.opts.length-1,i|0)); choiceInput("ok"); } },
   leave(){ if(mode==="choice") choiceInput("cancel"); },
-  mash(){ if(mode==="dialog"){ typed=9999; advanceDialog(); } else if(mode==="choice") this.leave(); else if(mode==="battle") this.kill(); }
+  mash(){ if(mode==="dialog"){ typed=9999; advanceDialog(); } else if(mode==="choice") this.leave(); else if(mode==="battle") this.kill(); },
+  fight(ids,onWin){ startBattle(ids,onWin); }
 };
 
 requestAnimationFrame(loop);

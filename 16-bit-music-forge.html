@@ -232,7 +232,35 @@
       overflow: hidden;
     }
 
+    .preview-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 8px;
+    }
+
+    @media (max-width: 1080px) {
+      .preview-row { grid-template-columns: 1fr; }
+    }
+
     canvas { display: block; width: 100%; height: 100%; }
+
+    #stage {
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .stage-tag {
+      pointer-events: none;
+      position: absolute;
+      left: 6px;
+      top: 5px;
+      z-index: 2;
+      color: var(--gold);
+      font-size: 9px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 #040208;
+    }
 
     .scanlines {
       pointer-events: none;
@@ -456,9 +484,16 @@
       <main class="panel">
         <div class="song-title" id="songTitle" contenteditable="true" spellcheck="false" title="Click to rename">AURORA PLAINS</div>
         <div class="meta" id="songMeta">C major · 132 BPM · 8 bars</div>
-        <div class="viz-wrap">
-          <canvas id="wave" width="900" height="92"></canvas>
-          <div class="scanlines"></div>
+        <div class="preview-row">
+          <div class="viz-wrap">
+            <canvas id="wave" width="900" height="92"></canvas>
+            <div class="scanlines"></div>
+          </div>
+          <div class="viz-wrap stage-wrap">
+            <div class="stage-tag" id="stageTag">Stage</div>
+            <canvas id="stage" width="256" height="92"></canvas>
+            <div class="scanlines"></div>
+          </div>
         </div>
         <div class="roll-head">
           <h2 style="margin:0">Tracker</h2>
@@ -471,7 +506,7 @@
         <div class="roll-wrap">
           <canvas id="pianoRoll" width="1024" height="420"></canvas>
         </div>
-        <p class="help">Click empty cells to write notes, click a note to erase it, drag right on a note to lengthen it. <kbd>Space</kbd> plays, <kbd>G</kbd> generates, <kbd>Z</kbd> undoes.</p>
+        <p class="help">The stage on the right is a tiny in-game preview — the hero walks while the loop plays. Click empty cells to write notes, click a note to erase it, drag right on a note to lengthen it. <kbd>Space</kbd> plays, <kbd>G</kbd> generates, <kbd>Z</kbd> undoes.</p>
       </main>
 
       <aside class="panel">
@@ -681,6 +716,8 @@
       play: $("playBtn"),
       toast: $("toast"),
       wave: $("wave"),
+      stage: $("stage"),
+      stageTag: $("stageTag"),
       roll: $("pianoRoll"),
       sfx: $("sfxPad"),
       library: $("librarySelect")
@@ -701,7 +738,9 @@
       paint: null,
       raf: 0,
       history: [],
-      sfxGain: null
+      sfxGain: null,
+      stageX: 64,
+      stageClock: 0
     };
 
     function $(id) { return document.getElementById(id); }
@@ -1833,6 +1872,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
       ui.meta.textContent = NOTE_NAMES[song.key] + " " + SCALE_LABELS[song.scale] + " · " + song.tempo + " BPM · " + song.bars + " bars · seed " + song.seed;
       renderMixer();
       drawRoll();
+      paintStage();
       try { localStorage.setItem("bitforge-song", JSON.stringify(song)); } catch (err) { /* ignore */ }
     }
 
@@ -2089,6 +2129,108 @@ window.BitForgePlay = async function BitForgePlay(song) {
       return mode;
     }
 
+    function paintStage() {
+      const canvas = ui.stage;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.imageSmoothingEnabled = false;
+      const mood = (state.song && state.song.mood) || state.mood || "overworld";
+      const pal = {
+        overworld: { sky0: "#173a72", sky1: "#6cb0e8", hill: "#245c32", ground: "#3f8f45", dirt: "#6a4424", prop: "#2d7a38", accent: "#f0c75e" },
+        battle: { sky0: "#2a0610", sky1: "#8a1828", hill: "#4a1020", ground: "#6a2434", dirt: "#2a1018", prop: "#c84a4a", accent: "#ff6b9d" },
+        town: { sky0: "#241848", sky1: "#6a88c8", hill: "#3a3858", ground: "#7a6a52", dirt: "#4a3a28", prop: "#c45a4a", accent: "#ffe9a6" },
+        dungeon: { sky0: "#08060e", sky1: "#1a1830", hill: "#1c1830", ground: "#2a2440", dirt: "#161022", prop: "#f0c75e", accent: "#9b7dff" },
+        title: { sky0: "#061018", sky1: "#163a68", hill: "#1a3058", ground: "#2a4868", dirt: "#102030", prop: "#5ee2ff", accent: "#ffe9a6" },
+        victory: { sky0: "#3a1860", sky1: "#e87830", hill: "#c45a28", ground: "#d4a04a", dirt: "#8a5020", prop: "#ffe9a6", accent: "#7dffb3" },
+        mystery: { sky0: "#081018", sky1: "#1a3048", hill: "#163040", ground: "#204050", dirt: "#0e1820", prop: "#5ee2ff", accent: "#c084fc" },
+        castle: { sky0: "#14102c", sky1: "#3a3870", hill: "#2a2860", ground: "#4a4868", dirt: "#242038", prop: "#f0c75e", accent: "#ff6b9d" }
+      }[mood] || {
+        sky0: "#173a72", sky1: "#6cb0e8", hill: "#245c32", ground: "#3f8f45", dirt: "#6a4424", prop: "#2d7a38", accent: "#f0c75e"
+      };
+      const now = performance.now();
+      const dt = Math.min(0.05, (now - (state.stageClock || now)) / 1000);
+      state.stageClock = now;
+      const tempo = state.song ? state.song.tempo : 120;
+      if (state.playing) state.stageX += (tempo / 60) * 22 * dt;
+      const scroll = state.stageX;
+      const px = (x, y, ww, hh, color) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(Math.round(x), Math.round(y), ww, hh);
+      };
+      const sky = ctx.createLinearGradient(0, 0, 0, 58);
+      sky.addColorStop(0, pal.sky0);
+      sky.addColorStop(1, pal.sky1);
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, 70);
+      if (mood === "title" || mood === "mystery" || mood === "dungeon") {
+        for (let i = 0; i < 18; i++) {
+          const sx = (i * 37 + Math.floor(scroll * 0.15)) % w;
+          px(sx, 6 + (i * 13) % 28, 1, 1, i % 4 === 0 ? pal.accent : "#f6edd8");
+        }
+      } else {
+        const cloudX = -((scroll * 0.25) % (w + 40)) + w;
+        px(cloudX, 10, 18, 4, "rgba(255,255,255,.55)");
+        px(cloudX + 6, 7, 14, 4, "rgba(255,255,255,.45)");
+        px(cloudX + 90, 16, 16, 3, "rgba(255,255,255,.35)");
+      }
+      const hillOff = -((scroll * 0.4) % 64);
+      for (let x = hillOff - 32; x < w + 32; x += 64) {
+        ctx.fillStyle = pal.hill;
+        ctx.beginPath();
+        ctx.moveTo(x, 70);
+        ctx.lineTo(x + 32, 42);
+        ctx.lineTo(x + 64, 70);
+        ctx.fill();
+      }
+      px(0, 70, w, 6, pal.ground);
+      px(0, 76, w, 16, pal.dirt);
+      for (let x = -((Math.floor(scroll) % 8)); x < w; x += 8) px(x, 70, 4, 1, pal.accent);
+      const propOff = -((scroll * 0.85) % 48);
+      for (let x = propOff - 24; x < w + 24; x += 48) {
+        if (mood === "town" || mood === "castle") {
+          px(x + 6, 50, 14, 20, pal.prop);
+          px(x + 4, 44, 18, 8, pal.accent);
+          px(x + 9, 56, 4, 4, pal.sky0);
+        } else if (mood === "dungeon") {
+          px(x + 10, 48, 2, 22, "#3a3458");
+          const flicker = 8 + Math.round(Math.sin((now / 90) + x) * 3);
+          px(x + 8, 46, flicker > 8 ? 6 : 4, 4, pal.prop);
+        } else if (mood === "battle") {
+          px(x + 8, 58, 3, 12, pal.prop);
+          px(x + 6, 56, 7, 3, pal.accent);
+        } else {
+          px(x + 10, 52, 3, 18, pal.dirt);
+          px(x + 4, 46, 15, 10, pal.prop);
+          px(x + 7, 42, 9, 6, pal.ground);
+        }
+      }
+      const heroW = 12;
+      const span = w + heroW + 24;
+      const hx = ((Math.floor(scroll) + 56) % span) - 4;
+      const walk = state.playing ? Math.floor(scroll / 5) % 4 : 0;
+      const bob = state.playing && walk % 2 ? 1 : 0;
+      const hop = state.playing && mood === "battle" && state.step % 8 === 0 ? 2 : 0;
+      const hy = 47 - bob - hop;
+      px(hx + 3, hy, 6, 5, "#f0c75e");
+      px(hx + 2, hy + 4, 8, 5, "#f3c49a");
+      px(hx + 4, hy + 6, 2, 2, "#1a1020");
+      px(hx + 7, hy + 6, 2, 2, "#1a1020");
+      px(hx + 2, hy + 9, 8, 7, "#ff6b9d");
+      px(hx + 4, hy + 11, 4, 3, "#5ee2ff");
+      const leg = walk === 1 ? 2 : walk === 3 ? -2 : 0;
+      px(hx + 3 + Math.min(leg, 0), hy + 16, 3, 6, "#3a2a68");
+      px(hx + 7 + Math.max(leg, 0), hy + 16, 3, 6, "#3a2a68");
+      px(hx + 2 + Math.min(leg, 0), hy + 21, 4, 2, "#1a1020");
+      px(hx + 7 + Math.max(leg, 0), hy + 21, 4, 2, "#1a1020");
+      if (!state.playing && Math.floor(now / 400) % 8 === 0) {
+        px(hx + 4, hy + 6, 2, 1, "#f3c49a");
+        px(hx + 7, hy + 6, 2, 1, "#f3c49a");
+      }
+      if (ui.stageTag) ui.stageTag.textContent = "Stage · " + mood;
+    }
+
     function paintVisualizer() {
       const canvas = ui.wave;
       const ctx = canvas.getContext("2d");
@@ -2131,6 +2273,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
       state.raf = requestAnimationFrame(() => {
         state.raf = 0;
         paintVisualizer();
+        paintStage();
         drawRoll();
         if (state.playing) requestDraw();
       });
@@ -2408,6 +2551,9 @@ window.BitForgePlay = async function BitForgePlay(song) {
         const expected = CHANNELS.reduce((sum, name) => sum + original.channels[name].notes.length, 0);
         check("midi-header", magic === "MThd" && format === 1 && ntrks === 6 && ppq === 480, { magic, format, ntrks, ppq });
         check("midi-notes", noteOns === expected, { noteOns, expected, bytes: midi.length });
+        paintStage();
+        const pix = ui.stage.getContext("2d").getImageData(24, 24, 1, 1).data;
+        check("stage-preview", pix[3] > 0, [pix[0], pix[1], pix[2], pix[3]]);
       } catch (err) {
         check("share-roundtrip", false, String(err && err.message ? err.message : err));
       }

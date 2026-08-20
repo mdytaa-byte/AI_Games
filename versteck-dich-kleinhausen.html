@@ -39,6 +39,12 @@
 
 html[data-size="gross"]{--fs:1.14rem;}
 html[data-size="sehr-gross"]{--fs:1.3rem;}
+html[data-lesbar="an"]{
+  --serif:Verdana,Tahoma,Geneva,sans-serif;
+  --sans:Verdana,Tahoma,Geneva,sans-serif;
+  --mono:Verdana,Tahoma,Geneva,sans-serif;
+}
+html[data-lesbar="an"] body{letter-spacing:.03em;word-spacing:.12em;}
 
 html[data-contrast="hoch"]{
   --nadel:#000; --nadel-2:#000; --moos:#000; --blatt:#004d00;
@@ -88,14 +94,20 @@ html[data-contrast="hoch"] :focus-visible{outline:5px solid #000;background:var(
   padding:.75rem clamp(.7rem,2.4vw,1.6rem);
   display:flex;flex-wrap:wrap;gap:.8rem 1.2rem;align-items:center;justify-content:space-between;
 }
-.brand{display:flex;align-items:baseline;gap:.65rem;flex-wrap:wrap;}
+.brand{display:flex;align-items:baseline;gap:.35rem .65rem;flex-wrap:wrap;}
 .brand h1{
   font-family:var(--serif);font-size:1.32em;font-weight:700;margin:0;letter-spacing:.01em;
 }
 .brand .sub{
   font-family:var(--mono);font-size:.68em;letter-spacing:.16em;text-transform:uppercase;color:#c9d6c4;
 }
-html[data-contrast="hoch"] .brand .sub{color:#fff;}
+.level{
+  flex-basis:100%;margin:.1rem 0 0;font-size:.78em;font-weight:700;letter-spacing:.02em;
+  color:var(--gold);line-height:1.35;
+}
+.level .en{color:inherit;font-weight:600;}
+html[data-contrast="hoch"] .brand .sub,
+html[data-contrast="hoch"] .level{color:#fff;}
 .settings{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;}
 .set-btn{
   font:inherit;font-size:.8em;background:transparent;color:var(--papier);
@@ -204,6 +216,8 @@ kbd{
 .hotspot:hover, .hotspot:focus-visible{
   background:rgba(226,184,65,.28);border-color:var(--gold);
 }
+html[data-lesbar="an"] .hotspot .tag,
+html[data-lesbar="an"] .ort-btn{letter-spacing:.02em;}
 .hotspot .tag{
   position:absolute;left:50%;bottom:4px;transform:translateX(-50%);
   background:var(--nadel);color:var(--papier);font-size:.68rem;font-weight:800;
@@ -313,6 +327,9 @@ html[data-motion="aus"] *{
     <div class="brand">
       <h1 lang="de" translate="no">Versteck dich!</h1>
       <span class="sub" lang="de">Kleinhausen · Präpositionen &amp; Befehle</span>
+      <p class="level" lang="de">A1/A2 · Imperativ + Wechselpräpositionen
+        <span class="en gloss" lang="en">A1/A2 · Imperative + two-way prepositions</span>
+      </p>
     </div>
     <div class="settings" role="group" lang="de" aria-label="Einstellungen">
       <button type="button" class="set-btn" id="s-en" aria-pressed="true" lang="en">
@@ -338,6 +355,10 @@ html[data-motion="aus"] *{
         <span lang="de" data-size-label>Schrift: A</span>
         <span class="sr-only gloss" lang="en">Text size</span>
       </button>
+      <button type="button" class="set-btn" id="s-lesbar" aria-pressed="false">
+        <span class="dot" aria-hidden="true"></span><span lang="de">Leseschrift</span>
+        <span class="sr-only gloss" lang="en">Readable font</span>
+      </button>
     </div>
   </div>
 </div>
@@ -345,7 +366,8 @@ html[data-motion="aus"] *{
 <main class="wrap" id="hauptinhalt" lang="de">
 
   <section class="screen on" id="screen-start" aria-labelledby="h-start" lang="de">
-    <p class="eyebrow">Versteckspiel · Deutsch als Fremdsprache</p>
+    <p class="eyebrow" lang="de">A1/A2 · Imperativ + Wechselpräpositionen
+      <span class="en gloss" lang="en">A1/A2 · Imperative + two-way prepositions</span></p>
     <h2 id="h-start" tabindex="-1">Max zählt. Mia flüstert. Du versteckst dich.</h2>
     <p class="lede">Samstagnachmittag in Kleinhausen, im Haus von Oma Helga. Max ist der Sucher: <em lang="de" translate="no">Augen zu!</em> Deine Cousine Mia flüstert dir deutsche <strong lang="de" translate="no">Befehle</strong> zu. Folge den Hinweisen und versteck dich an einem guten Ort – dann findet Max dich nicht. Ignorierst du die Präposition oder versteckst du dich dort, wo man dich sieht, bist du <strong lang="de" translate="no">gefunden</strong>.
       <span class="en gloss" lang="en">Saturday in Kleinhausen. Follow Mia’s German commands. Hide in a good spot and Max will miss you. Ignore the hint or hide in a visible place and you will be found.</span></p>
@@ -413,10 +435,11 @@ html[data-motion="aus"] *{
     <details>
       <summary>Tastatur und Barrierefreiheit <span class="en gloss" lang="en">Keyboard and accessibility</span></summary>
       <ul>
-        <li><kbd>Tab</kbd> bewegt den Fokus. <kbd>1</kbd>–<kbd>8</kbd> wählen einen Ort in der Leiste. <span class="en gloss" lang="en">Tab moves focus. Keys 1–8 pick a place from the list.</span></li>
+        <li><kbd>Tab</kbd> bewegt den Fokus zur Ortsleiste unter dem Bild, nicht zu den Flächen im Bild. <kbd>1</kbd>–<kbd>8</kbd> wählen einen Ort. <span class="en gloss" lang="en">Tab moves to the place list under the picture, not the picture hotspots. Keys 1–8 pick a place.</span></li>
         <li>Jedes Versteck hat einen Namen als Text. Das Bild ist zusätzlich, nicht die einzige Information. <span class="en gloss" lang="en">Every hiding place is also named in text. The picture is extra, not the only information.</span></li>
         <li><strong lang="de">Orte zeigen</strong> lässt die Labels im Bild immer sichtbar. <span class="en gloss" lang="en">“Show places” keeps picture labels visible.</span></li>
         <li><strong lang="de">Vorlesen</strong> spricht Befehle auf Deutsch (wenn eine de-Stimme vorhanden ist). <span class="en gloss" lang="en">Read-aloud speaks commands in German if your device has a German voice.</span></li>
+        <li><strong lang="de">Leseschrift</strong> wechselt auf Verdana/Tahoma mit etwas mehr Abstand. <span class="en gloss" lang="en">Readable font switches to Verdana/Tahoma with extra spacing.</span></li>
         <li><strong lang="de">Animation</strong>, <strong lang="de">Kontrast</strong> und <strong lang="de">Schrift</strong> wie in den anderen Kleinhausen-Spielen. <span class="en gloss" lang="en">Motion, contrast, and text size match the other Kleinhausen games.</span></li>
       </ul>
     </details>
@@ -541,7 +564,7 @@ html[data-motion="aus"] *{
 </main>
 
 <footer class="wrap" lang="de">
-  <p>Versteck dich! Kleinhausen · Wortschatz: Wechselpräpositionen, Positionen, Imperativ. Eine Datei, keine Cookies – Fortschritt gilt nur für diesen Besuch.
+  <p>Versteck dich! Kleinhausen · A1/A2 · Imperativ + Wechselpräpositionen. Eine Datei, keine Cookies – Fortschritt gilt nur für diesen Besuch.
     <span class="en gloss" lang="en">Vocabulary: two-way prepositions, positions, imperative. One file, no cookies — progress lasts only for this visit.</span></p>
 </footer>
 
@@ -933,7 +956,7 @@ const SVG_MAX = `
    3. ZUSTAND
    ============================================================ */
 const S = {
-  englisch:true, audio:false, motion:true, kontrast:false, size:0, spots:true,
+  englisch:true, audio:false, motion:true, kontrast:false, size:0, spots:true, lesbar:false,
   modus:"einzeln", folgeIdx:0, rundeIdx:0,
   phase:"hide", // hide | wo | done
   gefunden:false, hidePunkte:0, woPunkte:0, befehlPunkte:0,
@@ -985,7 +1008,12 @@ $("s-audio").addEventListener("click", ()=>{
 $("s-spots").addEventListener("click", ()=>{
   S.spots = !S.spots; setToggle($("s-spots"), S.spots);
   document.documentElement.setAttribute("data-spots", S.spots?"an":"aus");
-  sagen(S.spots ? "Ortsnamen im Bild sind sichtbar." : "Ortsnamen erscheinen bei Fokus.");
+  sagen(S.spots ? "Ortsnamen im Bild sind sichtbar." : "Ortsnamen erscheinen beim Zeigen mit der Maus.");
+});
+$("s-lesbar").addEventListener("click", ()=>{
+  S.lesbar = !S.lesbar; setToggle($("s-lesbar"), S.lesbar);
+  document.documentElement.setAttribute("data-lesbar", S.lesbar?"an":"aus");
+  sagen(S.lesbar ? "Leseschrift ist an: Verdana und Tahoma." : "Standardschrift.");
 });
 $("s-motion").addEventListener("click", ()=>{
   S.motion = !S.motion; setToggle($("s-motion"), S.motion);
@@ -1157,14 +1185,15 @@ function baueSzene(name){
   const ids = Object.keys(SPOTS).filter(id=>SPOTS[id].szene===name);
   ids.forEach((id,i)=>{
     const s = SPOTS[id];
-    const hs = document.createElement("button");
-    hs.type="button"; hs.className="hotspot"; hs.dataset.id=id;
+    const hs = document.createElement("div");
+    hs.className="hotspot"; hs.dataset.id=id;
     hs.setAttribute("style", s.style);
-    hs.lang = "de";
-    hs.setAttribute("translate","no");
-    hs.innerHTML = '<span class="tag" lang="de" translate="no">'+esc(s.wo)+'</span>'+
-      '<span class="sr-only gloss" lang="en">'+esc(s.en)+'</span>';
-    hs.addEventListener("click", ()=>verstecke(id));
+    hs.setAttribute("aria-hidden","true");
+    hs.innerHTML = '<span class="tag" lang="de" translate="no">'+esc(s.wo)+'</span>';
+    hs.addEventListener("click", ()=>{
+      if(hs.dataset.aus==="1") return;
+      verstecke(id);
+    });
     box.appendChild(hs);
 
     const chip = document.createElement("button");
@@ -1183,7 +1212,11 @@ function baueSzene(name){
 }
 
 function setOrteAktiv(an){
-  document.querySelectorAll(".hotspot, .ort-btn").forEach(b=> b.disabled = !an);
+  document.querySelectorAll(".ort-btn").forEach(b=> b.disabled = !an);
+  document.querySelectorAll(".hotspot").forEach(el=>{
+    el.dataset.aus = an ? "0" : "1";
+    el.style.pointerEvents = an ? "auto" : "none";
+  });
 }
 
 function verstecke(id){

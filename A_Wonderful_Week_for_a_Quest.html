@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>A Wonderful Week for a Quest</title>
-<meta name="description" content="A 16-bit RPG of Michael D. Young’s A Wonderful Week for a Quest. Books I–IV: Squires, Bellissimo, Roderick, and ELM’s pirate socks.">
+<meta name="description" content="A 16-bit RPG of Michael D. Young’s A Wonderful Week for a Quest. Books I–V: Squires, Bellissimo, Roderick, ELM, and Grimblewaith’s phoenix.">
 <style>
   :root {
     --ink: #0a0714;
@@ -189,6 +189,7 @@
             <button id="btnBook2">Book II</button>
             <button id="btnBook3">Book III</button>
             <button id="btnBook4">Book IV</button>
+            <button id="btnBook5">Book V</button>
             <button id="btnCont" class="ghost">Continue</button>
             <button id="btnMute" class="ghost">Sound: On</button>
           </div>
@@ -312,9 +313,17 @@
       skills: ["nether", "peptalk"]
     };
   }
+  function ozHero() {
+    return {
+      id: "oz", name: "Oz",
+      maxHp: 32, hp: 32, maxMp: 10, mp: 10, atk: 8, def: 5, spd: 8,
+      skills: ["charge", "block"]
+    };
+  }
   function isB2() { return G.day === 2; }
   function isB3() { return G.day === 3; }
   function isB4() { return G.day === 4; }
+  function isB5() { return G.day === 5; }
 
   const ITEMS = {
     luna: { name: "Luna Bean", desc: "Tastes terrible. Restores 18 HP.", heal: 18 },
@@ -329,7 +338,12 @@
     file: { name: "Needler File", desc: "Nathaniel Nadle. Most wanted. Words that kneel people." },
     locket: { name: "Family Locket", desc: "Bean-shaped. Inscription: Complete. Fannie lives here." },
     leftsock: { name: "Unmatched Left Sock", desc: "One of thousands. The right one is still at large." },
-    ledger: { name: "DQA Ledger", desc: "Every neglected quest in the realm. Stolen for a good cause." }
+    ledger: { name: "DQA Ledger", desc: "Every neglected quest in the realm. Stolen for a good cause." },
+    brimwort: { name: "Brimwort", desc: "A spice that thinks it is a conversation starter for phoenixes." },
+    snowbean: { name: "Sweet Snow Bean", desc: "Mountain sugar. Joaquin calls it a polite appetizer." },
+    cocoa: { name: "Cocoa Beans", desc: "Yeahrti’s gift. Plant in heat. Do not shout about chocolate." },
+    pie: { name: "Humble Pie", desc: "Layered. Winning. Joaquin is already interested in the bakery." },
+    salt: { name: "Salt Swords", desc: "Sir Ruprecht’s idea of cutlery. Sand slugs hate them." }
   };
 
   const SKILLS = {
@@ -364,7 +378,10 @@
     quacken: { name: "Release the Quacken", mp: 0, desc: "A duck-headed sea behemoth on a limited contract.", special: "quacken" },
     crewsock: { name: "Crew Sock", mp: 0, desc: "Not sailors. A scarlet chest with white L’s.", special: "mimic" },
     vileseed: { name: "Crush the Vile Seed", mp: 0, desc: "Grimma’s last act. Kingdoms would like her not to.", special: "mimic" },
-    bright: { name: "Bright Magic", mp: 0, desc: "ELM’s unfamiliar light. Fannie burns the rest of the way.", special: "mimic" }
+    bright: { name: "Bright Magic", mp: 0, desc: "ELM’s unfamiliar light. Fannie burns the rest of the way.", special: "mimic" },
+    canteen: { name: "Spill the Canteen", mp: 0, desc: "Sand elementals need water. Give them some. Then smash.", special: "sand" },
+    sample: { name: "Do Not Taste the Sample", mp: 0, desc: "Five-quill reviews can still bite. Three heads. Zero crumbs.", special: "hydra" },
+    saltsword: { name: "Salt Swords", mp: 0, desc: "Sir Ruprecht’s cutlery vs a sand slug.", special: "slug" }
   };
 
   /* ---------- maps ---------- */
@@ -673,6 +690,76 @@ X      P       X
 X              X
 X=======D======X
 XXXXXXXXXXXXXXXX
+`),
+    bpd: parseMap(`
+NNNNNNNNNNNNNNNN
+N              N
+N   WWWWWWWW   N
+N   W      W   N
+N   W      W   N
+N              N
+N=======D======N
+NNNNNNNNNNNNNNNN
+`),
+    web: parseMap(`
+NNNNNNNNNNNNNNNN
+N              N
+N   WWWWWWWW   N
+N   W      W   N
+N   W      W   N
+N              N
+N=======D======N
+NNNNNNNNNNNNNNNN
+`),
+    oasis: parseMap(`
+XXXXXXXXXXXXXXXX
+X              X
+X   S      S   X
+X              X
+X      P       X
+X              X
+X=======D======X
+XXXXXXXXXXXXXXXX
+`),
+    snow: parseMap(`
+^^^^^^^^^^^^^^^^
+^..............^
+^......****....^
+^.....******...^
+^......****....^
+^..............^
+^=======D======^
+^^^^^^^^^^^^^^^^
+`),
+    butte: parseMap(`
+NNNNNNNNNNNNNNNN
+N              N
+N   WWWWWWWW   N
+N   W      W   N
+N   W      W   N
+N              N
+N=======D======N
+NNNNNNNNNNNNNNNN
+`),
+    pie: parseMap(`
+NNNNNNNNNNNNNNNN
+N              N
+N   WWWWWWWW   N
+N   W      W   N
+N   W      W   N
+N              N
+N=======D======N
+NNNNNNNNNNNNNNNN
+`),
+    mafaee: parseMap(`
+NNNNNNNNNNNNNNNN
+N              N
+N   WWWWWWWW   N
+N   W      W   N
+N   W      W   N
+N              N
+N=======D======N
+NNNNNNNNNNNNNNNN
 `)
   };
 
@@ -701,7 +788,14 @@ XXXXXXXXXXXXXXXX
     bay: [8, 5],
     misfit: [10, 5],
     wreck: [8, 4],
-    vault: [8, 5]
+    vault: [8, 5],
+    bpd: [8, 5],
+    web: [8, 5],
+    oasis: [8, 5],
+    snow: [8, 5],
+    butte: [8, 5],
+    pie: [8, 5],
+    mafaee: [8, 4]
   };
 
   const MAPNAME = {
@@ -729,7 +823,14 @@ XXXXXXXXXXXXXXXX
     bay: "EBI Bay",
     misfit: "Misfit Island",
     wreck: "Leftbeard’s Wreck",
-    vault: "The Hidden Hold"
+    vault: "The Hidden Hold",
+    bpd: "BPD Headquarters",
+    web: "Wally’s Web Tower",
+    oasis: "Joaquin’s Cavern",
+    snow: "Yeahrti’s Mountain",
+    butte: "Sir Burras’s Bakery",
+    pie: "Humble Pie",
+    mafaee: "Mafaea Territory"
   };
 
   function tileAt(map, x, y) {
@@ -777,7 +878,13 @@ XXXXXXXXXXXXXXXX
       { x: 21, y: 8, to: "gates", tx: 10, ty: 4, need: "b3wish" },
       { x: 36, y: 9, to: "fey", tx: 8, ty: 5, need: "b4cinder" },
       { x: 10, y: 14, to: "beanshow", tx: 8, ty: 5, need: "b4cinder" },
-      { x: 12, y: 16, to: "bay", tx: 8, ty: 5, need: "b4grimma" }
+      { x: 12, y: 16, to: "bay", tx: 8, ty: 5, need: "b4grimma" },
+      { x: 8, y: 8, to: "bpd", tx: 8, ty: 5, need: "b5chief" },
+      { x: 18, y: 8, to: "web", tx: 8, ty: 5, need: "b5chief" },
+      { x: 37, y: 7, to: "oasis", tx: 8, ty: 5, need: "b5web" },
+      { x: 28, y: 4, to: "snow", tx: 8, ty: 5, need: "b5contest" },
+      { x: 14, y: 8, to: "butte", tx: 8, ty: 5, need: "b5rod" },
+      { x: 8, y: 16, to: "pie", tx: 8, ty: 5, need: "b5butte" }
     ],
     tower: [{ x: 12, y: 8, to: "world", tx: 28, ty: 6 }],
     forest: [
@@ -818,7 +925,13 @@ XXXXXXXXXXXXXXXX
     wreck: [
       { x: 11, y: 5, to: "vault", tx: 8, ty: 5, need: "b4song" }
     ],
-    vault: [{ x: 8, y: 6, to: "wreck", tx: 8, ty: 4 }]
+    vault: [{ x: 8, y: 6, to: "wreck", tx: 8, ty: 4 }],
+    bpd: [{ x: 8, y: 6, to: "world", tx: 7, ty: 8, need: "b5chief" }],
+    web: [{ x: 8, y: 6, to: "world", tx: 17, ty: 8 }],
+    oasis: [{ x: 8, y: 6, to: "world", tx: 36, ty: 7 }],
+    snow: [{ x: 8, y: 6, to: "world", tx: 28, ty: 5 }],
+    butte: [{ x: 8, y: 6, to: "world", tx: 14, ty: 7 }],
+    pie: [{ x: 8, y: 6, to: "world", tx: 8, ty: 15 }]
   };
 
   function npcsFor() {
@@ -827,8 +940,8 @@ XXXXXXXXXXXXXXXX
     if (G.map === "village") {
       list.push(npc(14, 6, "jackdaw", "Jackdaw", talkJackdawVillage));
       list.push(npc(18, 7, "mordeck", "Mordeck", talkMordeck));
-      if (isB4()) {
-        /* Pintoburg is the Black-Eyed Fey. Beanvale keeps Jackdaw and the ledger jokes. */
+      if (isB5() || isB4()) {
+        /* Book V starts at BPD HQ. Book IV starts in Pintoburg. Beanvale keeps Jackdaw. */
       } else if (isB3()) {
         list.push(npc(12, 6, "sirsi", "Sirsi", talkSirsi));
         list.push(npc(22, 14, "bell", "Bellissimo", talkBellB3));
@@ -849,9 +962,12 @@ XXXXXXXXXXXXXXXX
       list.push(npc(25, 11, "villager", "Innkeeper", talkInn));
     }
     if (G.map === "world") {
-      if (!isB2() && !isB3() && !isB4() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
+      if (!isB2() && !isB3() && !isB4() && !isB5() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
       if (isB3() && f.b3wish && !f.b3grim) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleB3));
-      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB4()
+      if (isB5() && f.b5snow && !f.b5rod) list.push(npc(16, 9, "roderick", "Sir Roderick 3RG", talkRoderickB5));
+      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB5()
+        ? "West of plaza: BPD return. East-of-road grass: Web wizard. Far east grass: phoenix cavern. Northeast peaks: snow. West of plaza: bakery. South puddles: Humble Pie."
+        : isB4()
         ? "East grass: Pintoburg / Black-Eyed Fey. South of the trees: Three-Bean Circus. Beside the south puddles: EBI bay. Bring a necromancer."
         : isB3()
         ? "North grass: EBI Quantiflow. Grove gap: Wunderwell. East of the golden P: palace gates. Bring a squad, not a speech."
@@ -948,6 +1064,31 @@ XXXXXXXXXXXXXXXX
       if (!f.b4mimic) list.push(npc(8, 3, "mimic", "Mimic Chests", talkMimic));
       else list.push(npc(8, 3, "leftbeard", "Captain Leftbeard", talkLeftbeard));
     }
+    if (G.map === "bpd") {
+      if (!f.b5oz) list.push(npc(7, 3, "oz", "Oz", talkOz));
+      if (!f.b5sand) list.push(npc(8, 4, "sand", "Sand Elemental", talkSand));
+      list.push(npc(10, 3, "chief", "Chief", talkChief));
+    }
+    if (G.map === "web") {
+      list.push(npc(8, 3, "wally", "Wally", talkWally));
+    }
+    if (G.map === "oasis") {
+      list.push(npc(8, 3, "joaquin", "Joaquin", talkJoaquin));
+    }
+    if (G.map === "snow") {
+      list.push(npc(8, 3, "yeahrti", "Yeahrti", talkYeahrti));
+    }
+    if (G.map === "butte") {
+      if (!f.b5butte) list.push(npc(8, 3, "hydra", "Three-Headed Sample", talkHydra));
+      else list.push(npc(8, 3, "burras", "Sir Burras", talkHydra));
+    }
+    if (G.map === "pie") {
+      list.push(npc(10, 3, "rightbeard", "Rightbeard", talkRightbeard));
+      if (f.b5pie && !f.b5slug) list.push(npc(6, 3, "slug", "Sand Slug", talkSlug));
+    }
+    if (G.map === "mafaea") {
+      list.push(npc(8, 3, "glocke", "Donna Glocke", talkGlockeB5));
+    }
     return list;
   }
 
@@ -1013,6 +1154,20 @@ XXXXXXXXXXXXXXXX
       if (n.sprite === "leftbird" && f.b4ronchi && !f.b4song) return true;
       if (n.sprite === "mimic" && f.b4song && !f.b4mimic) return true;
       if (n.sprite === "leftbeard" && f.b4mimic && !f.b4done) return true;
+    }
+    if (isB5()) {
+      if (n.sprite === "oz" && !f.b5oz) return true;
+      if (n.sprite === "sand" && f.b5oz && !f.b5sand) return true;
+      if (n.sprite === "chief" && f.b5sand && !f.b5chief) return true;
+      if (n.sprite === "wally" && !f.b5web) return true;
+      if (n.sprite === "joaquin" && !f.b5contest) return true;
+      if (n.sprite === "joaquin" && f.b5pie && f.b5slug && !f.b5fae) return true;
+      if (n.sprite === "yeahrti" && !f.b5snow) return true;
+      if (n.sprite === "roderick" && f.b5snow && !f.b5rod) return true;
+      if (n.sprite === "hydra" && !f.b5butte) return true;
+      if (n.sprite === "rightbeard" && !f.b5pie) return true;
+      if (n.sprite === "slug" && f.b5pie && !f.b5slug) return true;
+      if (n.sprite === "glocke" && !f.b5done) return true;
     }
     return false;
   }
@@ -1082,6 +1237,13 @@ XXXXXXXXXXXXXXXX
   }
 
   function talkJackdawVillage() {
+    if (isB5()) {
+      say([
+        { who: "Jackdaw", text: "A Whatsit on official business. I am not saying the Chief is lying. I am saying the footnotes will be expensive." },
+        { who: "Jackdaw", text: "Wally first, then the cavern, then do not shout about chocolate. Humble Pie is a bakery and a warning." , note: "Phoenixfinder.bean. Spell it with a phoenix, not a phonics." }
+      ]);
+      return;
+    }
     if (isB4()) return talkJackdawB4();
     if (isB3()) return talkJackdawB3();
     if (isB2()) return talkJackdawB2();
@@ -1138,6 +1300,13 @@ XXXXXXXXXXXXXXXX
   }
 
   function talkMordeck() {
+    if (isB5()) {
+      say([
+        { who: "Mordeck", text: "Phoenixes, pies, and police. I have columns. None of them agree." },
+        { who: "Mordeck", text: "If a giant is missing a left sock, that is not a new case. That is a sequel." }
+      ]);
+      return;
+    }
     if (isB4()) {
       say([
         { who: "Mordeck", text: "Left socks. I have a column for that. It is longer than the column for dragons." },
@@ -1215,6 +1384,13 @@ XXXXXXXXXXXXXXXX
   }
 
   function talkJackdawTower() {
+    if (isB5()) {
+      say([
+        { who: "Jackdaw", text: "If you type Phoenixfinder.bean with a phonic, you get a lecture. I have given that lecture." },
+        { who: "Jackdaw", text: "Joaquin wants sweets, not brimwort. Yeahrti wants quiet. Rightbeard wants the other sock. Try not to become faekind in a hallway." , note: "He will become faekind in a cavern. Hallways were a suggestion." }
+      ]);
+      return;
+    }
     if (isB4()) {
       say([
         { who: "Jackdaw", text: "Pirates. I told you wells were worse. I was wrong. Unmatched laundry is worse." },
@@ -2287,6 +2463,271 @@ XXXXXXXXXXXXXXXX
     });
   }
 
+  function talkOz() {
+    if (G.flags.b5oz) {
+      say([
+        { who: "Oz", text: "Canteen first. Smash second. Sand elementals are mostly a hydration problem." },
+        { who: "Oz", text: "I am Officer Zink. Call me Oz. The stripes are union. The hooves are overtime." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Oz", text: "Grimblewaith. The sand by the door is not a metaphor. It is an elemental with a dry sense of humor." },
+      { who: "Grimblewaith", text: "I smash things. The hours are similar to villain school. The dental is worse." },
+      { who: "Oz", text: "Water first. Spill the canteen. Then smash. I am a green-and-white zebra centaur. I charge. You smash. The paperwork can wait." , note: "Officer Zink of the BPD. The stripes are not a costume. The costume union lost that argument." }
+    ], () => {
+      G.flags.b5oz = true;
+      join(ozHero());
+      G.quest = "The sand is still north of the mat. Spill the canteen. Then smash.";
+      save();
+    });
+  }
+
+  function talkSand() {
+    if (!G.flags.b5oz) {
+      say([{ who: "Oz", text: "Briefing first. I am standing to your left-north. The sand can wait one conversation." }]);
+      return;
+    }
+    say([
+      { who: "Sand Elemental", text: "(a person-shaped dune with opinions about moisture)" },
+      { who: "Oz", text: "Canteen. Then smash. Do not negotiate with grit." }
+    ], () => {
+      startBattle([enemy("sand")], {
+        canFlee: false, boss: true, heal: true,
+        onWin: () => {
+          G.flags.b5sand = true;
+          G.quest = "The Chief is to the right. Official missions hide later betrayals. Try listening anyway.";
+          save();
+          say([{ who: "Oz", text: "It is puddle now. The Chief will pretend this was the plan. Walk east." }]);
+        }
+      });
+    });
+  }
+
+  function talkChief() {
+    if (!G.flags.b5sand) {
+      say([{ who: "Chief", text: "The sand is still employed. Finish the door first. Then I will assign you something worse." }]);
+      return;
+    }
+    if (G.flags.b5chief) {
+      say([
+        { who: "Chief", text: "Wally’s Web. East-of-road grass. Phoenixfinder.bean. Bring me a Whatsit who can legally become faekind." },
+        { who: "Chief", text: "Donna Glocke is missing among the Mafaea. That is all you need. That is not all I need." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Chief", text: "Pigspimpel Camp filed the summons. Dearth stamped it. I am sending the only Whatsit who can become faekind." },
+      { who: "Grimblewaith", text: "I smash things. Becoming faekind was not in the brochure." },
+      { who: "Chief", text: "Infiltrate the Mafaea. Save Officer Donna Glocke. Officially. Take this brimwort. Wally will search Phoenixfinder.bean for a phoenix. Pronounce it carefully." , note: "The official mission hides a later betrayal. Footnotes are not admissible in BPD court." }
+    ], () => {
+      G.flags.b5chief = true;
+      if (!G.inv.some((i) => i.id === "brimwort")) give("brimwort");
+      G.quest = "Leave by the south door. East-of-road grass: Wally’s Web. Type phoenix, not phonics.";
+      save();
+    });
+  }
+
+  function talkWally() {
+    if (G.flags.b5web) {
+      say([
+        { who: "Wally", text: "Joaquin’s cavern is far east grass. Ask for the phoenix. If the tunnel lectures you, you asked for phonics." },
+        { who: "Wally", text: "Sir Burras’s Bakery will matter later. Five quills. Do not taste the sample if it has extra heads." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Wally", text: "Wally the Web Wizard. Blue-lavender. W’s. Crystal ball. Reviews may be trolls. Trolls may be reviews." },
+      { who: "Wally", text: "Phoenixfinder.bean. One cavern. Two pronunciations. Ask for the phoenix and you get Joaquin. Ask for phonics and you get a wrong tunnel and a pamphlet." },
+      { who: "Sir Brows", text: "(a pair of eyebrows with a union card, nodding professionally)" },
+      { who: "Wally", text: "Far east grass. Bring brimwort if you enjoy being called ordinary. Joaquin wants sweets. Sir Roderick wants a contest. I recommend Sir Burras when the sugar starts." , note: "The Web is a search engine with better robes and worse customer service." }
+    ], () => {
+      G.flags.b5web = true;
+      G.quest = "Far east grass: Joaquin’s cavern. Ask for the phoenix. Carefully.";
+      save();
+    });
+  }
+
+  function talkJoaquin() {
+    if (G.flags.b5fae) {
+      say([{ who: "Joaquin", text: "Fannie is a phoenix again. You are faekind and still green. Wren is a direction, not a footnote." }]);
+      return;
+    }
+    if (G.flags.b5pie && G.flags.b5slug) {
+      say([
+        { who: "Joaquin", text: "Humble Pie. Layered. Winning. I have been interested in that bakery since before it had a predator in the display case." },
+        { who: "Joaquin", text: "The locket is fading on purpose. A feather, a fire, a Fannie. Stand still. Phoenix fire is not a metaphor." },
+        { who: "Fannie", text: "(bright, then a person, then a phoenix, then Complete)" },
+        { who: "Grimma", text: "I am Death’s handmaiden now. The fire could be an exit. You could come. The tattoo would like a word." },
+        { who: "Grimblewaith", text: "No. I smash things for the living. The curse-mark can ash without me." },
+        { who: "Joaquin", text: "Faekind. Still a large green Whatsit. New nature. Old hands. The Mafaea border will notice. Go. Donna Glocke is not the villain they filed." , note: "Serrinanal and Wren are memories with forwarding addresses. Book VI has a stage." }
+      ], () => {
+        G.flags.b5fae = true;
+        G.dir = 0;
+        G.quest = "The border. Donna Glocke. Then Wren.";
+        save();
+        warp("mafaea", 8, 4);
+        talkGlockeB5();
+      });
+      return;
+    }
+    if (G.flags.b5pie && !G.flags.b5slug) {
+      say([{ who: "Joaquin", text: "The pie is still arguing with a slug. Salt swords. Then come back. I do not judge desserts that have not finished their fight." }]);
+      return;
+    }
+    if (G.flags.b5contest) {
+      say([
+        { who: "Joaquin", text: "Yeahrti’s mountain, northeast peaks. Sweet snow beans. Cocoa if you do not shout about chocolate." },
+        { who: "Joaquin", text: "Sir Roderick will be somewhere photogenic with an opinion about cocoa. Brimwort remains ordinary." }
+      ]);
+      return;
+    }
+    say([{
+      who: "Joaquin",
+      text: "Great Joaquin. Phoenix. Contest judge. I heard a search term. Which one did you mean?",
+      choices: [
+        { label: "Ask for the phoenix, carefully", fn: () => joaquinPhoenix() },
+        { label: "Ask for phonics", fn: () => joaquinPhonics() }
+      ]
+    }]);
+  }
+  function joaquinPhonics() {
+    say([
+      { who: "Pamphlet", text: "This tunnel teaches sounding-out. The phoenix is the other pronunciation. Turn around before the vowels organize." },
+      { who: "Jackdaw", text: "I billed Wally for that footnote." , note: "Phonics / phoenix. The Beandom’s greatest homophone after kayak." }
+    ], () => talkJoaquin());
+  }
+  function joaquinPhoenix() {
+    say([
+      { who: "Joaquin", text: "Phoenix. Correct. Brimwort? Accepted. Ordinary spice. I want sweets. A contest. Finest confection. Sir Roderick has already entered, shirtlessly." },
+      { who: "Grimblewaith", text: "I smash things. Baking was not in villain school." },
+      { who: "Joaquin", text: "Yeahrti, northeast peaks. She has snow that tastes like dessert if you do not yell the recipe. Sir Burras later. Humble Pie later than that." , note: "Brimwort is a conversation starter that failed the interview." }
+    ], () => {
+      G.flags.b5contest = true;
+      if (!G.inv.some((i) => i.id === "brimwort")) give("brimwort");
+      G.quest = "Northeast peaks: Yeahrti. Do not shout about chocolate. Avalanches have opinions.";
+      save();
+    });
+  }
+
+  function talkYeahrti() {
+    if (G.flags.b5snow) {
+      say([{ who: "Yeahrti", text: "Sweet snow beans. Cocoa beans for heat. Whisper desserts. I am still digging out the last tourist who yelled fudge." }]);
+      return;
+    }
+    say([
+      { who: "Yeahrti", text: "If you came to shout about chocolate, the mountain already filed an avalanche in your name. I dug myself out. You may have the quiet version." },
+      { who: "Yeahrti", text: "Sweet snow beans for Joaquin. Cocoa beans for planting in heat. Do not yell the second one near anyone photogenic unless you want them to steal your entry." , note: "Yeahrti of the chocolate mountain. The avalanche is a customer-service policy." }
+    ], () => {
+      G.flags.b5snow = true;
+      give("snowbean");
+      give("cocoa");
+      G.quest = "Sir Roderick is on the road south of the sign. He will take the cocoa. Let him. Bellissimo’s village likes heat.";
+      save();
+    });
+  }
+
+  function talkRoderickB5() {
+    if (G.flags.b5rod) {
+      say([{ who: "Sir Roderick 3RG", text: "Cocoa for Bellissimo’s village. The phoenix contest was a subplot. I remain really, really, really great. The beans need a climate, not a trophy." }]);
+      return;
+    }
+    say([
+      { who: "Sir Roderick 3RG", text: "Grimblewaith. I entered Joaquin’s contest. Then I remembered a village that wants chocolate more than I want a ribbon." },
+      { who: "Sir Roderick 3RG", text: "Those cocoa beans. Heat. Planting. Bellissimo will pretend she is not pleased. I will pretend this is still a heroic charge." },
+      { who: "Grimblewaith", text: "Take them. I smash things. I do not farm things. Joaquin can eat pie." , note: "He drops the contest. The shirt remains optional. The beans do not." }
+    ], () => {
+      G.flags.b5rod = true;
+      G.inv = G.inv.filter((i) => i.id !== "cocoa");
+      G.quest = "West of the plaza: Sir Burras’s Bakery. Five quills. Do not taste the sample.";
+      save();
+    });
+  }
+
+  function talkHydra() {
+    if (G.flags.b5butte) {
+      say([
+        { who: "Sir Burras", text: "Five-quill bakery. The sample is no longer employing extra heads. Humble Pie, south puddles, still wants a giant’s left sock." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Sir Burras", text: "Welcome. Five quills. Complimentary sample. Ignore the extra eyes. They are a garnish." },
+      { who: "Three-Headed Sample", text: "(three mouths. zero crumbs. one bad review waiting)" },
+      { who: "Oz", text: "Do not taste it. I say that as an officer and as someone with a stomach." }
+    ], () => {
+      startBattle([enemy("hydra")], {
+        canFlee: false, boss: true, heal: true,
+        onWin: () => {
+          G.flags.b5butte = true;
+          G.quest = "South puddles: Humble Pie. Rightbeard opposes the Mafaea and collects unmatched laundry.";
+          save();
+          say([{ who: "Sir Burras", text: "The garnish has resigned. Humble Pie is south, beside the puddles. Tell Rightbeard I still want a good review that does not bite." }]);
+        }
+      });
+    });
+  }
+
+  function talkRightbeard() {
+    if (G.flags.b5pie) {
+      say([
+        { who: "Rightbeard", text: "Humble Pie is yours. Fannie’s fading locket is yours. Salt swords are yours. The slug by the west counter would like a word." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Rightbeard", text: "Anti-raid. I oppose the Mafaea. I am collecting a giant’s left sock because the right one is still a domestic tragedy." },
+      { who: "Grimblewaith", text: "I have smashed worse errands. Here. Laundry is a supporting role." },
+      { who: "Rightbeard", text: "Accepted. Humble Pie: layered, winning, Joaquin-shaped. Fannie’s fading locket: keep it until a phoenix says otherwise. Salt swords: Sir Ruprecht’s idea of cutlery. The sand slug arrived with the dessert." , note: "Rightbeard is Leftbeard’s counterpart in laundry and politics. Only one of them was furniture." }
+    ], () => {
+      G.flags.b5pie = true;
+      if (!G.inv.some((i) => i.id === "leftsock")) give("leftsock");
+      give("pie");
+      give("locket");
+      give("salt");
+      G.quest = "The sand slug wants the pie. Salt swords. Then Joaquin’s cavern, far east.";
+      save();
+    });
+  }
+
+  function talkSlug() {
+    say([
+      { who: "Sand Slug", text: "(a dune that learned to slither. it has seen the pie. it has opinions.)" },
+      { who: "Oz", text: "Salt swords. Sir Ruprecht was right about cutlery for once." }
+    ], () => {
+      startBattle([enemy("slug")], {
+        canFlee: false, boss: true, heal: true,
+        onWin: () => {
+          G.flags.b5slug = true;
+          G.quest = "Far east grass: Joaquin’s cavern. Humble Pie. A feather. Do not take Grimma’s exit.";
+          save();
+          say([{ who: "Rightbeard", text: "The slug is seasoning. Take the pie to Joaquin. If Death’s handmaiden offers a shortcut, the answer is still smash-for-the-living." }]);
+        }
+      });
+    });
+  }
+
+  function talkGlockeB5() {
+    if (G.flags.b5done) {
+      say([{ who: "Donna Glocke", text: "I am still Godmother on paper. I am still BPD in the margins. Find Wren. I will keep the border from becoming a punchline." }]);
+      return;
+    }
+    say([
+      { who: "Donna Glocke", text: "I am undercover as Godmother. I did not turn. The Mafaea likes a story where I did. Humble Pie is about to ruin their confidence." },
+      { who: "Chief", text: "(from a legal entry you did not agree to share) Incursion. The Whatsit is faekind. The door is open. That is an invitation." },
+      { who: "Grimblewaith", text: "The pie first. Then I quit. I will be her eyes at the border. Wren is still missing. I smash things until she is not." },
+      { who: "Donna Glocke", text: "Go. I will stay Godmother until the paperwork notices. Book VI will want bards. Try not to become a ballad without me." , note: "Battle of the Bards is not a metaphor. It is a venue. Wren has a song." }
+    ], () => {
+      G.flags.b5done = true;
+      G.quest = "Be Donna Glocke’s eyes at the border. Find Wren. Book VI: Battle of the Bards.";
+      save();
+      G.mode = "credits";
+      G.creditT = 0;
+      $("hud").classList.remove("show");
+      $("dialog").classList.remove("show");
+    });
+  }
+
   function updateQuestSecrets() {
     const a = [G.flags.secretL && "Louisa", G.flags.secretE && "Elisabeth", G.flags.secretM && "Meriwether"].filter(Boolean);
     if (a.length === 3) G.quest = "Return to Jackdaw’s tower. The name is complete. (It is a terrible villain name.)";
@@ -2312,7 +2753,10 @@ XXXXXXXXXXXXXXXX
       golem: { name: "Glass Golem", hp: 60, maxHp: 60, atk: 11, def: 8, xp: 45, gold: 0, spr: "golem", boss: true },
       needler: { name: "The Needler", hp: 58, maxHp: 58, atk: 9, def: 4, xp: 50, gold: 30, spr: "needler", boss: true },
       quacken: { name: "The Quacken", hp: 62, maxHp: 62, atk: 11, def: 6, xp: 48, gold: 0, spr: "quacken", boss: true },
-      mimic: { name: "Nesting Mimics", hp: 64, maxHp: 64, atk: 10, def: 7, xp: 52, gold: 40, spr: "mimic", boss: true }
+      mimic: { name: "Nesting Mimics", hp: 64, maxHp: 64, atk: 10, def: 7, xp: 52, gold: 40, spr: "mimic", boss: true },
+      sand: { name: "Sand Elemental", hp: 46, maxHp: 46, atk: 8, def: 4, xp: 28, gold: 12, spr: "sand", boss: true },
+      hydra: { name: "Three-Headed Sample", hp: 52, maxHp: 52, atk: 10, def: 5, xp: 36, gold: 16, spr: "hydra", boss: true },
+      slug: { name: "Sand Slug", hp: 48, maxHp: 48, atk: 9, def: 6, xp: 32, gold: 14, spr: "slug", boss: true }
     };
     return Object.assign({ stun: 0, confuse: 0 }, E[type]);
   }
@@ -2388,6 +2832,9 @@ XXXXXXXXXXXXXXXX
         else if (ms === 1) opts.unshift("Crush the Vile Seed");
         else opts.unshift("Bright Magic");
       }
+      if (b.foes.some((f) => f.spr === "sand" && f.hp > 0)) opts.unshift("Spill the Canteen");
+      if (b.foes.some((f) => f.spr === "hydra" && f.hp > 0)) opts.unshift("Do Not Taste the Sample");
+      if (b.foes.some((f) => f.spr === "slug" && f.hp > 0)) opts.unshift("Salt Swords");
     } else if (b.menu === "skill") {
       const p = G.party[b.i];
       opts = p.skills.map((id) => SKILLS[id].name + " (" + SKILLS[id].mp + " MP)");
@@ -2436,6 +2883,9 @@ XXXXXXXXXXXXXXXX
       else if (c === "Crew Sock") { b.pending = { type: "skill", id: "crewsock" }; resolvePlayer(); return; }
       else if (c === "Crush the Vile Seed") { b.pending = { type: "skill", id: "vileseed" }; resolvePlayer(); return; }
       else if (c === "Bright Magic") { b.pending = { type: "skill", id: "bright" }; resolvePlayer(); return; }
+      else if (c === "Spill the Canteen") { b.pending = { type: "skill", id: "canteen" }; resolvePlayer(); return; }
+      else if (c === "Do Not Taste the Sample") { b.pending = { type: "skill", id: "sample" }; resolvePlayer(); return; }
+      else if (c === "Salt Swords") { b.pending = { type: "skill", id: "saltsword" }; resolvePlayer(); return; }
       else if (c === "Attack") {
         b.pending = { type: "atk" };
         b.menu = "target";
@@ -2496,6 +2946,9 @@ XXXXXXXXXXXXXXXX
       else if (f.spr === "needler") { b.log = "Swords bounce. He kneels people with sentences. Try confidence, then scales, then the moon."; }
       else if (f.spr === "quacken") { b.log = "Steel is a condiment to a sea behemoth. Rainbow. Bread. Then the duck."; }
       else if (f.spr === "mimic") { b.log = "The chests eat guesses. Crew sock. Vile Seed. Bright magic."; }
+      else if (f.spr === "sand") { b.log = "Swords make more sand. Spill the canteen. Then smash."; }
+      else if (f.spr === "hydra") { b.log = "Three mouths. Zero crumbs. Do not taste the sample."; }
+      else if (f.spr === "slug") { b.log = "Ordinary steel is a condiment. Salt swords."; }
       else if (f.evade && Math.random() * 100 < f.evade) { b.log = f.name + " skipped aside. (Skipping beans. It’s a whole thing.)"; }
       else {
         const n = dmg(p.atk, f.def);
@@ -2584,6 +3037,18 @@ XXXXXXXXXXXXXXXX
         b.foes.forEach((f) => { if (f.spr === "mimic") f.hp = 0; });
         b.log = "Fannie burns through the nesting chests. ELM’s magic comes out light-colored, to his professional dismay.";
         sfx("magic");
+      } else if (act.id === "canteen") {
+        b.foes.forEach((f) => { if (f.spr === "sand") f.hp = 0; });
+        b.log = "Water, then smash. The sand elemental remembers it used to be a beach.";
+        sfx("magic");
+      } else if (act.id === "sample") {
+        b.foes.forEach((f) => { if (f.spr === "hydra") f.hp = 0; });
+        b.log = "Do not taste the sample. Three heads. Zero crumbs. Five quills remain, professionally embarrassed.";
+        sfx("magic");
+      } else if (act.id === "saltsword") {
+        b.foes.forEach((f) => { if (f.spr === "slug") f.hp = 0; });
+        b.log = "Salt swords. The sand slug becomes a recipe. Sir Ruprecht would like a citation.";
+        sfx("magic");
       } else {
         const targets = sk.all ? b.foes.filter((f) => f.hp > 0) : [b.foes[b.target]];
         let msg = p.name + " uses " + sk.name + "! ";
@@ -2598,6 +3063,9 @@ XXXXXXXXXXXXXXXX
           if (f.spr === "needler") { msg += "He would like a sentence, not a dance. "; return; }
           if (f.spr === "quacken") { msg += "The duck is unmoved. "; return; }
           if (f.spr === "mimic") { msg += "The chest chews the spell. "; return; }
+          if (f.spr === "sand") { msg += "More sand. "; return; }
+          if (f.spr === "hydra") { msg += "It tastes you back. "; return; }
+          if (f.spr === "slug") { msg += "Unsalted. "; return; }
           if (f.evade && Math.random() * 100 < f.evade / 2) { msg += f.name + " hops. "; return; }
           const n = dmg(sk.dmg, f.def);
           f.hp = Math.max(0, f.hp - n);
@@ -2736,12 +3204,13 @@ XXXXXXXXXXXXXXXX
   }
 
   function tryWarp(w) {
-    if (isB4() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
-    if (isB3() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b4") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
-    if (isB2() && w.need && (String(w.need).startsWith("b3") || String(w.need).startsWith("b4"))) return;
-    if (!isB2() && !isB3() && !isB4() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b4"))) return;
+    if (isB5() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
+    if (isB4() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b5") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
+    if (isB3() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
+    if (isB2() && w.need && (String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5"))) return;
+    if (!isB2() && !isB3() && !isB4() && !isB5() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5"))) return;
     if (w.need === "grimbleJoin" && !G.flags.rejected) {
-      if (isB4()) { warp(w.to, w.tx, w.ty); return; }
+      if (isB4() || isB5()) { warp(w.to, w.tx, w.ty); return; }
       if (isB3()) {
         if (!G.flags.b3sirsi) {
           say([{ who: "Sirsi", text: "Jackdaw first is traditional. I am standing in the square. I am the tradition this time." }]);
@@ -2842,6 +3311,26 @@ XXXXXXXXXXXXXXXX
       say([{ who: "Leftbird", text: "Pass-song. Then the hatch. I do not accept humming." }]);
       return;
     }
+    if (w.need === "b5chief" && !G.flags.b5chief) {
+      say([{ who: "Chief", text: "The summons is not finished. Talk to me first. The sand was the interview." }]);
+      return;
+    }
+    if (w.need === "b5web" && !G.flags.b5web) {
+      say([{ who: "Wally", text: "Phoenixfinder.bean is not a cavern you walk into un-searched. Visit the Web first." }]);
+      return;
+    }
+    if (w.need === "b5contest" && !G.flags.b5contest) {
+      say([{ who: "Yeahrti", text: "The mountain is closed until a phoenix asks for sweets. Joaquin first." }]);
+      return;
+    }
+    if (w.need === "b5rod" && !G.flags.b5rod) {
+      say([{ who: "Sir Roderick 3RG", text: "Cocoa first. I am on the road south of the sign. Bellissimo’s village is not a subplot you skip." }]);
+      return;
+    }
+    if (w.need === "b5butte" && !G.flags.b5butte) {
+      say([{ who: "Sir Burras", text: "Humble Pie after the bakery. The sample still has extra heads." }]);
+      return;
+    }
     warp(w.to, w.tx, w.ty);
   }
   function warp(map, x, y) {
@@ -2878,7 +3367,7 @@ XXXXXXXXXXXXXXXX
       tryWarp(standing);
     }
     if (!standing) G.warpKey = null;
-    if (["world", "forest", "hornfang", "swamp"].includes(G.map) && ((G.flags.quest && !G.flags.saved) || (isB2() && G.flags.b2grossina && !G.flags.b2done) || (isB3() && G.flags.b3ebi && !G.flags.b3done) || (isB4() && G.flags.b4cinder && !G.flags.b4done))) {
+    if (["world", "forest", "hornfang", "swamp"].includes(G.map) && ((G.flags.quest && !G.flags.saved) || (isB2() && G.flags.b2grossina && !G.flags.b2done) || (isB3() && G.flags.b3ebi && !G.flags.b3done) || (isB4() && G.flags.b4cinder && !G.flags.b4done) || (isB5() && G.flags.b5chief && !G.flags.b5done))) {
       if (here.x !== lastTile.x || here.y !== lastTile.y) {
         lastTile = here;
         G.enc += 1;
@@ -2965,9 +3454,10 @@ XXXXXXXXXXXXXXXX
       col("#3a2"); r(px + 4, py + 14, 3, 3); r(px + 9, py + 14, 3, 3);
       if (frame) { r(px + 4, py + 14, 3, 2); }
     } else if (kind === "grimble") {
-      col(PAL.green); r(px + 3, py + 6, 10, 9);
-      col("#2a5a32"); r(px + 4, py + 3, 8, 5);
+      col(G.flags.b5fae ? "#5aca6a" : PAL.green); r(px + 3, py + 6, 10, 9);
+      col(G.flags.b5fae ? "#3a8a4a" : "#2a5a32"); r(px + 4, py + 3, 8, 5);
       col("#1a3"); r(px + 1, py + 8, 4, 4); r(px + 11, py + 8, 4, 4);
+      if (G.flags.b5fae) { col(PAL.gold); r(px + 2, py + 4, 2, 2); r(px + 12, py + 10, 2, 2); }
     } else if (kind === "jackdaw") {
       col("#2a2460"); r(px + 4, py + 8, 8, 7);
       col("#eee8"); r(px + 5, py + 7, 6, 8);
@@ -3132,9 +3622,53 @@ XXXXXXXXXXXXXXXX
       col("#eee"); r(px + 8, py + 8, 5, 7);
       col(PAL.skin); r(px + 5, py + 3, 6, 5);
       col("#c8c0a0"); r(px + 4, py + 1, 4, 4);
+    } else if (kind === "oz") {
+      col("#3a8a4a"); r(px + 2, py + 8, 12, 6);
+      col("#f4f0e0"); r(px + 3, py + 9, 10, 2);
+      col(PAL.skin); r(px + 5, py + 3, 6, 5);
+      col("#2a5a32"); r(px + 4, py + 1, 8, 3);
+      col("#eee"); r(px + 1, py + 10, 3, 4); r(px + 12, py + 10, 3, 4);
+    } else if (kind === "sand") {
+      col("#c8a060"); r(px + 3, py + 6, 10, 10);
+      col("#e0c080"); r(px + 5, py + 4, 6, 6);
+    } else if (kind === "hydra") {
+      col("#6a3a20"); r(px + 3, py + 8, 10, 7);
+      col("#c45"); r(px + 2, py + 3, 4, 5); r(px + 6, py + 2, 4, 5); r(px + 10, py + 3, 4, 5);
+    } else if (kind === "slug") {
+      col("#c8a060"); r(px + 2, py + 8, 12, 6);
+      col("#a08040"); r(px + 10, py + 6, 4, 4);
+    } else if (kind === "wally") {
+      col("#6a6ac8"); r(px + 4, py + 8, 8, 7);
+      col("#b8a0e0"); r(px + 5, py + 7, 6, 3);
+      col(PAL.skin); r(px + 5, py + 4, 6, 4);
+      col("#8cf"); r(px + 6, py + 1, 4, 4);
+    } else if (kind === "joaquin") {
+      col("#c45"); r(px + 4, py + 8, 8, 7);
+      col(PAL.gold); r(px + 3, py + 3, 10, 6);
+      col("#fff"); r(px + 5, py + 5, 6, 3);
+    } else if (kind === "yeahrti") {
+      col("#c8d0d8"); r(px + 4, py + 8, 8, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#eee"); r(px + 4, py + 2, 8, 4);
+      col("#6a3"); r(px + 6, py + 9, 4, 3);
+    } else if (kind === "chief") {
+      col("#c45"); r(px + 4, py + 8, 8, 7);
+      col(PAL.gold); r(px + 5, py + 7, 6, 2);
+      col(PAL.skin); r(px + 5, py + 3, 6, 5);
+      col("#112"); r(px + 5, py + 1, 6, 3);
+    } else if (kind === "rightbeard") {
+      col("#eee"); r(px + 3, py + 8, 5, 7);
+      col("#112"); r(px + 8, py + 8, 5, 7);
+      col(PAL.skin); r(px + 5, py + 3, 6, 5);
+      col("#c8c0a0"); r(px + 8, py + 1, 4, 4);
+    } else if (kind === "burras") {
+      col("#f4e0c0"); r(px + 4, py + 8, 8, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#6a4a28"); r(px + 5, py + 2, 6, 3);
+      col(PAL.gold); r(px + 6, py + 9, 4, 2);
     }
     // eyes
-    if (!["sign", "bug", "skip", "spoon", "bean", "ox", "well", "fannie", "leftbird", "mimic"].includes(kind)) {
+    if (!["sign", "bug", "skip", "spoon", "bean", "ox", "well", "fannie", "leftbird", "mimic", "sand", "slug"].includes(kind)) {
       col("#112"); r(px + 6, py + 6, 1, 1); r(px + 9, py + 6, 1, 1);
     }
   }
@@ -3145,10 +3679,10 @@ XXXXXXXXXXXXXXXX
     G.camY = G.py * T - H / 2 + 8;
     G.camX = Math.max(0, Math.min(m.w * T - W, G.camX));
     G.camY = Math.max(0, Math.min(m.h * T - H, G.camY));
-    const bg = G.map === "tower" || G.map === "ebi" || G.map === "palace" || G.map === "fey" || G.map === "wreck" ? "#0c1230"
-      : (G.map === "cave" || G.map === "lair" || G.map === "pub" || G.map === "swamp" || G.map === "crater" || G.map === "vault") ? "#120c14"
-      : (G.map === "arena" || G.map === "circus" || G.map === "gates" || G.map === "beanshow") ? "#3a3428"
-      : G.map === "lake" || G.map === "well" || G.map === "bay" || G.map === "misfit" ? "#4a7aaa"
+    const bg = G.map === "tower" || G.map === "ebi" || G.map === "palace" || G.map === "fey" || G.map === "wreck" || G.map === "bpd" || G.map === "web" || G.map === "mafaea" ? "#0c1230"
+      : (G.map === "cave" || G.map === "lair" || G.map === "pub" || G.map === "swamp" || G.map === "crater" || G.map === "vault" || G.map === "oasis") ? "#120c14"
+      : (G.map === "arena" || G.map === "circus" || G.map === "gates" || G.map === "beanshow" || G.map === "butte" || G.map === "pie") ? "#3a3428"
+      : G.map === "lake" || G.map === "well" || G.map === "bay" || G.map === "misfit" || G.map === "snow" ? "#4a7aaa"
       : "#87b";
     col(bg); r(0, 0, W, H);
     const x0 = Math.max(0, (G.camX / T) | 0);
@@ -3162,11 +3696,12 @@ XXXXXXXXXXXXXXXX
     const lead = (G.party[0] && G.party[0].id === "bell") ? "bell"
       : (G.party[0] && G.party[0].id === "roderick") ? "roderick"
       : (G.party[0] && G.party[0].id === "elm") ? "elm"
+      : (G.party[0] && G.party[0].id === "grimble") ? "grimble"
       : "squires";
     sprites.push({ kind: lead, x: G.px * T - G.camX, y: G.py * T - G.camY, z: G.py, me: true });
     if (G.mode === "explore" && G.party[1]) {
       const fid = G.party[1].id;
-      const kind = fid === "grimble" ? "grimble" : fid === "roderick" ? "roderick" : fid === "elm" ? "elm" : fid === "squires" ? "squires" : fid === "bell" ? "bell" : fid === "grimma" ? "grimma" : null;
+      const kind = fid === "grimble" ? "grimble" : fid === "roderick" ? "roderick" : fid === "elm" ? "elm" : fid === "squires" ? "squires" : fid === "bell" ? "bell" : fid === "grimma" ? "grimma" : fid === "oz" ? "oz" : null;
       if (kind) {
         const ox = [0, -6, 0, 6][G.dir], oy = [8, 0, -8, 0][G.dir];
         sprites.push({ kind, x: G.px * T - G.camX + ox, y: G.py * T - G.camY + oy, z: G.py - 0.1 });
@@ -3198,7 +3733,33 @@ XXXXXXXXXXXXXXXX
 
   function drawCredits(t) {
     col("#0a0714"); r(0, 0, W, H);
-    const lines = isB4() ? [
+    const lines = isB5() ? [
+      "A WONDERFUL WEEK FOR A QUEST",
+      "Book V  ·  The Whatsit’s Rebirth",
+      "",
+      "Adapted from the novel by",
+      "Michael D. Young",
+      "",
+      "Grimblewaith   -  faekind, still green",
+      "Oz             -  Officer Zink, stripes union",
+      "Wally          -  Phoenixfinder.bean",
+      "Joaquin        -  phoenix, contest, feather",
+      "Yeahrti        -  whisper the chocolate",
+      "Sir Burras     -  five quills, fewer heads",
+      "Rightbeard     -  Humble Pie, anti-raid",
+      "Fannie         -  restored, Complete",
+      "Donna Glocke   -  Godmother on paper",
+      "Wren           -  still a direction",
+      "",
+      "The tattoo is ash. The border is a job.",
+      "Book VI: Battle of the Bards.",
+      "",
+      "And many of them lived",
+      "reasonably happy",
+      "for some time thereafter.",
+      "",
+      "Press Enter"
+    ] : isB4() ? [
       "A WONDERFUL WEEK FOR A QUEST",
       "Book IV  ·  Leftbeard’s Treasure",
       "",
@@ -3312,7 +3873,7 @@ XXXXXXXXXXXXXXXX
     });
     G.party.forEach((p, i) => {
       if (p.hp <= 0) return;
-      drawChar(p.id === "grimble" ? "grimble" : p.id === "bell" ? "bell" : p.id === "roderick" ? "roderick" : p.id === "elm" ? "elm" : p.id === "grimma" ? "grimma" : "squires", 40 + i * 28, 100, 1, 0, true);
+      drawChar(p.id === "grimble" ? "grimble" : p.id === "bell" ? "bell" : p.id === "roderick" ? "roderick" : p.id === "elm" ? "elm" : p.id === "grimma" ? "grimma" : p.id === "oz" ? "oz" : "squires", 40 + i * 28, 100, 1, 0, true);
     });
   }
 
@@ -3335,7 +3896,9 @@ XXXXXXXXXXXXXXXX
     $("menu").classList.add("show");
     const body = G.party.map((p) => p.name + "  HP " + p.hp + "/" + p.maxHp + "  MP " + p.mp + "/" + p.maxMp).join("\n");
     const items = G.inv.length ? G.inv.map((i) => ((ITEMS[i.id] && ITEMS[i.id].name) || i.id) + " ×" + i.n).join("\n") : "(empty pockets, full destiny)";
-    const secrets = isB4()
+    const secrets = isB5()
+      ? ["Oz", "Wally", "Joaquin", "Yeahrti", "Pie"].filter((_, i) => [G.flags.b5oz, G.flags.b5web, G.flags.b5contest, G.flags.b5snow, G.flags.b5pie][i]).join(", ")
+      : isB4()
       ? ["RVA", "DQA", "Fannie", "Cinder", "Grimma"].filter((_, i) => [G.flags.b4rva, G.flags.b4dqa, G.flags.b4fannie, G.flags.b4cinder, G.flags.b4grimma][i]).join(", ")
       : isB3()
       ? ["Squires", "Grimblewaith", "Glocke", "Priscilla", "Miss Marble"].filter((_, i) => [G.flags.b3rod, G.flags.b3grim, G.flags.b3glocke, G.flags.b3pris, G.flags.b3marble][i]).join(", ")
@@ -3344,7 +3907,7 @@ XXXXXXXXXXXXXXXX
       : ["Louisa", "Elisabeth", "Meriwether"].filter((_, i) => [G.flags.secretL, G.flags.secretE, G.flags.secretM][i]).join(", ");
     $("mBody").innerHTML = "<pre style='white-space:pre-wrap;font:inherit'>" +
       body + "\n\nInventory\n" + items + "\n\nQuest\n" + G.quest +
-      "\n\n" + (isB4() ? "Crew: " : isB3() ? "Rod Squad: " : isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
+      "\n\n" + (isB5() ? "Offerings: " : isB4() ? "Crew: " : isB3() ? "Rod Squad: " : isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
       "\n\nArrows move · Enter talk · Esc menu</pre>";
   }
 
@@ -3493,6 +4056,26 @@ XXXXXXXXXXXXXXXX
     ]);
     save();
   }
+  function startBook5() {
+    audioInit();
+    G.day = 5;
+    G.flags = { saved: true };
+    G.gold = 16;
+    G.inv = [{ id: "luna", n: 3 }];
+    G.party = [grimble()];
+    G.map = "bpd";
+    G.px = 8.5; G.py = 5.5; G.dir = 0;
+    G.quest = "Officer Zink is already at the briefing. Sand is already at the door. Try water first.";
+    G.mode = "explore";
+    $("titleui").classList.remove("show");
+    hud();
+    say([
+      { who: "Jackdaw", text: "Book V. A Whatsit, a zebra centaur, and a phoenix that people keep mispronouncing. I refuse to call this a promotion." },
+      { who: "Grimblewaith", text: "I am Grimblewaith. I used to smash things for ELM. Now I smash things for the BPD. The hours are similar. The dental is worse." },
+      { who: "Jackdaw", text: "Oz is to your left-north. The sand is north. Spill the canteen. Then smash. Then the Chief will pretend this was the plan." }
+    ]);
+    save();
+  }
   function continueGame() {
     audioInit();
     if (!load()) { startNew(); return; }
@@ -3544,6 +4127,7 @@ XXXXXXXXXXXXXXXX
   $("btnBook2").onclick = startBook2;
   $("btnBook3").onclick = startBook3;
   $("btnBook4").onclick = startBook4;
+  $("btnBook5").onclick = startBook5;
   $("btnCont").onclick = continueGame;
   $("btnMute").onclick = toggleMute;
   $("btnSave").onclick = () => { save(); $("mBody").insertAdjacentHTML("afterbegin", "<p style='color:var(--gold)'>Saved in this browser.</p>"); };
@@ -3593,7 +4177,8 @@ XXXXXXXXXXXXXXXX
     mapSize: () => ({ w: MAPS[G.map].w, h: MAPS[G.map].h, id: G.map }),
     startBook2,
     startBook3,
-    startBook4
+    startBook4,
+    startBook5
   };
 })();
 </script>

@@ -373,6 +373,12 @@ if(!window.__khLangObs){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
 
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
@@ -645,7 +651,7 @@ function showTurn(){
   $("npc").innerHTML = "<p lang=\"de\">"+esc(t.npc)+"</p>"+(S.englisch?"<p class=\"en gloss\" lang=\"en\">"+esc(t.en)+"</p>":"");
   $("recast").hidden=true; $("recast").innerHTML="";
   const box=$("choices"); box.innerHTML="";
-  t.opts.forEach((o,i)=>{
+  shuffled(t.opts).forEach((o,i)=>{
     const b=document.createElement("button");
     b.type="button"; b.className="opt";
     b.innerHTML = '<span class="key">'+(i+1)+'</span>'+esc(fill(o.de))+(S.englisch?"<span class=\"en gloss\" lang=\"en\">"+esc(o.en)+"</span>":"");
@@ -693,13 +699,13 @@ const CHIPS = ["Guten Tag","liebe Familie Weber","ich heiße","ich bin neu","in 
 
 function openNote(){
   zeigeScreen("screen-note");
-  S.note=[]; zeichneChips();
+  S.note=[]; S.chipOrder = shuffled(CHIPS); zeichneChips();
   sagen("Baue einen Zettel aus Wörtern.");
 }
 
 function zeichneChips(){
   const box=$("chips"); box.innerHTML="";
-  CHIPS.forEach(w=>{
+  (S.chipOrder||CHIPS).forEach(w=>{
     const b=document.createElement("button");
     b.type="button"; b.className="chip"+(S.note.indexOf(w)>=0?" on":"");
     b.textContent=w;
@@ -736,20 +742,25 @@ const QUIZ = [
   {q:"Mit Frau Keller Kuchen annehmen:", ok:0, opts:["Ja bitte, gerne. Vielen Dank!","Gib mehr.","I take cake."]},
   {q:"Herr Koch schließt fast. Du sagst:", ok:2, opts:["Machen Sie die Tür auf!","Sie sind unmöglich.","Ich lasse den Zettel im Kasten. Danke für Ihre Zeit."]}
 ];
-let qn=0;
+let qn=0, quizDeck=[];
 function startQuiz(){
+  quizDeck = shuffled(QUIZ).map(it => {
+    const packed = it.opts.map((o,i)=>({o, good:i===it.ok}));
+    const mixed = shuffled(packed);
+    return {q:it.q, opts:mixed.map(x=>x.o), ok:mixed.findIndex(x=>x.good)};
+  });
   qn=0; zeigeScreen("screen-quiz"); showQ();
 }
 function showQ(){
-  const it=QUIZ[qn];
-  $("q-box").innerHTML = "<p lang=\"de\"><strong>"+(qn+1)+"/"+QUIZ.length+".</strong> "+esc(it.q)+"</p><div class=\"choices\">"+
+  const it=quizDeck[qn];
+  $("q-box").innerHTML = "<p lang=\"de\"><strong>"+(qn+1)+"/"+quizDeck.length+".</strong> "+esc(it.q)+"</p><div class=\"choices\">"+
     it.opts.map((o,i)=>'<button type="button" class="opt" data-i="'+i+'"><span class="key">'+(i+1)+"</span>"+esc(o)+"</button>").join("")+"</div>";
   $("q-box").querySelectorAll(".opt").forEach(b=>{
     b.onclick=()=>{
       const good=Number(b.dataset.i)===it.ok;
       b.classList.add(good?"right":"wrong");
       if(good) S.hoef+=1; else S.hoef-=1;
-      setTimeout(()=>{ qn++; if(qn<QUIZ.length) showQ(); else startKonzert(); }, good?400:900);
+      setTimeout(()=>{ qn++; if(qn<quizDeck.length) showQ(); else startKonzert(); }, good?400:900);
     };
   });
 }
@@ -763,17 +774,17 @@ function startKonzert(){
   if(S.done.wg) bits.push("Jan und Selin flüstern: Der Chor ist besser als erwartet.");
   $("konz-de").textContent = "Die Stühle sind aus Holz. Es duftet nach Tee. "+(bits.join(" ")||"Einige Nachbarn sind da.")+" Ein Mikrofon: möchtest du danken?";
   $("konz-en").textContent = "A last public sentence. Thank people without preaching.";
-  const opts=[
+  const opts=shuffled([
     {de:"Guten Abend. Danke, dass Sie gekommen sind. Ich bin neu und wollte nur einladen – nicht predigen. Viel Spaß beim Konzert.", hoef:2},
     {de:"Yo Leute, thanks for coming, das is so important for the church.", hoef:-1},
     {de:"Ihr musstet kommen. Gut, dass ihr gehorcht habt.", hoef:-2}
-  ];
+  ]);
   $("konz-choices").innerHTML = opts.map((o,i)=>'<button type="button" class="opt" data-i="'+i+'"><span class="key">'+(i+1)+"</span>"+esc(o.de)+"</button>").join("");
   $("konz-choices").querySelectorAll(".opt").forEach(b=>{
     b.onclick=()=>{
       const i=Number(b.dataset.i);
       S.hoef += opts[i].hoef;
-      b.classList.add(i===0?"right":"wrong");
+      b.classList.add(opts[i].hoef>0?"right":"wrong");
       setTimeout(ende, 600);
     };
   });

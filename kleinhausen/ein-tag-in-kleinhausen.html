@@ -311,6 +311,11 @@ if(!window.__khLangObs){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
 
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
@@ -730,25 +735,27 @@ function setTimeline(ph){
 }
 
 function renderMiniV2(){
-  const items = [
+  const items = shuffled([
     {q:"Heute _____ ich Deutsch in Kleinhausen.", ok:"lerne", bad:"ich lerne", recast:"Heute lerne ich … — das Verb direkt nach der Zeit."},
     {q:"Um vier _____ der Verein auf dem Platz.", ok:"spielt", bad:"der Verein spielt", recast:"Um vier spielt der Verein …"},
     {q:"In Kleinhausen _____ es ein Fest auf dem Markt.", ok:"gibt", bad:"es gibt", recast:"In Kleinhausen gibt es ein Fest. (gibt vor es)"},
     {q:"Nach der Schule _____ ich nach Hause.", ok:"gehe", bad:"ich gehe", recast:"Nach der Schule gehe ich nach Hause."},
     {q:"Am Abend _____ Mama Kakao.", ok:"kocht", bad:"Mama kocht", recast:"Am Abend kocht Mama Kakao. Zeit + Verb + Subjekt."}
-  ];
-  let step = 0, html = "<p>Wähle die Form mit Verbzweit.</p>";
+  ]);
+  let step = 0;
   function show(){
     const it=items[step];
-    $("choices").innerHTML =
-      '<button type="button" class="opt" data-i="0"><span class="key">1</span>'+esc(it.q.replace("_____", it.ok))+'</button>'+
-      '<button type="button" class="opt" data-i="1"><span class="key">2</span>'+esc(it.q.replace("_____", it.bad))+'</button>';
+    const opts=shuffled([
+      {t:it.q.replace("_____", it.ok), good:true},
+      {t:it.q.replace("_____", it.bad), good:false}
+    ]);
+    $("choices").innerHTML = opts.map((o,i)=>'<button type="button" class="opt" data-ok="'+(o.good?1:0)+'"><span class="key">'+(i+1)+"</span>"+esc(o.t)+"</button>").join("");
     $("story-de").innerHTML = "<p>"+esc(it.q)+"</p>";
     $("story-en").textContent = "Choose the verb-second version.";
     glossUpdate();
     $("choices").querySelectorAll(".opt").forEach(b=>{
       b.onclick=()=>{
-        const good = b.dataset.i==="0";
+        const good = b.dataset.ok==="1";
         if(good){ S.gut++; S.v2=true; sagen("Richtig. Verb an Position zwei."); fbOpt(b,true); }
         else { S.chaos++; $("recast").hidden=false; $("recast").innerHTML='<div class="recast"><strong>Korrektur:</strong> '+esc(it.recast)+'</div>'; sagen(it.recast); fbOpt(b,false); }
         setTimeout(()=>{
@@ -795,7 +802,7 @@ function gehe(id){
   sagen(node.title+". Wähle 1, 2 oder 3.");
   if(node.mini==="v2"){ renderMiniV2(); return; }
   const box = $("choices"); box.innerHTML = "";
-  (node.ch||[]).forEach((ch,i)=>{
+  (node.ch?shuffled(node.ch):[]).forEach((ch,i)=>{
     const b=document.createElement("button");
     b.type="button"; b.className="opt";
     b.innerHTML = '<span class="key">'+(i+1)+'</span>'+ch.de.map(s=>esc(fill(s))).join(" ")+

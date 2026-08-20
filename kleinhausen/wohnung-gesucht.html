@@ -443,6 +443,12 @@ if(!window.__khLangObs){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
   picked:{}, firstConfirm:true, browsePts:0, mailPts:0, quizPts:0,
@@ -615,6 +621,7 @@ function renderKarten(){
 });
 
 $("btn-start").addEventListener("click", () => {
+  deal(LISTINGS);
   zeige("screen-browse");
   renderKarten();
   sagen("Acht Anzeigen. Markiere die drei, die zu deinem Merkzettel passen.");
@@ -670,6 +677,7 @@ $("btn-confirm").addEventListener("click", () => {
 function startMail(){
   zeige("screen-mail");
   S.mailSel = [];
+  deal(CHIPS);
   renderChips();
   renderLetter();
   sagen("Baue eine höfliche Anfrage. Zwei Bausteine sind zu locker.");
@@ -766,6 +774,12 @@ function furnIcon(id){
 function startPlan(){
   zeige("screen-plan");
   S.placed = {}; S.holding = null; S.quizAns = {};
+  deal(FURN);
+  S.quiz = shuffled(QUIZ).map(q => {
+    const packed = q.opts.map((o,i)=>({o, good:i===q.ok}));
+    const mixed = shuffled(packed);
+    return {q:q.q, en:q.en, warum:q.warum, opts:mixed.map(x=>x.o), ok:mixed.findIndex(x=>x.good)};
+  });
   renderFurn(); renderFloor();
   sagen("Fünf Möbel setzen, dann Präpositionen.");
 }
@@ -818,7 +832,7 @@ function renderFloor(){
 }
 function buildQuiz(){
   const box = $("quiz"); box.innerHTML = "";
-  QUIZ.forEach((q, qi) => {
+  S.quiz.forEach((q, qi) => {
     const div = document.createElement("div");
     div.className = "q";
     div.innerHTML = "<p><strong>"+(qi+1)+".</strong> "+esc(q.q)+'</p><span class="en gloss" lang="en">'+esc(q.en)+"</span>";
@@ -847,7 +861,7 @@ $("btn-quiz").addEventListener("click", () => {
   }
   let pts = 0;
   const box = $("quiz"); box.innerHTML = "";
-  QUIZ.forEach((q, qi) => {
+  S.quiz.forEach((q, qi) => {
     const gut = S.quizAns[qi] === q.ok;
     if(gut) pts += 10;
     const div = document.createElement("div");

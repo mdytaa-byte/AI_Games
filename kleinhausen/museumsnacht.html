@@ -317,6 +317,11 @@ if(!window.__khLangObs){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
 
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
@@ -698,8 +703,8 @@ function untersuche(sp){
     const k="q"+sp.q;
     S.tries[k]=S.tries[k]||0;
     extra += "<p><strong>"+esc(sp.ask)+"</strong></p><div class=\"choices\">";
-    sp.opts.forEach((o,i)=>{
-      extra += '<button type="button" class="opt" data-i="'+i+'"><span class="key">'+(i+1)+"</span>"+esc(o)+"</button>";
+    shuffled(sp.opts.map((o,i)=>({o, ok:i===sp.ok}))).forEach((x,i)=>{
+      extra += '<button type="button" class="opt" data-ok="'+(x.ok?1:0)+'"><span class="key">'+(i+1)+"</span>"+esc(x.o)+"</button>";
     });
     extra += "</div>";
     if(S.tries[k]>=2 && !S.stamps[sp.q-1]) extra += '<p class="hint">Hinweis: Lies das Schild noch einmal langsam. Die Antwort steht im Text.</p>';
@@ -708,8 +713,8 @@ function untersuche(sp){
   sagen(sp.label);
   $("panel-extra").querySelectorAll(".opt").forEach(b=>{
     b.onclick=()=>{
-      const i=Number(b.dataset.i);
-      if(i===sp.ok){
+      const ok=b.dataset.ok==="1";
+      if(ok){
         b.classList.add("right");
         S.stamps[sp.q-1]=true;
         if(sp.frag && sp.frag!=="—" && S.frags.indexOf(sp.frag)<0) S.frags.push(sp.frag);
@@ -734,12 +739,12 @@ function openFinale(){
   if(!S.frags.includes("Anfassen")) S.frags.push("Anfassen");
   zeigeScreen("screen-finale");
   $("fin-frags").textContent = S.frags.join(" · ");
-  const opts = ["Geschichte zum Anfassen","Nacht ohne Ende","Wein für alle","Mainz am Meer"];
-  $("fin-choices").innerHTML = opts.map((o,i)=>'<button type="button" class="opt" data-i="'+i+'"><span class="key">'+(i+1)+"</span>"+esc(o)+"</button>").join("");
+  const opts = shuffled(["Geschichte zum Anfassen","Nacht ohne Ende","Wein für alle","Mainz am Meer"]);
+  $("fin-choices").innerHTML = opts.map((o,i)=>'<button type="button" class="opt" data-ok="'+(o==="Geschichte zum Anfassen"?1:0)+'"><span class="key">'+(i+1)+"</span>"+esc(o)+"</button>").join("");
   glossUpdate();
   $("fin-choices").querySelectorAll(".opt").forEach(b=>{
     b.onclick=()=>{
-      if(b.dataset.i==="0"){ S.ending = S.guard>2 ? "wacht" : "nacht"; ende(); }
+      if(b.dataset.ok==="1"){ S.ending = S.guard>2 ? "wacht" : "nacht"; ende(); }
       else {
         S.tries.fin=(S.tries.fin||0)+1;
         $("fin-fb").hidden=false;

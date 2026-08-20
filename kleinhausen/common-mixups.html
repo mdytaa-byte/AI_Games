@@ -274,6 +274,12 @@ if(!window.__khLangObs){
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
 
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
@@ -503,7 +509,7 @@ function loadRound(){
   $("btn-next").hidden=true;
   renderPips(ROUNDS.length, S.i);
   const box=$("choices"); box.innerHTML="";
-  r.opts.forEach(o=>{
+  shuffled(r.opts).forEach(o=>{
     const b=document.createElement("button");
     b.type="button"; b.className="choice"; b.textContent=o.t;
     b.addEventListener("click", ()=>pick(o,b,r));
@@ -564,10 +570,11 @@ function loadSpeed(){
   $("scene-en").textContent="Speed round.";
   renderPips(SPEED.length, S.speedI);
   const box=$("choices"); box.innerHTML="";
-  c.opts.forEach((t,i)=>{
+  const richtig=c.opts[c.a];
+  shuffled(c.opts).forEach(t=>{
     const b=document.createElement("button");
     b.type="button"; b.className="choice"; b.textContent=t;
-    b.addEventListener("click", ()=>pickSpeed(i,b,c));
+    b.addEventListener("click", ()=>pickSpeed(t,b,c,richtig));
     box.appendChild(b);
   });
   $("stamp").classList.remove("on");
@@ -583,9 +590,9 @@ function loadSpeed(){
   speedTimer=setTimeout(()=>{
     if(!S.answered){
       S.answered=true; S.total++;
-      Array.from($("choices").children).forEach((x,idx)=>{
+      Array.from($("choices").children).forEach(x=>{
         x.disabled=true;
-        if(idx===c.a) x.classList.add("richtig");
+        if(x.textContent===richtig) x.classList.add("richtig");
       });
       sagen("Zeit um!"); showSpeedStamp(c,false);
     }
@@ -593,15 +600,15 @@ function loadSpeed(){
   glossUpdate();
   sprich(c.q);
 }
-function pickSpeed(i,btn,c){
+function pickSpeed(t,btn,c,richtig){
   if(S.answered) return;
   S.answered=true; S.total++;
   if(speedTimer) clearTimeout(speedTimer);
-  const ok=i===c.a;
+  const ok=t===richtig;
   if(ok) S.korrekt++;
-  Array.from($("choices").children).forEach((x,idx)=>{
+  Array.from($("choices").children).forEach(x=>{
     x.disabled=true;
-    if(idx===c.a) x.classList.add("richtig");
+    if(x.textContent===richtig) x.classList.add("richtig");
   });
   btn.classList.add(ok?"richtig":"falsch");
   showSpeedStamp(c,ok);
@@ -629,17 +636,19 @@ function openMeta(){
     {t:"Es muss „Jeder Fehler“ heißen (maskulin).", ok:true, why:"Genau. der Fehler → jeder Fehler. Herr Young hat absichtlich (oder müde) gemischt – das ist der Witz der letzten Folie."},
     {t:"Es muss „Die Fehler“ ohne jeder/jedes heißen.", ok:false, why:"Plural ginge, aber der Spruch braucht Singular: jeder Fehler."}
   ];
-  opts.forEach(o=>{
+  shuffled(opts).forEach(o=>{
     const b=document.createElement("button");
     b.type="button"; b.className="choice"; b.textContent=o.t;
     b.addEventListener("click", ()=>{
       if(b.disabled) return;
       S.total++;
       if(o.ok){ S.korrekt++; S.bonus=5; }
-      Array.from(box.children).forEach(x=>x.disabled=true);
+      Array.from(box.children).forEach(x=>{
+        x.disabled=true;
+        const m=opts.find(z=>z.t===x.textContent);
+        if(m&&m.ok) x.classList.add("richtig");
+      });
       b.classList.add(o.ok?"richtig":"falsch");
-      if(o.ok) box.children[1].classList.add("richtig");
-      else Array.from(box.children).forEach((x,i)=>{ if(opts[i].ok) x.classList.add("richtig"); });
       $("meta-stamp").classList.add("on");
       $("meta-rule").textContent=o.why+(o.ok?" +5 Bonus!":"");
       $("btn-meta-next").hidden=false;
@@ -712,6 +721,7 @@ $("btn-verify").addEventListener("click", ()=>{
   out.textContent=ok?("Gültig. "+name+": Score "+score+", ca. "+pct+" %."):"Ungültig.";
 });
 $("btn-start").addEventListener("click", ()=>{
+  deal(ROUNDS); deal(SPEED);
   S.i=0; S.korrekt=0; S.total=0; S.bonus=0; S.speed=false;
   zeigeScreen("screen-play"); loadRound();
 });

@@ -270,6 +270,11 @@ if(!window.__khLangObs){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
 const S = {englisch:true, audio:false, kontrast:false, size:0, motion:true, visit:0, beat:0, pts:[0,0,0], done:[false,false,false], table:{}, firstTry:true};
 
 const MENU = [
@@ -586,28 +591,28 @@ function showBeat(){
   $("play-fb").hidden = true;
   $("btn-next").hidden = true;
   const box = $("opts"); box.innerHTML = "";
-  b.opts.forEach((o, oi) => {
+  const shown = shuffled(b.opts);
+  shown.forEach(o => {
     const btn = document.createElement("button");
     btn.type = "button"; btn.className = "opt";
     btn.innerHTML = "<span>"+esc(o.de)+'</span><span class="en gloss" lang="en">'+esc(o.en)+"</span>";
-    btn.addEventListener("click", () => pick(oi));
+    btn.addEventListener("click", () => pick(o, shown, btn));
     box.appendChild(btn);
   });
   sprich(b.npc);
 }
 
-function pick(oi){
+function pick(o, shown, btn){
   if(S.locked) return;
   S.locked = true;
   const v = VISITS[S.visit];
   const b = v.beats[S.beat];
-  const o = b.opts[oi];
   const btns = [...$("opts").children];
   btns.forEach((el, i) => {
     el.disabled = true;
-    if(b.opts[i].best) el.classList.add("good");
-    if(i === oi && !o.best) el.classList.add("no");
+    if(shown[i].best) el.classList.add("good");
   });
+  if(!o.best) btn.classList.add("no");
   const visual = o.table || (b.opts.find(x => x.best) || {}).table;
   if(visual){
     Object.keys(visual).forEach(k => {

@@ -316,6 +316,12 @@ if(!window.__khLangObs){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
   picked:{}, newsPts:0, newsOk:false,
@@ -444,6 +450,7 @@ function renderNews(){
 }
 
 $("btn-go").addEventListener("click", () => {
+  deal(CARDS);
   zeige("screen-news"); renderNews();
   sagen("Wähle die offiziellen Karten.");
   sprich("Messung vom DWD-Kasten am Markt.");
@@ -582,6 +589,7 @@ $("btn-map").addEventListener("click", () => {
 function startScript(){
   zeige("screen-script");
   S.chips = [];
+  deal(CHIPDATA);
   renderChips(); renderScript();
   sagen("Lege das Skript aus Bausteinen.");
 }
@@ -637,6 +645,7 @@ $("btn-script").addEventListener("click", () => {
 
 function startAir(){
   zeige("screen-air");
+  S.qDeck = [];
   $("onair-flag").hidden = false;
   $("prompter").textContent = "… Countdown …";
   $("qbox").hidden = true;
@@ -699,7 +708,14 @@ function viewerQs(){
 }
 function showQ(){
   const qs = viewerQs();
-  const q = qs[S.q];
+  if(!S.qDeck) S.qDeck = [];
+  if(!S.qDeck[S.q]){
+    const src = qs[S.q];
+    const packed = src.opts.map((o,i)=>({o, good:i===src.ok}));
+    const mixed = shuffled(packed);
+    S.qDeck[S.q] = Object.assign({}, src, {opts:mixed.map(x=>x.o), ok:mixed.findIndex(x=>x.good)});
+  }
+  const q = S.qDeck[S.q];
   S.qLocked = false;
   $("q-text").textContent = q.q;
   $("q-en").textContent = q.en;

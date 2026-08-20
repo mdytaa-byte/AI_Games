@@ -372,6 +372,11 @@ if(!window.__khLangObs){
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
 
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
@@ -847,7 +852,7 @@ function showStep(){
   $("btn-next-step").hidden = true;
   $("btn-collect").hidden = true;
   const opts = $("modal-opts"); opts.innerHTML = "";
-  st.options.forEach((opt,i)=>{
+  shuffled(st.options).forEach((opt,i)=>{
     const b = document.createElement("button");
     b.type="button"; b.className="opt";
     b.textContent = opt;
@@ -917,7 +922,7 @@ function openAccuse(){
     ? "Du hast erst "+n+" Beweise. Sammle mindestens 3, sonst glaubt dir niemand."
     : "Beweise: "+n+". Rucksack: "+(has("rucksack")?"ja":"nein")+". Siegel: "+(has("siegel")?"ja":"nein")+".";
   const box = $("suspects"); box.innerHTML = "";
-  SUSPECTS.forEach(su=>{
+  shuffled(SUSPECTS).forEach(su=>{
     const b = document.createElement("button");
     b.type="button"; b.className="acc-btn";
     b.innerHTML = "<strong>"+esc(su.name)+"</strong>"+esc(su.blurb)+

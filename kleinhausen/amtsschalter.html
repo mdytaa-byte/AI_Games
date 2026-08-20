@@ -289,6 +289,11 @@ if(!window.__khLangObs){
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
 
 const ID = {
   nachname:"Bergmann", vorname:"Luca", geb:"14.03.2008",
@@ -478,7 +483,7 @@ function loadA(){
     {t:"Yo, Anmeldung, danke.", ok:false, why:"Zu locker. Sachbearbeiterin erwartet Sie."}
   ];
   const wrap=$("a-greet");
-  greet.forEach(o=>{
+  shuffled(greet).forEach(o=>{
     const btn=document.createElement("button");
     btn.type="button"; btn.className="dlg"; btn.textContent=o.t;
     btn.addEventListener("click", ()=>{
@@ -584,7 +589,7 @@ function showB(){
   $("b-form").innerHTML="";
   const box=$("b-opts"); box.innerHTML="";
   const wrap=document.createElement("div"); wrap.className="opts";
-  d.opts.forEach((o,i)=>{
+  shuffled(d.opts).forEach((o,i)=>{
     const b=document.createElement("button");
     b.type="button"; b.className="dlg";
     b.textContent=o.t;
@@ -655,7 +660,7 @@ function showC(){
   $("btn-next").hidden=true; $("btn-submit").hidden=true; $("play-fb").hidden=true;
   const box=$("c-opts"); box.innerHTML="";
   const wrap=document.createElement("div"); wrap.className="opts";
-  f.opts.forEach(t=>{
+  shuffled(f.opts).forEach(t=>{
     const b=document.createElement("button");
     b.type="button"; b.className="dlg"; b.textContent=t;
     b.addEventListener("click", ()=>pickC(t,b,f));

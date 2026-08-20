@@ -285,6 +285,12 @@ if(!window.__khLangObs){
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
 function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
 function sprich(text){ if(!S.audio || !("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="de-DE"; speechSynthesis.speak(u); }
 
@@ -424,6 +430,7 @@ function pips(){
   $("pips").innerHTML = RUNDEN.map((_,i)=>"<span class=\"pip"+(i<S.i?" done":(i===S.i?" now":""))+"\"></span>").join("");
 }
 function startGame(){
+  deal(RUNDEN);
   S.i=0; S.punkte=0; S.fehler=0;
   $("scorechip").textContent="Punkte: 0";
   zeige("screen-play");
@@ -456,7 +463,7 @@ function renderA(r){
     "<p>Welche deutsche Uhrzeit zeigt die Bahnhofsuhr?</p><p class=\"en gloss\" lang=\"en\">Which German time phrase matches the clock?</p>"+
     "<div class=\"clocks-row\"><figure class=\"clock-card\">"+clockSVG(r.h,r.m,"a")+"<figcaption>Bahnhof</figcaption></figure></div>"+
     "<div class=\"opts\" id=\"opts\"></div><div id=\"fb\"></div>";
-  r.opts.forEach((t,i)=>{
+  shuffled(r.opts).forEach(t=>{
     const b=document.createElement("button");
     b.type="button"; b.className="wahl"; b.textContent=t;
     b.addEventListener("click", ()=>{
@@ -475,7 +482,7 @@ function renderA(r){
     });
     $("opts").appendChild(b);
   });
-  sprich("Welche Uhrzeit? "+r.opts[0]);
+  sprich("Welche Uhrzeit? "+r.richtig);
 }
 
 function renderB(r){
@@ -543,7 +550,7 @@ function renderC(r){
     "<p class=\"en gloss\" lang=\"en\">How many minutes until the bus/train?</p>"+
     "<div class=\"clocks-row\"><figure class=\"clock-card\">"+clockSVG(r.jetztH,r.jetztM,"c")+"<figcaption>jetzt</figcaption></figure></div>"+
     "<div class=\"opts\" id=\"opts\"></div><div id=\"fb\"></div>";
-  r.opts.forEach(n=>{
+  shuffled(r.opts).forEach(n=>{
     const b=document.createElement("button");
     b.type="button"; b.className="wahl"; b.textContent=n+" Minuten";
     b.addEventListener("click", ()=>{

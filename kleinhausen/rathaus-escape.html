@@ -303,6 +303,11 @@ if(!window.__khLangObs){
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
 
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
@@ -806,15 +811,21 @@ function puzzleMatch(){
     {id:"schild", de:"das Schild", en:"the sign", svg:'<svg class="pic-svg" viewBox="0 0 80 48"><rect x="12" y="10" width="56" height="24" fill="#9a3b3b" stroke="#c4a056"/><text x="40" y="27" text-anchor="middle" fill="#fff" font-size="8">AUSGANG</text></svg>'},
     {id:"schluessel", de:"der Schlüssel", en:"the key", svg:'<svg class="pic-svg" viewBox="0 0 80 48"><circle cx="22" cy="24" r="8" fill="none" stroke="#c4a056" stroke-width="3"/><rect x="30" y="21" width="36" height="6" fill="#c4a056"/></svg>'}
   ];
-  const words = items.map(x => x.de);
+  if(!S.r1.picOrder){
+    S.r1.picOrder = shuffled(items.map(x => x.id));
+    S.r1.wordOrder = shuffled(items.map(x => x.id));
+  }
+  const byId = {};
+  items.forEach(it => { byId[it.id] = it; });
+  const pics = S.r1.picOrder.map(id => byId[id]);
+  const wordItems = S.r1.wordOrder.map(id => byId[id]);
   let html = '<p class="en gloss" lang="en">Match each German office noun to its picture. Click a word, then a picture.</p>';
   html += '<div class="match-grid">';
-  items.forEach(it => {
+  pics.forEach(it => {
     html += '<button type="button" class="match-pic'+(S.r1.matched[it.id]?" ok":"")+'" data-pic="'+it.id+'" aria-label="Bild: '+it.de+'">'+it.svg+'<span class="sr">'+esc(it.de)+'</span></button>';
   });
-  words.forEach(w => {
-    const id = items.find(i => i.de===w).id;
-    html += '<button type="button" class="match-word'+(S.r1.matched[id]?" ok":"")+'" data-word="'+id+'">'+esc(w)+' <span class="en gloss" lang="en">'+esc(items.find(i=>i.id===id).en)+'</span></button>';
+  wordItems.forEach(it => {
+    html += '<button type="button" class="match-word'+(S.r1.matched[it.id]?" ok":"")+'" data-word="'+it.id+'">'+esc(it.de)+' <span class="en gloss" lang="en">'+esc(it.en)+'</span></button>';
   });
   html += '</div>';
   if(S.r1.tries>=2 && !S.r1.done){
@@ -872,7 +883,9 @@ function puzzleKonj(){
   let html = "";
   rows.forEach((row,i) => {
     html += '<p lang="de">'+esc(row.q)+'</p><p class="en gloss" lang="en">'+esc(row.en)+'</p><div class="choices">';
-    ["weil","dass","obwohl"].forEach((opt,j) => {
+    if(!S.r2.optOrder) S.r2.optOrder = {};
+    if(!S.r2.optOrder[row.k]) S.r2.optOrder[row.k] = shuffled(["weil","dass","obwohl"]);
+    S.r2.optOrder[row.k].forEach((opt,j) => {
       const sel = S.r2[row.k]===opt ? " aria-pressed=\"true\"" : "";
       html += '<button type="button" class="opt" data-k="'+row.k+'" data-v="'+opt+'" data-n="'+(i*3+j+1)+'"><span class="key">'+(j+1)+'</span>'+opt+'</button>';
     });
@@ -924,7 +937,8 @@ function puzzleBox(which){
   let html = '<p lang="de">Im Karton liegt ein Brief: „Liebe Lena, ich schreibe _____ einen Brief aus dem Archiv.“</p>';
   html += '<p class="en gloss" lang="en">In the box is a letter: “I am writing a letter to a friend.” Choose the dative.</p>';
   html += '<div class="choices">';
-  [["einem Freund","ok"],["ein Freund","x"],["einen Freund","akk"]].forEach((opt,i) => {
+  if(!S.r3.dativOpts) S.r3.dativOpts = shuffled([["einem Freund","ok"],["ein Freund","x"],["einen Freund","akk"]]);
+  S.r3.dativOpts.forEach((opt,i) => {
     html += '<button type="button" class="opt" data-d="'+opt[1]+'" data-n="'+(i+1)+'"><span class="key">'+(i+1)+'</span>'+esc(opt[0])+'</button>';
   });
   html += "</div>";

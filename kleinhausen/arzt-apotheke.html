@@ -254,6 +254,12 @@ if(!window.__khLangObs){
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
 function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
 function sprich(text){ if(!S.audio || !("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="de-DE"; speechSynthesis.speak(u); }
 
@@ -437,6 +443,7 @@ function baueCode(name){
 }
 
 function startGame(){
+  deal(FAELLE);
   S.i=0; S.punkte=0; S.akte=[]; startFall(); zeige("screen-play");
 }
 function startFall(){
@@ -480,19 +487,18 @@ function renderDialog(f){
     "<div><strong>Frau Dr. Keller</strong><p>"+esc(d.q)+"</p><p class=\"en gloss\" lang=\"en\">"+esc(d.qEn)+"</p></div></div>"+
     "<div class=\"dialog\" id=\"opts\"></div><div id=\"fb\"></div>";
   const box=$("opts");
-  d.opts.forEach((o,i)=>{
+  shuffled(d.opts).forEach(o=>{
     const b=document.createElement("button");
-    b.type="button"; b.className="wahl"; b.textContent=o.t; b.dataset.i=String(i);
-    b.addEventListener("click", ()=>dialogWahl(f,i,b));
+    b.type="button"; b.className="wahl"; b.textContent=o.t;
+    b.addEventListener("click", ()=>dialogWahl(f,o,b));
     box.appendChild(b);
   });
   sprich(d.q);
   sagen(d.q);
 }
-function dialogWahl(f, i, btn){
+function dialogWahl(f, o, btn){
   if(S.phase!=="dialog" || S.lock) return;
   const d=f.dialog[S.dIdx];
-  const o=d.opts[i];
   if(!o.ok){
     S.fehler++;
     btn.classList.add("falsch");
@@ -619,7 +625,7 @@ function renderApo(f){
     "<div class=\"regal\" id=\"regal\"></div>"+
     "<p style=\"margin-top:.8rem\"><button type=\"button\" class=\"btn\" id=\"kasse\">Zur Kasse</button></p><div id=\"fb\"></div>";
   const regal=$("regal");
-  PRODUKTE.forEach(p=>{
+  shuffled(PRODUKTE).forEach(p=>{
     const b=document.createElement("button");
     b.type="button"; b.className="produkt"; b.setAttribute("aria-pressed","false"); b.dataset.id=p.id;
     b.innerHTML="<strong>"+esc(p.de)+"</strong><span class=\"en gloss\" lang=\"en\">"+esc(p.en)+"</span>"+icon(p.id);

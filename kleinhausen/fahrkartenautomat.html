@@ -293,6 +293,12 @@ if(!window.__khLangObs){
 
 function $(id){ return document.getElementById(id); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
 function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
 function sprich(text){ if(!S.audio || !("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="de-DE"; speechSynthesis.speak(u); }
 
@@ -402,6 +408,7 @@ function baueCode(name){
 }
 
 function startGame(){
+  deal(MISSIONS);
   S.i = 0; S.punkte = 0; S.tickets = []; S.fertig = false;
   startMission();
   zeige("screen-play");
@@ -454,7 +461,7 @@ function fehlerBox(de, en, wort){
 function renderZiel(prompt){
   $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Wähle eine Stadt. Nicht Kleinhausen – du bist schon hier.</p><p class=\"en gloss\" lang=\"en\">Choose a city. Not Kleinhausen — you are already here.</p><div class=\"grid-opts\" id=\"opts\"></div><div id=\"fbslot\"></div>";
   const box = $("lcd").querySelector("#opts");
-  ZIELE.forEach(z => { box.insertAdjacentHTML("beforeend", optBtn(z.id, z.id, "<span class=\"en gloss\" lang=\"en\">Track "+z.gleis+"</span>")); });
+  shuffled(ZIELE).forEach(z => { box.insertAdjacentHTML("beforeend", optBtn(z.id, z.id, "<span class=\"en gloss\" lang=\"en\">Track "+z.gleis+"</span>")); });
   glossUpdate();
   bindOpts((id, btn)=>{
     const m = MISSIONS[S.i];
@@ -491,7 +498,7 @@ function renderZiel(prompt){
 function renderTicket(prompt){
   $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Einzelfahrschein, Hin und zurück, Tageskarte oder Gruppenkarte?</p><p class=\"en gloss\" lang=\"en\">Single, return, day ticket or group ticket?</p><div class=\"grid-opts\" id=\"opts\"></div><div id=\"fbslot\"></div>";
   const box = $("lcd").querySelector("#opts");
-  TICKETS.forEach(t => { box.insertAdjacentHTML("beforeend", optBtn(t.de, t.id, "<span class=\"en gloss\" lang=\"en\">"+t.en+"</span>")); });
+  shuffled(TICKETS).forEach(t => { box.insertAdjacentHTML("beforeend", optBtn(t.de, t.id, "<span class=\"en gloss\" lang=\"en\">"+t.en+"</span>")); });
   glossUpdate();
   bindOpts((id, btn)=>{
     const m = MISSIONS[S.i];
@@ -511,7 +518,8 @@ function renderTicket(prompt){
   });
 }
 function renderKlasse(prompt){
-  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">1. Klasse ist teurer und ruhiger. 2. Klasse ist normal.</p><p class=\"en gloss\" lang=\"en\">1st class is dearer and quieter. 2nd class is standard.</p><div class=\"grid-opts\"><button type=\"button\" class=\"opt\" data-id=\"1\">1. Klasse<span class=\"en gloss\" lang=\"en\">1st class</span></button><button type=\"button\" class=\"opt\" data-id=\"2\">2. Klasse<span class=\"en gloss\" lang=\"en\">2nd class</span></button></div><div id=\"fbslot\"></div>";
+  const klassen = shuffled([{id:"1", de:"1. Klasse", en:"1st class"},{id:"2", de:"2. Klasse", en:"2nd class"}]);
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">1. Klasse ist teurer und ruhiger. 2. Klasse ist normal.</p><p class=\"en gloss\" lang=\"en\">1st class is dearer and quieter. 2nd class is standard.</p><div class=\"grid-opts\">"+klassen.map(k=>"<button type=\"button\" class=\"opt\" data-id=\""+k.id+"\">"+k.de+"<span class=\"en gloss\" lang=\"en\">"+k.en+"</span></button>").join("")+"</div><div id=\"fbslot\"></div>";
   glossUpdate();
   bindOpts((id, btn)=>{
     const m = MISSIONS[S.i];
@@ -538,10 +546,13 @@ function renderZeit(prompt){
   if(m.ticket === "gruppe"){
     extra = "<p class=\"prompt\">Wie viele Personen? (Gruppenkarte)</p><p class=\"en gloss\" lang=\"en\">How many people?</p><div class=\"grid-opts\" id=\"pers\">"+[1,2,3,4].map(n=>"<button type=\"button\" class=\"opt\" data-id=\""+n+"\">"+n+" Person"+(n>1?"en":"")+"</button>").join("")+"</div>";
   }
+  const zeiten = shuffled([
+    {id:"heute", de:"heute", en:"today"},
+    {id:"morgen", de:"morgen", en:"tomorrow"},
+    {id:"wochenende", de:"am Wochenende", en:"at the weekend"}
+  ]);
   $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><div class=\"grid-opts\" id=\"opts\">"+
-    optBtn("heute","heute","<span class=\"en gloss\" lang=\"en\">today</span>")+
-    optBtn("morgen","morgen","<span class=\"en gloss\" lang=\"en\">tomorrow</span>")+
-    optBtn("am Wochenende","wochenende","<span class=\"en gloss\" lang=\"en\">at the weekend</span>")+
+    zeiten.map(z=>optBtn(z.de,z.id,"<span class=\"en gloss\" lang=\"en\">"+z.en+"</span>")).join("")+
     "</div>"+extra+"<div id=\"fbslot\"></div>";
   glossUpdate();
   bindOpts((id, btn)=>{

@@ -211,7 +211,25 @@
     .title-rule{width:min(280px,70%);height:1px;margin:16px auto 0;background:linear-gradient(90deg,transparent,#c69a46,transparent);border:0}
     .title-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:22px}
     .title-actions .gold-btn,.title-actions .ghost-btn{min-width:220px}
+    .title-link{
+      display:block;margin:12px auto 0;background:none;border:none;color:#c9b48a;
+      letter-spacing:.16em;text-transform:uppercase;font-size:12px;text-decoration:underline;
+      text-underline-offset:4px;padding:0;
+    }
+    .title-link:hover{color:#f0d796}
     .title-hint{margin:14px 0 0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8e8270}
+    .tutor-card{
+      position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:min(540px,calc(100% - 28px));
+      z-index:8;background:linear-gradient(145deg,#191c21f5,#0c0e11f7);border:1px solid var(--gold);
+      box-shadow:0 18px 50px #000c,inset 0 0 0 1px #d3a75225;padding:16px 18px 14px;border-radius:6px;text-align:left;
+    }
+    .tutor-progress{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .tutor-card h2{font-size:18px;margin:0 0 8px;color:#efd99e;letter-spacing:.1em}
+    .tutor-card p{margin:0;color:#d2c6ad;line-height:1.45;font-size:15px}
+    .tutor-card .tutor-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px}
+    .tutor-card .gold-btn,.tutor-card .ghost-btn{min-height:42px;padding:0 16px}
+    .tile.tutor-spot{stroke:#ffe08a;stroke-width:3;filter:drop-shadow(0 0 10px #eac55a);animation:legalPulse 1.4s ease-in-out infinite}
+    .piece.tutor-spot{filter:brightness(1.28) drop-shadow(0 0 16px currentColor)}
     @media(max-width:1080px){
       .topbar{grid-template-columns:1fr auto}.match-status{display:none}
       .game-shell{grid-template-columns:1fr}.board-frame{min-height:600px}
@@ -227,6 +245,7 @@
       .title-sigil{width:min(340px,94vw)}
       .title-actions{flex-direction:column;align-items:stretch}
       .title-actions .gold-btn,.title-actions .ghost-btn{min-width:0;width:100%}
+      .tutor-card{bottom:8px;padding:12px 14px}
       .title-screen{padding:12px}
       .title-filigree{inset:8px}
       .title-torch{opacity:.55}
@@ -237,7 +256,7 @@
   </style>
 </head>
 <body>
-  <script>if(/[?&](?:test|playtest|autostart)=1\b/.test(location.search)) document.documentElement.classList.add('skip-title');</script>
+  <script>if(/[?&](?:test|playtest|autostart|tutorial)=1\b/.test(location.search)) document.documentElement.classList.add('skip-title');</script>
   <div class="title-screen" id="titleScreen" role="dialog" aria-modal="true" aria-labelledby="titleWordmark">
     <div class="title-filigree" aria-hidden="true"><i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i></div>
     <span class="title-torch left" aria-hidden="true"></span>
@@ -327,8 +346,9 @@
       <hr class="title-rule">
       <div class="title-actions">
         <button class="gold-btn" id="enterChamberBtn" type="button">Enter the Chamber</button>
-        <button class="ghost-btn" id="titleRulesBtn" type="button">How to Play</button>
+        <button class="ghost-btn" id="titleTutorialBtn" type="button">Learn the Chamber</button>
       </div>
+      <button class="title-link" id="titleRulesBtn" type="button">How to Play</button>
       <p class="title-hint">Press Enter</p>
     </div>
   </div>
@@ -339,6 +359,7 @@
       <div class="turnline" id="roundLabel">◆ Round 1 ◆</div>
     </div>
     <div class="header-actions">
+      <button class="ghost-btn" id="tutorialBtn" type="button">Tutorial</button>
       <button class="ghost-btn" id="tacticsBtn" type="button">Tactics</button>
       <button class="ghost-btn" id="rulesBtn" type="button">Rules</button>
       <button class="gold-btn" id="newBtn" type="button">New Match</button>
@@ -378,6 +399,15 @@
         <g id="pieces"></g>
       </svg>
       <div class="win-banner hidden" id="winBanner"></div>
+      <div class="tutor-card hidden" id="tutorCard" role="region" aria-live="polite" aria-labelledby="tutorTitle">
+        <div class="tutor-progress" id="tutorProgress">Lesson</div>
+        <h2 id="tutorTitle">The Chamber</h2>
+        <p id="tutorBody"></p>
+        <div class="tutor-actions">
+          <button class="ghost-btn" id="tutorSkip" type="button">Skip</button>
+          <button class="gold-btn hidden" id="tutorNext" type="button">Continue</button>
+        </div>
+      </div>
     </section>
 
     <aside class="side">
@@ -462,6 +492,7 @@
         <div><strong>◉ Sight</strong><small>May leap directly to an empty space exactly two links away, ignoring the tile between—the assassin’s path into a keep.</small></div>
       </div>
       <p><strong>Armies:</strong> Each faction commands five one-space Mage Fowl, one two-space Mage Beast (Swiftness), and one three-space Mage Bear (Strength). The unique Mage Gigas begins unbound in the center as three hovering sections. Surround it with five pressure to take command; another faction may later seize it. Because it hovers, the Gigas may fly one or two lattice steps, rotate like other large creatures, and land on any empty matching footprint, passing over intervening creatures.</p>
+      <div class="modal-actions"><button class="gold-btn" id="rulesTutorialBtn" type="button">Guided Lesson</button></div>
     </div>
   </div>
   <div class="toast" id="toast" role="status"></div>
@@ -478,7 +509,8 @@
     const state={
       pieces:[],turn:'blue',round:1,selected:null,legal:[],legalMoves:[],
       winner:null,mode:'solo',human:'blue',difficulty:'adept',busy:false,
-      logs:[],defeated:new Set(),showThreats:true,prevXY:{},aiSeq:0,silent:false
+      logs:[],defeated:new Set(),showThreats:true,prevXY:{},aiSeq:0,silent:false,
+      tutorial:null
     };
 
     const $=s=>document.querySelector(s);
@@ -837,37 +869,54 @@
 
       const color=COLORS[state.turn];
       $('#turnTitle').innerHTML=`<span class="faction-dot" style="background:${color};color:${color}"></span>${NAMES[state.turn]} Turn`;
-      $('#roundLabel').textContent=`◆ Round ${state.round} ◆`;
-      $('#modeLabel').textContent=state.mode==='solo'?`Solo · ${cap(state.difficulty)}`:'Three-Player Match';
       const sel=state.pieces.find(p=>p.id===state.selected);
       $$('.aspect-btn').forEach(b=>{
-        b.disabled=!sel||sel.type!=='mage'||!isHumanTurn()||state.busy||!!state.winner;
+        const step=currentStep();
+        const aspectLocked=!!(state.tutorial&&step?.aspect);
+        b.disabled=!sel||sel.type!=='mage'||!isHumanTurn()||state.busy||!!state.winner||tutorialContinueOnly()||(aspectLocked&&b.dataset.aspect!==step.aspect);
         b.classList.toggle('active',sel?.aspect===b.dataset.aspect);
       });
-      $('#rotateBtn').disabled=!sel||sel.type==='mage'||!isHumanTurn()||state.busy||!!state.winner||!state.legalMoves.some(m=>m.type==='rotate');
-      $('#instruction').textContent=state.winner?`${NAMES[state.winner]} controls the chamber.`:state.busy?'The rival masters consider the board…':!isHumanTurn()?'The rival master is moving…':sel?`${pieceName(sel)} selected. Choose a glowing tile${sel.type==='mage'?' or change its aspect.':', or rotate it.'}`:'Select one of your pieces.';
+      $('#rotateBtn').disabled=!sel||sel.type==='mage'||!isHumanTurn()||state.busy||!!state.winner||!!state.tutorial||!state.legalMoves.some(m=>m.type==='rotate');
+      if(state.tutorial){
+        const step=currentStep();
+        $('#instruction').textContent=step?.prompt||step?.body||'Follow the lesson.';
+        $('#modeLabel').textContent='Guided Lesson';
+        $('#roundLabel').textContent=`◆ Lesson ${(state.tutorial.step||0)+1} ◆`;
+      }else{
+        $('#instruction').textContent=state.winner?`${NAMES[state.winner]} controls the chamber.`:state.busy?'The rival masters consider the board…':!isHumanTurn()?'The rival master is moving…':sel?`${pieceName(sel)} selected. Choose a glowing tile${sel.type==='mage'?' or change its aspect.':', or rotate it.'}`:'Select one of your pieces.';
+        $('#modeLabel').textContent=state.mode==='solo'?`Solo · ${cap(state.difficulty)}`:'Three-Player Match';
+        $('#roundLabel').textContent=`◆ Round ${state.round} ◆`;
+      }
       $('#inspect').textContent=sel?`${pieceName(sel)} · ${cellsOf(sel).length} space${cellsOf(sel).length>1?'s':''} · ${cap(sel.aspect)} · pressure ${pressureValue(sel)} · armor ${defenseValue(sel)} · ${state.legalMoves.filter(m=>m.type==='move').length} march${state.legalMoves.filter(m=>m.type==='move').length===1?'':'es'}, ${state.legalMoves.filter(m=>m.type==='rotate').length} rotation${state.legalMoves.filter(m=>m.type==='rotate').length===1?'':'s'}.`:'Light tiles are ivory; dark tiles are obsidian. Sight stays on one color. The gate beside each keep is the ordinary path in.';
       const gigas=state.pieces.find(p=>p.type==='gigas');
-      $('#players').innerHTML=ORDER.map(f=>`<div class="player-row ${state.turn===f?'current':''} ${state.defeated.has(f)?'defeated':''}"><i class="faction-dot" style="background:${COLORS[f]};color:${COLORS[f]}"></i><span>${NAMES[f]}${state.mode==='solo'&&f===state.human?' · You':''}</span><span class="piece-count">${state.pieces.filter(p=>p.f===f).length} pieces</span></div>`).join('')+`<div class="player-row"><i class="faction-dot" style="background:linear-gradient(90deg,#e15447,#4e88e1,#f1bc32)"></i><span>Mage Gigas</span><span class="piece-count">${gigas? (gigas.f==='neutral'?'Unbound':NAMES[gigas.f]):'—'}</span></div>`;
+      $('#players').innerHTML=ORDER.map(f=>`<div class="player-row ${state.turn===f?'current':''} ${state.defeated.has(f)?'defeated':''}"><i class="faction-dot" style="background:${COLORS[f]};color:${COLORS[f]}"></i><span>${NAMES[f]}${(state.mode==='solo'&&f===state.human)||(state.tutorial&&f==='blue')?' · You':''}</span><span class="piece-count">${state.pieces.filter(p=>p.f===f).length} pieces</span></div>`).join('')+`<div class="player-row"><i class="faction-dot" style="background:linear-gradient(90deg,#e15447,#4e88e1,#f1bc32)"></i><span>Mage Gigas</span><span class="piece-count">${gigas? (gigas.f==='neutral'?'Unbound':NAMES[gigas.f]):'—'}</span></div>`;
       $('#log').innerHTML=state.logs.slice(0,8).map(x=>`<div>${x}</div>`).join('');
-      if(state.winner){
+      if(state.winner&&!state.tutorial){
         $('#winBanner').classList.remove('hidden');
         $('#winBanner').innerHTML=`<strong>${NAMES[state.winner]} claims the chamber</strong>`;
       }else $('#winBanner').classList.add('hidden');
+      applyTutorialChrome();
     }
 
     function selectPiece(id){
       if(state.winner||state.busy||!isHumanTurn()) return;
+      if(tutorialContinueOnly()) return;
       const p=state.pieces.find(x=>x.id===id);
       if(!p||p.f!==state.turn){toast(`It is ${NAMES[state.turn]}'s turn.`);return;}
+      const step=currentStep();
+      if(step?.piece && id!==step.piece){toast(step.hint||'Select the Azure Mage Fowl.');return;}
       state.selected=id;
       state.legalMoves=legalMovesFor(p);
+      filterTutorialMoves();
       state.legal=[...new Set(state.legalMoves.flatMap(m=>m.cells))];
+      const advanceSelect=step?.expect==='select';
       render();
+      if(advanceSelect) tutorialAdvance();
     }
 
     function onTile(id){
       if(state.busy||state.winner||!isHumanTurn()) return;
+      if(tutorialContinueOnly()) return;
       if(!state.selected){
         const occupant=pieceAt(id);
         if(occupant&&occupant.f===state.turn) selectPiece(occupant.id);
@@ -881,6 +930,7 @@
       }
       const candidates=state.legalMoves.filter(m=>m.cells.includes(id));
       if(!candidates.length){
+        if(state.tutorial){toast(currentStep()?.hint||'Follow the glowing tile.');return;}
         state.selected=null; state.legal=[]; state.legalMoves=[]; render();
         return;
       }
@@ -896,10 +946,14 @@
     function changeAspect(aspect){
       const p=state.pieces.find(x=>x.id===state.selected);
       if(!p||p.type!=='mage'||p.aspect===aspect||state.busy||!isHumanTurn()) return;
+      if(tutorialContinueOnly()) return;
+      const step=currentStep();
+      if(step?.aspect && aspect!==step.aspect){toast(step.hint||'Choose the highlighted aspect.');return;}
       takeAction({type:'aspect',id:p.id,aspect,cells:cellsOf(p)});
     }
 
     function rotateSelected(){
+      if(state.tutorial) return;
       const moves=state.legalMoves.filter(m=>m.type==='rotate');
       if(!moves.length) return;
       takeAction(moves[0]);
@@ -918,17 +972,23 @@
           const fallen=rival||ORDER.find(f=>a.cells.includes(keepAt[f]));
           log(`${NAMES[p.f]} ${pieceName(p)} storms the ${NAMES[fallen]} Keep and wins!`);
           state.winner=p.f;
+          if(state.tutorial){ tutorialOnAction(a); render(); return; }
           celebrate(); render(); return;
         }
         log(`${NAMES[p.f]} ${pieceName(p)} ${a.type==='rotate'?'pivots':'advances'} ${from} → ${a.cells.join(' · ')}.`);
       }
-      afterAction(p);
+      afterAction(p, a);
     }
 
-    function afterAction(actor){
+    function afterAction(actor, a){
       resolveCaptures(actor.f);
       checkEliminations();
       state.selected=null; state.legal=[]; state.legalMoves=[];
+      if(state.tutorial){
+        tutorialOnAction(a||{type:'move',id:actor.id,cells:cellsOf(actor)});
+        render();
+        return;
+      }
       if(!state.winner) advanceTurn();
       render();
       if(!state.winner&&!isHumanTurn()) queueAI();
@@ -1031,6 +1091,7 @@
     }
 
     function queueAI(){
+      if(state.tutorial) return;
       const seq=++state.aiSeq;
       state.busy=true; render();
       const delay=state.difficulty==='master'?520:state.difficulty==='adept'?380:260;
@@ -1052,6 +1113,7 @@
     }
 
     function newGame(){
+      clearTutorialUi();
       state.aiSeq++;
       state.mode=$('#mode').value;
       state.human=$('#faction').value;
@@ -1072,6 +1134,244 @@
     function toast(s){if(state.silent) return; const t=$('#toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);}
     function celebrate(){toast(`${NAMES[state.winner]} claims victory!`);}
 
+    const TUTORIAL_STEPS=[
+      {
+        id:'welcome', title:'The Chamber', next:'Begin',
+        body:'Three keeps stand at the tips of ivory and obsidian. Ember, Azure, and Dorian each rule one. The first to a rival keep wins.',
+        prompt:'Study the three keeps.',
+        tiles:['U0-0','U8-0','U8-8'], setup:'welcome'
+      },
+      {
+        id:'select', title:'Your Mage Fowl',
+        body:'You command Azure. This Mage Fowl is yours — one space, and able to change its aspect. Select it.',
+        prompt:'Select the glowing Azure Mage Fowl.',
+        piece:'pupil', expect:'select', hint:'Select the Azure Mage Fowl.',
+        pieces:['pupil'], setup:'fowl'
+      },
+      {
+        id:'step', title:'Strength',
+        body:'Ivory and obsidian alternate. Strength steps one link onto the other color. March onto the glowing tile.',
+        prompt:'Step onto the glowing tile.',
+        piece:'pupil', tiles:['D3-1'], expect:'move', hint:'March onto the glowing tile.'
+      },
+      {
+        id:'sight', title:'Sight',
+        body:'Instead of moving, a Mage Fowl may change aspect. Sight leaps two links and stays on the same color. Choose Sight.',
+        prompt:'Select your Fowl, then choose Sight.',
+        piece:'pupil', aspect:'sight', expect:'aspect', hint:'Choose Sight.',
+        pieces:['pupil']
+      },
+      {
+        id:'leap', title:'The leap',
+        body:'Leap two links toward the Ember Keep. Because Sight skips the tile between, you remain on obsidian.',
+        prompt:'Leap to the glowing tile.',
+        piece:'pupil', tiles:['D2-0'], expect:'move', hint:'Leap onto the glowing tile.'
+      },
+      {
+        id:'strength', title:'Surrounding',
+        body:'An Ember Fowl holds the Ember gate. Strength counts as two surrounding pressure — enough to capture a Fowl. Restore Strength.',
+        prompt:'Select your Fowl, then choose Strength.',
+        piece:'pupil', aspect:'strength', expect:'aspect', hint:'Choose Strength.',
+        pieces:['pupil','emberGate'], setup:'gateRival'
+      },
+      {
+        id:'surround', title:'Capture',
+        body:'Step beside the Ember Fowl. After you act, adjacent pressure captures. One Strength Fowl is enough.',
+        prompt:'Step beside the Ember Fowl.',
+        piece:'pupil', tiles:['U1-0'], expect:'move', hint:'Step onto the glowing tile beside the gate.',
+        pieces:['pupil','emberGate']
+      },
+      {
+        id:'gigas', title:'The Mage Gigas', next:'Continue',
+        body:'The hovering Mage Gigas is unique: three sections of black armor that shimmer red, blue, and yellow. Surround it with five pressure to command it. Larger creatures may also rotate.',
+        prompt:'The unbound Gigas waits in the center.',
+        pieces:['gigas'], setup:'gigas'
+      },
+      {
+        id:'gate', title:'The gate',
+        body:'Keeps are sacred. No army may rest on one except to win. The dark tile beside Ember is its gate. Step onto it.',
+        prompt:'Step onto the Ember gate.',
+        piece:'pupil', tiles:['D1-0'], expect:'move', hint:'Step onto the glowing gate.'
+      },
+      {
+        id:'storm', title:'Claim the keep',
+        body:'Storm the Ember Keep. Reaching a rival keep — or standing at its gate and assaulting — defeats its ruler at once.',
+        prompt:'Storm the Ember Keep.',
+        piece:'pupil', tiles:['U0-0'], expect:'move', hint:'Click the Ember Keep.',
+        tilesExtra:['U0-0']
+      },
+      {
+        id:'done', title:'The chamber is yours', next:'Begin a Match',
+        body:'You can march, change aspect, surround, and storm a keep. In a true match three armies contend, and the Gigas may change hands. Take command when you are ready.',
+        prompt:'The lesson is complete.'
+      }
+    ];
+
+    const currentStep=()=>state.tutorial?TUTORIAL_STEPS[state.tutorial.step]:null;
+    const tutorialContinueOnly=()=>!!(state.tutorial&&currentStep()?.next&&!currentStep()?.expect);
+
+    function tutorialApplySetup(name){
+      const fowl=(id,f,pos,aspect)=>({id,f,type:'mage',aspect,pos,cells:[pos]});
+      if(name==='welcome'){
+        state.pieces=[];
+      }else if(name==='fowl'){
+        state.pieces=[
+          fowl('pupil','blue','U3-1','strength'),
+          fowl('emberFar','red','U4-4','swiftness'),
+          fowl('dorianWatch','yellow','D8-7','sight')
+        ];
+      }else if(name==='gateRival'){
+        if(!state.pieces.some(p=>p.id==='emberGate'))
+          state.pieces.push(fowl('emberGate','red','D1-0','swiftness'));
+      }else if(name==='gigas'){
+        if(!state.pieces.some(p=>p.type==='gigas'))
+          state.pieces.push({id:'gigas',f:'neutral',type:'gigas',aspect:'trinity',pos:'U5-2',cells:['U5-2','D5-2','U5-3']});
+      }
+    }
+
+    function filterTutorialMoves(){
+      const step=currentStep();
+      if(!step?.tiles) return;
+      state.legalMoves=state.legalMoves.filter(m=>m.cells.some(id=>step.tiles.includes(id)));
+    }
+
+    function applyTutorialChrome(){
+      $$('.tile').forEach(n=>n.classList.remove('tutor-spot'));
+      $$('.piece').forEach(n=>n.classList.remove('tutor-spot'));
+      const step=currentStep();
+      if(!step) return;
+      const tiles=[...(step.tiles||[])];
+      (step.tilesExtra||[]).forEach(id=>{if(!tiles.includes(id)) tiles.push(id);});
+      tiles.forEach(id=>{
+        const n=document.querySelector(`.tile[data-id="${id}"]`);
+        if(n) n.classList.add('tutor-spot');
+      });
+      (step.pieces||[]).forEach(id=>{
+        const n=document.querySelector(`.piece[data-id="${id}"]`);
+        if(n) n.classList.add('tutor-spot');
+      });
+    }
+
+    function updateTutorCard(){
+      const card=$('#tutorCard');
+      const step=currentStep();
+      if(!state.tutorial||!step){ card.classList.add('hidden'); return; }
+      card.classList.remove('hidden');
+      $('#tutorProgress').textContent=`Lesson ${state.tutorial.step+1} of ${TUTORIAL_STEPS.length}`;
+      $('#tutorTitle').textContent=step.title;
+      $('#tutorBody').textContent=step.body;
+      const next=$('#tutorNext');
+      const skip=$('#tutorSkip');
+      if(step.next){
+        next.classList.remove('hidden');
+        next.textContent=step.next;
+      }else next.classList.add('hidden');
+      skip.textContent=step.id==='done'?'Title Screen':'Skip';
+    }
+
+    function tutorialAdvance(){
+      if(!state.tutorial) return;
+      if(state.tutorial.step>=TUTORIAL_STEPS.length-1){ updateTutorCard(); render(); return; }
+      state.tutorial.step++;
+      const step=currentStep();
+      if(step.setup) tutorialApplySetup(step.setup);
+      state.selected=null; state.legal=[]; state.legalMoves=[];
+      if(state.winner && step.id!=='done'){
+        while(currentStep()&&currentStep().id!=='done') state.tutorial.step++;
+      }
+      updateTutorCard();
+      render();
+      if(currentStep()?.next) $('#tutorNext').focus();
+    }
+
+    function tutorialOnAction(a){
+      const step=currentStep();
+      if(!step) return;
+      if(step.expect==='move' && a && (a.type==='move'||a.type==='rotate') && step.tiles?.some(id=>a.cells?.includes(id))){
+        tutorialAdvance();
+        return;
+      }
+      if(step.expect==='aspect' && a?.type==='aspect' && a.aspect===step.aspect){
+        tutorialAdvance();
+        return;
+      }
+      if(state.winner){
+        while(currentStep()&&currentStep().id!=='done') state.tutorial.step++;
+        updateTutorCard();
+      }
+    }
+
+    function clearTutorialUi(){
+      state.tutorial=null;
+      document.body.classList.remove('tutorial-on');
+      const card=$('#tutorCard');
+      if(card) card.classList.add('hidden');
+    }
+
+    function endTutorial({toTitle=false, toSetup=false}={}){
+      state.aiSeq++;
+      clearTutorialUi();
+      state.winner=null; state.busy=false; state.selected=null; state.legal=[]; state.legalMoves=[];
+      state.defeated=new Set(); state.logs=[]; state.prevXY={};
+      state.mode='solo'; state.human='blue'; state.turn='blue';
+      resetPieces();
+      render();
+      if(toTitle) showTitle(true);
+      else if(toSetup){
+        showTitle(false);
+        $('#setupModal').classList.remove('hidden');
+        $('#startBtn').focus();
+      }
+    }
+
+    function beginTutorial(){
+      state.aiSeq++;
+      state.tutorial={step:0};
+      state.mode='local';
+      state.human='blue';
+      state.turn='blue';
+      state.round=1;
+      state.selected=null; state.legal=[]; state.legalMoves=[];
+      state.winner=null; state.busy=false;
+      state.logs=[]; state.defeated=new Set(); state.prevXY={};
+      document.body.classList.add('tutorial-on');
+      tutorialApplySetup('welcome');
+      log('A master of the chamber begins the lesson.');
+      updateTutorCard();
+      render();
+      $('#tutorNext').focus();
+    }
+
+    function startTutorial(){
+      $('#setupModal').classList.add('hidden');
+      $('#rulesModal').classList.add('hidden');
+      const go=()=>beginTutorial();
+      if(titleOpen()&&!$('#titleScreen').classList.contains('hidden')) leaveTitle(go);
+      else{
+        showTitle(false);
+        go();
+      }
+    }
+
+    function leaveTitle(then){
+      const t=$('#titleScreen');
+      if(t.classList.contains('hidden')){ then(); return; }
+      if(t.classList.contains('leaving')) return;
+      const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const finish=(()=>{
+        let done=false;
+        return ()=>{
+          if(done) return; done=true;
+          showTitle(false);
+          then();
+        };
+      })();
+      if(reduced){finish(); return;}
+      t.classList.add('leaving');
+      t.addEventListener('transitionend', finish, {once:true});
+      setTimeout(finish, 700);
+    }
+
     function titleOpen(){return !$('#titleScreen').classList.contains('hidden');}
     function showTitle(show){
       const t=$('#titleScreen');
@@ -1084,42 +1384,42 @@
       });
     }
     function enterChamber(){
-      const t=$('#titleScreen');
-      if(t.classList.contains('hidden')){
+      leaveTitle(()=>{
         $('#setupModal').classList.remove('hidden');
-        return;
-      }
-      if(t.classList.contains('leaving')) return;
-      const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const finish=(()=>{
-        let done=false;
-        return ()=>{
-          if(done) return; done=true;
-          showTitle(false);
-          $('#setupModal').classList.remove('hidden');
-          $('#startBtn').focus();
-        };
-      })();
-      if(reduced){finish(); return;}
-      t.classList.add('leaving');
-      t.addEventListener('transitionend', finish, {once:true});
-      setTimeout(finish, 700);
+        $('#startBtn').focus();
+      });
     }
 
-    $('#newBtn').onclick=()=>$('#setupModal').classList.remove('hidden');
+    $('#newBtn').onclick=()=>{
+      if(state.tutorial) endTutorial({toSetup:true});
+      else $('#setupModal').classList.remove('hidden');
+    };
     $('#startBtn').onclick=newGame;
     $('#enterChamberBtn').onclick=enterChamber;
+    $('#titleTutorialBtn').onclick=startTutorial;
+    $('#tutorialBtn').onclick=()=>{ if(state.tutorial) toast('You are already in the lesson.'); else startTutorial(); };
+    $('#rulesTutorialBtn').onclick=()=>{$('#rulesModal').classList.add('hidden'); startTutorial();};
     $('#titleRulesBtn').onclick=()=>$('#rulesModal').classList.remove('hidden');
     $('#rulesBtn').onclick=()=>$('#rulesModal').classList.remove('hidden');
     $('#closeRules').onclick=()=>$('#rulesModal').classList.add('hidden');
+    $('#tutorNext').onclick=()=>{
+      const step=currentStep();
+      if(!step) return;
+      if(step.id==='done') endTutorial({toSetup:true});
+      else if(step.next) tutorialAdvance();
+    };
+    $('#tutorSkip').onclick=()=>endTutorial({toTitle:true});
     $('#tacticsBtn').onclick=()=>{$('#threatToggle').checked=!$('#threatToggle').checked; state.showThreats=$('#threatToggle').checked; render();};
     $('#threatToggle').onchange=()=>{state.showThreats=$('#threatToggle').checked; render();};
     $('#rotateBtn').onclick=rotateSelected;
     $$('.aspect-btn').forEach(b=>b.onclick=()=>changeAspect(b.dataset.aspect));
     [$('#rulesModal'),$('#setupModal')].forEach(m=>m.addEventListener('click',e=>{if(e.target===m&&m.id==='rulesModal') m.classList.add('hidden');}));
     document.addEventListener('keydown',e=>{
-      if(e.key==='Escape') $('#rulesModal').classList.add('hidden');
-      if((e.key==='r'||e.key==='R')&&!state.busy&&!titleOpen()) rotateSelected();
+      if(e.key==='Escape'){
+        $('#rulesModal').classList.add('hidden');
+        return;
+      }
+      if((e.key==='r'||e.key==='R')&&!state.busy&&!titleOpen()&&!state.tutorial) rotateSelected();
       if(e.key==='Enter'&&titleOpen()&&!$('#titleScreen').classList.contains('leaving')&&
          $('#setupModal').classList.contains('hidden')&&$('#rulesModal').classList.contains('hidden')&&
          e.target.tagName!=='BUTTON'&&e.target.tagName!=='SELECT'){
@@ -1228,6 +1528,43 @@
       }
       ok(games.some(g=>g.winner),'at least one simulated match produces a winner');
 
+      startTutorial();
+      ok(!!state.tutorial && currentStep()?.id==='welcome', 'tutorial starts on the chamber');
+      ok(document.querySelector('.tile.tutor-spot'), 'tutorial highlights keeps');
+      tutorialAdvance();
+      ok(currentStep()?.id==='select', 'tutorial reaches select');
+      ok(pieceAt('U3-1')?.id==='pupil', 'lesson fowl is placed');
+      selectPiece('pupil');
+      ok(currentStep()?.id==='step', 'select advances the lesson');
+      onTile('D3-1');
+      ok(pieceAt('D3-1')?.id==='pupil', 'strength step lands on D3-1');
+      selectPiece('pupil');
+      changeAspect('sight');
+      ok(pieceAt('D3-1')?.aspect==='sight', 'fowl turns to sight');
+      selectPiece('pupil');
+      onTile('D2-0');
+      ok(pieceAt('D2-0')?.id==='pupil', 'sight leap lands on D2-0');
+      ok(currentStep()?.id==='strength', 'lesson introduces surrounding');
+      ok(pieceAt('D1-0')?.id==='emberGate', 'ember fowl holds the gate');
+      selectPiece('pupil');
+      changeAspect('strength');
+      selectPiece('pupil');
+      onTile('U1-0');
+      ok(pieceAt('U1-0')?.id==='pupil', 'surrounding step lands');
+      ok(!state.pieces.some(p=>p.id==='emberGate'), 'strength surround captures the gate fowl');
+      if(currentStep()?.id==='gigas') tutorialAdvance();
+      ok(state.pieces.some(p=>p.type==='gigas'), 'gigas is presented');
+      selectPiece('pupil');
+      onTile('D1-0');
+      ok(pieceAt('D1-0')?.id==='pupil', 'pupil occupies the gate');
+      selectPiece('pupil');
+      onTile('U0-0');
+      ok(state.winner==='blue', 'tutorial storms the ember keep');
+      ok(currentStep()?.id==='done', 'tutorial completes');
+      endTutorial();
+      ok(!state.tutorial, 'tutorial clears');
+      ok($('#tutorCard').classList.contains('hidden'), 'tutor card hides after lesson');
+
       resetPieces();
       render();
       const tile=document.querySelector('.tile[data-id="U4-2"]');
@@ -1248,14 +1585,15 @@
 
     window.Trifecta={
       state, legalMovesFor, takeAction, allActions, selectPiece, onTile, newGame, resetPieces,
-      cells, keepAt, cellsOf, pieceAt, nbr, boardInvariant
+      cells, keepAt, cellsOf, pieceAt, nbr, boardInvariant,
+      startTutorial, endTutorial, tutorialAdvance, currentStep, TUTORIAL_STEPS
     };
 
     drawStatic();
     resetPieces();
     log('The board awaits your command.');
     render();
-    const skipTitle=/[?&](?:test|playtest|autostart)=1\b/.test(location.search);
+    const skipTitle=/[?&](?:test|playtest|autostart|tutorial)=1\b/.test(location.search);
     if(skipTitle) showTitle(false);
     else{
       showTitle(true);
@@ -1266,6 +1604,8 @@
       document.title=fails.length?`FAIL ${fails.length}`:'PASS';
       document.body.dataset.test=fails.length?fails.join(' | '):'ok';
       console.log(fails.length?fails:'PASS');
+    }else if(/[?&]tutorial=1\b/.test(location.search)){
+      startTutorial();
     }
   })();
   </script>

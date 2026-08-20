@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Character Lab — authoring studio</title>
+<style>
+  :root{
+    --ink:#0E1D33;
+    --ink-2:#132743;
+    --panel:rgba(19,39,67,.90);
+    --line:#2E4C7A;
+    --line-soft:#223A5E;
+    --paper:#E8EEF7;
+    --paper-dim:#93A9C7;
+    --amber:#F2A93B;
+    --cyan:#6FD3E0;
+    --display:"Futura","Jost","Century Gothic","Avenir Next","Trebuchet MS",sans-serif;
+    --mono:"IBM Plex Mono","SFMono-Regular",Consolas,"Roboto Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);
+    font-family:var(--mono);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+  canvas{display:block;touch-action:none}
+  #stage{position:fixed;inset:0}
+
+  header{position:fixed;top:0;left:0;right:0;padding:12px 16px;display:flex;
+    align-items:center;gap:12px;z-index:8;pointer-events:none}
+  h1{font-family:var(--display);font-size:14px;letter-spacing:.28em;text-transform:uppercase;
+    font-weight:600;margin:0;color:var(--paper)}
+  .sub{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--paper-dim)}
+  .readout{margin-left:auto;font-size:10px;letter-spacing:.12em;color:var(--cyan);pointer-events:none}
+  .bar{pointer-events:auto;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+  .bar button,.chip{padding:6px 8px;font-family:var(--mono);font-size:9px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--paper-dim);background:rgba(19,39,67,.72);
+    border:1px solid var(--line-soft);cursor:pointer}
+  .bar button:hover,.chip:hover{border-color:var(--cyan);color:var(--paper)}
+  .bar button[aria-pressed=true],.chip.on{background:var(--amber);border-color:var(--amber);color:#122239;font-weight:700}
+  .bar button:focus-visible{outline:1px solid var(--cyan);outline-offset:2px}
+
+  #panel{position:fixed;top:86px;left:14px;width:300px;max-height:calc(100% - 108px);
+    overflow-y:auto;background:var(--panel);border:1px solid var(--line);
+    backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);z-index:6;
+    padding:2px 0 10px;scrollbar-width:thin}
+  #panel::-webkit-scrollbar{width:6px}
+  #panel::-webkit-scrollbar-thumb{background:var(--line)}
+  details.grp{border-top:1px solid var(--line-soft);padding:0 0 6px}
+  details.grp>summary{list-style:none;cursor:pointer;display:flex;align-items:center;
+    gap:8px;padding:10px 12px 8px;user-select:none}
+  details.grp>summary::-webkit-details-marker{display:none}
+  details.grp>summary h2{font-family:var(--display);font-size:9px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--cyan);margin:0;font-weight:600;flex:1}
+  .grp-body{padding:0 14px 4px}
+  .lock,.mini{flex:0 0 auto;padding:4px 6px;font-family:var(--mono);font-size:8px;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--paper-dim);
+    background:transparent;border:1px solid var(--line-soft);cursor:pointer}
+  .lock[aria-pressed=true]{border-color:var(--amber);color:var(--amber)}
+  .mini:hover,.lock:hover{border-color:var(--cyan);color:var(--paper)}
+
+  .row{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;gap:8px}
+  .row label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--paper-dim)}
+  .val{font-size:10px;color:var(--amber);min-width:34px;text-align:right}
+
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:transparent;margin:0 0 10px}
+  input[type=range]::-webkit-slider-runnable-track{height:1px;background:var(--line)}
+  input[type=range]::-moz-range-track{height:1px;background:var(--line)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;
+    background:var(--amber);border-radius:0;margin-top:-5px;transform:rotate(45deg);cursor:grab}
+  input[type=range]::-moz-range-thumb{width:11px;height:11px;background:var(--amber);border:0;
+    border-radius:0;transform:rotate(45deg);cursor:grab}
+  input[type=range]:focus-visible{outline:1px solid var(--cyan);outline-offset:3px}
+
+  .seg{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+  .seg button{flex:1 1 auto;min-width:52px;padding:6px 4px;font-family:var(--mono);font-size:9.5px;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--paper-dim);background:transparent;
+    border:1px solid var(--line-soft);cursor:pointer;transition:.14s}
+  .seg button:hover{border-color:var(--cyan);color:var(--paper)}
+  .seg button[aria-pressed=true]{background:var(--amber);border-color:var(--amber);color:#122239;font-weight:600}
+
+  .swatches{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+  .swatches input[type=color]{-webkit-appearance:none;appearance:none;width:30px;height:22px;
+    padding:0;border:1px solid var(--line);background:none;cursor:pointer}
+  .ctag{font-size:9px;color:var(--paper-dim);letter-spacing:.08em;display:block;margin-bottom:3px;text-transform:uppercase}
+  .cwrap{text-align:center}
+  .field{width:100%;padding:8px 9px;margin:0 0 8px;background:#0B1728;border:1px solid var(--line);
+    color:var(--paper);font:11px var(--mono)}
+  textarea.field{min-height:72px;resize:vertical}
+  .warn{font-size:10px;line-height:1.45;color:var(--amber);margin:0 0 8px;min-height:1em}
+  .muted{font-size:10px;line-height:1.5;color:var(--paper-dim);margin:0 0 8px}
+
+  .actions{display:flex;flex-direction:column;gap:6px;padding:12px 14px 4px;border-top:1px solid var(--line-soft)}
+  .actions button{padding:9px;font-family:var(--display);font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;background:transparent;border:1px solid var(--line);color:var(--paper);
+    cursor:pointer;transition:.14s}
+  .actions button:hover{border-color:var(--amber);color:var(--amber)}
+  .actions button.key{background:var(--amber);border-color:var(--amber);color:#122239;font-weight:700}
+  .row-btns{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px}
+  .row-btns button{flex:1 1 90px;padding:7px 6px;font:9px var(--mono);letter-spacing:.08em;
+    text-transform:uppercase;color:var(--paper);background:transparent;border:1px solid var(--line);cursor:pointer}
+
+  #tab{display:none}
+  @media (max-width:860px){
+    #panel{top:auto;bottom:0;left:0;right:0;width:100%;max-height:56vh;border:0;
+      border-top:1px solid var(--line);transform:translateY(100%);transition:transform .26s ease}
+    #panel.open{transform:translateY(0)}
+    #tab{display:block;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:7;
+      padding:11px 26px;font-family:var(--display);font-size:11px;letter-spacing:.22em;
+      text-transform:uppercase;background:var(--amber);color:#122239;border:0;font-weight:700;cursor:pointer}
+    header{padding:10px 12px;flex-wrap:wrap}
+    h1{font-size:12px}
+    .sub{display:none}
+    .bar{width:100%}
+  }
+
+  #sheet,#library{position:fixed;inset:0;background:rgba(8,17,31,.92);z-index:20;display:none;
+    align-items:center;justify-content:center;padding:20px}
+  #sheet.on,#library.on{display:flex}
+  .card{width:min(720px,100%);max-height:86vh;overflow:auto;background:var(--ink-2);
+    border:1px solid var(--line);padding:22px}
+  .card h3{font-family:var(--display);font-size:12px;letter-spacing:.24em;text-transform:uppercase;
+    margin:0 0 4px;color:var(--amber)}
+  .card p{font-size:11.5px;line-height:1.65;color:var(--paper-dim);margin:0 0 14px}
+  pre{background:#0B1728;border:1px solid var(--line-soft);padding:13px;font-size:11px;
+    line-height:1.6;color:var(--paper);overflow:auto;margin:0 0 14px;max-height:28vh}
+  .export-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0 8px}
+  .export-choice{min-height:72px;padding:10px 8px;border:1px solid var(--line);background:transparent;color:var(--paper);cursor:pointer;text-align:left}
+  .export-choice:hover{border-color:var(--amber)}
+  .export-choice strong{display:block;font-family:var(--display);font-size:9px;letter-spacing:.10em;text-transform:uppercase;margin-bottom:5px}
+  .export-choice span{display:block;font:9px/1.35 var(--mono);color:var(--paper-dim)}
+  .export-choice.key{background:var(--amber);border-color:var(--amber);color:#122239}
+  .lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin:12px 0}
+  .lib-card{border:1px solid var(--line);background:#0B1728;cursor:pointer;padding:8px;text-align:left;color:var(--paper)}
+  .lib-card img{width:100%;height:110px;object-fit:cover;background:#102038;display:block;margin-bottom:7px}
+  .lib-card strong{display:block;font-size:11px;margin-bottom:3px}
+  .lib-card span{display:block;font-size:9px;color:var(--paper-dim)}
+  .hint{position:fixed;bottom:14px;right:18px;font-size:9.5px;letter-spacing:.1em;
+    color:var(--line);z-index:4;text-align:right;line-height:1.7}
+  #pose-hud{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:7;
+    display:none;padding:9px 16px;background:rgba(19,39,67,.94);border:1px solid var(--amber);
+    font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);
+    pointer-events:none;text-align:center;line-height:1.55;max-width:min(520px,92vw)}
+  #pose-hud.on{display:block}
+  body.posing .hint{opacity:0}
+  #pose-axis .row label{min-width:72px}
+  @media (max-width:860px){
+    .hint{display:none}.export-grid{grid-template-columns:1fr}
+    #pose-hud{bottom:auto;top:78px;left:12px;right:12px;transform:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<header>
+  <div>
+    <h1>Character Lab</h1>
+    <span class="sub">v4 authoring studio · layered wardrobe · performance states</span>
+  </div>
+  <div class="bar" id="cam-bar"></div>
+  <span class="readout" id="readout">—</span>
+</header>
+
+<div id="panel">
+  <details class="grp" open>
+    <summary><h2>Project</h2></summary>
+    <div class="grp-body">
+      <div class="ctag">Variants</div>
+      <div class="seg" id="variants"></div>
+      <div class="row-btns">
+        <button id="btn-dup">Duplicate to next slot</button>
+        <button id="btn-library">Library</button>
+      </div>
+      <div class="ctag">Seed</div>
+      <input class="field" id="seed" placeholder="seed for reproducible random" spellcheck="false">
+      <div class="row-btns">
+        <button id="btn-undo">Undo</button>
+        <button id="btn-redo">Redo</button>
+      </div>
+      <div class="ctag">Quality</div>
+      <div class="seg" id="quality"></div>
+    </div>
+  </details>
+
+  <details class="grp" open>
+    <summary><h2>Identity</h2></summary>
+    <div class="grp-body">
+      <div class="ctag">Name</div>
+      <input class="field" id="meta-name" placeholder="Herr Weber">
+      <div class="ctag">ID</div>
+      <input class="field" id="meta-id" placeholder="weber-shop">
+      <div class="ctag">Role</div>
+      <input class="field" id="meta-role" placeholder="shopkeeper">
+      <div class="ctag">Tags</div>
+      <input class="field" id="meta-tags" placeholder="German 1, shopping">
+      <div class="ctag">Accessible description</div>
+      <textarea class="field" id="meta-alt" placeholder="Older man with…"></textarea>
+      <div class="row-btns">
+        <button id="btn-describe">Generate description</button>
+      </div>
+    </div>
+  </details>
+
+  <details class="grp" open>
+    <summary>
+      <h2>Body</h2>
+      <button class="lock" data-lock="body" title="Lock body">Lock</button>
+      <button class="mini" data-rand="body">Rand</button>
+    </summary>
+    <div class="grp-body">
+      <div class="ctag">Presets</div>
+      <div class="seg" id="presets"></div>
+      <div class="row"><label>Height</label><span class="val" id="v-height">1.00</span></div>
+      <input type="range" id="s-height" min="0.72" max="1.18" step="0.01" value="1">
+      <div class="row"><label>Build</label><span class="val" id="v-build">0.50</span></div>
+      <input type="range" id="s-build" min="0" max="1" step="0.01" value="0.5">
+      <div class="row"><label>Age</label><span class="val" id="v-age">0.32</span></div>
+      <input type="range" id="s-age" min="0" max="1" step="0.01" value="0.32">
+      <div class="row"><label>Asymmetry</label><span class="val" id="v-asymmetry">0.00</span></div>
+      <input type="range" id="s-asymmetry" min="0" max="1" step="0.01" value="0">
+      <div class="ctag">Base model</div>
+      <div class="seg" id="basemodel"></div>
+      <div class="ctag">Head shape</div>
+      <div class="seg" id="headshape"></div>
+      <div class="row"><label>Head</label><span class="val" id="v-head">1.00</span></div>
+      <input type="range" id="s-head" min="0.8" max="1.7" step="0.01" value="1">
+      <div class="row"><label>Shoulders</label><span class="val" id="v-shoulder">1.00</span></div>
+      <input type="range" id="s-shoulder" min="0.78" max="1.25" step="0.01" value="1">
+      <div class="row"><label>Legs</label><span class="val" id="v-legs">1.00</span></div>
+      <input type="range" id="s-legs" min="0.82" max="1.16" step="0.01" value="1">
+      <div class="row"><label>Arms</label><span class="val" id="v-arms">1.00</span></div>
+      <input type="range" id="s-arms" min="0.85" max="1.15" step="0.01" value="1">
+    </div>
+  </details>
+
+  <details class="grp" open>
+    <summary>
+      <h2>Face</h2>
+      <button class="lock" data-lock="face" title="Lock face">Lock</button>
+      <button class="mini" data-rand="face">Rand</button>
+    </summary>
+    <div class="grp-body">
+      <div class="ctag">Eyes</div>
+      <div class="row"><label>Eye size</label><span class="val" id="v-eye-size">1.00</span></div>
+      <input type="range" id="s-eye-size" min="0.75" max="1.25" step="0.01" value="1">
+      <div class="row"><label>Eye spacing</label><span class="val" id="v-eye-spacing">1.00</span></div>
+      <input type="range" id="s-eye-spacing" min="0.75" max="1.35" step="0.01" value="1">
+      <div class="row"><label>Eye height</label><span class="val" id="v-eye-y">0.00</span></div>
+      <input type="range" id="s-eye-y" min="-0.12" max="0.12" step="0.01" value="0">
+      <div class="row"><label>Eye tilt</label><span class="val" id="v-eye-tilt">0.00</span></div>
+      <input type="range" id="s-eye-tilt" min="-0.30" max="0.30" step="0.01" value="0">
+      <div class="row"><label>Iris size</label><span class="val" id="v-iris-size">1.00</span></div>
+      <input type="range" id="s-iris-size" min="0.65" max="1.40" step="0.01" value="1">
+      <div class="swatches" id="face-colors"></div>
+      <div class="ctag">Brows</div>
+      <div class="row"><label>Brow thickness</label><span class="val" id="v-brow-thickness">1.00</span></div>
+      <input type="range" id="s-brow-thickness" min="0.55" max="1.60" step="0.01" value="1">
+      <div class="row"><label>Brow height</label><span class="val" id="v-brow-height">1.00</span></div>
+      <input type="range" id="s-brow-height" min="0.70" max="1.30" step="0.01" value="1">
+      <div class="row"><label>Brow tilt</label><span class="val" id="v-brow-tilt">0.00</span></div>
+      <input type="range" id="s-brow-tilt" min="-0.35" max="0.35" step="0.01" value="0">
+      <div class="ctag">Nose</div>
+      <div class="row"><label>Nose size</label><span class="val" id="v-nose-size">1.00</span></div>
+      <input type="range" id="s-nose-size" min="0.70" max="1.40" step="0.01" value="1">
+      <div class="row"><label>Nose width</label><span class="val" id="v-nose-width">1.00</span></div>
+      <input type="range" id="s-nose-width" min="0.65" max="1.50" step="0.01" value="1">
+      <div class="row"><label>Nose projection</label><span class="val" id="v-nose-projection">1.00</span></div>
+      <input type="range" id="s-nose-projection" min="0.65" max="1.50" step="0.01" value="1">
+      <div class="ctag">Mouth</div>
+      <div class="row"><label>Mouth width</label><span class="val" id="v-mouth-width">1.00</span></div>
+      <input type="range" id="s-mouth-width" min="0.70" max="1.35" step="0.01" value="1">
+      <div class="row"><label>Lip fullness</label><span class="val" id="v-lip-fullness">1.00</span></div>
+      <input type="range" id="s-lip-fullness" min="0.55" max="1.60" step="0.01" value="1">
+      <div class="row"><label>Resting curve</label><span class="val" id="v-mouth-rest">0.00</span></div>
+      <input type="range" id="s-mouth-rest" min="-0.35" max="0.35" step="0.01" value="0">
+      <div class="ctag">Ears</div>
+      <div class="seg" id="ears"></div>
+      <div class="ctag">Freckles</div>
+      <div class="seg" id="freckles"></div>
+      <div class="ctag">Marks</div>
+      <div class="seg" id="mark"></div>
+      <div class="ctag">Facial hair</div>
+      <div class="seg" id="beard"></div>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>
+      <h2>Hair</h2>
+      <button class="lock" data-lock="hair" title="Lock hair">Lock</button>
+      <button class="mini" data-rand="hair">Rand</button>
+    </summary>
+    <div class="grp-body">
+      <div class="ctag">Preset</div>
+      <div class="seg" id="hairs"></div>
+      <div class="ctag">Texture</div>
+      <div class="seg" id="hairtex"></div>
+      <div class="ctag">Part</div>
+      <div class="seg" id="hairpart"></div>
+      <div class="ctag">Fringe</div>
+      <div class="seg" id="hairfringe"></div>
+      <div class="ctag">Back</div>
+      <div class="seg" id="hairback"></div>
+      <div class="seg" id="hairlines"></div>
+      <div class="row"><label>Hair volume</label><span class="val" id="v-hvol">1.00</span></div>
+      <input type="range" id="s-hvol" min="0.85" max="1.45" step="0.01" value="1">
+      <div class="row"><label>Hair length</label><span class="val" id="v-hlen">1.00</span></div>
+      <input type="range" id="s-hlen" min="0.5" max="1.8" step="0.01" value="1">
+      <p class="muted">Texture, part, fringe, and back mix. Presets are starting points — Mix keeps your combination.</p>
+    </div>
+  </details>
+
+  <details class="grp" open>
+    <summary>
+      <h2>Clothing</h2>
+      <button class="lock" data-lock="clothing" title="Lock clothing">Lock</button>
+      <button class="mini" data-rand="clothing">Rand</button>
+    </summary>
+    <div class="grp-body">
+      <div class="ctag">Base top</div>
+      <div class="seg" id="basetop"></div>
+      <div class="ctag">Outerwear</div>
+      <div class="seg" id="outerwear"></div>
+      <div class="ctag">Bottom</div>
+      <div class="seg" id="bottom"></div>
+      <div class="ctag">Neckwear</div>
+      <div class="seg" id="neckwear"></div>
+      <div class="ctag">Footwear</div>
+      <div class="seg" id="footwear"></div>
+      <p class="muted">Each garment has its own cut — hems, sleeves, collars, and open jackets — not just a padded body.</p>
+      <p class="muted" id="compat"></p>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>
+      <h2>Colors</h2>
+      <button class="lock" data-lock="colors" title="Lock colors">Lock</button>
+      <button class="mini" data-rand="colors">Rand</button>
+    </summary>
+    <div class="grp-body">
+      <div class="swatches" id="colors"></div>
+      <div class="row-btns">
+        <button id="btn-coord">Coordinate outfit</button>
+        <button id="btn-save-pal">Save palette</button>
+      </div>
+      <div class="ctag">Saved palettes</div>
+      <div class="seg" id="palettes"></div>
+      <div class="ctag">Linked colors</div>
+      <div class="seg" id="links"></div>
+      <div class="ctag">Top fabric</div>
+      <div class="seg" id="toppat"></div>
+      <div class="ctag">Leg fabric</div>
+      <div class="seg" id="legpat"></div>
+      <div class="row"><label>Weave scale</label><span class="val" id="v-pscale">1.00</span></div>
+      <input type="range" id="s-pscale" min="0.45" max="2.2" step="0.01" value="1">
+      <div class="row"><label>Spacing</label><span class="val" id="v-pspacing">1.00</span></div>
+      <input type="range" id="s-pspacing" min="0.4" max="2.2" step="0.01" value="1">
+      <div class="row"><label>Orientation</label><span class="val" id="v-pangle">0</span></div>
+      <input type="range" id="s-pangle" min="0" max="180" step="1" value="0">
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>
+      <h2>Accessories</h2>
+      <button class="lock" data-lock="accessories" title="Lock accessories">Lock</button>
+      <button class="mini" data-rand="accessories">Rand</button>
+    </summary>
+    <div class="grp-body">
+      <div class="ctag">Headwear</div>
+      <div class="seg" id="headwear"></div>
+      <div class="ctag">Glasses</div>
+      <div class="seg" id="glasses"></div>
+      <div class="ctag">Earrings</div>
+      <div class="seg" id="earrings"></div>
+      <div class="ctag">Necklace</div>
+      <div class="seg" id="necklace"></div>
+      <div class="ctag">Eyepatch</div>
+      <div class="seg" id="eyepatch"></div>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>
+      <h2>Props</h2>
+      <button class="lock" data-lock="props" title="Lock props">Lock</button>
+      <button class="mini" data-rand="props">Rand</button>
+    </summary>
+    <div class="grp-body">
+      <div class="ctag">Left hand</div>
+      <div class="seg" id="propL"></div>
+      <div class="ctag">Right hand</div>
+      <div class="seg" id="propR"></div>
+      <div class="ctag">Back</div>
+      <div class="seg" id="propBack"></div>
+      <div class="ctag">Waist</div>
+      <div class="seg" id="propWaist"></div>
+      <div class="ctag">Shoulder</div>
+      <div class="seg" id="propShoulder"></div>
+    </div>
+  </details>
+
+  <details class="grp" open>
+    <summary><h2>Expression</h2></summary>
+    <div class="grp-body">
+      <div class="seg" id="faces"></div>
+      <div class="row"><label>Brow move</label><span class="val" id="v-expr-brow">0.00</span></div>
+      <input type="range" id="s-expr-brow" min="-0.5" max="0.5" step="0.01" value="0">
+      <div class="row"><label>Brow height</label><span class="val" id="v-expr-browy">0.00</span></div>
+      <input type="range" id="s-expr-browy" min="-0.2" max="0.25" step="0.01" value="0">
+      <div class="row"><label>Eyelid</label><span class="val" id="v-expr-lid">0.00</span></div>
+      <input type="range" id="s-expr-lid" min="-0.7" max="0.7" step="0.01" value="0">
+      <div class="row"><label>Eye scale</label><span class="val" id="v-expr-eye">1.00</span></div>
+      <input type="range" id="s-expr-eye" min="0.75" max="1.35" step="0.01" value="1">
+      <div class="row"><label>Mouth curve</label><span class="val" id="v-expr-curve">0.00</span></div>
+      <input type="range" id="s-expr-curve" min="-1" max="1" step="0.01" value="0">
+      <div class="row"><label>Mouth open</label><span class="val" id="v-expr-open">0.00</span></div>
+      <input type="range" id="s-expr-open" min="-0.4" max="1" step="0.01" value="0">
+      <div class="row"><label>Mouth position</label><span class="val" id="v-expr-my">0.00</span></div>
+      <input type="range" id="s-expr-my" min="-0.12" max="0.12" step="0.01" value="0">
+      <div class="ctag">Save expression as</div>
+      <input class="field" id="expr-name" placeholder="skeptical">
+      <div class="row-btns"><button id="btn-save-expr">Save expression</button></div>
+    </div>
+  </details>
+
+  <details class="grp" open id="grp-pose">
+    <summary><h2>Pose</h2></summary>
+    <div class="grp-body">
+      <div class="ctag">Clip</div>
+      <div class="seg" id="anims"></div>
+      <div class="row-btns">
+        <button id="btn-pose-edit">Pose figure</button>
+        <button id="btn-mirror">Mirror</button>
+        <button id="btn-reset-limb">Reset joint</button>
+        <button id="btn-reset-pose">Reset pose</button>
+      </div>
+      <div class="ctag">Starting pose</div>
+      <div class="seg" id="pose-starts"></div>
+      <div class="ctag">Joint</div>
+      <div class="seg" id="pose-limbs"></div>
+      <p class="muted" id="bone-label">Turn on Pose figure, then drag a joint. Hands and feet reach; everything else rotates.</p>
+      <div id="pose-axis">
+        <div class="row"><label id="lbl-bx">Nod</label><span class="val" id="v-bx">0°</span></div>
+        <input type="range" id="s-bx" min="-180" max="180" step="1" value="0">
+        <div class="row"><label id="lbl-by">Turn</label><span class="val" id="v-by">0°</span></div>
+        <input type="range" id="s-by" min="-180" max="180" step="1" value="0">
+        <div class="row"><label id="lbl-bz">Tilt</label><span class="val" id="v-bz">0°</span></div>
+        <input type="range" id="s-bz" min="-180" max="180" step="1" value="0">
+      </div>
+      <div class="ctag">Save pose as</div>
+      <input class="field" id="pose-name" placeholder="point-left">
+      <div class="row-btns"><button id="btn-save-pose">Save pose</button></div>
+      <div class="ctag">Saved poses</div>
+      <div class="seg" id="saved-poses"></div>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary><h2>Performance states</h2></summary>
+    <div class="grp-body">
+      <p class="muted">Named pose + expression combos for activities, e.g. <code>character.setState('correct')</code>.</p>
+      <div class="seg" id="states"></div>
+      <div class="ctag">State name</div>
+      <input class="field" id="state-name" placeholder="greeting">
+      <div class="row-btns"><button id="btn-save-state">Save current as state</button></div>
+    </div>
+  </details>
+
+  <div class="actions">
+    <button id="btn-rand-face">Randomize Face</button>
+    <button id="btn-rand-outfit">Randomize Outfit</button>
+    <button id="btn-random" class="key">Randomize Everything Unlocked</button>
+    <button id="btn-xray">Show rig</button>
+    <button id="btn-snap">Save PNG</button>
+    <button id="btn-snap-clear">Transparent PNG</button>
+    <button id="btn-sheet">Character sheet</button>
+    <button id="btn-save-proj">Save project</button>
+    <button id="btn-import">Import JSON</button>
+    <button id="btn-export">Export character</button>
+  </div>
+</div>
+
+<button id="tab">Controls</button>
+<div class="hint">drag to orbit · scroll to zoom<br>Z undo · shift+Z redo · R rig · P pose · space randomize</div>
+<div id="pose-hud">Drag a joint to pose · empty drag orbits · Shift rotates hands and feet</div>
+<input type="file" id="file-json" accept="application/json,.json" hidden>
+
+<div id="library" role="dialog" aria-modal="true" aria-labelledby="lib-h">
+  <div class="card">
+    <h3 id="lib-h">Character library</h3>
+    <p>Saved projects live in this browser. Import a JSON export to keep editing a character.</p>
+    <div class="lib-grid" id="lib-grid"></div>
+    <div class="actions" style="flex-direction:row;flex-wrap:wrap;border:0;padding:0">
+      <button id="btn-new" class="key">New character</button>
+      <button id="btn-lib-import">Import JSON</button>
+      <button id="btn-lib-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-h">
+  <div class="card">
+    <h3 id="sheet-h">Export portable character</h3>
+    <p>JavaScript is simplest for standalone HTML. JSON keeps metadata, poses, expressions, and performance states. ZIP includes a starter activity plus local engine files.</p>
+    <label class="ctag" for="character-name">Character name</label>
+    <input class="field" type="text" id="character-name" value="my-character" autocomplete="off" spellcheck="false">
+    <div class="export-grid">
+      <button id="btn-download-js" class="export-choice key"><strong>Character JavaScript</strong><span>Best for standalone HTML</span></button>
+      <button id="btn-download-json" class="export-choice"><strong>Character JSON</strong><span>Best for LMS / continue editing</span></button>
+      <button id="btn-package" class="export-choice"><strong>Complete activity ZIP</strong><span>Starter HTML + engine + Three.js</span></button>
+    </div>
+    <p id="export-status" class="warn" aria-live="polite"></p>
+    <label class="ctag" for="dump">Embed examples</label>
+    <pre id="dump"></pre>
+    <div class="actions" style="flex-direction:row;flex-wrap:wrap;border:0;padding:0">
+      <button id="btn-copy">Copy embed examples</button>
+      <button id="btn-close">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="character-kit.bundle-v4.js"></script>
+<script src="lab.js"></script>
+</body>
+</html>

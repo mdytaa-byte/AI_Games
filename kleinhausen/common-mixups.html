@@ -91,6 +91,15 @@ html[data-en="aus"] .gloss{display:none !important;}
 .choice:hover{background:#fff6d6;}
 .choice.richtig{background:var(--ok);color:#fff;border-color:var(--ok);}
 .choice.falsch{background:var(--bad);color:#fff;border-color:var(--bad);}
+.prod-lab{font-weight:800;margin:.2rem 0 .35rem;color:var(--chalk)}
+.prod-in,textarea.prod-in{
+  width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;
+  padding:.55em .7em;border:3px solid var(--gold);border-radius:6px;background:#fff;color:var(--navy);
+}
+textarea.prod-in{min-height:7.2rem;line-height:1.45}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:800;cursor:pointer;background:#fff;color:var(--navy);border:2px solid var(--gold)}
+.hint-try{color:var(--gold);font-weight:700;margin:.4rem 0}
 .stamp{
   display:none;margin:1rem 0;background:#fff;color:var(--ink);
   border:6px double var(--gold);padding:1rem 1.1rem;max-width:36rem;
@@ -170,14 +179,13 @@ a.hub-home:hover{background:rgba(255,255,255,.18)}
       <div class="mini"><strong>weil / dass</strong>Verb ans Ende</div>
       <div class="mini"><strong>trennbare Verben</strong>Ich rufe dich an.</div>
     </div>
-    <p>14 Lektionen (False friends + Wortstellung), dann eine Schnellrunde, dann ein Meta-Witz von der letzten Folie.
-      <span class="en gloss" lang="en">13 lessons, a speed round, then a joke from the last slide.</span></p>
+    <p>14 Lektionen: du <strong>schreibst</strong> den richtigen Satz (nicht antippen). Dann eine Schnellrunde, dann ein Meta-Witz von der letzten Folie.
+      <span class="en gloss" lang="en">Type the correct German sentence — no multiple choice. Then a speed round, then a joke from the last slide.</span></p>
     <details class="scene">
       <summary>Tastatur und Barrierefreiheit <span class="en gloss" lang="en">Keyboard &amp; accessibility</span></summary>
       <ul>
         <li><kbd>Tab</kbd> / <kbd>Umschalt</kbd>+<kbd>Tab</kbd> – zwischen Elementen wechseln.</li>
-        <li><kbd>1</kbd>–<kbd>4</kbd> – Antwort direkt wählen.</li>
-        <li><kbd>Enter</kbd> auf einem Button – bestätigen.</li>
+        <li><kbd>Enter</kbd> prüft deine Antwort. Knöpfe <strong>ä ö ü ß</strong> setzen Umlaute.</li>
         <li><strong>Vorlesen</strong> spricht Deutsch (de-DE). <strong>Kontrast</strong> und <strong>Schrift</strong> bleiben die ganze Stunde.</li>
         <li>Keine Cookies, kein localStorage. Fortschritt gilt nur für diesen Besuch.</li>
       </ul>
@@ -280,6 +288,45 @@ function shuffled(a){
   return arr;
 }
 function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=$(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      const n=a+b.dataset.c.length;
+      try{ inp.setSelectionRange(n,n); }catch(e){}
+    });
+  });
+}
+function prodBlock(id, label){
+  return '<p class="prod-lab"><label for="'+id+'">'+label+"</label></p>"+umlautsHtml(id)+
+    '<p><input class="prod-in" type="text" id="'+id+'" lang="de" autocomplete="off" spellcheck="false"></p>';
+}
 
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
@@ -498,44 +545,58 @@ function renderPips(n,now){
 }
 
 function loadRound(){
-  S.answered=false; S.speed=false;
+  S.answered=false; S.speed=false; S.tries=0;
   $("timer").hidden=true;
   const r=ROUNDS[S.i];
-  $("round-lab").textContent="Runde "+(S.i+1)+" von "+ROUNDS.length+" · False friends & Wortstellung";
+  const richtig=r.opts.find(o=>o.ok).t;
+  $("round-lab").textContent="Runde "+(S.i+1)+" von "+ROUNDS.length+" · Schreib den Satz";
   $("h-play").textContent=r.title;
   $("scene-de").textContent=r.scene;
-  $("scene-en").textContent=r.en;
+  $("scene-en").textContent=r.en+" Type the correct German sentence.";
   $("stamp").classList.remove("on");
   $("btn-next").hidden=true;
   renderPips(ROUNDS.length, S.i);
-  const box=$("choices"); box.innerHTML="";
-  shuffled(r.opts).forEach(o=>{
-    const b=document.createElement("button");
-    b.type="button"; b.className="choice"; b.textContent=o.t;
-    b.addEventListener("click", ()=>pick(o,b,r));
-    box.appendChild(b);
-  });
+  const box=$("choices");
+  box.innerHTML = prodBlock("mix-in","Schreib den richtigen Satz.")+
+    '<p class="btn-row"><button type="button" class="btn" id="mix-ok">Prüfen</button></p><p class="hint-try" id="mix-hint" hidden></p>';
+  bindUmlauts(box);
+  const inp=$("mix-in");
+  inp.focus();
+  function check(){
+    if(S.answered) return;
+    const v=inp.value;
+    if(nearDe(v, richtig)){
+      finishMix(r, true, richtig);
+      return;
+    }
+    S.tries=(S.tries||0)+1;
+    const hint=$("mix-hint"); hint.hidden=false;
+    if(S.tries>=2){
+      inp.value=richtig;
+      finishMix(r, false, richtig);
+    } else {
+      hint.textContent="Noch nicht. Ein Versuch bleibt — ganzer Satz, deutsche Wortstellung.";
+      sagen("Noch nicht. Schreib den ganzen Satz.");
+    }
+  }
+  $("mix-ok").addEventListener("click", check);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
   glossUpdate();
   sprich(r.scene);
-  sagen(r.title);
+  sagen(r.title+". Schreib den Satz.");
 }
 
-function pick(o,btn,r){
-  if(S.answered) return;
+function finishMix(r, ok, richtig){
   S.answered=true; S.total++;
-  if(o.ok) S.korrekt++;
-  Array.from($("choices").children).forEach(x=>{
-    x.disabled=true;
-    const m=r.opts.find(z=>z.t===x.textContent);
-    if(m&&m.ok) x.classList.add("richtig");
-  });
-  btn.classList.add(o.ok?"richtig":"falsch");
+  if(ok) S.korrekt++;
+  const inp=$("mix-in"); if(inp) inp.disabled=true;
+  const go=$("mix-ok"); if(go) go.disabled=true;
   $("stamp").classList.add("on");
-  $("stamp-rule").textContent=r.rule;
+  $("stamp-rule").textContent=r.rule+(ok?"":"  → "+richtig);
   $("stamp-en").textContent=r.ruleEn;
   glossUpdate();
   sprich(r.rule);
-  sagen(o.ok?"Richtig! Remember-Stempel.":"Remember! "+r.rule);
+  sagen(ok?"Richtig! Remember-Stempel.":"Remember! "+r.rule);
   $("btn-next").hidden=false;
   $("btn-next").focus();
 }
@@ -565,18 +626,15 @@ function startSpeed(){
 function loadSpeed(){
   S.answered=false;
   const c=SPEED[S.speedI];
-  $("h-play").textContent="Schnell "+(S.speedI+1)+"/6: "+c.q;
-  $("scene-de").textContent=c.q;
-  $("scene-en").textContent="Speed round.";
-  renderPips(SPEED.length, S.speedI);
-  const box=$("choices"); box.innerHTML="";
   const richtig=c.opts[c.a];
-  shuffled(c.opts).forEach(t=>{
-    const b=document.createElement("button");
-    b.type="button"; b.className="choice"; b.textContent=t;
-    b.addEventListener("click", ()=>pickSpeed(t,b,c,richtig));
-    box.appendChild(b);
-  });
+  $("h-play").textContent="Schnell "+(S.speedI+1)+"/6";
+  $("scene-de").textContent=c.q;
+  $("scene-en").textContent="Type the answer. 12 seconds.";
+  renderPips(SPEED.length, S.speedI);
+  const box=$("choices");
+  box.innerHTML = prodBlock("spd-in","Schreib die Antwort.")+
+    '<p class="btn-row"><button type="button" class="btn" id="spd-ok">Prüfen</button></p>';
+  bindUmlauts(box);
   $("stamp").classList.remove("on");
   $("btn-next").hidden=true;
   $("btn-next").textContent="Nächste Karte";
@@ -587,31 +645,21 @@ function loadSpeed(){
   if(S.motion){ bar.classList.add("run"); span.style.animation=""; }
   else bar.classList.remove("run");
   if(speedTimer) clearTimeout(speedTimer);
-  speedTimer=setTimeout(()=>{
-    if(!S.answered){
-      S.answered=true; S.total++;
-      Array.from($("choices").children).forEach(x=>{
-        x.disabled=true;
-        if(x.textContent===richtig) x.classList.add("richtig");
-      });
-      sagen("Zeit um!"); showSpeedStamp(c,false);
-    }
-  }, 12000);
+  function lock(ok){
+    if(S.answered) return;
+    S.answered=true; S.total++;
+    if(speedTimer) clearTimeout(speedTimer);
+    if(ok) S.korrekt++;
+    const inp=$("spd-in"); if(inp){ inp.disabled=true; if(!ok) inp.value=richtig; }
+    const go=$("spd-ok"); if(go) go.disabled=true;
+    showSpeedStamp(c,ok);
+  }
+  speedTimer=setTimeout(()=>{ if(!S.answered){ sagen("Zeit um!"); lock(false); } }, 12000);
+  $("spd-ok").addEventListener("click", ()=>lock(nearDe($("spd-in").value, richtig)));
+  $("spd-in").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); lock(nearDe($("spd-in").value, richtig)); } });
+  $("spd-in").focus();
   glossUpdate();
   sprich(c.q);
-}
-function pickSpeed(t,btn,c,richtig){
-  if(S.answered) return;
-  S.answered=true; S.total++;
-  if(speedTimer) clearTimeout(speedTimer);
-  const ok=t===richtig;
-  if(ok) S.korrekt++;
-  Array.from($("choices").children).forEach(x=>{
-    x.disabled=true;
-    if(x.textContent===richtig) x.classList.add("richtig");
-  });
-  btn.classList.add(ok?"richtig":"falsch");
-  showSpeedStamp(c,ok);
 }
 function showSpeedStamp(c,ok){
   $("stamp").classList.add("on");
@@ -630,33 +678,29 @@ function nextSpeed(){
 function openMeta(){
   if(speedTimer) clearTimeout(speedTimer);
   zeigeScreen("screen-meta");
-  const box=$("meta-choices"); box.innerHTML="";
-  const opts=[
-    {t:"Nichts, „Jedes Fehler“ ist richtig.", ok:false, why:"Fehler ist maskulin: der Fehler. Deshalb nicht jedes."},
-    {t:"Es muss „Jeder Fehler“ heißen (maskulin).", ok:true, why:"Genau. der Fehler → jeder Fehler. Herr Young hat absichtlich (oder müde) gemischt – das ist der Witz der letzten Folie."},
-    {t:"Es muss „Die Fehler“ ohne jeder/jedes heißen.", ok:false, why:"Plural ginge, aber der Spruch braucht Singular: jeder Fehler."}
-  ];
-  shuffled(opts).forEach(o=>{
-    const b=document.createElement("button");
-    b.type="button"; b.className="choice"; b.textContent=o.t;
-    b.addEventListener("click", ()=>{
-      if(b.disabled) return;
-      S.total++;
-      if(o.ok){ S.korrekt++; S.bonus=5; }
-      Array.from(box.children).forEach(x=>{
-        x.disabled=true;
-        const m=opts.find(z=>z.t===x.textContent);
-        if(m&&m.ok) x.classList.add("richtig");
-      });
-      b.classList.add(o.ok?"richtig":"falsch");
-      $("meta-stamp").classList.add("on");
-      $("meta-rule").textContent=o.why+(o.ok?" +5 Bonus!":"");
-      $("btn-meta-next").hidden=false;
-      sprich(o.why);
-      sagen(o.ok?"Meta-Witz sitzt. Jeder Fehler.":"Fast – Jeder Fehler, nicht Jedes.");
-    });
-    box.appendChild(b);
+  const box=$("meta-choices");
+  box.innerHTML = '<p>Schreib die richtige Form: nicht „Jedes Fehler“.</p>'+
+    prodBlock("meta-in","Artikel + Fehler")+
+    '<p class="btn-row"><button type="button" class="btn" id="meta-ok">Prüfen</button></p>';
+  bindUmlauts(box);
+  let done=false;
+  $("meta-ok").addEventListener("click", ()=>{
+    if(done) return;
+    const v=$("meta-in").value;
+    const ok = nearDe(v, "Jeder Fehler") || foldDe(v)==="jeder fehler";
+    done=true; S.total++;
+    if(ok){ S.korrekt++; S.bonus=5; }
+    $("meta-in").disabled=true; $("meta-ok").disabled=true;
+    $("meta-stamp").classList.add("on");
+    $("meta-rule").textContent = ok
+      ? "Genau. der Fehler → jeder Fehler. +5 Bonus!"
+      : "Fehler ist maskulin: der Fehler. Deshalb jeder Fehler, nicht jedes.";
+    $("btn-meta-next").hidden=false;
+    sprich($("meta-rule").textContent);
+    sagen(ok?"Meta-Witz sitzt. Jeder Fehler.":"Fast – Jeder Fehler, nicht Jedes.");
   });
+  $("meta-in").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); $("meta-ok").click(); } });
+  $("meta-in").focus();
   glossUpdate();
   sprich("Jedes Fehler bringt dich vorwärts. Was stimmt nicht?");
 }
@@ -731,6 +775,8 @@ $("btn-retry").addEventListener("click", ()=>{
   zeigeScreen("screen-start");
 });
 document.addEventListener("keydown", e=>{
+  const tag=(e.target.tagName||"").toLowerCase();
+  if(tag==="input"||tag==="textarea") return;
   const n=Number(e.key);
   if(n>=1&&n<=4){
     const btns=document.querySelectorAll(".screen.on .choice");

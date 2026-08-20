@@ -127,6 +127,15 @@ footer{max-width:1140px;margin:0 auto;padding:0 1rem 2rem;color:var(--muted);fon
 kbd{border:1px solid var(--muted);padding:.05em .35em;border-radius:4px;}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
 html[data-motion="aus"] *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+.prod-lab{font-weight:700;margin:.2rem 0 .35rem;}
+.prod-in,textarea.prod-in{
+  width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;
+  padding:.55em .7em;border:2px solid var(--muted);border-radius:6px;background:#07101f;color:var(--foam);
+}
+textarea.prod-in{min-height:7.2rem;line-height:1.45;resize:vertical;}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0;}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:700;cursor:pointer;background:var(--card);color:var(--foam);border:2px solid var(--muted);border-radius:6px;}
+.q-in-row{margin-top:.5rem;}
 
 .brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
 a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
@@ -238,9 +247,11 @@ a.hub-home:hover{background:rgba(255,255,255,.18)}
   <section class="screen" id="screen-script" aria-labelledby="h-script">
     <p class="eyebrow">Phase 3 · Teleprompter schreiben</p>
     <h2 id="h-script" tabindex="-1">Das Skript legen</h2>
-    <p class="lede">Baue Sätze mit <strong>Heute ist es…</strong>, <strong>Morgen wird es…</strong>, <strong>Es gibt / es regnet / die Sonne scheint</strong>, <strong>Im Westen / im Osten</strong> und <strong>18 Grad</strong>. Falsche englische Wortstellung wird abgelehnt.
-      <span class="en gloss" lang="en">Chip order must keep German verb-second.</span></p>
-    <div class="chips" id="chips"></div>
+    <p class="lede">Schreibe den Teleprompter-Text mit <strong>Heute ist es…</strong>, <strong>Morgen wird es…</strong>, <strong>Es gibt / es regnet / die Sonne scheint</strong>, <strong>Im Westen / im Osten</strong> und <strong>18 Grad</strong>. Falsche englische Wortstellung wird abgelehnt.
+      <span class="en gloss" lang="en">Write the forecast script. Keep German verb-second.</span></p>
+    <p class="prod-lab"><label for="script-in">Dein Skript</label></p>
+    <div id="script-uml"></div>
+    <textarea class="prod-in" id="script-in" lang="de" autocomplete="off" spellcheck="false" placeholder="Heute ist es sonnig in Kleinhausen, 18 Grad. Morgen wird es regnen …"></textarea>
     <div class="script" id="script-out" aria-live="polite"></div>
     <div class="fb" id="script-fb" hidden tabindex="-1"></div>
     <div class="btn-row">
@@ -262,7 +273,10 @@ a.hub-home:hover{background:rgba(255,255,255,.18)}
       <h3>Zuschauerfragen</h3>
       <p id="q-text"></p>
       <span class="en gloss" lang="en" id="q-en"></span>
-      <div class="opts" id="q-opts"></div>
+      <p class="prod-lab"><label for="q-in">Deine Antwort tippen</label></p>
+      <div id="q-uml"></div>
+      <p class="q-in-row"><input class="prod-in" type="text" id="q-in" lang="de" autocomplete="off" spellcheck="false"></p>
+      <div class="btn-row"><button type="button" class="btn btn-sun" id="btn-q-check">Antwort prüfen</button></div>
       <div class="fb" id="q-fb" hidden></div>
       <div class="btn-row"><button type="button" class="btn" id="btn-q-next" hidden>Nächste Frage</button></div>
     </div>
@@ -322,12 +336,51 @@ function shuffled(a){
   return arr;
 }
 function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      try{ inp.setSelectionRange(a+b.dataset.c.length, a+b.dataset.c.length); }catch(e){}
+    });
+  });
+}
+function typingIn(e){
+  const tag=(e.target.tagName||"").toLowerCase();
+  return tag==="input"||tag==="textarea";
+}
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
   picked:{}, newsPts:0, newsOk:false,
   holdWx:null, holdT:null, map:{kh:null,mz:null,ff:null}, morgen:{wx:null,t:null}, mapPts:0,
   chips:[], scriptPts:0, scriptText:"",
-  q:0, qPts:0, qLocked:false, blooper:[]
+  q:0, qPts:0, qLocked:false, qTries:0, blooper:[]
 };
 
 const CARDS = [
@@ -588,51 +641,53 @@ $("btn-map").addEventListener("click", () => {
 
 function startScript(){
   zeige("screen-script");
-  S.chips = [];
-  deal(CHIPDATA);
-  renderChips(); renderScript();
-  sagen("Lege das Skript aus Bausteinen.");
-}
-function renderChips(){
-  const box = $("chips"); box.innerHTML = "";
-  CHIPDATA.forEach(c => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "chip";
-    b.setAttribute("aria-pressed", S.chips.includes(c.id) ? "true" : "false");
-    if(c.bad && S.chips.includes(c.id)) b.classList.add("bad");
-    b.textContent = c.de;
-    b.addEventListener("click", () => {
-      const i = S.chips.indexOf(c.id);
-      if(i>=0) S.chips.splice(i,1); else S.chips.push(c.id);
-      sprich(c.de);
-      renderChips(); renderScript();
-    });
-    box.appendChild(b);
-  });
+  $("script-in").value = "";
+  $("script-uml").innerHTML = umlautsHtml("script-in");
+  bindUmlauts($("script-uml"));
+  renderScript();
+  sagen("Schreibe das Skript für den Teleprompter.");
 }
 function renderScript(){
-  const parts = S.chips.map(id => CHIPDATA.find(c => c.id === id).de);
-  $("script-out").innerHTML = parts.length ? "<p>"+esc(parts.join(" · "))+"</p>" : '<span class="en gloss" lang="en">Assemble chips here.</span>';
-  S.scriptText = parts.join(" ");
+  const t = $("script-in").value.trim();
+  S.scriptText = $("script-in").value;
+  $("script-out").innerHTML = t ? "<p>"+esc(t)+"</p>" : '<span class="en gloss" lang="en">Preview appears here as you type.</span>';
 }
-$("btn-script-clear").addEventListener("click", () => { S.chips = []; renderChips(); renderScript(); });
+$("script-in").addEventListener("input", renderScript);
+$("btn-script-clear").addEventListener("click", () => { $("script-in").value = ""; renderScript(); });
 $("btn-script").addEventListener("click", () => {
-  const sel = S.chips.map(id => CHIPDATA.find(c => c.id === id));
-  const needs = ["heute","sonnig","grad","morgen","regen","gibt","regnet","sonne","west","ost","ueber","minus","warn"];
-  const have = new Set(sel.map(c => c.need).filter(Boolean));
-  const bads = sel.filter(c => c.bad);
+  const text = $("script-in").value;
+  const f = foldDe(text);
   let pts = 0;
-  needs.forEach(n => { if(have.has(n)) pts += 3; });
+  if(/heute/.test(f)) pts += 3;
+  if(/sonnig|scheint/.test(f)) pts += 3;
+  if(/grad/.test(f)) pts += 3;
+  if(/morgen/.test(f)) pts += 3;
+  if(/regen|regnet/.test(f)) pts += 3;
+  if(/west/.test(f)) pts += 3;
+  if(/ost/.test(f)) pts += 3;
+  if(/gibt/.test(f) || f.indexOf("es gibt")>=0) pts += 3;
   pts = Math.min(30, pts);
-  pts -= bads.length * 10;
-  if(bads.length){ S.blooper.push("Verbzweit-Patzer im Teleprompter"); }
-  S.scriptPts = Math.max(0, pts);
+  let penalty = 0;
+  if(/today it is/i.test(text)) penalty += 10;
+  if(/heute es ist/.test(f)) penalty += 10;
+  if(/\bit is\b|\btoday\b|\btomorrow\b|\bsunny\b|\brain\b/i.test(text)) penalty += 5;
+  if(penalty) S.blooper.push("Verbzweit-Patzer im Teleprompter");
+  S.scriptPts = Math.max(0, pts - penalty);
+  S.scriptText = text;
   const fb = $("script-fb");
   let html = "";
-  bads.forEach(b => html += "<p><strong>Verbzweit / Register:</strong> "+esc(b.warum)+"</p>");
-  const miss = needs.filter(n => !have.has(n));
-  if(miss.length) html += "<p>Es fehlen noch Bausteine für: "+esc(miss.join(", "))+"</p>";
-  if(!bads.length && miss.filter(n => ["heute","sonnig","grad","morgen","west","ost"].includes(n)).length === 0){
+  if(penalty) html += "<p><strong>Verbzweit / Register:</strong> Englische Wortstellung oder „Heute es ist …“ – Verb an Position 2!</p>";
+  const miss = [];
+  if(!/heute/.test(f)) miss.push("heute");
+  if(!/sonnig|scheint/.test(f)) miss.push("sonnig/scheint");
+  if(!/grad/.test(f)) miss.push("Grad");
+  if(!/morgen/.test(f)) miss.push("morgen");
+  if(!/regen|regnet/.test(f)) miss.push("regen");
+  if(!/west/.test(f)) miss.push("Westen");
+  if(!/ost/.test(f)) miss.push("Osten");
+  if(!/gibt/.test(f) && f.indexOf("es gibt")<0) miss.push("es gibt");
+  if(miss.length) html += "<p>Es fehlen noch: "+esc(miss.join(", "))+"</p>";
+  if(!penalty && miss.filter(n => ["heute","sonnig/scheint","Grad","morgen","Westen","Osten"].includes(n)).length === 0){
     fb.className = "fb";
     html = "<p>Skript sendefähig. Heute ist es sonnig, 18 Grad. Morgen wird es regnen. Im Westen / im Osten bleibt die Karte klar.</p>"+
       '<span class="en gloss" lang="en">Required frames are in. Going on air.</span>';
@@ -717,36 +772,62 @@ function showQ(){
   }
   const q = S.qDeck[S.q];
   S.qLocked = false;
+  S.qTries = 0;
   $("q-text").textContent = q.q;
   $("q-en").textContent = q.en;
   $("q-fb").hidden = true;
   $("btn-q-next").hidden = true;
-  const box = $("q-opts"); box.innerHTML = "";
-  q.opts.forEach((o, i) => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "opt";
-    b.textContent = o;
-    b.addEventListener("click", () => {
-      if(S.qLocked) return;
-      S.qLocked = true;
-      [...box.children].forEach((el, j) => {
-        el.disabled = true;
-        if(j === q.ok) el.classList.add("good");
-        if(j === i && i !== q.ok) el.classList.add("no");
-      });
-      const gut = i === q.ok;
-      if(gut) S.qPts += 10; else S.blooper.push("Live-Patzer: "+q.q);
-      $("q-fb").className = gut ? "fb" : "fb bad";
-      $("q-fb").innerHTML = "<p>"+(gut?"Richtig. ":"Nicht passend. ")+esc(q.warum)+'</p><span class="en gloss" lang="en">'+esc(q.fbEn)+"</span>";
-      $("q-fb").hidden = false;
-      $("btn-q-next").hidden = false;
-      $("btn-q-next").textContent = S.q < 2 ? "Nächste Frage" : "Abspann";
-      sagen(gut ? "Gute Live-Antwort." : "Die Zuschauer sind verwirrt.");
-      sprich(q.warum);
-    });
-    box.appendChild(b);
-  });
+  $("q-in").value = "";
+  $("q-in").disabled = false;
+  $("btn-q-check").disabled = false;
+  if(!$("q-uml").innerHTML){
+    $("q-uml").innerHTML = umlautsHtml("q-in");
+    bindUmlauts($("q-uml"));
+  }
 }
+function checkQ(){
+  if(S.qLocked) return;
+  const q = S.qDeck[S.q];
+  const v = $("q-in").value;
+  const right = q.opts[q.ok];
+  if(nearDe(v, right)){
+    S.qLocked = true;
+    S.qPts += 10;
+    $("q-in").disabled = true;
+    $("btn-q-check").disabled = true;
+    $("q-fb").className = "fb";
+    $("q-fb").innerHTML = "<p>Richtig. "+esc(q.warum)+'</p><span class="en gloss" lang="en">'+esc(q.fbEn)+"</span>";
+    $("q-fb").hidden = false;
+    $("btn-q-next").hidden = false;
+    $("btn-q-next").textContent = S.q < 2 ? "Nächste Frage" : "Abspann";
+    sagen("Gute Live-Antwort.");
+    sprich(q.warum);
+    return;
+  }
+  S.qTries++;
+  if(S.qTries >= 2){
+    S.qLocked = true;
+    S.blooper.push("Live-Patzer: "+q.q);
+    $("q-in").disabled = true;
+    $("btn-q-check").disabled = true;
+    $("q-fb").className = "fb bad";
+    $("q-fb").innerHTML = "<p>Nicht passend. Richtig wäre: „"+esc(right)+"“. "+esc(q.warum)+'</p><span class="en gloss" lang="en">'+esc(q.fbEn)+"</span>";
+    $("q-fb").hidden = false;
+    $("btn-q-next").hidden = false;
+    $("btn-q-next").textContent = S.q < 2 ? "Nächste Frage" : "Abspann";
+    sagen("Die Zuschauer sind verwirrt.");
+    sprich(right);
+    return;
+  }
+  $("q-fb").className = "fb bad";
+  $("q-fb").innerHTML = "<p>Noch nicht passend. Versuch es noch einmal – Ja/Nein oder kurzer Satz.</p>";
+  $("q-fb").hidden = false;
+  sagen("Noch ein Versuch.");
+}
+$("btn-q-check").addEventListener("click", checkQ);
+$("q-in").addEventListener("keydown", e => {
+  if(e.key==="Enter"){ e.preventDefault(); checkQ(); }
+});
 $("btn-q-next").addEventListener("click", () => {
   if(S.q < 2){ S.q += 1; showQ(); }
   else showSum();
@@ -816,6 +897,7 @@ $("btn-verify").addEventListener("click", () => {
   $("v-out").textContent = (soll===pruef && Number(pct)===echt) ? "Gültig. "+name+": "+ges+" / "+max+" ("+echt+" %)." : "Ungültig.";
 });
 $("btn-again").addEventListener("click", () => location.reload());
+document.addEventListener("keydown", e => { if(typingIn(e)) return; });
 if("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = () => {};
 sagen("Lindenfernsehen. Wetterstudio Kleinhausen.");
 </script>

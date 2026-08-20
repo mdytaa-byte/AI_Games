@@ -168,6 +168,12 @@ html[data-contrast="hoch"] .opt{background:#000;border-color:#fff}
 .brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
 a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
 a.hub-home:hover{background:rgba(255,255,255,.18)}
+.prod-in,textarea.prod-in{width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;padding:.55em .7em;border:3px solid var(--db-gelb);border-radius:6px;background:var(--lcd);color:var(--lcd-text)}
+textarea.prod-in{min-height:7.2rem;line-height:1.45}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:800;cursor:pointer;background:var(--lcd);border:2px solid var(--db-gelb);color:var(--lcd-text)}
+.prod-lab{font-weight:800;margin:.4rem 0 .2rem;color:var(--lcd-text)}
+.hint-try{color:var(--db-gelb);font-weight:700;margin:.4rem 0}
 </style>
 </head>
 <body>
@@ -299,6 +305,65 @@ function shuffled(a){
   return arr;
 }
 function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      const n=a+b.dataset.c.length;
+      try{ inp.setSelectionRange(n,n); }catch(e){}
+    });
+  });
+}
+function prodBlock(id, label){
+  return '<p class="prod-lab"><label for="'+id+'">'+label+"</label></p>"+umlautsHtml(id)+
+    '<p><input class="prod-in" type="text" id="'+id+'" lang="de" autocomplete="off" spellcheck="false"></p>';
+}
+function matchTicket(v, id){
+  const t=TICKETS.find(x=>x.id===id);
+  if(nearDe(v, t.de)) return true;
+  const g=foldDe(v);
+  const keys={einzel:["einzel","einzelfahrschein"],hinzurueck:["hin und zurueck","hin zurueck","hinzurueck"],tag:["tageskarte"],gruppe:["gruppenkarte","gruppe"]};
+  return (keys[id]||[]).some(k=>g.indexOf(k)>=0);
+}
+function matchKlasse(v, want){
+  const g=foldDe(v);
+  if(want==="1") return g==="1" || g.indexOf("erste")>=0 || g.indexOf("1 klasse")>=0;
+  if(want==="2") return g==="2" || g.indexOf("zweite")>=0 || g.indexOf("2 klasse")>=0;
+  return false;
+}
+function matchZeit(v, id){
+  if(id==="heute") return nearDe(v, "heute");
+  if(id==="morgen") return nearDe(v, "morgen");
+  if(id==="wochenende") return nearDe(v, "am Wochenende") || foldDe(v).indexOf("wochenende")>=0;
+  return false;
+}
 function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
 function sprich(text){ if(!S.audio || !("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="de-DE"; speechSynthesis.speak(u); }
 
@@ -459,86 +524,104 @@ function fehlerBox(de, en, wort){
 }
 
 function renderZiel(prompt){
-  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Wähle eine Stadt. Nicht Kleinhausen – du bist schon hier.</p><p class=\"en gloss\" lang=\"en\">Choose a city. Not Kleinhausen — you are already here.</p><div class=\"grid-opts\" id=\"opts\"></div><div id=\"fbslot\"></div>";
-  const box = $("lcd").querySelector("#opts");
-  shuffled(ZIELE).forEach(z => { box.insertAdjacentHTML("beforeend", optBtn(z.id, z.id, "<span class=\"en gloss\" lang=\"en\">Track "+z.gleis+"</span>")); });
+  const m = MISSIONS[S.i];
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Schreib das Ziel. Nicht Kleinhausen – du bist schon hier.</p><p class=\"en gloss\" lang=\"en\">Type the destination. Not Kleinhausen — you are already here.</p><div id=\"prod\"></div><div id=\"fbslot\"></div>";
+  $("lcd").querySelector("#prod").innerHTML = prodBlock("ziel-in", "Stadt / Ziel")+
+    '<p><button type="button" class="btn" id="ziel-ok">Prüfen</button></p>';
+  bindUmlauts($("lcd"));
   glossUpdate();
-  bindOpts((id, btn)=>{
-    const m = MISSIONS[S.i];
-    if(id === "Kleinhausen"){
-      S.fehler++;
-      btn.classList.add("falsch");
-      $("fbslot").innerHTML = fehlerBox(
-        "Dieses Ziel ist ungültig. Du bist schon in Kleinhausen.",
-        "This destination is invalid. You are already in Kleinhausen.",
-        "Ziel / Bahnhof"
-      );
-      sprich("Dieses Ziel ist ungültig. Du bist schon in Kleinhausen.");
-      sagen("Ungültiges Ziel: Kleinhausen.");
-      glossUpdate();
-      return;
-    }
-    if(id !== m.ziel){
-      S.fehler++;
-      btn.classList.add("falsch");
-      $("fbslot").innerHTML = fehlerBox(
-        "Falsches Ziel. Lies die Notiz: du musst nach "+m.ziel+".",
-        "Wrong destination. The note says "+m.ziel+".",
-        "Ziel"
-      );
-      sprich("Falsches Ziel. Du musst nach "+m.ziel+".");
-      glossUpdate();
-      return;
-    }
-    S.wahl.ziel = id;
-    btn.classList.add("gut");
+  let tries=0;
+  const inp=$("ziel-in");
+  inp.focus();
+  function done(id){
+    inp.disabled=true; $("ziel-ok").disabled=true;
+    S.wahl.ziel=id;
     weiter();
-  });
+  }
+  function check(){
+    const v=inp.value;
+    if(foldDe(v).indexOf("kleinhausen")>=0){
+      S.fehler++; tries++;
+      $("fbslot").innerHTML = fehlerBox("Dieses Ziel ist ungültig. Du bist schon in Kleinhausen.","This destination is invalid. You are already in Kleinhausen.","Ziel / Bahnhof");
+      sprich("Dieses Ziel ist ungültig. Du bist schon in Kleinhausen.");
+      if(tries>=2){ inp.value=m.ziel; setTimeout(()=>done(m.ziel), S.motion?600:0); }
+      glossUpdate();
+      return;
+    }
+    if(foldDe(v)===foldDe(m.ziel) || nearDe(v, m.ziel)){
+      done(m.ziel);
+      return;
+    }
+    tries++; S.fehler++;
+    if(tries>=2){
+      inp.value=m.ziel;
+      $("fbslot").innerHTML = fehlerBox("Falsches Ziel. Richtig: "+m.ziel+".","Wrong destination. Correct: "+m.ziel+".","Ziel");
+      sprich("Richtig wäre: "+m.ziel+".");
+      setTimeout(()=>done(m.ziel), S.motion?600:0);
+    } else {
+      $("fbslot").innerHTML = fehlerBox("Falsches Ziel. Lies die Notiz.","Wrong destination. Read the note.","Ziel");
+      glossUpdate();
+    }
+  }
+  $("ziel-ok").addEventListener("click", check);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
 }
 function renderTicket(prompt){
-  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Einzelfahrschein, Hin und zurück, Tageskarte oder Gruppenkarte?</p><p class=\"en gloss\" lang=\"en\">Single, return, day ticket or group ticket?</p><div class=\"grid-opts\" id=\"opts\"></div><div id=\"fbslot\"></div>";
-  const box = $("lcd").querySelector("#opts");
-  shuffled(TICKETS).forEach(t => { box.insertAdjacentHTML("beforeend", optBtn(t.de, t.id, "<span class=\"en gloss\" lang=\"en\">"+t.en+"</span>")); });
+  const m = MISSIONS[S.i];
+  const richtig = TICKETS.find(x=>x.id===m.ticket);
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Einzelfahrschein, Hin und zurück, Tageskarte oder Gruppenkarte?</p><p class=\"en gloss\" lang=\"en\">Single, return, day ticket or group ticket?</p><div id=\"prod\"></div><div id=\"fbslot\"></div>";
+  $("lcd").querySelector("#prod").innerHTML = prodBlock("ticket-in", "Fahrkarte")+
+    '<p><button type="button" class="btn" id="ticket-ok">Prüfen</button></p>';
+  bindUmlauts($("lcd"));
   glossUpdate();
-  bindOpts((id, btn)=>{
-    const m = MISSIONS[S.i];
-    const t = TICKETS.find(x=>x.id===id);
-    if(id !== m.ticket){
-      S.fehler++;
-      btn.classList.add("falsch");
-      const richtig = TICKETS.find(x=>x.id===m.ticket);
-      $("fbslot").innerHTML = fehlerBox(t.erkl+" Hier brauchst du: "+richtig.de+".", "You need: "+richtig.en+". "+t.erkl, richtig.de);
-      sprich(t.erkl+" Hier brauchst du: "+richtig.de+".");
+  let tries=0;
+  const inp=$("ticket-in");
+  inp.focus();
+  function done(id){ inp.disabled=true; $("ticket-ok").disabled=true; S.wahl.ticket=id; weiter(); }
+  function check(){
+    if(matchTicket(inp.value, m.ticket)){ done(m.ticket); return; }
+    tries++; S.fehler++;
+    const t=TICKETS.find(x=>x.id!==m.ticket && matchTicket(inp.value, x.id));
+    if(tries>=2){
+      inp.value=richtig.de;
+      $("fbslot").innerHTML = fehlerBox("Hier brauchst du: "+richtig.de+". "+(t?t.erkl:""), "You need: "+richtig.en+".", richtig.de);
+      sprich("Richtig wäre: "+richtig.de+".");
+      setTimeout(()=>done(m.ticket), S.motion?600:0);
+    } else {
+      $("fbslot").innerHTML = fehlerBox((t?t.erkl+" ":"")+"Noch ein Versuch.","Try again.", richtig.de);
       glossUpdate();
-      return;
     }
-    S.wahl.ticket = id;
-    btn.classList.add("gut");
-    weiter();
-  });
+  }
+  $("ticket-ok").addEventListener("click", check);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
 }
 function renderKlasse(prompt){
-  const klassen = shuffled([{id:"1", de:"1. Klasse", en:"1st class"},{id:"2", de:"2. Klasse", en:"2nd class"}]);
-  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">1. Klasse ist teurer und ruhiger. 2. Klasse ist normal.</p><p class=\"en gloss\" lang=\"en\">1st class is dearer and quieter. 2nd class is standard.</p><div class=\"grid-opts\">"+klassen.map(k=>"<button type=\"button\" class=\"opt\" data-id=\""+k.id+"\">"+k.de+"<span class=\"en gloss\" lang=\"en\">"+k.en+"</span></button>").join("")+"</div><div id=\"fbslot\"></div>";
+  const m = MISSIONS[S.i];
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Schreib 1 / erste / 1. Klasse oder 2 / zweite / 2. Klasse.</p><p class=\"en gloss\" lang=\"en\">Type 1st or 2nd class.</p><div id=\"prod\"></div><div id=\"fbslot\"></div>";
+  $("lcd").querySelector("#prod").innerHTML = prodBlock("klasse-in", "Klasse")+
+    '<p><button type="button" class="btn" id="klasse-ok">Prüfen</button></p>';
+  bindUmlauts($("lcd"));
   glossUpdate();
-  bindOpts((id, btn)=>{
-    const m = MISSIONS[S.i];
-    if(id !== m.klasse){
-      S.fehler++;
-      btn.classList.add("falsch");
-      $("fbslot").innerHTML = fehlerBox(
-        "Falsche Klasse. Die Notiz sagt "+m.klasse+". Klasse.",
-        "Wrong class. The note says class "+m.klasse+".",
-        "Klasse"
-      );
-      sprich("Falsche Klasse. Nimm die "+m.klasse+". Klasse.");
+  let tries=0;
+  const inp=$("klasse-in");
+  inp.focus();
+  const reveal = m.klasse+". Klasse";
+  function done(id){ inp.disabled=true; $("klasse-ok").disabled=true; S.wahl.klasse=id; weiter(); }
+  function check(){
+    if(matchKlasse(inp.value, m.klasse)){ done(m.klasse); return; }
+    tries++; S.fehler++;
+    if(tries>=2){
+      inp.value=reveal;
+      $("fbslot").innerHTML = fehlerBox("Falsche Klasse. Die Notiz sagt "+m.klasse+". Klasse.","Wrong class. The note says class "+m.klasse+".","Klasse");
+      sprich("Richtig wäre: "+m.klasse+". Klasse.");
+      setTimeout(()=>done(m.klasse), S.motion?600:0);
+    } else {
+      $("fbslot").innerHTML = fehlerBox("Falsche Klasse. Noch ein Versuch.","Wrong class. Try again.","Klasse");
       glossUpdate();
-      return;
     }
-    S.wahl.klasse = id;
-    btn.classList.add("gut");
-    weiter();
-  });
+  }
+  $("klasse-ok").addEventListener("click", check);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
 }
 function renderZeit(prompt){
   const m = MISSIONS[S.i];
@@ -546,43 +629,55 @@ function renderZeit(prompt){
   if(m.ticket === "gruppe"){
     extra = "<p class=\"prompt\">Wie viele Personen? (Gruppenkarte)</p><p class=\"en gloss\" lang=\"en\">How many people?</p><div class=\"grid-opts\" id=\"pers\">"+[1,2,3,4].map(n=>"<button type=\"button\" class=\"opt\" data-id=\""+n+"\">"+n+" Person"+(n>1?"en":"")+"</button>").join("")+"</div>";
   }
-  const zeiten = shuffled([
-    {id:"heute", de:"heute", en:"today"},
-    {id:"morgen", de:"morgen", en:"tomorrow"},
-    {id:"wochenende", de:"am Wochenende", en:"at the weekend"}
-  ]);
-  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><div class=\"grid-opts\" id=\"opts\">"+
-    zeiten.map(z=>optBtn(z.de,z.id,"<span class=\"en gloss\" lang=\"en\">"+z.en+"</span>")).join("")+
-    "</div>"+extra+"<div id=\"fbslot\"></div>";
+  const zeitDe = m.zeit==="wochenende"?"am Wochenende":m.zeit;
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><div id=\"prod\"></div>"+extra+"<div id=\"fbslot\"></div>";
+  $("lcd").querySelector("#prod").innerHTML = prodBlock("zeit-in", "Wann? (heute / morgen / Wochenende)")+
+    '<p><button type="button" class="btn" id="zeit-ok">Prüfen</button></p>';
+  bindUmlauts($("lcd"));
   glossUpdate();
-  bindOpts((id, btn)=>{
-    if(btn.parentElement.id === "pers"){
-      if(Number(id) !== m.personen){
-        S.fehler++;
-        btn.classList.add("falsch");
-        $("fbslot").innerHTML = fehlerBox("Die Notiz sagt zwei Personen. Gruppenkarte = mehrere Leute.","The note says two people.","Gruppenkarte");
-        sprich("Zwei Personen, bitte.");
-        glossUpdate();
-        return;
-      }
-      S.wahl.personen = Number(id);
-      btn.classList.add("gut");
-      if(S.wahl.zeit) weiter();
-      return;
-    }
-    if(id !== m.zeit){
-      S.fehler++;
-      btn.classList.add("falsch");
-      const wort = id==="heute"?"heute":(id==="morgen"?"morgen":"am Wochenende");
-      $("fbslot").innerHTML = fehlerBox("Falsche Zeit. Schau auf die Notiz: nicht „"+wort+"“ in diesem Auftrag.","Wrong time. Check the note.", "heute / morgen / Wochenende");
-      sprich("Falsche Zeit. Lies die Notiz.");
+  let tries=0, zeitOk=false;
+  const inp=$("zeit-in");
+  inp.focus();
+  function maybeWeiter(){
+    if(zeitOk && (m.ticket!=="gruppe" || S.wahl.personen)) weiter();
+  }
+  function doneZeit(id){
+    inp.disabled=true; $("zeit-ok").disabled=true;
+    S.wahl.zeit=id; zeitOk=true; maybeWeiter();
+  }
+  function checkZeit(){
+    if(matchZeit(inp.value, m.zeit)){ doneZeit(m.zeit); return; }
+    tries++; S.fehler++;
+    if(tries>=2){
+      inp.value=zeitDe;
+      $("fbslot").innerHTML = fehlerBox("Falsche Zeit. Richtig: "+zeitDe+".","Wrong time. Correct: "+zeitDe+".","heute / morgen / Wochenende");
+      sprich("Richtig wäre: "+zeitDe+".");
+      setTimeout(()=>doneZeit(m.zeit), S.motion?600:0);
+    } else {
+      $("fbslot").innerHTML = fehlerBox("Falsche Zeit. Schau auf die Notiz.","Wrong time. Check the note.","heute / morgen / Wochenende");
       glossUpdate();
-      return;
     }
-    S.wahl.zeit = id;
-    btn.classList.add("gut");
-    if(m.ticket !== "gruppe" || S.wahl.personen) weiter();
-  });
+  }
+  $("zeit-ok").addEventListener("click", checkZeit);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); checkZeit(); } });
+  if(m.ticket==="gruppe"){
+    $("lcd").querySelectorAll("#pers .opt").forEach(b=>{
+      b.addEventListener("click", ()=>{
+        const id=Number(b.dataset.id);
+        if(id !== m.personen){
+          S.fehler++;
+          b.classList.add("falsch");
+          $("fbslot").innerHTML = fehlerBox("Die Notiz sagt zwei Personen.","The note says two people.","Gruppenkarte");
+          sprich("Zwei Personen, bitte.");
+          glossUpdate();
+          return;
+        }
+        S.wahl.personen=id;
+        b.classList.add("gut");
+        maybeWeiter();
+      });
+    });
+  }
 }
 function renderZahlen(prompt){
   const m = MISSIONS[S.i];
@@ -759,11 +854,6 @@ document.addEventListener("keydown", e=>{
     if(/^[0-9]$/.test(e.key)){ pinTaste(Number(e.key)); e.preventDefault(); return; }
     if(e.key==="Backspace"){ pinTaste("BS"); e.preventDefault(); return; }
     if(e.key==="Enter"){ pinTaste("OK"); e.preventDefault(); return; }
-  }
-  if(/^[1-9]$/.test(e.key)){
-    const btns = [...$("lcd").querySelectorAll(".opt")];
-    const b = btns[Number(e.key)-1];
-    if(b){ e.preventDefault(); b.click(); b.focus(); }
   }
 });
 

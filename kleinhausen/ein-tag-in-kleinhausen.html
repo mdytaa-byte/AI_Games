@@ -136,6 +136,10 @@ footer.mini p{margin:.3em 0}
 .brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
 a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
 a.hub-home:hover{background:rgba(255,255,255,.18)}
+.prod-lab{font-weight:700;margin:.35em 0}
+.prod-in,.prod-in[type=text]{font:inherit;padding:.65em .8em;border:2px solid #d9cba8;border-radius:8px;min-height:44px;width:100%;max-width:22rem;background:#fff;color:var(--ink)}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:700;cursor:pointer;background:#fff;color:var(--ink);border:2px solid #d9cba8;border-radius:6px}
 </style>
 </head>
 <body>
@@ -315,6 +319,41 @@ function shuffled(a){
   const arr=a.slice();
   for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
   return arr;
+}
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      try{ inp.setSelectionRange(a+b.dataset.c.length,a+b.dataset.c.length);}catch(e){}
+    });
+  });
 }
 
 const S = {
@@ -736,40 +775,53 @@ function setTimeline(ph){
 
 function renderMiniV2(){
   const items = shuffled([
-    {q:"Heute _____ ich Deutsch in Kleinhausen.", ok:"lerne", bad:"ich lerne", recast:"Heute lerne ich … — das Verb direkt nach der Zeit."},
-    {q:"Um vier _____ der Verein auf dem Platz.", ok:"spielt", bad:"der Verein spielt", recast:"Um vier spielt der Verein …"},
-    {q:"In Kleinhausen _____ es ein Fest auf dem Markt.", ok:"gibt", bad:"es gibt", recast:"In Kleinhausen gibt es ein Fest. (gibt vor es)"},
-    {q:"Nach der Schule _____ ich nach Hause.", ok:"gehe", bad:"ich gehe", recast:"Nach der Schule gehe ich nach Hause."},
-    {q:"Am Abend _____ Mama Kakao.", ok:"kocht", bad:"Mama kocht", recast:"Am Abend kocht Mama Kakao. Zeit + Verb + Subjekt."}
+    {q:"Heute _____ ich Deutsch in Kleinhausen.", ok:"lerne", recast:"Heute lerne ich … — das Verb direkt nach der Zeit."},
+    {q:"Um vier _____ der Verein auf dem Platz.", ok:"spielt", recast:"Um vier spielt der Verein …"},
+    {q:"In Kleinhausen _____ es ein Fest auf dem Markt.", ok:"gibt", recast:"In Kleinhausen gibt es ein Fest. (gibt vor es)"},
+    {q:"Nach der Schule _____ ich nach Hause.", ok:"gehe", recast:"Nach der Schule gehe ich nach Hause."},
+    {q:"Am Abend _____ Mama Kakao.", ok:"kocht", recast:"Am Abend kocht Mama Kakao. Zeit + Verb + Subjekt."}
   ]);
   let step = 0;
   function show(){
     const it=items[step];
-    const opts=shuffled([
-      {t:it.q.replace("_____", it.ok), good:true},
-      {t:it.q.replace("_____", it.bad), good:false}
-    ]);
-    $("choices").innerHTML = opts.map((o,i)=>'<button type="button" class="opt" data-ok="'+(o.good?1:0)+'"><span class="key">'+(i+1)+"</span>"+esc(o.t)+"</button>").join("");
+    const inpId="v2-in";
+    $("choices").innerHTML =
+      '<p class="prod-lab"><label for="'+inpId+'">Schreib das fehlende Verb</label></p>'+
+      umlautsHtml(inpId)+
+      '<p><input class="prod-in" type="text" id="'+inpId+'" lang="de" autocomplete="off" spellcheck="false" placeholder="Verb"></p>'+
+      '<p><button type="button" class="btn" id="v2-ok">Prüfen</button></p>';
     $("story-de").innerHTML = "<p>"+esc(it.q)+"</p>";
-    $("story-en").textContent = "Choose the verb-second version.";
+    $("story-en").textContent = "Type the missing verb (verb-second).";
     glossUpdate();
-    $("choices").querySelectorAll(".opt").forEach(b=>{
-      b.onclick=()=>{
-        const good = b.dataset.ok==="1";
-        if(good){ S.gut++; S.v2=true; sagen("Richtig. Verb an Position zwei."); fbOpt(b,true); }
-        else { S.chaos++; $("recast").hidden=false; $("recast").innerHTML='<div class="recast"><strong>Korrektur:</strong> '+esc(it.recast)+'</div>'; sagen(it.recast); fbOpt(b,false); }
-        setTimeout(()=>{
-          step++;
-          if(step<items.length) show();
-          else { S.nachsitzen=true; gehe("abend_eltern"); }
-        }, good?600:1400);
-      };
-    });
+    bindUmlauts($("choices"));
+    function advance(good){
+      if(good){ S.gut++; S.v2=true; sagen("Richtig. Verb an Position zwei."); }
+      else { S.chaos++; $("recast").hidden=false; $("recast").innerHTML='<div class="recast"><strong>Korrektur:</strong> '+esc(it.recast)+'</div>'; sagen(it.recast); }
+      setTimeout(()=>{
+        step++;
+        $("recast").hidden=true; $("recast").innerHTML="";
+        if(step<items.length) show();
+        else { S.nachsitzen=true; gehe("abend_eltern"); }
+      }, good?600:1400);
+    }
+    function check(){
+      const inp=$(inpId);
+      if(!inp||inp.disabled) return;
+      const v=inp.value;
+      const good = foldDe(v)===foldDe(it.ok) || nearDe(v, it.ok);
+      inp.disabled=true;
+      const btn=$("v2-ok"); if(btn) btn.disabled=true;
+      advance(good);
+    }
+    $("v2-ok").onclick=check;
+    const inp=$(inpId);
+    if(inp){
+      inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+      setTimeout(()=>{ try{ inp.focus(); }catch(e){} }, 50);
+    }
   }
   show();
 }
-
-function fbOpt(b, ok){ b.classList.add(ok?"right":"wrong"); }
 
 function gehe(id){
   if(id==="schule_ankunft"){ id = S.late ? "rektor" : "klasse"; }
@@ -800,7 +852,7 @@ function gehe(id){
   glossUpdate();
   sprich(node.de.join(" "));
   sagen(node.title+". Wähle 1, 2 oder 3.");
-  if(node.mini==="v2"){ renderMiniV2(); return; }
+  if(node.mini==="v2"){ renderMiniV2(); sagen("Verb an Position zwei schreiben."); return; }
   const box = $("choices"); box.innerHTML = "";
   (node.ch?shuffled(node.ch):[]).forEach((ch,i)=>{
     const b=document.createElement("button");

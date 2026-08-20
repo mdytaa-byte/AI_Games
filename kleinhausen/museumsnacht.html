@@ -186,6 +186,10 @@ button{touch-action:manipulation}
 .brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
 a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
 a.hub-home:hover{background:rgba(255,255,255,.18)}
+.prod-lab{font-weight:700;margin:.4em 0 .35em}
+.prod-in,.prod-in[type=text]{font:inherit;padding:.65em .8em;border:2px solid #cbb89a;border-radius:6px;min-height:44px;width:100%;max-width:22rem;background:#fff;color:var(--ink)}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:700;cursor:pointer;background:#fff;color:var(--ink);border:2px solid #cbb89a;border-radius:6px}
 </style>
 </head>
 <body>
@@ -321,6 +325,41 @@ function shuffled(a){
   const arr=a.slice();
   for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
   return arr;
+}
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      try{ inp.setSelectionRange(a+b.dataset.c.length,a+b.dataset.c.length);}catch(e){}
+    });
+  });
 }
 
 const S = {
@@ -702,57 +741,109 @@ function untersuche(sp){
   if(sp.q){
     const k="q"+sp.q;
     S.tries[k]=S.tries[k]||0;
-    extra += "<p><strong>"+esc(sp.ask)+"</strong></p><div class=\"choices\">";
-    shuffled(sp.opts.map((o,i)=>({o, ok:i===sp.ok}))).forEach((x,i)=>{
-      extra += '<button type="button" class="opt" data-ok="'+(x.ok?1:0)+'"><span class="key">'+(i+1)+"</span>"+esc(x.o)+"</button>";
-    });
-    extra += "</div>";
-    if(S.tries[k]>=2 && !S.stamps[sp.q-1]) extra += '<p class="hint">Hinweis: Lies das Schild noch einmal langsam. Die Antwort steht im Text.</p>';
+    const ans=sp.opts[sp.ok];
+    const inpId="q-in-"+sp.q;
+    extra += "<p><strong>"+esc(sp.ask)+"</strong></p>";
+    extra += '<p class="prod-lab"><label for="'+inpId+'">Antwort schreiben</label></p>';
+    extra += umlautsHtml(inpId);
+    extra += '<p><input class="prod-in" type="text" id="'+inpId+'" lang="de" autocomplete="off" spellcheck="false" placeholder="Antwort auf Deutsch"></p>';
+    extra += '<p><button type="button" class="btn" id="q-ok-'+sp.q+'">Prüfen</button></p>';
+    if(S.tries[k]>=2 && !S.stamps[sp.q-1]){
+      extra += '<p class="hint">Hinweis: Lies das Schild noch einmal langsam. Die Antwort steht im Text.</p>';
+      extra += '<p class="hint">Lösung: '+esc(ans)+'</p>';
+    }
   }
   setPanel(sp.label, sp.de, sp.en, extra);
   sagen(sp.label);
-  $("panel-extra").querySelectorAll(".opt").forEach(b=>{
-    b.onclick=()=>{
-      const ok=b.dataset.ok==="1";
-      if(ok){
-        b.classList.add("right");
-        S.stamps[sp.q-1]=true;
-        if(sp.frag && sp.frag!=="—" && S.frags.indexOf(sp.frag)<0) S.frags.push(sp.frag);
-        if(sp.q===6 && S.frags.indexOf("Geschichte")<0){ /* ensure motto bits if missed */ }
-        sagen("Stempel "+sp.q+" sitzt.");
-        sprich("Richtig. Stempel "+sp.q+".");
-        stampUI();
-        if(S.stamps.every(Boolean)) openFinale();
-      }else{
-        b.classList.add("wrong");
-        S.tries["q"+sp.q]++;
-        sagen("Noch nicht. Lies die Beschriftung.");
-        if(S.tries["q"+sp.q]===2) untersuche(sp);
+  if(sp.q){
+    const k="q"+sp.q;
+    const ans=sp.opts[sp.ok];
+    const inpId="q-in-"+sp.q;
+    bindUmlauts($("panel-extra"));
+    function grantStamp(){
+      S.stamps[sp.q-1]=true;
+      if(sp.frag && sp.frag!=="—" && S.frags.indexOf(sp.frag)<0) S.frags.push(sp.frag);
+      sagen("Stempel "+sp.q+" sitzt.");
+      sprich("Richtig. Stempel "+sp.q+".");
+      stampUI();
+      if(S.stamps.every(Boolean)) openFinale();
+    }
+    function checkQ(){
+      const inp=$(inpId);
+      if(!inp||inp.disabled) return;
+      if(nearDe(inp.value, ans)){
+        inp.disabled=true;
+        const btn=$("q-ok-"+sp.q); if(btn) btn.disabled=true;
+        grantStamp();
+        return;
       }
-    };
-  });
+      S.tries[k]++;
+      if(S.tries[k]>=2){
+        untersuche(sp);
+        const inp2=$(inpId);
+        if(inp2){ inp2.value=ans; inp2.disabled=true; }
+        const btn2=$("q-ok-"+sp.q); if(btn2) btn2.disabled=true;
+        grantStamp();
+      }else{
+        sagen("Noch nicht. Lies die Beschriftung.");
+      }
+    }
+    const okBtn=$("q-ok-"+sp.q);
+    if(okBtn) okBtn.onclick=checkQ;
+    const inp=$(inpId);
+    if(inp){
+      inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); checkQ(); } });
+      setTimeout(()=>{ try{ inp.focus(); }catch(e){} }, 50);
+    }
+  }
 }
 
+function mottoOk(v){
+  const g=foldDe(v);
+  return (g.indexOf("geschichte")>=0 && g.indexOf("anfassen")>=0) || nearDe(v, "Geschichte zum Anfassen");
+}
 function openFinale(){
   if(!S.frags.includes("Geschichte")) S.frags.push("Geschichte");
   if(!S.frags.includes("zum")) S.frags.push("zum");
   if(!S.frags.includes("Anfassen")) S.frags.push("Anfassen");
   zeigeScreen("screen-finale");
   $("fin-frags").textContent = S.frags.join(" · ");
-  const opts = shuffled(["Geschichte zum Anfassen","Nacht ohne Ende","Wein für alle","Mainz am Meer"]);
-  $("fin-choices").innerHTML = opts.map((o,i)=>'<button type="button" class="opt" data-ok="'+(o==="Geschichte zum Anfassen"?1:0)+'"><span class="key">'+(i+1)+"</span>"+esc(o)+"</button>").join("");
+  $("fin-choices").innerHTML =
+    '<p class="prod-lab"><label for="fin-in">Motto schreiben</label></p>'+
+    umlautsHtml("fin-in")+
+    '<p><input class="prod-in" type="text" id="fin-in" lang="de" autocomplete="off" spellcheck="false" placeholder="Geschichte zum Anfassen"></p>'+
+    '<p><button type="button" class="btn" id="fin-ok">Prüfen</button></p>';
+  $("fin-fb").hidden=true;
+  $("fin-fb").textContent="";
+  bindUmlauts($("fin-choices"));
   glossUpdate();
-  $("fin-choices").querySelectorAll(".opt").forEach(b=>{
-    b.onclick=()=>{
-      if(b.dataset.ok==="1"){ S.ending = S.guard>2 ? "wacht" : "nacht"; ende(); }
-      else {
-        S.tries.fin=(S.tries.fin||0)+1;
-        $("fin-fb").hidden=false;
-        $("fin-fb").textContent = S.tries.fin>=2 ? "Hinweis: Die drei Fetzen: Geschichte + zum + Anfassen." : "Schau auf die Fetzen.";
-        b.classList.add("wrong");
-      }
-    };
-  });
+  function checkFin(){
+    const inp=$("fin-in");
+    if(!inp||inp.disabled) return;
+    if(mottoOk(inp.value)){
+      inp.disabled=true;
+      const btn=$("fin-ok"); if(btn) btn.disabled=true;
+      S.ending = S.guard>2 ? "wacht" : "nacht";
+      ende();
+      return;
+    }
+    S.tries.fin=(S.tries.fin||0)+1;
+    $("fin-fb").hidden=false;
+    if(S.tries.fin>=2){
+      inp.value="Geschichte zum Anfassen";
+      inp.disabled=true;
+      const btn=$("fin-ok"); if(btn) btn.disabled=true;
+      $("fin-fb").textContent="Hinweis: Die drei Fetzen: Geschichte + zum + Anfassen.";
+      S.ending = S.guard>2 ? "wacht" : "nacht";
+      setTimeout(()=>ende(), 800);
+    }else{
+      $("fin-fb").textContent="Schau auf die Fetzen.";
+      sagen("Noch nicht. Schau auf die Fetzen.");
+    }
+  }
+  $("fin-ok").onclick=checkFin;
+  $("fin-in").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); checkFin(); } });
+  setTimeout(()=>{ try{ $("fin-in").focus(); }catch(e){} }, 50);
 }
 
 function hash32(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
@@ -796,10 +887,9 @@ document.addEventListener("keydown", e=>{
   const fin=$("screen-finale").classList.contains("on");
   if(!play && !fin) return;
   if((e.target.tagName||"").toLowerCase()==="input") return;
-  if(/^[1-9]$/.test(e.key)){
-    const root = fin ? $("fin-choices") : $("panel-extra");
-    const b=root && root.querySelectorAll(".opt")[Number(e.key)-1];
-    if(b){ e.preventDefault(); b.click(); }
+  if(/^[1-9]$/.test(e.key) && fin){
+    const b=$("fin-ok");
+    if(b && !b.disabled){ e.preventDefault(); b.click(); }
   }
   if(play && (e.key==="e"||e.key==="E"||e.key==="Enter")){
     const el=document.activeElement;

@@ -178,6 +178,10 @@ html[data-en="aus"] .gloss{display:none !important;}
   border-radius:50%;
 }
 .blank{display:inline-block;min-width:3.2em;border-bottom:2px solid var(--ink);text-align:center;font-weight:700;}
+.prod-in{width:100%;max-width:22rem;min-height:48px;font:inherit;font-size:1.15em;padding:.5em .7em;border:3px solid var(--ink);border-radius:6px;background:#fff}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:800;cursor:pointer;background:var(--cream);border:2px solid var(--ink)}
+.prod-lab{font-weight:800;margin:.4rem 0 .2rem}
 .opts{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0;}
 .opt{
   background:var(--cream);color:var(--ink);border:2px solid var(--ink);
@@ -376,6 +380,42 @@ function shuffled(a){
   const arr=a.slice();
   for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
   return arr;
+}
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=$(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      const n=a+b.dataset.c.length;
+      try{ inp.setSelectionRange(n,n); }catch(e){}
+    });
+  });
 }
 
 const S = {
@@ -843,49 +883,67 @@ function openItem(id){
 
 function showStep(){
   const st = S.current.steps[S.step];
-  S.answered = false; S.stepOk = false;
+  S.answered = false; S.stepOk = false; S.tries = 0;
   $("modal-prompt").innerHTML = esc(st.prompt).replace("___", '<span class="blank">___</span>');
   const en = $("modal-en");
-  en.textContent = st.en || "";
+  en.textContent = (st.en || "") + " Type der / die / das (or the ending).";
   en.hidden = !S.englisch;
   const fb = $("modal-fb"); fb.hidden = true; fb.innerHTML = "";
   $("btn-next-step").hidden = true;
   $("btn-collect").hidden = true;
-  const opts = $("modal-opts"); opts.innerHTML = "";
-  shuffled(st.options).forEach((opt,i)=>{
-    const b = document.createElement("button");
-    b.type="button"; b.className="opt";
-    b.textContent = opt;
-    b.setAttribute("aria-label", "Antwort "+(i+1)+": "+opt);
-    b.addEventListener("click", ()=>choose(opt,b));
-    opts.appendChild(b);
-  });
+  const opts = $("modal-opts");
+  opts.innerHTML = umlautsHtml("art-in")+
+    '<p class="prod-lab"><label for="art-in">Schreib die Lücke</label></p>'+
+    '<p><input class="prod-in" type="text" id="art-in" lang="de" autocomplete="off" spellcheck="false" placeholder="der / die / das …"></p>'+
+    '<p><button type="button" class="btn" id="art-ok">Prüfen</button></p>';
+  bindUmlauts(opts);
+  function check(){
+    if(S.answered) return;
+    const v=$("art-in").value;
+    const ok = nearDe(v, st.answer) || foldDe(v)===foldDe(st.answer);
+    if(!ok){
+      S.tries=(S.tries||0)+1;
+      if(S.tries>=2){
+        $("art-in").value=st.answer;
+        chooseTyped(false);
+      } else {
+        fb.hidden=false; fb.className="fb bad";
+        fb.innerHTML="<p>Noch nicht. Artikel: der, die, das — oder die Endung aus der Lücke.</p>";
+        sagen("Noch nicht.");
+      }
+      return;
+    }
+    chooseTyped(true);
+  }
+  $("art-ok").addEventListener("click", check);
+  $("art-in").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+  setTimeout(()=>{ try{ $("art-in").focus(); }catch(e){} }, 50);
   glossUpdate();
 }
 
-function choose(opt, btn){
+function chooseTyped(ok){
   if(S.answered) return;
   S.answered = true;
   const st = S.current.steps[S.step];
   S.total++;
-  const ok = opt === st.answer;
   if(ok) S.korrekt++;
   S.stepOk = ok;
-  btn.classList.add(ok?"richtig":"falsch");
-  Array.from($("modal-opts").children).forEach(b=>{
-    if(b.textContent===st.answer) b.classList.add("richtig");
-    b.disabled = true;
-  });
+  const inp=$("art-in"); if(inp) inp.disabled=true;
+  const go=$("art-ok"); if(go) go.disabled=true;
   const fb = $("modal-fb");
   fb.hidden = false;
   fb.className = "fb "+(ok?"ok":"bad");
-  fb.innerHTML = "<p><strong>"+(ok?"Richtig!":"Nicht ganz.")+"</strong> "+esc(st.why)+"</p>"+
+  fb.innerHTML = "<p><strong>"+(ok?"Richtig!":"Muster: "+st.answer+".")+"</strong> "+esc(st.why)+"</p>"+
     '<p class="en gloss" lang="en">'+esc(st.whyEn)+"</p>";
   fb.focus();
   sprich(st.why);
   sagen(ok ? "Richtig: "+st.answer+"." : "Falsch. "+st.why);
   glossUpdate();
   if(ok){
+    if(S.step < S.current.steps.length-1) $("btn-next-step").hidden = false;
+    else $("btn-collect").hidden = false;
+  } else {
+    S.stepOk = true;
     if(S.step < S.current.steps.length-1) $("btn-next-step").hidden = false;
     else $("btn-collect").hidden = false;
   }
@@ -1040,11 +1098,9 @@ $("btn-retry").addEventListener("click", ()=>{
 
 document.addEventListener("keydown", e=>{
   if(!$("modal-bg").classList.contains("on")) return;
-  const n = Number(e.key);
-  if(n>=1 && n<=4){
-    const b = $("modal-opts").children[n-1];
-    if(b && !b.disabled) b.click();
-  }
+  const tag=(e.target.tagName||"").toLowerCase();
+  if(tag==="input"||tag==="textarea") return;
+  if(e.key==="Enter"){ const b=$("art-ok"); if(b&&!b.disabled) b.click(); }
 });
 
 glossUpdate();

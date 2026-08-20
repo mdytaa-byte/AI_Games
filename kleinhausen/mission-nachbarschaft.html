@@ -166,6 +166,14 @@ html[data-size="sehr-gross"] body{line-height:1.6}
 #screen-konzert .lede{max-width:62ch}
 #screen-quiz .lede{max-width:62ch}
 #screen-note .lede{max-width:62ch}
+.prod-lab{font-weight:700;margin:.2rem 0 .35rem;}
+.prod-in,textarea.prod-in{
+  width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;
+  padding:.55em .7em;border:2px solid #d9c6b0;border-radius:8px;background:#fff;color:var(--ink);
+}
+textarea.prod-in{min-height:7.2rem;line-height:1.45;resize:vertical;}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0;}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:700;cursor:pointer;background:#fff;border:2px solid var(--sage);border-radius:6px;}
 
 .brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
 a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
@@ -201,8 +209,8 @@ a.hub-home:hover{background:rgba(255,255,255,.18)}
     <li>Herr Koch – „Kein Interesse.“ Trotzdem einen schönen Tag noch.</li>
     <li>Student-WG – sehr informell. Sie laden DICH ein.</li>
   </ul>
-  <p class="lede">Danach schreibst du einen kurzen Zettel für den Briefkasten von Familie Weber (nicht zu Hause), aus Wort-Chips.
-    <span class="en gloss" lang="en">Then tap phrase chips for a note in the last mailbox.</span></p>
+  <p class="lede">Danach schreibst du einen kurzen Zettel für den Briefkasten von Familie Weber (nicht zu Hause).
+    <span class="en gloss" lang="en">Then write a short polite note for the last mailbox.</span></p>
   <p><label for="name-in">Dein Name</label></p>
   <p><input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname"></p>
   <div class="btn-row"><button type="button" class="btn" id="btn-start">Die Straße betreten</button>
@@ -308,12 +316,14 @@ a.hub-home:hover{background:rgba(255,255,255,.18)}
 <section class="screen" id="screen-note" aria-labelledby="h-note">
   <p class="eyebrow">Briefkasten Weber</p>
   <h2 id="h-note" tabindex="-1">Familie Weber ist nicht da</h2>
-  <p class="lede">Tippe Wörter an. Baue einen höflichen Zettel. Nicht: „Gib mir…“
-    <span class="en gloss" lang="en">Tap chips to write a short polite note.</span></p>
-  <div class="chips" id="chips"></div>
+  <p class="lede">Schreibe einen höflichen Zettel. Nicht: „Gib mir…“
+    <span class="en gloss" lang="en">Write a short polite note.</span></p>
+  <p class="prod-lab"><label for="note-in">Dein Zettel</label></p>
+  <div id="note-uml"></div>
+  <textarea class="prod-in" id="note-in" lang="de" autocomplete="off" spellcheck="false" placeholder="Guten Tag, liebe Familie Weber …"></textarea>
   <div class="note-out" id="note-out" aria-live="polite"></div>
   <div class="btn-row">
-    <button type="button" class="btn btn-ghost" id="btn-chip-del">Letztes Wort löschen</button>
+    <button type="button" class="btn btn-ghost" id="btn-note-clear">Text leeren</button>
     <button type="button" class="btn" id="btn-note-ok">Zettel einwerfen</button>
   </div>
 </section>
@@ -379,12 +389,51 @@ function shuffled(a){
   return arr;
 }
 function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      try{ inp.setSelectionRange(a+b.dataset.c.length, a+b.dataset.c.length); }catch(e){}
+    });
+  });
+}
+function typingIn(e){
+  const tag=(e.target.tagName||"").toLowerCase();
+  return tag==="input"||tag==="textarea";
+}
 
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
   name:"", hoef:0, house:null, turn:0, tries:0,
   done:{keller:false, yilmaz:false, koch:false, wg:false},
-  note:[], noteScore:0
+  noteScore:0, turnLocked:false
 };
 
 function sagen(t){ $("status").textContent = t; }
@@ -644,39 +693,37 @@ function fill(t){ return String(t).replace(/\{\{NAME\}\}/g, S.name||"Alex"); }
 function showTurn(){
   const house=H[S.house];
   const t=house.turns[S.turn];
+  S.tries=0;
+  S.turnLocked=false;
   $("panel-h").textContent = house.title+" · Gespräch "+(S.turn+1)+" von 4";
-  $("panel-de").textContent = "Wähle eine Antwort. Zahlen 1, 2, 3.";
+  $("panel-de").textContent = "Tippe deine Antwort. Zwei Versuche.";
   $("panel-en").textContent = t.en;
   $("npc").hidden=false;
   $("npc").innerHTML = "<p lang=\"de\">"+esc(t.npc)+"</p>"+(S.englisch?"<p class=\"en gloss\" lang=\"en\">"+esc(t.en)+"</p>":"");
   $("recast").hidden=true; $("recast").innerHTML="";
-  const box=$("choices"); box.innerHTML="";
-  shuffled(t.opts).forEach((o,i)=>{
-    const b=document.createElement("button");
-    b.type="button"; b.className="opt";
-    b.innerHTML = '<span class="key">'+(i+1)+'</span>'+esc(fill(o.de))+(S.englisch?"<span class=\"en gloss\" lang=\"en\">"+esc(o.en)+"</span>":"");
-    b.onclick=()=>pick(o,b);
-    box.appendChild(b);
-  });
+  const box=$("choices");
+  box.innerHTML =
+    '<p class="prod-lab"><label for="turn-in">Deine Antwort</label></p>'+
+    umlautsHtml("turn-in")+
+    '<p><textarea class="prod-in" id="turn-in" lang="de" autocomplete="off" spellcheck="false" rows="3"></textarea></p>'+
+    '<p><button type="button" class="btn" id="turn-ok">Antworten</button></p>'+
+    '<p id="turn-hint" class="en gloss" lang="en" hidden></p>';
+  bindUmlauts(box);
+  $("turn-ok").onclick=submitTurn;
+  $("turn-in").onkeydown=e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); submitTurn(); } };
   glossUpdate();
   sprich(t.npc);
   sagen(house.title+". Runde "+(S.turn+1)+".");
 }
 
-function pick(o, btn){
-  $("choices").querySelectorAll(".opt").forEach(x=>x.disabled=true);
-  S.hoef += o.hoef;
-  $("score").textContent = String(S.hoef);
-  if(o.recast){
-    btn.classList.add("wrong");
-    S.tries++;
-    $("recast").hidden=false;
-    $("recast").innerHTML='<div class="recast"><strong>Freundlicher:</strong> '+esc(o.recast)+'</div>';
-    sagen(o.recast); sprich(o.recast);
-  }else{
-    btn.classList.add("right");
-    sagen("Das klingt höflich.");
-  }
+function matchOpt(text, opts){
+  const good = opts.filter(o => !o.recast);
+  for(const o of good){ if(nearDe(text, fill(o.de))) return {o, kind:"good"}; }
+  for(const o of opts.filter(x => x.recast)){ if(nearDe(text, fill(o.de))) return {o, kind:"recast"}; }
+  return null;
+}
+
+function advanceTurn(delay){
   setTimeout(()=>{
     S.turn++;
     if(S.turn>=4){
@@ -687,40 +734,80 @@ function pick(o, btn){
       $("panel-en").textContent="Back to the street.";
       zeichneStrasse();
       if(Object.values(S.done).every(Boolean)){
-        $("panel-extra");
         $("choices").innerHTML='<button type="button" class="btn" id="go-note">Zum Briefkasten Weber</button>';
         $("go-note").onclick=openNote;
       }
     }else showTurn();
-  }, o.recast && S.motion ? 1400 : 500);
+  }, delay);
 }
 
-const CHIPS = ["Guten Tag","liebe Familie Weber","ich heiße","ich bin neu","in Kleinhausen","ich lade Sie ein","zum Gemeindekonzert","am Samstag","um 19 Uhr","im Gemeindehaus","bitte","gerne","leider","waren Sie nicht da","danke","Auf Wiedersehen","Tschüss","Nachbarn","Kuchen","dürfen","können","Gib mir"];
+function submitTurn(){
+  if(S.turnLocked) return;
+  const house=H[S.house];
+  const t=house.turns[S.turn];
+  const v=$("turn-in").value.trim();
+  if(!v){ sagen("Bitte etwas tippen."); return; }
+  const m=matchOpt(v, t.opts);
+  if(m && m.kind==="good"){
+    S.turnLocked=true;
+    S.hoef += m.o.hoef;
+    $("score").textContent = String(S.hoef);
+    $("turn-hint").hidden=false;
+    $("turn-hint").textContent="Das klingt höflich.";
+    $("turn-in").disabled=true;
+    $("turn-ok").disabled=true;
+    sagen("Das klingt höflich.");
+    advanceTurn(S.motion?500:200);
+    return;
+  }
+  if(m && m.kind==="recast"){
+    S.turnLocked=true;
+    S.hoef += m.o.hoef;
+    $("score").textContent = String(S.hoef);
+    $("recast").hidden=false;
+    $("recast").innerHTML='<div class="recast"><strong>Freundlicher:</strong> '+esc(m.o.recast)+'</div>';
+    $("turn-in").disabled=true;
+    $("turn-ok").disabled=true;
+    sagen(m.o.recast); sprich(m.o.recast);
+    advanceTurn(S.motion?1400:500);
+    return;
+  }
+  S.tries++;
+  if(S.tries>=2){
+    S.turnLocked=true;
+    const model = t.opts.filter(o => !o.recast).sort((a,b)=>(b.hoef||0)-(a.hoef||0))[0] || t.opts[0];
+    const reduced = Math.max(0, (model.hoef||2)-1);
+    S.hoef += reduced;
+    $("score").textContent = String(S.hoef);
+    $("recast").hidden=false;
+    $("recast").innerHTML='<div class="recast"><strong>So klingt es höflich:</strong> '+esc(fill(model.de))+'</div>';
+    $("turn-in").disabled=true;
+    $("turn-ok").disabled=true;
+    sagen(fill(model.de)); sprich(fill(model.de));
+    advanceTurn(S.motion?1400:500);
+    return;
+  }
+  $("turn-hint").hidden=false;
+  $("turn-hint").textContent="Noch nicht passend. Versuch es noch einmal.";
+  sagen("Noch ein Versuch.");
+}
 
 function openNote(){
   zeigeScreen("screen-note");
-  S.note=[]; S.chipOrder = shuffled(CHIPS); zeichneChips();
-  sagen("Baue einen Zettel aus Wörtern.");
+  $("note-in").value = "";
+  $("note-uml").innerHTML = umlautsHtml("note-in");
+  bindUmlauts($("note-uml"));
+  renderNotePreview();
+  sagen("Schreibe einen höflichen Zettel.");
 }
-
-function zeichneChips(){
-  const box=$("chips"); box.innerHTML="";
-  (S.chipOrder||CHIPS).forEach(w=>{
-    const b=document.createElement("button");
-    b.type="button"; b.className="chip"+(S.note.indexOf(w)>=0?" on":"");
-    b.textContent=w;
-    b.onclick=()=>{ S.note.push(w); renderNote(); };
-    box.appendChild(b);
-  });
-  renderNote();
+function renderNotePreview(){
+  const t = $("note-in").value.trim();
+  $("note-out").textContent = t || "…";
 }
-function renderNote(){
-  $("note-out").textContent = S.note.join(" ") || "…";
-}
-
-$("btn-chip-del").onclick=()=>{ S.note.pop(); renderNote(); };
+$("note-in").addEventListener("input", renderNotePreview);
+$("btn-note-clear").onclick=()=>{ $("note-in").value=""; renderNotePreview(); };
 $("btn-note-ok").onclick=()=>{
-  const t=S.note.join(" ").toLowerCase();
+  const t=$("note-in").value.toLowerCase();
   let sc=0;
   if(/einlade|konzert/.test(t)) sc+=2;
   if(/samstag|19/.test(t)) sc+=2;
@@ -742,7 +829,7 @@ const QUIZ = [
   {q:"Mit Frau Keller Kuchen annehmen:", ok:0, opts:["Ja bitte, gerne. Vielen Dank!","Gib mehr.","I take cake."]},
   {q:"Herr Koch schließt fast. Du sagst:", ok:2, opts:["Machen Sie die Tür auf!","Sie sind unmöglich.","Ich lasse den Zettel im Kasten. Danke für Ihre Zeit."]}
 ];
-let qn=0, quizDeck=[];
+let qn=0, quizDeck=[], qTry=0;
 function startQuiz(){
   quizDeck = shuffled(QUIZ).map(it => {
     const packed = it.opts.map((o,i)=>({o, good:i===it.ok}));
@@ -753,16 +840,40 @@ function startQuiz(){
 }
 function showQ(){
   const it=quizDeck[qn];
-  $("q-box").innerHTML = "<p lang=\"de\"><strong>"+(qn+1)+"/"+quizDeck.length+".</strong> "+esc(it.q)+"</p><div class=\"choices\">"+
-    it.opts.map((o,i)=>'<button type="button" class="opt" data-i="'+i+'"><span class="key">'+(i+1)+"</span>"+esc(o)+"</button>").join("")+"</div>";
-  $("q-box").querySelectorAll(".opt").forEach(b=>{
-    b.onclick=()=>{
-      const good=Number(b.dataset.i)===it.ok;
-      b.classList.add(good?"right":"wrong");
-      if(good) S.hoef+=1; else S.hoef-=1;
-      setTimeout(()=>{ qn++; if(qn<quizDeck.length) showQ(); else startKonzert(); }, good?400:900);
-    };
-  });
+  qTry=0;
+  $("q-box").innerHTML =
+    "<p lang=\"de\"><strong>"+(qn+1)+"/"+quizDeck.length+".</strong> "+esc(it.q)+"</p>"+
+    '<p class="prod-lab"><label for="quiz-in">Antwort tippen</label></p>'+
+    umlautsHtml("quiz-in")+
+    '<p><input class="prod-in" type="text" id="quiz-in" lang="de" autocomplete="off" spellcheck="false"></p>'+
+    '<p><button type="button" class="btn" id="quiz-ok">Prüfen</button></p>'+
+    '<p id="quiz-hint" hidden></p>';
+  bindUmlauts($("q-box"));
+  const right = it.opts[it.ok];
+  const lock = (good, msg) => {
+    $("quiz-in").disabled=true;
+    $("quiz-ok").disabled=true;
+    $("quiz-hint").hidden=false;
+    $("quiz-hint").textContent=msg;
+    setTimeout(()=>{ qn++; if(qn<quizDeck.length) showQ(); else startKonzert(); }, good?400:900);
+  };
+  $("quiz-ok").onclick=()=>{
+    const v=$("quiz-in").value;
+    if(nearDe(v, right)){
+      S.hoef+=1;
+      lock(true, "Richtig.");
+      return;
+    }
+    qTry++;
+    if(qTry>=2){
+      S.hoef-=1;
+      lock(false, "Richtig wäre: „"+right+"“.");
+      return;
+    }
+    $("quiz-hint").hidden=false;
+    $("quiz-hint").textContent="Noch ein Versuch.";
+  };
+  $("quiz-in").onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); $("quiz-ok").click(); } };
 }
 
 function startKonzert(){
@@ -774,21 +885,41 @@ function startKonzert(){
   if(S.done.wg) bits.push("Jan und Selin flüstern: Der Chor ist besser als erwartet.");
   $("konz-de").textContent = "Die Stühle sind aus Holz. Es duftet nach Tee. "+(bits.join(" ")||"Einige Nachbarn sind da.")+" Ein Mikrofon: möchtest du danken?";
   $("konz-en").textContent = "A last public sentence. Thank people without preaching.";
-  const opts=shuffled([
-    {de:"Guten Abend. Danke, dass Sie gekommen sind. Ich bin neu und wollte nur einladen – nicht predigen. Viel Spaß beim Konzert.", hoef:2},
-    {de:"Yo Leute, thanks for coming, das is so important for the church.", hoef:-1},
-    {de:"Ihr musstet kommen. Gut, dass ihr gehorcht habt.", hoef:-2}
-  ]);
-  $("konz-choices").innerHTML = opts.map((o,i)=>'<button type="button" class="opt" data-i="'+i+'"><span class="key">'+(i+1)+"</span>"+esc(o.de)+"</button>").join("");
-  $("konz-choices").querySelectorAll(".opt").forEach(b=>{
-    b.onclick=()=>{
-      const i=Number(b.dataset.i);
-      S.hoef += opts[i].hoef;
-      b.classList.add(opts[i].hoef>0?"right":"wrong");
+  const polite = "Guten Abend. Danke, dass Sie gekommen sind. Ich bin neu und wollte nur einladen – nicht predigen. Viel Spaß beim Konzert.";
+  $("konz-choices").innerHTML =
+    '<p class="prod-lab"><label for="konz-in">Danke sagen</label></p>'+
+    umlautsHtml("konz-in")+
+    '<p><textarea class="prod-in" id="konz-in" lang="de" autocomplete="off" spellcheck="false" rows="3"></textarea></p>'+
+    '<p><button type="button" class="btn" id="konz-ok">Sprechen</button></p>'+
+    '<p id="konz-hint" hidden></p>';
+  bindUmlauts($("konz-choices"));
+  let kTry=0;
+  $("konz-ok").onclick=()=>{
+    const v=$("konz-in").value;
+    if(nearDe(v, polite)){
+      S.hoef+=2;
+      $("konz-in").disabled=true;
+      $("konz-ok").disabled=true;
+      $("konz-hint").hidden=false;
+      $("konz-hint").textContent="Das klingt höflich.";
       setTimeout(ende, 600);
-    };
-  });
-  sagen("Gemeindehaus. Eine letzte Wahl.");
+      return;
+    }
+    kTry++;
+    if(kTry>=2){
+      S.hoef+=1;
+      $("konz-in").disabled=true;
+      $("konz-ok").disabled=true;
+      $("konz-hint").hidden=false;
+      $("konz-hint").textContent="So klingt es höflich: „"+polite+"“";
+      setTimeout(ende, 900);
+      return;
+    }
+    $("konz-hint").hidden=false;
+    $("konz-hint").textContent="Noch ein Versuch – höflich danken, nicht predigen.";
+  };
+  $("konz-in").onkeydown=e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); $("konz-ok").click(); } };
+  sagen("Gemeindehaus. Tippe deinen Dank.");
   sprich($("konz-de").textContent);
 }
 function hash32(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
@@ -835,27 +966,12 @@ $("btn-verify").onclick=()=>{
 };
 
 document.addEventListener("keydown", e=>{
+  if(typingIn(e)) return;
   if($("screen-play").classList.contains("on")){
-    if(/^[1-3]$/.test(e.key)){
-      const b=$("choices").querySelectorAll(".opt")[Number(e.key)-1];
-      if(b && !b.disabled){ e.preventDefault(); b.click(); }
-    }
     if(e.key==="e"||e.key==="E"||e.key==="Enter"){
       const el=document.activeElement;
-      if(el && (el.classList.contains("door-btn")||el.classList.contains("opt"))){ e.preventDefault(); el.click(); }
+      if(el && el.classList.contains("door-btn")){ e.preventDefault(); el.click(); }
     }
-  }
-  if($("screen-konzert") && $("screen-konzert").classList.contains("on") && /^[1-3]$/.test(e.key)){
-    const b=$("konz-choices").querySelectorAll(".opt")[Number(e.key)-1];
-    if(b){ e.preventDefault(); b.click(); }
-  }
-  if($("screen-quiz") && $("screen-quiz").classList.contains("on") && /^[1-3]$/.test(e.key)){
-    const b=$("q-box").querySelectorAll(".opt")[Number(e.key)-1];
-    if(b){ e.preventDefault(); b.click(); }
-  }
-  if($("screen-note").classList.contains("on") && /^[1-9]$/.test(e.key)){
-    const b=$("chips").querySelectorAll(".chip")[Number(e.key)-1];
-    if(b){ e.preventDefault(); b.click(); }
   }
 });
 

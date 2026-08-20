@@ -147,6 +147,12 @@ html[data-contrast="hoch"] .body-btns button{border-color:#000}
 .brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
 a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
 a.hub-home:hover{background:rgba(255,255,255,.18)}
+.prod-in,textarea.prod-in{width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;padding:.55em .7em;border:3px solid var(--mint-tief);border-radius:6px;background:#fff;color:var(--tinte)}
+textarea.prod-in{min-height:7.2rem;line-height:1.45}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:800;cursor:pointer;background:#fff;border:2px solid var(--mint-tief);color:var(--tinte)}
+.prod-lab{font-weight:800;margin:.4rem 0 .2rem}
+.hint-try{color:var(--kreuz);font-weight:700;margin:.4rem 0}
 </style>
 </head>
 <body>
@@ -260,6 +266,46 @@ function shuffled(a){
   return arr;
 }
 function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      const n=a+b.dataset.c.length;
+      try{ inp.setSelectionRange(n,n); }catch(e){}
+    });
+  });
+}
+function prodBlock(id, label){
+  return '<p class="prod-lab"><label for="'+id+'">'+label+"</label></p>"+umlautsHtml(id)+
+    '<p><textarea class="prod-in" id="'+id+'" lang="de" autocomplete="off" spellcheck="false" rows="3"></textarea></p>';
+}
 function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
 function sprich(text){ if(!S.audio || !("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="de-DE"; speechSynthesis.speak(u); }
 
@@ -486,39 +532,71 @@ function renderDialog(f){
     "<div class=\"doktor\"><svg width=\"56\" height=\"56\" viewBox=\"0 0 56 56\" aria-hidden=\"true\"><circle cx=\"28\" cy=\"28\" r=\"26\" fill=\"#C8E8DE\"/><circle cx=\"28\" cy=\"20\" r=\"8\" fill=\"#1A2B2E\"/><path d=\"M12 48c2-12 10-18 16-18s14 6 16 18\" fill=\"#fff\" stroke=\"#2A8F78\"/></svg>"+
     "<div><strong>Frau Dr. Keller</strong><p>"+esc(d.q)+"</p><p class=\"en gloss\" lang=\"en\">"+esc(d.qEn)+"</p></div></div>"+
     "<div class=\"dialog\" id=\"opts\"></div><div id=\"fb\"></div>";
+  const okOpt = d.opts.find(o=>o.ok);
   const box=$("opts");
-  shuffled(d.opts).forEach(o=>{
-    const b=document.createElement("button");
-    b.type="button"; b.className="wahl"; b.textContent=o.t;
-    b.addEventListener("click", ()=>dialogWahl(f,o,b));
-    box.appendChild(b);
-  });
+  box.innerHTML = prodBlock("dlg-in", "Deine Antwort (Sie-Form, auf Deutsch)")+
+    '<p><button type="button" class="btn" id="dlg-ok">Prüfen</button></p>'+
+    '<p class="hint-try" id="dlg-hint" hidden></p>';
+  bindUmlauts(box);
+  let tries=0;
+  const inp=$("dlg-in");
+  inp.focus();
+  function advance(reveal){
+    if(S.phase!=="dialog" || S.lock) return;
+    S.lock=true;
+    inp.disabled=true;
+    $("dlg-ok").disabled=true;
+    S.dIdx++;
+    if(S.dIdx < f.dialog.length){
+      const msg = reveal ? okOpt.t+" — "+okOpt.warum : "Gut. Weiter.";
+      $("fb").innerHTML="<div class=\"fb "+(reveal?"":"ok")+"\">"+esc(msg)+"</div>"+
+        (reveal?'<p class="en gloss" lang="en">'+esc(okOpt.warumEn)+"</p>":"");
+      glossUpdate();
+      sprich(reveal?okOpt.warum:"Gut. Weiter.");
+      sagen(reveal?"Richtig wäre: "+okOpt.t:"Gut. Weiter.");
+      setTimeout(()=>{ S.lock=false; render(); }, S.motion?500:0);
+    } else {
+      S.lock=false;
+      S.phase="koerper";
+      render();
+    }
+  }
+  function check(){
+    if(S.phase!=="dialog" || S.lock) return;
+    if(nearDe(inp.value, okOpt.t)){
+      S.lock=true;
+      inp.disabled=true;
+      $("dlg-ok").disabled=true;
+      S.dIdx++;
+      if(S.dIdx < f.dialog.length){
+        $("fb").innerHTML="<div class=\"fb ok\">Gut. Weiter.</div>";
+        setTimeout(()=>{ S.lock=false; render(); }, S.motion?500:0);
+      } else {
+        S.lock=false;
+        S.phase="koerper";
+        render();
+      }
+      return;
+    }
+    tries++;
+    $("dlg-hint").hidden=false;
+    S.fehler++;
+    if(tries>=2){
+      inp.value=okOpt.t;
+      const wrong=d.opts.find(o=>!o.ok);
+      $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(wrong.warum)+"</strong><p>"+esc(okOpt.t)+"</p><p class=\"en gloss\" lang=\"en\">"+esc(okOpt.warumEn)+"</p></div>";
+      glossUpdate();
+      sprich(okOpt.warum);
+      setTimeout(()=>advance(true), S.motion?800:100);
+    } else {
+      $("dlg-hint").textContent="Noch nicht. Noch ein Versuch — Sie-Form, ganzer Satz.";
+      sagen("Noch nicht. Noch ein Versuch.");
+    }
+  }
+  $("dlg-ok").addEventListener("click", check);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); check(); } });
   sprich(d.q);
   sagen(d.q);
-}
-function dialogWahl(f, o, btn){
-  if(S.phase!=="dialog" || S.lock) return;
-  const d=f.dialog[S.dIdx];
-  if(!o.ok){
-    S.fehler++;
-    btn.classList.add("falsch");
-    $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(o.warum)+"</strong><p class=\"en gloss\" lang=\"en\">"+esc(o.warumEn)+"</p></div>";
-    sprich(o.warum);
-    sagen(o.warum);
-    glossUpdate();
-    return;
-  }
-  S.lock=true;
-  btn.classList.add("gut");
-  S.dIdx++;
-  if(S.dIdx < f.dialog.length){
-    $("fb").innerHTML="<div class=\"fb ok\">Gut. Weiter.</div>";
-    setTimeout(()=>{ S.lock=false; render(); }, S.motion?500:0);
-  } else {
-    S.lock=false;
-    S.phase="koerper";
-    render();
-  }
 }
 
 function bodySVG(){
@@ -618,28 +696,70 @@ function renderStrasse(f){
 
 function renderApo(f){
   setPhase("In der Apotheke");
+  const namen=f.rezept.map(id=>PRODUKTE.find(p=>p.id===id).de);
   $("play").innerHTML =
     "<p><strong>Herr Özkan, Apotheker:</strong> Guten Tag. Was brauchen Sie? Bitte das Rezept.</p>"+
     "<p class=\"en gloss\" lang=\"en\">Hello. What do you need? Please the prescription.</p>"+
-    "<p>Wähle alle richtigen Produkte (nicht mehr).</p>"+
-    "<div class=\"regal\" id=\"regal\"></div>"+
+    "<p>Schreib die Produktnamen vom Rezept, Komma getrennt.</p>"+
+    "<p class=\"en gloss\" lang=\"en\">Type the product names from the prescription, comma-separated.</p>"+
+    "<div id=\"apo-in\"></div>"+
     "<p style=\"margin-top:.8rem\"><button type=\"button\" class=\"btn\" id=\"kasse\">Zur Kasse</button></p><div id=\"fb\"></div>";
-  const regal=$("regal");
-  shuffled(PRODUKTE).forEach(p=>{
-    const b=document.createElement("button");
-    b.type="button"; b.className="produkt"; b.setAttribute("aria-pressed","false"); b.dataset.id=p.id;
-    b.innerHTML="<strong>"+esc(p.de)+"</strong><span class=\"en gloss\" lang=\"en\">"+esc(p.en)+"</span>"+icon(p.id);
-    b.addEventListener("click", ()=>{
-      const on=b.getAttribute("aria-pressed")!=="true";
-      b.setAttribute("aria-pressed", on?"true":"false");
-      if(on){ if(!S.auswahl.includes(p.id)) S.auswahl.push(p.id); }
-      else S.auswahl=S.auswahl.filter(x=>x!==p.id);
-    });
-    regal.appendChild(b);
-  });
-  sprich("Guten Tag. Was brauchen Sie?");
+  const box=$("apo-in");
+  box.innerHTML = prodBlock("prod-in", "Produkte vom Rezept (Komma getrennt)")+
+    '<p class="hint-try" id="apo-hint" hidden></p>';
+  bindUmlauts(box);
+  let tries=0;
+  const inp=$("prod-in");
+  inp.focus();
   glossUpdate();
-  $("kasse").addEventListener("click", ()=>kasse(f));
+  sprich("Guten Tag. Was brauchen Sie?");
+  function matchProds(v){
+    const parts=v.split(/[,;]+/).map(s=>s.trim()).filter(Boolean);
+    if(parts.length < namen.length) return false;
+    return namen.every(n=>parts.some(p=>nearDe(p,n)||foldDe(p).indexOf(foldDe(n))>=0));
+  }
+  function kasseClick(){
+    if(S.lock) return;
+    if(matchProds(inp.value)){
+      S.lock=true;
+      inp.disabled=true;
+      $("kasse").disabled=true;
+      const p=Math.max(8, 20-S.fehler*3);
+      S.punkte+=p;
+      S.akte.push({name:FAELLE[S.i].name, p:p, fehler:S.fehler, rezept:f.rezept});
+      $("fb").innerHTML="<div class=\"fb ok\">Richtig abgeholt. +"+p+" Punkte.</div><p><button type=\"button\" class=\"btn\" id=\"go\">"+(S.i<FAELLE.length-1?"Nächster Fall":"Patientenakte")+"</button></p>";
+      sprich("Richtig. Gute Besserung.");
+      $("scorechip").textContent="Punkte: "+S.punkte;
+      $("go").addEventListener("click", nextFall);
+      return;
+    }
+    tries++;
+    $("apo-hint").hidden=false;
+    if(tries>=2){
+      inp.value=namen.join(", ");
+      S.fehler++;
+      S.lock=true;
+      inp.disabled=true;
+      $("kasse").disabled=true;
+      const p=Math.max(8, 20-S.fehler*3);
+      S.punkte+=p;
+      S.akte.push({name:FAELLE[S.i].name, p:p, fehler:S.fehler, rezept:f.rezept});
+      $("fb").innerHTML="<div class=\"fb ok\">Richtig wäre: "+esc(namen.join(", "))+". +"+p+" Punkte.</div><p><button type=\"button\" class=\"btn\" id=\"go\">"+(S.i<FAELLE.length-1?"Nächster Fall":"Patientenakte")+"</button></p>";
+      sprich("Richtig wäre: "+namen.join(", "));
+      $("scorechip").textContent="Punkte: "+S.punkte;
+      $("go").addEventListener("click", nextFall);
+    } else {
+      S.fehler++;
+      let de="Schau aufs Rezept. Es fehlt: "+namen.join(", ")+".";
+      $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(de)+"</strong><p class=\"en gloss\" lang=\"en\">Check the prescription.</p></div>";
+      $("apo-hint").textContent="Noch ein Versuch — Produktnamen mit Komma.";
+      sprich(de);
+      sagen(de);
+      glossUpdate();
+    }
+  }
+  $("kasse").addEventListener("click", kasseClick);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); kasseClick(); } });
 }
 function icon(id){
   const map = {
@@ -653,39 +773,6 @@ function icon(id){
     vitamin:"<svg width=\"40\" height=\"36\" viewBox=\"0 0 40 36\" aria-hidden=\"true\"><ellipse cx=\"20\" cy=\"18\" rx=\"12\" ry=\"8\" fill=\"#e0b000\"/></svg>"
   };
   return "<span class=\"flasche\">"+(map[id]||"")+"</span>";
-}
-function kasse(f){
-  if(S.lock) return;
-  const need=f.rezept.slice().sort().join(",");
-  const got=S.auswahl.slice().sort().join(",");
-  const buttons=[...$("regal").querySelectorAll(".produkt")];
-  buttons.forEach(b=>{
-    const id=b.dataset.id;
-    if(f.rezept.includes(id) && S.auswahl.includes(id)) b.classList.add("gut");
-    else if(S.auswahl.includes(id)) b.classList.add("falsch");
-  });
-  if(need===got){
-    S.lock=true;
-    const p=Math.max(8, 20-S.fehler*3);
-    S.punkte+=p;
-    S.akte.push({name:FAELLE[S.i].name, p:p, fehler:S.fehler, rezept:f.rezept});
-    $("kasse").disabled=true;
-    $("fb").innerHTML="<div class=\"fb ok\">Richtig abgeholt. +"+p+" Punkte.</div><p><button type=\"button\" class=\"btn\" id=\"go\">"+(S.i<FAELLE.length-1?"Nächster Fall":"Patientenakte")+"</button></p>";
-    sprich("Richtig. Gute Besserung.");
-    $("scorechip").textContent="Punkte: "+S.punkte;
-    $("go").addEventListener("click", nextFall);
-  } else {
-    S.fehler++;
-    const fehl=f.rezept.filter(id=>!S.auswahl.includes(id)).map(id=>PRODUKTE.find(p=>p.id===id).de);
-    const extra=S.auswahl.filter(id=>!f.rezept.includes(id)).map(id=>PRODUKTE.find(p=>p.id===id).de);
-    let de="Schau aufs Rezept. ";
-    if(fehl.length) de+="Es fehlt: "+fehl.join(", ")+". ";
-    if(extra.length) de+="Das gehört nicht dazu: "+extra.join(", ")+". Hustensaft hilft nicht bei jedem Schmerz.";
-    $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(de)+"</strong><p class=\"en gloss\" lang=\"en\">Check the prescription. Extra items are distractors.</p></div>";
-    sprich(de);
-    sagen(de);
-    glossUpdate();
-  }
 }
 function nextFall(){
   if(S.i<FAELLE.length-1){ S.i++; startFall(); $("h-play").focus(); }
@@ -732,8 +819,10 @@ $("btn-verify").addEventListener("click", ()=>{
 
 document.addEventListener("keydown", e=>{
   if(!$("screen-play").classList.contains("on")) return;
+  const tag = (e.target.tagName||"").toLowerCase();
+  if(tag === "input" || tag === "textarea") return;
   if(/^[1-9]$/.test(e.key)){
-    const btns=[...$("play").querySelectorAll(".wahl, .produkt, .body-btns button")];
+    const btns=[...$("play").querySelectorAll(".body-btns button")];
     const b=btns[Number(e.key)-1];
     if(b){ e.preventDefault(); b.click(); b.focus(); }
   }

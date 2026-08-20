@@ -207,6 +207,15 @@ th,td{border:1px solid var(--line);padding:.5em .7em;text-align:left;}
 .num{text-align:right;font-variant-numeric:tabular-nums;}
 footer{max-width:1180px;margin:0 auto;padding:0 1rem 2rem;color:var(--ink-soft);font-size:.9em;}
 kbd{border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:.05em .35em;background:#fff;}
+.prod-lab{font-weight:700;margin:.2rem 0 .35rem;}
+.prod-in,textarea.prod-in{
+  width:100%;min-height:48px;font:inherit;font-size:1.05em;
+  padding:.55em .7em;border:2px solid var(--wood);border-radius:6px;background:#fff;color:var(--ink);
+}
+textarea.prod-in{min-height:7.2rem;line-height:1.45;resize:vertical;}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0;}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:700;cursor:pointer;background:#fff;border:2px solid var(--wood);border-radius:6px;}
+.quiz-in-row{margin-top:.5rem;}
 
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
@@ -265,7 +274,7 @@ a.hub-home:hover{background:rgba(255,255,255,.18)}
     </div>
     <ol class="lede">
       <li>Phase 1: Anzeigen filtern und die passenden markieren. <span class="en gloss" lang="en">Filter and tick matching ads.</span></li>
-      <li>Phase 2: Eine höfliche Anfrage aus Satzbausteinen legen. <span class="en gloss" lang="en">Build a polite enquiry from chips.</span></li>
+      <li>Phase 2: Eine höfliche Anfrage per E-Mail schreiben. <span class="en gloss" lang="en">Write a polite enquiry email.</span></li>
       <li>Phase 3: Möbel auf den Grundriss setzen, dann Präpositionen. <span class="en gloss" lang="en">Place furniture, then prepositions.</span></li>
     </ol>
     <div class="btn-row">
@@ -275,7 +284,7 @@ a.hub-home:hover{background:rgba(255,255,255,.18)}
       <summary>Tastatur <span class="en gloss" lang="en">Keyboard</span></summary>
       <ul>
         <li><kbd>Tab</kbd> bewegt den Fokus. Alle Ziele sind mindestens 44 Pixel groß.</li>
-        <li><kbd>Enter</kbd> / <kbd>Leertaste</kbd> wählen Karten, Chips und Möbel.</li>
+        <li><kbd>Enter</kbd> / <kbd>Leertaste</kbd> wählen Karten und Möbel. In Textfeldern tippen Sie frei.</li>
         <li><strong>Vorlesen</strong> spricht Deutsch (de-DE), wenn eine Stimme installiert ist.</li>
       </ul>
     </details>
@@ -343,12 +352,14 @@ a.hub-home:hover{background:rgba(255,255,255,.18)}
   <section class="screen" id="screen-mail" aria-labelledby="h-mail">
     <p class="eyebrow">Phase 2 · Anfrage schreiben</p>
     <h2 id="h-mail" tabindex="-1">E-Mail an die Vermietung</h2>
-    <p class="lede">Du schreibst wegen des Zimmers in der <strong>Marktstraße</strong>. Wähle höfliche Bausteine – nicht zu locker für einen Vermieter.
-      <span class="en gloss" lang="en">Build a polite email. Two chips are too informal for a landlord.</span></p>
+    <p class="lede">Du schreibst wegen des Zimmers in der <strong>Marktstraße</strong>. Formuliere eine höfliche Anfrage – nicht zu locker für einen Vermieter.
+      <span class="en gloss" lang="en">Write a polite email. Avoid slang like „Yo“ or „Hi Leute“.</span></p>
     <div class="mail">
       <div>
-        <h3>Bausteine</h3>
-        <div class="chips" id="chips"></div>
+        <h3>Deine Anfrage</h3>
+        <p class="prod-lab"><label for="mail-in">E-Mail schreiben</label></p>
+        <div id="mail-uml"></div>
+        <textarea class="prod-in" id="mail-in" lang="de" autocomplete="off" spellcheck="false" placeholder="Sehr geehrte Damen und Herren, …"></textarea>
         <div class="btn-row">
           <button type="button" class="btn" id="btn-send">Anfrage senden</button>
           <button type="button" class="btn btn-ghost" id="btn-mail-reset">Text leeren</button>
@@ -358,7 +369,7 @@ a.hub-home:hover{background:rgba(255,255,255,.18)}
         <div class="letter" id="letter" aria-live="polite">
           <p class="to">An: vermietung@kleinwohnen.kh</p>
           <p class="to">Betreff: Anfrage WG-Zimmer Marktstraße 12</p>
-          <div id="letter-body"><p class="en gloss" lang="en">Click chips to assemble the letter.</p></div>
+          <div id="letter-body"><p class="en gloss" lang="en">Your preview appears here as you type.</p></div>
         </div>
         <div class="fb" id="mail-fb" hidden tabindex="-1"></div>
       </div>
@@ -368,8 +379,8 @@ a.hub-home:hover{background:rgba(255,255,255,.18)}
   <section class="screen" id="screen-plan" aria-labelledby="h-plan">
     <p class="eyebrow">Phase 3 · Einrichten</p>
     <h2 id="h-plan" tabindex="-1">Dein Zimmer einrichten</h2>
-    <p class="lede">Klicke ein Möbelstück, dann eine Zone im Grundriss. Wenn fünf Dinge stehen, kommen vier Fragen zu Präpositionen.
-      <span class="en gloss" lang="en">Click furniture, then a room. After five items, answer four preposition questions.</span></p>
+    <p class="lede">Klicke ein Möbelstück, dann eine Zone im Grundriss. Wenn fünf Dinge stehen, tippe vier Präpositionen (auf, neben, unter, in).
+      <span class="en gloss" lang="en">Click furniture, then a room. After five items, type four prepositions.</span></p>
     <p id="plan-hint"><strong>Ausgewählt:</strong> nichts</p>
     <div class="plan-wrap">
       <div class="furn-list" id="furn-list"></div>
@@ -449,6 +460,45 @@ function shuffled(a){
   return arr;
 }
 function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      try{ inp.setSelectionRange(a+b.dataset.c.length, a+b.dataset.c.length); }catch(e){}
+    });
+  });
+}
+function typingIn(e){
+  const tag=(e.target.tagName||"").toLowerCase();
+  return tag==="input"||tag==="textarea";
+}
 const S = {
   englisch:true, audio:false, kontrast:false, size:0, motion:true,
   picked:{}, firstConfirm:true, browsePts:0, mailPts:0, quizPts:0,
@@ -676,74 +726,57 @@ $("btn-confirm").addEventListener("click", () => {
 
 function startMail(){
   zeige("screen-mail");
-  S.mailSel = [];
-  deal(CHIPS);
-  renderChips();
+  S.mailDone = false;
+  $("mail-in").disabled = false;
+  $("mail-in").value = "";
+  $("mail-uml").innerHTML = umlautsHtml("mail-in");
+  bindUmlauts($("mail-uml"));
   renderLetter();
-  sagen("Baue eine höfliche Anfrage. Zwei Bausteine sind zu locker.");
+  sagen("Schreibe eine höfliche Anfrage. Kein „Yo“ oder „Hi Leute“.");
   sprich("Sehr geehrte Damen und Herren.");
-}
-function renderChips(){
-  const box = $("chips"); box.innerHTML = "";
-  CHIPS.forEach(c => {
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "chip";
-    b.setAttribute("aria-pressed", S.mailSel.includes(c.id) ? "true" : "false");
-    if(c.trap && S.mailSel.includes(c.id)) b.classList.add("trap-on");
-    b.innerHTML = esc(c.de)+' <span class="en gloss inline" lang="en">'+esc(c.en)+"</span>";
-    b.addEventListener("click", () => {
-      if(S.mailDone) return;
-      const i = S.mailSel.indexOf(c.id);
-      if(i >= 0) S.mailSel.splice(i,1); else S.mailSel.push(c.id);
-      sprich(c.de);
-      renderChips(); renderLetter();
-    });
-    box.appendChild(b);
-  });
 }
 function renderLetter(){
   const body = $("letter-body");
-  if(!S.mailSel.length){
-    body.innerHTML = '<p class="en gloss" lang="en">Click chips to assemble the letter.</p>';
+  const t = $("mail-in").value.trim();
+  if(!t){
+    body.innerHTML = '<p class="en gloss" lang="en">Your preview appears here as you type.</p>';
     return;
   }
-  body.innerHTML = S.mailSel.map(id => {
-    const c = CHIPS.find(x => x.id === id);
-    return "<p>"+esc(c.de)+"</p>";
-  }).join("");
+  body.innerHTML = t.split(/\n+/).map(p => "<p>"+esc(p)+"</p>").join("");
 }
+$("mail-in").addEventListener("input", renderLetter);
 $("btn-mail-reset").addEventListener("click", () => {
   if(S.mailDone) return;
-  S.mailSel = []; renderChips(); renderLetter();
+  $("mail-in").value = "";
+  renderLetter();
 });
 $("btn-send").addEventListener("click", () => {
-  const sel = S.mailSel.map(id => CHIPS.find(c => c.id === id));
-  const traps = sel.filter(c => c.trap);
-  const hasAnrede = sel.some(c => c.id === "c1");
-  const hasKern = sel.some(c => c.id === "c4");
-  const hasWer = sel.some(c => c.group === "wer");
-  const hasFrage = sel.some(c => c.id === "c7");
+  const t = $("mail-in").value;
+  const f = foldDe(t);
+  const traps = /\byo\b|hi leute|\?\?\?/.test(f) || /\?\?\?/.test(t);
+  const hasAnrede = /sehr geehrte/.test(f) || t.includes("Sehr geehrte");
+  const hasKern = /interess|marktstra/.test(f);
+  const hasWer = /schueler|gymnasium|bibliothek|schule/.test(f);
+  const hasFrage = /besichtig|termin|wann kann/.test(f);
   let pts = 0;
   if(hasAnrede) pts += 8;
   if(hasKern) pts += 8;
   if(hasWer) pts += 7;
   if(hasFrage) pts += 7;
-  pts -= traps.length * 8;
-  if(sel.some(c => c.id === "c2") && hasAnrede) pts -= 2;
+  if(traps) pts -= 8;
   S.mailPts = Math.max(0, Math.min(MAX.mail, pts));
   S.mailDone = true;
+  $("mail-in").disabled = true;
   const fb = $("mail-fb");
   let html = "";
-  if(traps.length){
-    html += "<p><strong>Register:</strong></p><ul>";
-    traps.forEach(t => html += "<li>"+esc(t.warum)+' <span class="en gloss" lang="en">Too informal for a landlord.</span></li>');
-    html += "</ul>";
+  if(traps){
+    html += "<p><strong>Register:</strong> „Yo“, „Hi Leute“ oder „???“ sind zu locker für einen Vermieter.</p>";
   }
-  if(!hasAnrede) html += "<p>Es fehlt die förmliche Anrede „Sehr geehrte Damen und Herren“.</p>";
+  if(!hasAnrede) html += "<p>Es fehlt die förmliche Anrede „Sehr geehrte …“.</p>";
   if(!hasKern) html += "<p>Sag klar, wofür du dich interessierst: das Zimmer in der Marktstraße.</p>";
   if(!hasWer) html += "<p>Stell dich vor: Schule oder Arbeit.</p>";
   if(!hasFrage) html += "<p>Frage nach einem Besichtigungstermin.</p>";
-  if(!traps.length && hasAnrede && hasKern && hasWer && hasFrage){
+  if(!traps && hasAnrede && hasKern && hasWer && hasFrage){
     fb.className = "fb";
     html = "<p>Höflich und vollständig. Die Vermietung antwortet: Besichtigung morgen um 16 Uhr!</p>"+
       '<span class="en gloss" lang="en">Polite and complete. Viewing tomorrow at 4 p.m.</span>';
@@ -835,48 +868,44 @@ function buildQuiz(){
   S.quiz.forEach((q, qi) => {
     const div = document.createElement("div");
     div.className = "q";
-    div.innerHTML = "<p><strong>"+(qi+1)+".</strong> "+esc(q.q)+'</p><span class="en gloss" lang="en">'+esc(q.en)+"</span>";
-    const opts = document.createElement("div"); opts.className = "opts";
-    q.opts.forEach((o, oi) => {
-      const b = document.createElement("button");
-      b.type = "button"; b.className = "opt";
-      b.textContent = o;
-      b.setAttribute("aria-pressed", S.quizAns[qi] === oi ? "true" : "false");
-      b.addEventListener("click", () => {
-        if(S.quizDone) return;
-        S.quizAns[qi] = oi;
-        sprich(q.q.replace("___", o));
-        buildQuiz();
+    const inId = "quiz-in-"+qi;
+    div.innerHTML = "<p><strong>"+(qi+1)+".</strong> "+esc(q.q)+'</p><span class="en gloss" lang="en">'+esc(q.en)+"</span>"+
+      '<p class="prod-lab"><label for="'+inId+'">Präposition tippen</label></p>'+
+      umlautsHtml(inId)+
+      '<p class="quiz-in-row"><input class="prod-in" type="text" id="'+inId+'" lang="de" autocomplete="off" spellcheck="false" placeholder="auf / neben / unter / in"'+
+      (S.quizDone ? " disabled" : "")+' value="'+(S.quizAns[qi] != null && typeof S.quizAns[qi]==="string" ? esc(S.quizAns[qi]) : "")+'"></p>';
+    bindUmlauts(div);
+    const inp = div.querySelector("#"+inId);
+    if(!S.quizDone){
+      inp.addEventListener("input", () => {
+        S.quizAns[qi] = foldDe(inp.value);
+        if(inp.value.trim()) sprich(q.q.replace("___", inp.value.trim()));
       });
-      opts.appendChild(b);
-    });
-    div.appendChild(opts);
+      inp.addEventListener("keydown", e => {
+        if(e.key==="Enter"){ e.preventDefault(); $("btn-quiz").click(); }
+      });
+    }
     box.appendChild(div);
   });
 }
 $("btn-quiz").addEventListener("click", () => {
-  if(Object.keys(S.quizAns).length < 4){
-    sagen("Bitte alle vier Lücken füllen.");
+  if(S.quiz.length !== 4 || S.quiz.some((_, qi) => !S.quizAns[qi])){
+    sagen("Bitte alle vier Präpositionen tippen.");
     return;
   }
   let pts = 0;
   const box = $("quiz"); box.innerHTML = "";
   S.quiz.forEach((q, qi) => {
-    const gut = S.quizAns[qi] === q.ok;
+    const want = foldDe(q.opts[q.ok]);
+    const got = typeof S.quizAns[qi]==="string" ? S.quizAns[qi] : foldDe(String(S.quizAns[qi]||""));
+    const gut = got === want;
     if(gut) pts += 10;
     const div = document.createElement("div");
     div.className = "q";
     div.innerHTML = "<p><strong>"+(qi+1)+".</strong> "+esc(q.q.replace("___", q.opts[q.ok]))+"</p>"+
-      "<p>"+(gut ? "Richtig. " : "Nicht ganz. ")+esc(q.warum)+'</p>'+
-      '<span class="en gloss" lang="en">'+(gut ? "Correct. " : "Not quite. ")+esc(q.en)+"</span>";
-    const opts = document.createElement("div"); opts.className = "opts";
-    q.opts.forEach((o, oi) => {
-      const b = document.createElement("button");
-      b.type = "button"; b.className = "opt"+(oi === q.ok ? " good" : (S.quizAns[qi] === oi ? " no" : ""));
-      b.textContent = o; b.disabled = true;
-      opts.appendChild(b);
-    });
-    div.appendChild(opts);
+      "<p>"+(gut ? "Richtig. " : "Nicht ganz. Richtig: „"+esc(q.opts[q.ok])+"“. ")+esc(q.warum)+'</p>'+
+      '<span class="en gloss" lang="en">'+(gut ? "Correct. " : "Not quite. ")+esc(q.en)+"</span>"+
+      '<p class="quiz-in-row"><input class="prod-in" type="text" disabled value="'+esc(got === want ? q.opts[q.ok] : (S.quizAns[qi]||""))+'"></p>';
     box.appendChild(div);
   });
   S.quizPts = pts; S.quizDone = true;
@@ -964,6 +993,7 @@ $("btn-verify").addEventListener("click", () => {
 $("btn-again").addEventListener("click", () => location.reload());
 
 document.addEventListener("keydown", e => {
+  if(typingIn(e)) return;
   if(e.key === "Enter" && $("screen-browse").classList.contains("on") && e.target.classList.contains("listing")){
     e.target.click();
   }

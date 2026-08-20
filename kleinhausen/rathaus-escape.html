@@ -170,6 +170,10 @@ html[data-motion="aus"] *{animation:none !important;transition:none !important}
 .brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
 a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
 a.hub-home:hover{background:rgba(255,255,255,.18)}
+.prod-lab{font-weight:700;margin:.35em 0}
+.prod-in,.prod-in[type=text]{font:inherit;padding:.65em .8em;border:2px solid var(--stone);border-radius:6px;min-height:44px;width:100%;max-width:22rem;background:#fff;color:var(--ink)}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:700;cursor:pointer;background:#fff;color:var(--ink);border:2px solid var(--stone);border-radius:6px}
 </style>
 </head>
 <body>
@@ -307,6 +311,41 @@ function shuffled(a){
   const arr=a.slice();
   for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
   return arr;
+}
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      try{ inp.setSelectionRange(a+b.dataset.c.length,a+b.dataset.c.length);}catch(e){}
+    });
+  });
 }
 
 const S = {
@@ -881,29 +920,28 @@ function puzzleKonj(){
     {k:"c", q:"Die Tür ist zu, _____ niemand den Schlüssel hat.", ok:"weil", en:"The door is locked because nobody has the key."}
   ];
   let html = "";
-  rows.forEach((row,i) => {
-    html += '<p lang="de">'+esc(row.q)+'</p><p class="en gloss" lang="en">'+esc(row.en)+'</p><div class="choices">';
-    if(!S.r2.optOrder) S.r2.optOrder = {};
-    if(!S.r2.optOrder[row.k]) S.r2.optOrder[row.k] = shuffled(["weil","dass","obwohl"]);
-    S.r2.optOrder[row.k].forEach((opt,j) => {
-      const sel = S.r2[row.k]===opt ? " aria-pressed=\"true\"" : "";
-      html += '<button type="button" class="opt" data-k="'+row.k+'" data-v="'+opt+'" data-n="'+(i*3+j+1)+'"><span class="key">'+(j+1)+'</span>'+opt+'</button>';
-    });
-    html += "</div>";
+  rows.forEach(row => {
+    html += '<p lang="de">'+esc(row.q)+'</p><p class="en gloss" lang="en">'+esc(row.en)+'</p>';
+    html += '<p class="prod-lab"><label for="konj-'+row.k+'">Konjunktion schreiben</label></p>';
+    html += umlautsHtml("konj-"+row.k);
+    html += '<p><input class="prod-in" type="text" id="konj-'+row.k+'" lang="de" autocomplete="off" spellcheck="false" placeholder="weil / dass / obwohl" value="'+esc(S.r2[row.k]||"")+'"></p>';
   });
   if(S.r2.tries>=2 && !S.r2.done){
     html += '<p class="hint">Hinweis: <em>dass</em> leitet eine Aussage ein. <em>obwohl</em> = trotz. <em>weil</em> = Grund.</p>';
   }
   html += '<p><button type="button" class="btn" id="chk2">Protokoll prüfen</button></p>';
   setPanel("Das Protokoll",
-    "Im Protokoll fehlen drei Konjunktionen. Wähle weil, dass oder obwohl.",
-    "Three conjunctions are missing. Choose weil, dass or obwohl.",
+    "Im Protokoll fehlen drei Konjunktionen. Schreib weil, dass oder obwohl in jede Lücke.",
+    "Three conjunctions are missing. Type weil, dass or obwohl.",
     html);
-  $("panel-extra").querySelectorAll(".opt").forEach(b => {
-    b.onclick = () => { S.r2[b.dataset.k] = b.dataset.v; puzzleKonj(); };
+  bindUmlauts($("panel-extra"));
+  rows.forEach(row => {
+    const inp=$("konj-"+row.k);
+    if(inp) inp.addEventListener("input", ()=>{ S.r2[row.k]=inp.value; });
   });
   $("chk2").onclick = () => {
-    const ok = S.r2.a==="dass" && S.r2.b==="obwohl" && S.r2.c==="weil";
+    rows.forEach(row => { const inp=$("konj-"+row.k); if(inp) S.r2[row.k]=inp.value; });
+    const ok = rows.every(row => foldDe(S.r2[row.k])===foldDe(row.ok));
     if(ok){
       S.r2.done = true;
       fb(true, "Das Protokoll ist vollständig. Das Gemälde lockert sich. Schau hinter die vier Türme.");
@@ -914,6 +952,7 @@ function puzzleKonj(){
       if(S.r2.tries===2){ S.hinweise++; puzzleKonj(); }
     }
   };
+  const first=$("konj-a"); if(first) setTimeout(()=>{ try{ first.focus(); }catch(e){} }, 50);
 }
 
 function puzzleBox(which){
@@ -935,13 +974,11 @@ function puzzleBox(which){
   }
   S.r3.box = "3";
   let html = '<p lang="de">Im Karton liegt ein Brief: „Liebe Lena, ich schreibe _____ einen Brief aus dem Archiv.“</p>';
-  html += '<p class="en gloss" lang="en">In the box is a letter: “I am writing a letter to a friend.” Choose the dative.</p>';
-  html += '<div class="choices">';
-  if(!S.r3.dativOpts) S.r3.dativOpts = shuffled([["einem Freund","ok"],["ein Freund","x"],["einen Freund","akk"]]);
-  S.r3.dativOpts.forEach((opt,i) => {
-    html += '<button type="button" class="opt" data-d="'+opt[1]+'" data-n="'+(i+1)+'"><span class="key">'+(i+1)+'</span>'+esc(opt[0])+'</button>';
-  });
-  html += "</div>";
+  html += '<p class="en gloss" lang="en">In the box is a letter: “I am writing a letter to a friend.” Type the dative.</p>';
+  html += '<p class="prod-lab"><label for="dativ-in">Dativ schreiben</label></p>';
+  html += umlautsHtml("dativ-in");
+  html += '<p><input class="prod-in" type="text" id="dativ-in" lang="de" autocomplete="off" spellcheck="false" placeholder="einem Freund"></p>';
+  html += '<p><button type="button" class="btn" id="dativ-ok">Prüfen</button></p>';
   if(S.r3.dativTries>=2 && S.r3.dativ!=="ok"){
     html += '<p class="hint">Hinweis: nach „schreiben + Person“ steht oft der Dativ: wem? einem Freund. Akkusativ wäre den Brief.</p>';
   }
@@ -949,31 +986,51 @@ function puzzleBox(which){
     "Du öffnest den Karton vom dritten Oktober. Darin: ein Brief im Dativ.",
     "You open the box from the third of October. Inside: a letter using the dative.",
     html);
-  $("panel-extra").querySelectorAll(".opt").forEach(b => {
-    b.onclick = () => {
-      if(b.dataset.d==="ok"){
-        S.r3.dativ = "ok"; S.r3.done = true;
-        S.ziffern[2] = 3;
-        S.roomsOpen[4] = true;
-        S.scraps.hinaus = true;
-        nimm("Zettel: hinaus");
-        nimm("Brief");
-        note("Dritte Ziffer: 3 (am dritten Oktober).");
-        note("Zettel 3: hinaus");
-        note("Dativ: einem Freund.");
-        zeichneSide();
-        b.classList.add("right");
-        fb(true, "Richtig: einem Freund (Dativ). Die dritte Ziffer ist 3. Die Treppe zum Turm ist frei.");
-        $("panel-extra").insertAdjacentHTML("beforeend", '<p><button type="button" class="btn" id="go4">Zum Turmzimmer</button></p>');
-        $("go4").onclick = ()=>gehe(4);
-      }else{
-        S.r3.dativTries++; S.fehler++;
-        b.classList.add("wrong");
-        fb(false, b.dataset.d==="akk" ? "„Einen Freund“ ist Akkusativ (wen?). Hier: wem schreibst du? Dativ." : "Ohne Endung fehlt der Fall. Wem? einem Freund.");
-        if(S.r3.dativTries===2){ S.hinweise++; puzzleBox("3"); }
-      }
-    };
-  });
+  bindUmlauts($("panel-extra"));
+  function dativDone(){
+    S.r3.dativ = "ok"; S.r3.done = true;
+    S.ziffern[2] = 3;
+    S.roomsOpen[4] = true;
+    S.scraps.hinaus = true;
+    nimm("Zettel: hinaus");
+    nimm("Brief");
+    note("Dritte Ziffer: 3 (am dritten Oktober).");
+    note("Zettel 3: hinaus");
+    note("Dativ: einem Freund.");
+    zeichneSide();
+    fb(true, "Richtig: einem Freund (Dativ). Die dritte Ziffer ist 3. Die Treppe zum Turm ist frei.");
+    $("panel-extra").insertAdjacentHTML("beforeend", '<p><button type="button" class="btn" id="go4">Zum Turmzimmer</button></p>');
+    $("go4").onclick = ()=>gehe(4);
+  }
+  function checkDativ(){
+    const inp=$("dativ-in");
+    if(!inp||inp.disabled) return;
+    if(nearDe(inp.value, "einem Freund")){
+      inp.disabled=true;
+      const btn=$("dativ-ok"); if(btn) btn.disabled=true;
+      dativDone();
+      return;
+    }
+    S.r3.dativTries++; S.fehler++;
+    const g=foldDe(inp.value);
+    fb(false, g.indexOf("einen")>=0 && g.indexOf("freund")>=0
+      ? "„Einen Freund“ ist Akkusativ (wen?). Hier: wem schreibst du? Dativ."
+      : "Ohne Endung fehlt der Fall. Wem? einem Freund.");
+    if(S.r3.dativTries>=2){
+      S.hinweise++;
+      puzzleBox("3");
+      const inp2=$("dativ-in");
+      if(inp2){ inp2.value="einem Freund"; inp2.disabled=true; }
+      const btn2=$("dativ-ok"); if(btn2) btn2.disabled=true;
+      dativDone();
+    }
+  }
+  $("dativ-ok").onclick=checkDativ;
+  const din=$("dativ-in");
+  if(din){
+    din.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); checkDativ(); } });
+    setTimeout(()=>{ try{ din.focus(); }catch(e){} }, 50);
+  }
 }
 
 function puzzleKeypad(){
@@ -1128,11 +1185,13 @@ document.addEventListener("keydown", e => {
       e.preventDefault();
       if($("chk-pass")) $("chk-pass").click();
       else if($("chk-code")) $("chk-code").click();
+      else if($("chk2")) $("chk2").click();
+      else if($("dativ-ok")) $("dativ-ok").click();
     }
     return;
   }
   if(/^[1-9]$/.test(e.key)){
-    const opts = [...$("panel-extra").querySelectorAll(".opt, .match-word, .match-pic")];
+    const opts = [...$("panel-extra").querySelectorAll(".match-word, .match-pic")];
     const b = opts[Number(e.key)-1];
     if(b){ e.preventDefault(); b.click(); b.focus(); }
     return;

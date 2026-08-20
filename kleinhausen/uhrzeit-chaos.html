@@ -115,6 +115,14 @@ input[type=text]{min-height:44px;padding:.4em .6em;font:inherit;border:2px solid
 .clock-hit{cursor:pointer;background:none;border:0;padding:0;display:block;width:100%}
 .clock-hit:focus-visible{outline:3px solid var(--postgelb)}
 .hint-bar{background:#fff;border-left:6px solid var(--postgelb);padding:.5rem .8rem;font-size:.92em}
+.prod-lab{font-weight:800;margin:.35rem 0 .2rem}
+.prod-in,textarea.prod-in{
+  width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;
+  padding:.55em .7em;border:3px solid var(--petrol);border-radius:6px;background:#fff;
+}
+textarea.prod-in{min-height:7.2rem;line-height:1.45}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.35rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:800;cursor:pointer;background:#fff;border:2px solid var(--petrol)}
 details.glossar summary{cursor:pointer;font-weight:800;min-height:44px;display:flex;align-items:center}
 details.glossar ul{margin:.5rem 0 0;padding-left:1.2rem}
 html[data-contrast="hoch"] .hint-bar{border-color:#000;background:#fff}
@@ -291,6 +299,41 @@ function shuffled(a){
   return arr;
 }
 function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=$(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      const n=a+b.dataset.c.length;
+      try{ inp.setSelectionRange(n,n); }catch(e){}
+    });
+  });
+}
 function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
 function sprich(text){ if(!S.audio || !("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="de-DE"; speechSynthesis.speak(u); }
 
@@ -458,31 +501,44 @@ function addPunkte(){
 }
 
 function renderA(r){
+  S.tries=0;
   $("play").innerHTML =
-    "<p class=\"chip\">Typ A · Uhr lesen</p>"+
-    "<p>Welche deutsche Uhrzeit zeigt die Bahnhofsuhr?</p><p class=\"en gloss\" lang=\"en\">Which German time phrase matches the clock?</p>"+
+    "<p class=\"chip\">Typ A · Uhr lesen — schreib die Zeit</p>"+
+    "<p>Wie sagt man das auf Deutsch?</p><p class=\"en gloss\" lang=\"en\">Type the German time phrase. ä ö ü ß buttons help.</p>"+
     "<div class=\"clocks-row\"><figure class=\"clock-card\">"+clockSVG(r.h,r.m,"a")+"<figcaption>Bahnhof</figcaption></figure></div>"+
-    "<div class=\"opts\" id=\"opts\"></div><div id=\"fb\"></div>";
-  shuffled(r.opts).forEach(t=>{
-    const b=document.createElement("button");
-    b.type="button"; b.className="wahl"; b.textContent=t;
-    b.addEventListener("click", ()=>{
-      if(S.doneRound) return;
-      if(t!==r.richtig){
-        S.fehler++; b.classList.add("falsch");
-        $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(r.erkl)+"</strong><p class=\"en gloss\" lang=\"en\">"+esc(r.erklEn)+"</p></div>";
+    umlautsHtml("uhr-in")+
+    '<p><label class="prod-lab" for="uhr-in">Schreib: Es ist …</label></p>'+
+    '<p><input class="prod-in" type="text" id="uhr-in" lang="de" autocomplete="off" spellcheck="false" placeholder="Es ist halb drei."></p>'+
+    '<p><button type="button" class="btn gelb" id="uhr-ok">Prüfen</button></p><div id="fb"></div>';
+  bindUmlauts($("play"));
+  function check(){
+    if(S.doneRound) return;
+    const v=$("uhr-in").value;
+    const ok = nearDe(v, r.richtig) || nearDe("es ist "+v, r.richtig);
+    if(!ok){
+      S.fehler++; S.tries=(S.tries||0)+1;
+      if(S.tries>=2){
+        $("uhr-in").value=r.richtig; $("uhr-in").disabled=true;
+        $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(r.erkl)+"</strong> Schreib so: <em>"+esc(r.richtig)+"</em><p class=\"en gloss\" lang=\"en\">"+esc(r.erklEn)+"</p></div>"+
+          '<p><button type="button" class="btn" id="go">Weiter</button></p>';
+        S.doneRound=true; addPunkte();
+        $("go").addEventListener("click", next);
         sprich(r.erkl); glossUpdate(); return;
       }
-      S.doneRound=true;
-      b.classList.add("gut");
-      const p=addPunkte();
-      $("fb").innerHTML="<div class=\"fb ok\">Richtig. +"+p+"</div><p><button type=\"button\" class=\"btn\" id=\"go\">Weiter</button></p>";
-      sprich("Richtig. "+r.richtig);
-      $("go").addEventListener("click", next);
-    });
-    $("opts").appendChild(b);
-  });
-  sprich("Welche Uhrzeit? "+r.richtig);
+      $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(r.erkl)+"</strong><p class=\"en gloss\" lang=\"en\">"+esc(r.erklEn)+"</p></div>";
+      sprich(r.erkl); glossUpdate(); return;
+    }
+    S.doneRound=true;
+    $("uhr-in").disabled=true;
+    const p=addPunkte();
+    $("fb").innerHTML="<div class=\"fb ok\">Richtig. +"+p+"</div><p><button type=\"button\" class=\"btn\" id=\"go\">Weiter</button></p>";
+    sprich("Richtig. "+r.richtig);
+    $("go").addEventListener("click", next);
+  }
+  $("uhr-ok").addEventListener("click", check);
+  $("uhr-in").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+  $("uhr-in").focus();
+  sprich("Welche Uhrzeit? Schreib den Satz.");
 }
 
 function renderB(r){
@@ -544,32 +600,41 @@ function renderB(r){
 }
 
 function renderC(r){
+  S.tries=0;
   $("play").innerHTML =
-    "<p class=\"chip\">Typ C · Fahrplan</p>"+
-    "<p lang=\"de\">"+esc(r.bus)+"</p><p>Es ist jetzt <strong>"+esc(r.jetztDe)+"</strong>. Wie viele Minuten hast du noch?</p>"+
-    "<p class=\"en gloss\" lang=\"en\">How many minutes until the bus/train?</p>"+
+    "<p class=\"chip\">Typ C · Fahrplan — schreib die Minuten</p>"+
+    "<p lang=\"de\">"+esc(r.bus)+"</p><p>Es ist jetzt <strong>"+esc(r.jetztDe)+"</strong>. Wie viele Minuten hast du noch? <em>Schreib die Zahl.</em></p>"+
+    "<p class=\"en gloss\" lang=\"en\">Type how many minutes until the bus/train.</p>"+
     "<div class=\"clocks-row\"><figure class=\"clock-card\">"+clockSVG(r.jetztH,r.jetztM,"c")+"<figcaption>jetzt</figcaption></figure></div>"+
-    "<div class=\"opts\" id=\"opts\"></div><div id=\"fb\"></div>";
-  shuffled(r.opts).forEach(n=>{
-    const b=document.createElement("button");
-    b.type="button"; b.className="wahl"; b.textContent=n+" Minuten";
-    b.addEventListener("click", ()=>{
-      if(S.doneRound) return;
-      if(Number(n)!==r.min){
-        S.fehler++; b.classList.add("falsch");
-        $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(r.erkl)+"</strong><p class=\"en gloss\" lang=\"en\">"+esc(r.erklEn)+"</p></div>";
-        sprich(r.erkl); glossUpdate(); return;
+    '<p><label class="prod-lab" for="min-in">Minuten</label></p>'+
+    '<p><input class="prod-in" type="text" id="min-in" inputmode="numeric" lang="de" autocomplete="off" spellcheck="false" placeholder="15"></p>'+
+    '<p><button type="button" class="btn gelb" id="min-ok">Prüfen</button></p><div id="fb"></div>';
+  function check(){
+    if(S.doneRound) return;
+    const n=parseInt(String($("min-in").value).replace(/\D/g,""),10);
+    if(n!==r.min){
+      S.fehler++; S.tries=(S.tries||0)+1;
+      $("fb").innerHTML="<div class=\"fb\"><strong>"+esc(r.erkl)+"</strong><p class=\"en gloss\" lang=\"en\">"+esc(r.erklEn)+"</p></div>";
+      sprich(r.erkl); glossUpdate();
+      if(S.tries>=2){
+        S.doneRound=true; $("min-in").value=String(r.min); $("min-in").disabled=true;
+        addPunkte();
+        $("fb").innerHTML+='<p><button type="button" class="btn" id="go">Weiter</button></p>';
+        $("go").addEventListener("click", next);
       }
-      S.doneRound=true;
-      b.classList.add("gut");
-      const p=addPunkte();
-      $("fb").innerHTML="<div class=\"fb ok\">"+r.min+" Minuten. +"+p+"</div><p><button type=\"button\" class=\"btn\" id=\"go\">Weiter</button></p>";
-      sprich(r.min+" Minuten.");
-      $("go").addEventListener("click", next);
-    });
-    $("opts").appendChild(b);
-  });
-  sprich(r.bus+" Wie viele Minuten?");
+      return;
+    }
+    S.doneRound=true;
+    $("min-in").disabled=true;
+    const p=addPunkte();
+    $("fb").innerHTML="<div class=\"fb ok\">"+r.min+" Minuten. +"+p+"</div><p><button type=\"button\" class=\"btn\" id=\"go\">Weiter</button></p>";
+    sprich(r.min+" Minuten.");
+    $("go").addEventListener("click", next);
+  }
+  $("min-ok").addEventListener("click", check);
+  $("min-in").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+  $("min-in").focus();
+  sprich(r.bus+" Wie viele Minuten? Schreib die Zahl.");
 }
 
 function renderD(r){

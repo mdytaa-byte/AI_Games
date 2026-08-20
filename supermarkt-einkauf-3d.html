@@ -72,6 +72,15 @@ body.no-en .en{display:none}
 #cross::before{left:50%;top:3px;width:2px;height:12px;margin-left:-1px}
 #cross::after{top:50%;left:3px;height:2px;width:12px;margin-top:-1px}
 #cross.hot::before,#cross.hot::after{background:var(--sign-yellow)}
+#grabWord{
+  position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) scale(.92);
+  pointer-events:none!important;opacity:0;z-index:12;
+  background:rgba(21,28,38,.94);color:var(--sign-yellow);
+  font-family:var(--display);font-weight:700;font-size:clamp(22px,4.2vw,38px);
+  letter-spacing:.04em;padding:8px 18px;border-radius:10px;
+  box-shadow:0 5px 0 rgba(0,0,0,.4);white-space:nowrap
+}
+#grabWord.on{opacity:1;transform:translate(-50%,-50%) scale(1);transition:opacity .12s,transform .12s}
 #prompt{
   position:absolute;left:50%;top:58%;transform:translateX(-50%);
   background:#151C26;color:var(--sign-yellow);font-weight:600;font-size:14px;
@@ -236,6 +245,7 @@ body.no-en .steps .tr{display:none}
   </div>
 
   <div id="cross" aria-hidden="true"></div>
+  <div id="grabWord" aria-hidden="true"></div>
   <div id="prompt"></div>
   <div id="pa" role="status"></div>
   <div id="toast" role="status"></div>
@@ -260,7 +270,7 @@ body.no-en .steps .tr{display:none}
     </div>
     <ol class="steps">
       <li><span class="n">1</span><span><b>WASD</b> oder Pfeiltasten zum Gehen, Maus zum Umschauen.<span class="tr">Walk with WASD, look with the mouse.</span></span></li>
-      <li><span class="n">2</span><span>Ziel auf ein Produkt und drücke <b>E</b> oder <b>Leertaste</b> — oder öffne die ganze Abteilung.<span class="tr">Aim at a product and press E, or open the whole aisle.</span></span></li>
+      <li><span class="n">2</span><span>Ziel auf ein Produkt und drücke <b>E</b> — es hebt sich, der Artikel (<i>die Milch</i>) sitzt darauf, dann fällt es in den Wagen. Falsches bleibt im Regal.<span class="tr">Aim and press E: the pack lifts, the German article sits on it, then it drops into the cart. Wrong items stay on the shelf.</span></span></li>
       <li><span class="n">3</span><span>An der <b>Bäckerei</b> und der <b>Fleischtheke</b> bestellst du: <i>Ich hätte gern …</i><span class="tr">At the bakery and meat counter you order with “Ich hätte gern…”</span></span></li>
       <li><span class="n">4</span><span>Alles da? Geh zur <b>Kasse</b> und sprich mit der Kassiererin.<span class="tr">Then check out and talk to the cashier.</span></span></li>
     </ol>
@@ -457,8 +467,11 @@ let npcs = [];
 let doors = [];
 let hintHalos = [];
 let cartGrp = null;
+let viewmodel = null;
+let grab = null;
 let lookObj = null;
 let reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let _camHold = null, _basket = null;
 
 function beep(freq, dur, type, vol){
   if(!soundOn) return;
@@ -476,6 +489,7 @@ const sndScan  = () => beep(1180, .09, "square", .05);
 const sndRight = () => { beep(660,.09,"triangle",.07); setTimeout(()=>beep(990,.14,"triangle",.07),90); };
 const sndWrong = () => beep(150, .22, "sawtooth", .05);
 const sndDoor  = () => beep(420, .12, "sine", .04);
+const sndGrab  = () => { beep(380,.07,"sine",.04); setTimeout(()=>beep(520,.09,"sine",.035),70); };
 
 function speak(text){
   if(!CONFIG.speak || !soundOn || !window.speechSynthesis) return;
@@ -912,8 +926,12 @@ function makeCart(){
     g.add(box(0.008, 0.008, bd, metal,  bw/2, 0.18+i*0.06, 0));
   }
   for(let i=0;i<4;i++) g.add(box(0.008, bh, 0.008, metal, -bw/2 + (i+1)*bw/5, 0.32, 0));
-  g.add(box(0.05, 0.28, 0.05, metal, 0.2, 0.48, 0.28));
-  g.add(box(0.28, 0.03, 0.03, red, 0.08, 0.62, 0.28));
+  const grip = new THREE.Group();
+  grip.add(box(0.05, 0.28, 0.05, metal, 0.2, 0.48, 0.28));
+  grip.add(box(0.28, 0.03, 0.03, red, 0.08, 0.62, 0.28));
+  g.add(grip);
+  g.userData.grip = grip;
+  grip.visible = false;
   [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => {
     g.add(cyl(0.055, 0.03, dark, sx*0.16, 0.055, sz*0.2, 12));
     g.add(cyl(0.02, 0.034, metal, sx*0.16, 0.055, sz*0.2, 8));
@@ -923,6 +941,218 @@ function makeCart(){
   g.userData.hold.position.set(0, 0.34, 0);
   g.add(g.userData.hold);
   return g;
+}
+
+function B(opts){ return new THREE.MeshBasicMaterial(opts); }
+function easeOut(t){ return 1 - (1-t)*(1-t); }
+function easeInOut(t){ return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
+
+function makeHands(){
+  const g = new THREE.Group();
+  g.name = "viewmodel";
+  const skin = B({color:0xf0c9a0});
+  const nail = B({color:0xe8c4b0});
+  const sleeve = B({color:0x1C6EC7});
+  const red = B({color:0xDA3633});
+  const metal = B({color:0x9aa6b5});
+  function hand(sign){
+    const h = new THREE.Group();
+    h.add(box(0.078, 0.036, 0.11, skin, 0, 0, 0));
+    for(let i=0;i<4;i++){
+      const x = (i - 1.5) * 0.018;
+      h.add(box(0.015, 0.016, 0.058, skin, x, 0.008, -0.078));
+      h.add(box(0.012, 0.011, 0.012, nail, x, 0.01, -0.102));
+    }
+    h.add(box(0.02, 0.018, 0.042, skin, sign * 0.05, 0.004, -0.018));
+    h.add(box(0.068, 0.068, 0.2, sleeve, 0, 0.008, 0.14));
+    h.userData.rest = new THREE.Vector3(sign * 0.155, -0.228, -0.385);
+    h.position.copy(h.userData.rest);
+    h.rotation.x = 0.58;
+    h.rotation.z = sign * 0.16;
+    h.rotation.y = sign * -0.1;
+    return h;
+  }
+  const left = hand(-1), right = hand(1);
+  g.add(left); g.add(right);
+  const handle = new THREE.Group();
+  handle.add(box(0.48, 0.028, 0.028, red, 0, -0.252, -0.355));
+  handle.add(box(0.026, 0.1, 0.026, metal, -0.22, -0.302, -0.355));
+  handle.add(box(0.026, 0.1, 0.026, metal,  0.22, -0.302, -0.355));
+  g.add(handle);
+  g.userData.left = left; g.userData.right = right; g.userData.handle = handle;
+  g.traverse(o => { if(o.isMesh){ o.castShadow = false; o.receiveShadow = false; o.frustumCulled = false; } });
+  g.frustumCulled = false;
+  return g;
+}
+
+function wordSprite(text){
+  const t = canvasTex(512, 140, (g,W,H) => {
+    g.clearRect(0,0,W,H);
+    const pad = 18;
+    g.font = "700 52px Arial, Helvetica, sans-serif";
+    g.textAlign = "center"; g.textBaseline = "middle";
+    const w = Math.min(W - 16, Math.max(220, g.measureText(text).width + pad*2));
+    const x = (W-w)/2, y = 28, h = 84, r = 18;
+    g.fillStyle = "rgba(21,28,38,0.94)";
+    g.beginPath();
+    g.moveTo(x+r,y); g.lineTo(x+w-r,y); g.quadraticCurveTo(x+w,y,x+w,y+r);
+    g.lineTo(x+w,y+h-r); g.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+    g.lineTo(x+r,y+h); g.quadraticCurveTo(x,y+h,x,y+h-r);
+    g.lineTo(x,y+r); g.quadraticCurveTo(x,y,x+r,y); g.closePath(); g.fill();
+    g.strokeStyle = "#FFD23F"; g.lineWidth = 4; g.stroke();
+    g.fillStyle = "#FFD23F";
+    g.fillText(text, W/2, y + h/2 + 2);
+  });
+  t.wrapS = t.wrapT = THREE.ClampToEdgeWrapping;
+  const mat = new THREE.SpriteMaterial({map:t, transparent:true, depthTest:false, depthWrite:false});
+  const spr = new THREE.Sprite(mat);
+  spr.scale.set(0.72, 0.2, 1);
+  spr.renderOrder = 20;
+  spr.frustumCulled = false;
+  return spr;
+}
+
+function camHold(){
+  if(!_camHold) _camHold = new THREE.Vector3();
+  _camHold.set(0.04, -0.07, -0.56);
+  camera.updateMatrixWorld();
+  return _camHold.applyMatrix4(camera.matrixWorld);
+}
+function basketPos(){
+  if(!_basket) _basket = new THREE.Vector3();
+  if(cartGrp && cartGrp.userData.hold){
+    cartGrp.userData.hold.getWorldPosition(_basket);
+    _basket.y += 0.14;
+  } else _basket.set(player.x, 0.48, player.z);
+  return _basket;
+}
+
+function showGrabWord(text){
+  const el = document.getElementById("grabWord");
+  if(!text){ el.className = ""; el.textContent = ""; return; }
+  el.textContent = text;
+  el.className = "on";
+}
+
+function cancelGrab(){
+  showGrabWord("");
+  if(!grab) return;
+  if(grab.flying) scene.remove(grab.flying);
+  if(grab.mesh){
+    grab.mesh.visible = true;
+    if(grab.origin) grab.mesh.position.copy(grab.origin);
+    if(typeof grab.rotY === "number") grab.mesh.rotation.y = grab.rotY;
+  }
+  grab = null;
+}
+
+function startShake(mesh){
+  if(!mesh || reduced) return;
+  cancelGrab();
+  grab = {kind:"shake", mesh, t:0, origin: mesh.position.clone(), rotY: mesh.rotation.y};
+}
+
+function startGrab(it, mesh){
+  if(!mesh){ restockCart(); return; }
+  if(reduced){ restockCart(); return; }
+  cancelGrab();
+  sndGrab();
+  const start = new THREE.Vector3();
+  mesh.getWorldPosition(start);
+  mesh.visible = false;
+  const flying = productMesh(it, 1.4);
+  flying.position.copy(start);
+  flying.userData.kind = "grab";
+  flying.traverse(o => { o.castShadow = false; if(o.userData) o.userData.kind = "grab"; });
+  const label = wordSprite(nomPhrase(it));
+  label.position.set(0, 0.3, 0);
+  flying.add(label);
+  scene.add(flying);
+  grab = {
+    kind:"take", phase:"lift", t:0, it, mesh, flying, label,
+    start: start.clone(),
+    liftTo: start.clone().add(new THREE.Vector3(0, 0.32, 0))
+  };
+  showGrabWord(nomPhrase(it));
+  speak(nomPhrase(it));
+}
+
+function finishGrab(){
+  if(!grab) return;
+  if(grab.flying) scene.remove(grab.flying);
+  if(grab.mesh) grab.mesh.visible = true;
+  grab = null;
+  showGrabWord("");
+  restockCart();
+}
+
+function updateGrab(dt){
+  if(!grab) return;
+  grab.t += dt;
+  if(grab.kind === "shake"){
+    const life = 0.38;
+    const k = Math.sin(grab.t * 46) * (1 - grab.t / life) * 0.045;
+    grab.mesh.position.x = grab.origin.x + k;
+    grab.mesh.rotation.y = grab.rotY + k * 10;
+    if(grab.t >= life){
+      grab.mesh.position.copy(grab.origin);
+      grab.mesh.rotation.y = grab.rotY;
+      grab = null;
+    }
+    return;
+  }
+  const f = grab.flying;
+  if(!f){ grab = null; return; }
+  let dur = 0.24, next = "fly";
+  if(grab.phase === "lift"){ dur = 0.24; next = "fly"; }
+  else if(grab.phase === "fly"){ dur = 0.42; next = "hold"; }
+  else if(grab.phase === "hold"){ dur = 0.88; next = "drop"; }
+  else { dur = 0.44; next = null; }
+  const u = Math.min(1, grab.t / dur);
+  if(grab.phase === "lift"){
+    f.position.lerpVectors(grab.start, grab.liftTo, easeOut(u));
+    f.rotation.y += dt * 1.4;
+  } else if(grab.phase === "fly"){
+    if(!grab.flyFrom) grab.flyFrom = f.position.clone();
+    f.position.lerpVectors(grab.flyFrom, camHold(), easeInOut(u));
+    f.quaternion.slerp(camera.quaternion, 0.12);
+  } else if(grab.phase === "hold"){
+    f.position.lerp(camHold(), 1 - Math.pow(0.0004, dt));
+    f.quaternion.slerp(camera.quaternion, 0.2);
+    if(grab.label) grab.label.position.y = 0.28 + Math.sin(performance.now()/180)*0.012;
+  } else {
+    if(!grab.dropFrom) grab.dropFrom = f.position.clone();
+    f.position.lerpVectors(grab.dropFrom, basketPos(), easeInOut(u));
+    f.scale.setScalar(1 - 0.42 * u);
+    if(grab.label && grab.label.material) grab.label.material.opacity = 1 - u;
+    if(u > 0.15) showGrabWord("");
+  }
+  if(u >= 1){
+    if(!next){ finishGrab(); return; }
+    grab.phase = next; grab.t = 0; grab.flyFrom = null; grab.dropFrom = null;
+  }
+}
+
+function updateViewmodel(dt){
+  if(!viewmodel) return;
+  viewmodel.visible = !!(S.running && !overlayOpen());
+  if(!viewmodel.visible) return;
+  const walk = (!reduced && player.moving) ? Math.sin(player.walk * 9.5) : 0;
+  let reach = 0;
+  if(grab && grab.kind === "take"){
+    if(grab.phase === "lift") reach = Math.min(1, grab.t / 0.24);
+    else if(grab.phase === "fly") reach = 1;
+    else if(grab.phase === "hold") reach = 1;
+    else reach = 1 - Math.min(1, grab.t / 0.44);
+  }
+  const L = viewmodel.userData.left, R = viewmodel.userData.right;
+  L.position.set(L.userData.rest.x + reach*0.05, L.userData.rest.y + walk*0.006 + reach*0.08, L.userData.rest.z - reach*0.1);
+  R.position.set(R.userData.rest.x - reach*0.08, R.userData.rest.y - walk*0.006 + reach*0.12, R.userData.rest.z - reach*0.22);
+  L.rotation.x = 0.58 - reach*0.25;
+  R.rotation.x = 0.58 - reach*0.55;
+  viewmodel.userData.handle.visible = reach < 0.85;
+  viewmodel.userData.handle.position.y = walk * 0.004;
+  void dt;
 }
 
 function restockCart(){
@@ -1419,6 +1649,10 @@ function init3D(){
     camera = new THREE.PerspectiveCamera(68, host.clientWidth/Math.max(1,host.clientHeight), 0.08, 80);
     camera.rotation.order = "YXZ";
     buildWorld();
+    scene.add(camera);
+    viewmodel = makeHands();
+    camera.add(viewmodel);
+    viewmodel.visible = false;
     try{
       const pmrem = new THREE.PMREMGenerator(renderer);
       const envSc = new THREE.Scene();
@@ -1466,6 +1700,7 @@ function updateDoors(){
 
 function updateCamera(dt){
   if(!S.running){
+    if(viewmodel) viewmodel.visible = false;
     const t = performance.now() * 0.00007;
     camera.position.set(Math.sin(t)*10.5, 5.8, 8 + Math.cos(t)*6.5);
     camera.lookAt(0, 1.1, -1.5);
@@ -1476,13 +1711,14 @@ function updateCamera(dt){
   camera.rotation.y = player.yaw;
   camera.rotation.x = player.pitch;
   if(cartGrp){
-    const back = 0.55, side = 0.38;
+    const fwd = 0.62, side = 0.28;
     const fx = Math.sin(player.yaw), fz = -Math.cos(player.yaw);
     const rx = Math.cos(player.yaw), rz = Math.sin(player.yaw);
-    cartGrp.position.set(player.x + fx*0.55 + rx*side, 0, player.z + fz*0.55 + rz*side);
+    cartGrp.position.set(player.x + fx*fwd + rx*side, 0, player.z + fz*fwd + rz*side);
     cartGrp.rotation.y = player.yaw;
-    cartGrp.visible = player.pitch > -0.55;
+    cartGrp.visible = player.pitch < 0.95;
   }
+  updateViewmodel(dt);
 }
 
 function movePlayer(dt){
@@ -1543,7 +1779,7 @@ function updateHUD(){
   const hintEl = document.getElementById("hint");
   const pr = document.getElementById("prompt");
   const cr = document.getElementById("cross");
-  lookObj = S.running && !overlayOpen() ? raycast() : null;
+  lookObj = S.running && !overlayOpen() && !grab ? raycast() : null;
   cr.classList.toggle("hot", !!lookObj);
   if(lookObj){
     let label = "E  ·  anschauen";
@@ -1603,6 +1839,7 @@ function loop(){
   movePlayer(dt);
   updateDoors();
   updateNPCs(dt);
+  updateGrab(dt);
   updateCamera(dt);
   updateHUD();
   drawMinimap();
@@ -1617,6 +1854,7 @@ function loop(){
 /* ---------- Interaction (pedagogy) ---------- */
 function interact(){
   if(!S.running) return;
+  if(grab) return;
   if(lookObj && lookObj.userData.kind === "item"){ pickItem(byId[lookObj.userData.itemId], lookObj); return; }
   if(lookObj && lookObj.userData.kind === "counter"){ openCounter(secById[lookObj.userData.sec]); return; }
   if(lookObj && lookObj.userData.kind === "kasse"){ openKasse(); return; }
@@ -1636,12 +1874,14 @@ function pickItem(it, mesh){
     toast("Richtig! Du hast <b>" + akkPhrase(it) + "</b> genommen." +
       (e.qty-e.got ? " Du brauchst noch " + (e.qty-e.got) + "." : "") +
       '<span class="tr">Correct — ' + it.en + " added.</span>", "ok", 2800);
-    renderList(); restockCart();
+    renderList();
+    startGrab(it, mesh);
     return;
   }
   if(e && e.got >= e.qty){
     toast("Du hast schon genug! <b>" + phrase(it, e.qty) + "</b> liegen im Wagen." +
       '<span class="tr">You already have enough of those.</span>', "", 2400);
+    startShake(mesh);
     return;
   }
   S.mistakes++; sndWrong();
@@ -1650,6 +1890,8 @@ function pickItem(it, mesh){
   toast("Nein — das ist <b>" + nomPhrase(it) + "</b> (" + it.en + ")." +
     (want ? " Du brauchst <b>" + akkPhrase(want) + "</b>." : "") +
     '<span class="tr">Not on your list.</span>', "no", 3200);
+  speak(nomPhrase(it));
+  startShake(mesh);
 }
 
 function openShelf(sec){
@@ -1880,6 +2122,8 @@ function newGame(){
   S.bag = null; S.payment = "EC-Karte"; S.openSection = null;
   S.flash = null; S.flashUntil = 0; S._counter = false; S.catalog = false;
   player.x = 0; player.z = 9.4; player.yaw = 0; player.pitch = 0.08;
+  cancelGrab();
+  if(viewmodel) viewmodel.visible = true;
   buildList(); renderList(); restockCart();
   S.running = true;
   nextPA = performance.now() + 14000;

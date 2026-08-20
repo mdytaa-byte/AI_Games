@@ -69,7 +69,7 @@
 .bbp-skip {
   position: absolute;
   left: 1rem;
-  top: -4rem;
+  top: 1rem;
   z-index: 40;
   background: var(--bbp-navy);
   color: var(--bbp-ivory);
@@ -77,10 +77,11 @@
   border-radius: 999px;
   text-decoration: none;
   font-family: var(--bbp-sans);
+  transform: translateY(-8rem);
 }
 
 .bbp-skip:focus {
-  top: 1rem;
+  transform: none;
 }
 
 .bbp-splash::before {
@@ -102,7 +103,7 @@
   background: radial-gradient(ellipse 70% 55% at 50% 12%, rgba(232, 144, 58, 0.16), transparent 62%);
 }
 
-.bbp-splash > * {
+.bbp-splash > *:not(.bbp-skip):not(.bbp-rays) {
   position: relative;
   z-index: 1;
 }
@@ -148,9 +149,8 @@
 
 .bbp-brand-text span {
   font-family: var(--bbp-display);
-  font-size: 0.72rem;
-  letter-spacing: 0.38em;
-  text-transform: uppercase;
+  font-size: 0.82rem;
+  letter-spacing: 0.22em;
   color: var(--bbp-olive);
 }
 
@@ -177,12 +177,12 @@
 
 .bbp-hero {
   text-align: center;
-  padding: 3.2rem 0 4.2rem;
+  padding: 1.6rem 0 3.4rem;
 }
 
 .bbp-logo {
-  width: min(18rem, 72vw);
-  margin: 0 auto 0.4rem;
+  width: min(16.5rem, 68vw);
+  margin: 0 auto 0.15rem;
 }
 
 .bbp-wordmark {
@@ -215,9 +215,8 @@
 
 .bbp-pressline span {
   font-family: var(--bbp-display);
-  font-size: 1.15rem;
-  letter-spacing: 0.42em;
-  text-transform: uppercase;
+  font-size: 1.35rem;
+  letter-spacing: 0.18em;
   color: var(--bbp-olive);
 }
 
@@ -347,7 +346,7 @@
   border: 1px solid rgba(90, 107, 56, 0.16);
   border-radius: 1.1rem;
   padding: 1.4rem 1.3rem 1.5rem;
-  box-shadow: var(--bbp-shadow);
+  box-shadow: 0 12px 36px rgba(43, 51, 68, 0.1);
   text-align: left;
 }
 
@@ -457,11 +456,25 @@
   }
 
   .bbp-hero {
-    padding-top: 2.2rem;
+    padding: 1.2rem 0 2.8rem;
   }
 
   .bbp-nav-links {
     display: none;
+  }
+
+  .bbp-subscribe {
+    flex-direction: column;
+  }
+
+  .bbp-subscribe input[type="email"],
+  .bbp-subscribe button {
+    width: 100%;
+  }
+
+  .bbp-foot {
+    flex-direction: column;
+    text-align: center;
   }
 }
 

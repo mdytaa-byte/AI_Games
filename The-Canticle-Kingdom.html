@@ -1340,8 +1340,8 @@ TTTTTTTTTTTTTTTTTTTTTT
 T....................T
 T.............######.T
 T.............#====#.T
-T.............#==D=#.T
-T.............######.T
+T.............#====#.T
+T.............###D##.T
 T....................T
 T....TTTT............T
 T....T..T............T
@@ -1355,7 +1355,7 @@ TTTTTTTTTTTTTTTTTTTTTT
     ],
     exits: [
       { x: 11, y: 10, to: "jorgen_house", tx: 10, ty: 5 },
-      { x: 17, y: 4, to: "cabin_pre", tx: 5, ty: 3 }
+      { x: 17, y: 5, to: "cabin_pre", tx: 5, ty: 3 }
     ]
   });
 
@@ -3970,7 +3970,7 @@ TTTTTTTTTTTTTTTTTTTTTT
       startBook3,
       startNew,
       startBook1() { resetGame(1); beginExplore(); },
-      warp(map, x, y) { state.map = map; state.x = x * TILE; state.y = y * TILE; if (blocked(state.x, state.y)) { /* keep */ } renderHud(); },
+      warp(map, x, y) { state.map = map; state.x = x * TILE; state.y = y * TILE; state._exitLock = false; renderHud(); },
       join(id) { if (!hasHero(id)) state.party.push(member(id)); },
       flag: setFlag, battle: startBattle,
       talkId(id) {

@@ -2443,7 +2443,8 @@ window.TLA={
   pick(i){ if(mode==="choice"&&choice){ choice.sel=Math.max(0,Math.min(choice.opts.length-1,i|0)); choiceInput("ok"); } },
   leave(){ if(mode==="choice") choiceInput("cancel"); },
   mash(){ if(mode==="dialog"){ typed=9999; advanceDialog(); } else if(mode==="choice") this.leave(); else if(mode==="battle") this.kill(); },
-  fight(ids,onWin){ startBattle(ids,onWin); }
+  fight(ids,onWin){ startBattle(ids,onWin); },
+  atk(n){ if(state) state.party.forEach(id=>{ state.heroes[id].atk=n; }); }
 };
 
 requestAnimationFrame(loop);

@@ -79,11 +79,29 @@
       font-size: 10px; color: #d7c6ff; text-shadow: 1px 1px #000; pointer-events: none;
     }
     #goal.show { display: block; }
-    #pause, #battle {
+    #pause, #battle, #journal {
       position: absolute; inset: 0; display: none; pointer-events: auto;
       background: rgba(4,2,10,.72);
     }
     #pause.show, #battle.show { display: grid; place-items: center; }
+    #journal.show { display: grid; place-items: center; z-index: 32; }
+    #journal .panel { width: min(340px, 94%); max-height: 92%; display: flex; flex-direction: column; }
+    #journal .jlist {
+      overflow: auto; max-height: 148px; margin: 6px 0; border: 2px solid #4a3068;
+      background: #0a0618; padding: 4px;
+    }
+    #journal .jitem {
+      display: block; width: 100%; margin: 2px 0; padding: 5px 6px; border: 0;
+      background: transparent; color: #fff4c4; font: 700 11px "Courier New", monospace;
+      text-align: left; cursor: pointer;
+    }
+    #journal .jitem:hover, #journal .jitem:focus { background: #2a1850; }
+    #journal .jitem.locked { color: #6a6080; cursor: default; }
+    #journal .jbody {
+      min-height: 64px; max-height: 88px; overflow: auto; font-size: 11px; line-height: 1.35;
+      color: #e6dcff; margin-bottom: 6px;
+    }
+    #journal .jcount { color: #e8c85a; font-size: 11px; margin-bottom: 4px; }
     .panel {
       width: min(300px, 92%); border: 3px solid var(--gold); background: #120a22;
       padding: 10px; color: var(--pale); font-size: 12px;
@@ -146,6 +164,7 @@
         <button class="menu-btn" id="btnAgain">RETURN TO TITLE</button>
       </div>
       <div id="pause"></div>
+      <div id="journal"></div>
       <div id="battle"></div>
     </div>
     <div id="mobile">
@@ -173,6 +192,7 @@ const dialogEl = document.getElementById("dialog");
 const titleUI = document.getElementById("titleUI");
 const endingUI = document.getElementById("endingUI");
 const pauseEl = document.getElementById("pause");
+const journalEl = document.getElementById("journal");
 const battleEl = document.getElementById("battle");
 const SAVE_KEY = "launch-time-16bit-v1";
 
@@ -200,7 +220,10 @@ const ACTORS = {
   larson: { name: "Mr. Larson", skin: "#e0c8a0", hair: "#c8c8c8", coat: "#3a3a48", acc: "#8899aa", ghost: false },
   courier:{ name: "Courier", skin: "#d2a07a", hair: "#4a3020", coat: "#6a3a18", acc: "#222", ghost: false },
   teller: { name: "Teller", skin: "#e8c4a0", hair: "#8a5040", coat: "#3a5a88", acc: "#fff", ghost: false },
-  sibyl:  { name: "Cave Sibyl", skin: "#c8a070", hair: "#f0e0b0", coat: "#5a3a58", acc: "#c45cff", ghost: false }
+  sibyl:  { name: "Cave Sibyl", skin: "#c8a070", hair: "#f0e0b0", coat: "#5a3a58", acc: "#c45cff", ghost: false },
+  fn:     { name: "J.D. — Footnote", skin: "#e0b48a", hair: "#6a5440", coat: "#2a4068", acc: "#e8c85a", ghost: false },
+  editor: { name: "The Editor", skin: "#e8dcc8", hair: "#3a2010", coat: "#5a1020", acc: "#ff4040", ghost: false },
+  pigeon: { name: "Skeletal Pigeon", skin: "#d8d0c8", hair: "#f0e8e0", coat: "#c8c0b8", acc: "#e8c85a", ghost: true }
 };
 
 const ENEMIES = {
@@ -213,7 +236,8 @@ const ENEMIES = {
   golem:   { name: "Thorn Golem", hp: 48, atk: 9, def: 4, xp: 28, weak: "fire", col: "#2a5a20" },
   felgarath:{ name: "Felgarath", hp: 72, atk: 10, def: 4, xp: 50, weak: "fire", col: "#6a1020", boss: true },
   dragon:  { name: "Mothership Dragon", hp: 64, atk: 11, def: 5, xp: 40, weak: "rabbit", col: "#40c070", boss: true },
-  tiberius:{ name: "Tiberius Plinth", hp: 80, atk: 12, def: 5, xp: 60, weak: "laser", col: "#3090c0", boss: true }
+  tiberius:{ name: "Tiberius Plinth", hp: 80, atk: 12, def: 5, xp: 60, weak: "laser", col: "#3090c0", boss: true },
+  editor: { name: "The Editor", hp: 54, atk: 7, def: 3, xp: 80, weak: "margin", col: "#a01828", boss: true }
 };
 
 const SPELLS = {
@@ -224,7 +248,8 @@ const SPELLS = {
   leaf:     { name: "Red Leaf Fire", mp: 4, dmg: [12, 18], desc: "The mark remembers." },
   confuse:  { name: "Stage Magic", mp: 3, dmg: [6, 10], desc: "Misdirect. Take a bow." },
   laser:    { name: "Laser Sword", mp: 6, dmg: [14, 20], desc: "Gopat, a REAL one this time." },
-  rabbit:   { name: "Bunny Projection", mp: 6, dmg: [16, 22], desc: "Flame-resistant evolutionary theory." }
+  rabbit:   { name: "Bunny Projection", mp: 6, dmg: [16, 22], desc: "Flame-resistant evolutionary theory." },
+  margin:   { name: "Margin Note", mp: 5, dmg: [10, 16], desc: "A footnote with teeth. Stronger for every page you kept." }
 };
 
 const ITEMS = {
@@ -235,8 +260,501 @@ const ITEMS = {
   card: { name: "Club Mercury Card", desc: "Black card. Golden planet. Blue gem." },
   glove: { name: "Magus Glove", desc: "Integration complete." },
   pipes: { name: "Tiberius's Panpipes", desc: "Drums are terribly cumbersome." },
-  crown: { name: "Blue-Jewel Crown", desc: "Thin black crown. One blue jewel." }
+  crown: { name: "Blue-Jewel Crown", desc: "Thin black crown. One blue jewel." },
+  unabridged: { name: "Unabridged Edition", desc: "Seventeen pages, intact, on principle." }
 };
+
+const FOOTNOTES = [
+  {
+    "id": 1,
+    "map": "countryside",
+    "x": 8,
+    "y": 17,
+    "title": "I tried \"Take me to your editor\" once",
+    "text": "I tried “Take me to your editor” once. The editor refused to meet me until I removed seventeen pages of footnotes, which of course I refused to do on principle."
+  },
+  {
+    "id": 2,
+    "map": "countryside",
+    "x": 14,
+    "y": 16,
+    "title": "I used to carry artifacts capable of…",
+    "text": "I used to carry artifacts capable of summoning storms, opening portals, and rearranging the fabric of reality. Now I carry a wristwatch made of plastic. Fate can be cruel."
+  },
+  {
+    "id": 3,
+    "map": "countryside",
+    "x": 6,
+    "y": 15,
+    "title": "Ghosts never bother with seatbelts",
+    "text": "Ghosts never bother with seatbelts. Most people wouldn’t care, but to me, it feels like they are rubbing their immortality in my face."
+  },
+  {
+    "id": 4,
+    "map": "apartment",
+    "x": 2,
+    "y": 2,
+    "title": "I realize this is the modern equivalent…",
+    "text": "I realize this is the modern equivalent of a town crier, except the shouting is done electronically and the tomatoes are metaphorical."
+  },
+  {
+    "id": 5,
+    "map": "apartment",
+    "x": 2,
+    "y": 6,
+    "title": "She was as thin as a rail, her hair was…",
+    "text": "She was as thin as a rail, her hair was black as pitch, her eyes blue as the sky, and her lips ruby red. Oh, and guilty as sin. She also had a mysterious laugh, an ominous cloak, and a habit of appearing in doorways exactly when dramatic tension required it."
+  },
+  {
+    "id": 6,
+    "map": "countryside",
+    "x": 18,
+    "y": 11,
+    "title": "Unfortunately, this skill mostly…",
+    "text": "Unfortunately, this skill mostly predicts disappointment. Welcome to modern life."
+  },
+  {
+    "id": 7,
+    "map": "apartment",
+    "x": 11,
+    "y": 2,
+    "title": "Uppercase prophecies are the worst kind",
+    "text": "Uppercase prophecies are the worst kind. They affect entire worlds, involve rhyming couplets, and rarely provide practical instructions. But they are important, so they warrant the use of a capital letter. I’m not sure who gets to draw the line of what qualifies, but if I ever meet him, he’ll get an earful."
+  },
+  {
+    "id": 8,
+    "map": "beandom",
+    "x": 3,
+    "y": 8,
+    "title": "Merlin did have a fan club named…",
+    "text": "Merlin did have a fan club named “Merlin’s True Visionaries” for a time, who were devoted to collecting prophecies about the famous mage. Unfortunately, they did not foresee the massive dragon who demolished their headquarters during their annual convention."
+  },
+  {
+    "id": 9,
+    "map": "countryside",
+    "x": 8,
+    "y": 5,
+    "title": "Purple is rarely a comforting magical…",
+    "text": "Purple is rarely a comforting magical color. Blue is pleasant, green is suspicious, red is alarming, and purple usually means someone ignored several warnings."
+  },
+  {
+    "id": 10,
+    "map": "countryside",
+    "x": 14,
+    "y": 5,
+    "title": "Wizards rarely consider these questions…",
+    "text": "Wizards rarely consider these questions until the moment arrives. Apprentices are encouraged to plan ahead. My fingers were each insured for a small fortune, though I doubt I could find anyone to honor the policy."
+  },
+  {
+    "id": 11,
+    "map": "apartment",
+    "x": 7,
+    "y": 2,
+    "title": "For reasons beyond my comprehension,…",
+    "text": "For reasons beyond my comprehension, this phrase appears whenever someone teaches a machine to speak. Apparently the machines must greet us before they conquer us."
+  },
+  {
+    "id": 12,
+    "map": "apartment",
+    "x": 1,
+    "y": 4,
+    "title": "At last, a machine capable of doing…",
+    "text": "At last, a machine capable of doing millions of calculations per second and still being defeated by a spilled drink."
+  },
+  {
+    "id": 13,
+    "map": "nyc",
+    "x": 8,
+    "y": 8,
+    "title": "The modern art of telling stories by…",
+    "text": "The modern art of telling stories by projecting light onto walls while selling extremely expensive popcorn."
+  },
+  {
+    "id": 14,
+    "map": "ruins",
+    "x": 12,
+    "y": 2,
+    "title": "Prophecies are rarely written by the…",
+    "text": "Prophecies are rarely written by the people forced to deal with them. Once again, I’m not sure who actually writes these things, and for their safety, it’s probably better that way."
+  },
+  {
+    "id": 15,
+    "map": "nyc",
+    "x": 8,
+    "y": 14,
+    "title": "At the time of this writing, New York…",
+    "text": "At the time of this writing, New York contains approximately three million aspiring actors and six acting jobs."
+  },
+  {
+    "id": 16,
+    "map": "nyc",
+    "x": 10,
+    "y": 12,
+    "title": "An excellent show tune, though rarely…",
+    "text": "An excellent show tune, though rarely performed sincerely by commuters on the New York subway. “Oh, What Tolerable Mornin’” would be more accurate, but would hardly make for good theater."
+  },
+  {
+    "id": 17,
+    "map": "nyc",
+    "x": 11,
+    "y": 5,
+    "title": "Meeting mysterious strangers in dark…",
+    "text": "Meeting mysterious strangers in dark alleys has historically worked out poorly for most people. If historical data is to be believed, such meetings produced an approximately 95% bad outcome rate. Just ask Batman."
+  },
+  {
+    "id": 18,
+    "map": "nyc",
+    "x": 13,
+    "y": 9,
+    "title": "Actors possess an admirable ability to…",
+    "text": "Actors possess an admirable ability to believe any conversation might lead to employment. As you will see, this one did, from a certain point of view."
+  },
+  {
+    "id": 19,
+    "map": "club",
+    "x": 3,
+    "y": 8,
+    "title": "Any establishment named after a planet…",
+    "text": "Any establishment named after a planet should immediately make you suspicious. Such a name immediately triples the odds that it’s a front run by extraterrestrials."
+  },
+  {
+    "id": 20,
+    "map": "apartment",
+    "x": 1,
+    "y": 3,
+    "title": "Modern potions come in aluminum cans…",
+    "text": "Modern potions come in aluminum cans and contain more sugar than most magical elixirs. And don’t get me started on how hard the ingredients are to pronounce. It makes me yearn for the good old days of straightforward potion crafting."
+  },
+  {
+    "id": 21,
+    "map": "cave",
+    "x": 13,
+    "y": 8,
+    "title": "Ghosts consider surprise to be a…",
+    "text": "Ghosts consider surprise to be a perfectly acceptable form of entertainment. They wear their ‘scare count’ as a badge of honor."
+  },
+  {
+    "id": 22,
+    "map": "apartment",
+    "x": 11,
+    "y": 3,
+    "title": "Coffee has replaced approximately…",
+    "text": "Coffee has replaced approximately ninety percent of all traditional wizard stimulants. A Java bean potion was not exactly like modern coffee. It offered more flavor and fewer jitters."
+  },
+  {
+    "id": 23,
+    "map": "apartment",
+    "x": 8,
+    "y": 4,
+    "title": "A phrase guaranteed to terrify both…",
+    "text": "A phrase guaranteed to terrify both wizards and computer technicians."
+  },
+  {
+    "id": 24,
+    "map": "ruins",
+    "x": 17,
+    "y": 10,
+    "title": "When technology and prophecy start…",
+    "text": "When technology and prophecy start using the same metaphors, things are rarely going well."
+  },
+  {
+    "id": 25,
+    "map": "apartment",
+    "x": 11,
+    "y": 6,
+    "title": "Idioms have confused Petra for centuries",
+    "text": "Idioms have confused Petra for centuries. I have stopped trying to explain them."
+  },
+  {
+    "id": 26,
+    "map": "beandom",
+    "x": 20,
+    "y": 8,
+    "title": "The Netherworld's postal system uses…",
+    "text": "The Netherworld’s postal system uses skeletal birds, which are faster than ravens because they are unencumbered by things like flesh and feathers."
+  },
+  {
+    "id": 27,
+    "map": "garyapt",
+    "x": 1,
+    "y": 2,
+    "title": "Even in the afterlife, the postal…",
+    "text": "Even in the afterlife, the postal service remains astonishingly inefficient. Living pigeons are hard enough to motivate, but what do you give to a pigeon that’s already dead?"
+  },
+  {
+    "id": 28,
+    "map": "cave",
+    "x": 2,
+    "y": 8,
+    "title": "Which is simply a fancy way of saying…",
+    "text": "Which is simply a fancy way of saying “ghost who asks too many questions.” Curiosity may have killed the cat, but it probably killed him too. I think it was the lovely pair of cement shoes he wears that gave it away."
+  },
+  {
+    "id": 29,
+    "map": "island",
+    "x": 6,
+    "y": 11,
+    "title": "For some reason, prophecies love…",
+    "text": "For some reason, prophecies love numbers, though the numbers rarely make sense. The worst example I have seen was the so-called “Fractious Fraction Prophecy,” which contained no fewer than a dozen fractions, including oddities like 1/37."
+  },
+  {
+    "id": 30,
+    "map": "island",
+    "x": 8,
+    "y": 8,
+    "title": "Unfortunately, there are many old…",
+    "text": "Unfortunately, there are many old books, and they all claim different tricks. The oldest trick in the oldest book I could find has to do with a couple of cavemen playing ‘made you look’ with a woolly mammoth. I doubt that’s the trick we’re talking about."
+  },
+  {
+    "id": 31,
+    "map": "club",
+    "x": 12,
+    "y": 8,
+    "title": "In the Beandom, there was a tavern…",
+    "text": "In the Beandom, there was a tavern called Mercury that featured magicians doing tricks with melted metal. The act was in great demand, but it stopped suddenly when they realized they’d been ingesting poison every night for the past five years. They left town in a hurry as part of their act had been dropping bits of metal into people’s drinks. So as far as I’m concerned, nothing good ever happens in Mercury, and our current story bears that out."
+  },
+  {
+    "id": 32,
+    "map": "club",
+    "x": 4,
+    "y": 2,
+    "title": "Conan the Barbarian: a fictional…",
+    "text": "Conan the Barbarian: a fictional warrior celebrated for his muscles, his brooding, and his profound allergy to shirts. The Beandom produced several of his type, though ours at least had the decency to wear questing attire."
+  },
+  {
+    "id": 33,
+    "map": "office",
+    "x": 2,
+    "y": 6,
+    "title": "Villains always keep the good liquor",
+    "text": "Villains always keep the good liquor. I have a theory that their rotten natures make things ferment faster around them. In any case, he was sharing a cask of Bean-ot Noir, of the Supreme Bean vintage. It came from the Beandom’s royal vineyards; how he managed to swipe one remains a mystery."
+  },
+  {
+    "id": 34,
+    "map": "office",
+    "x": 9,
+    "y": 6,
+    "title": "It is a curious age in which genuine…",
+    "text": "It is a curious age in which genuine magic is dismissed as superstition while painted cards and lettered boards are treated as the real article. The dead I know find this endlessly amusing."
+  },
+  {
+    "id": 35,
+    "map": "office",
+    "x": 2,
+    "y": 1,
+    "title": "Magical tests are almost never painless",
+    "text": "Magical tests are almost never painless. Among the most painful is the test to see if you’re a carrier for Goblin Pox, which basically tears you apart at a cellular level and puts you back together. Some argue that the test is more dangerous than the disease itself, and there is some truth in that."
+  },
+  {
+    "id": 36,
+    "map": "office",
+    "x": 9,
+    "y": 1,
+    "title": "Symbols involving multiple snake heads…",
+    "text": "Symbols involving multiple snake heads are traditionally a bad sign. They have been used since antiquity by villains of all stripes, but it has, at times, gotten out of hand. Once, two rival dark lords kept adding snakes to their symbols on their robes and banners until they both looked like they were wearing a bouquet of serpents. The first time someone mistook the symbol for a flower, they both went back to one."
+  },
+  {
+    "id": 37,
+    "map": "office",
+    "x": 1,
+    "y": 4,
+    "title": "Star Wars: an epic in which a farm boy…",
+    "text": "Star Wars: an epic in which a farm boy discovers he is secretly of a powerful magical lineage and is swept into a cosmic conflict he never asked for. I cannot for the life of me imagine why it resonates with people."
+  },
+  {
+    "id": 38,
+    "map": "garyapt",
+    "x": 4,
+    "y": 1,
+    "title": "Villains tend to pay better than…",
+    "text": "Villains tend to pay better than legitimate employers, though they tend to only offer insurance plans with truly diabolical customer service and billing departments. Ever tried to dispute a charge with an ogre?"
+  },
+  {
+    "id": 39,
+    "map": "arcade",
+    "x": 12,
+    "y": 7,
+    "title": "Arcade machines consume coins with a…",
+    "text": "Arcade machines consume coins with a hunger rivaled only by dragons. Except for a silver dragon I once knew, the ferocious Feartel, who enjoyed consuming coins rather than hoarding them. He could regurgitate them at high speed at his enemies, so the attack was feared even more than his fiery breath. Today, we might call him a Quarterback dragon."
+  },
+  {
+    "id": 40,
+    "map": "arcade",
+    "x": 2,
+    "y": 5,
+    "title": "Bowling alleys remain one of the few…",
+    "text": "Bowling alleys remain one of the few places where wizards, teenagers, and retired accountants coexist peacefully."
+  },
+  {
+    "id": 41,
+    "map": "arcade",
+    "x": 8,
+    "y": 2,
+    "title": "For reasons I cannot explain, modern…",
+    "text": "For reasons I cannot explain, modern society practices heroism by jumping over barrels. I can’t understand how the barrels got up on that scaffolding to begin with. And since when do apes know how to set them on fire? I could go on, but for now, I shall suspend my disbelief in pursuit of fun."
+  },
+  {
+    "id": 42,
+    "map": "arcade",
+    "x": 13,
+    "y": 2,
+    "title": "Scholars and adventurers alike have…",
+    "text": "Scholars and adventurers alike have spent centuries searching for the lost magical realms. But most of them were so enamored of Atlantis and looking under the sea that few of them thought to check underground."
+  },
+  {
+    "id": 43,
+    "map": "garyapt",
+    "x": 7,
+    "y": 4,
+    "title": "Important magical paperwork is always…",
+    "text": "Important magical paperwork is always delivered at suspicious hours, especially by Pixie Post. They seem to think it’s funny to wake up the ‘smelly giants’ or whatever name they have for normal-sized people nowadays."
+  },
+  {
+    "id": 44,
+    "map": "bank",
+    "x": 2,
+    "y": 5,
+    "title": "I have no idea who this is, but Gary…",
+    "text": "I have no idea who this is, but Gary assured me the comparison is deeply flattering to the abdomen in question."
+  },
+  {
+    "id": 45,
+    "map": "ruins",
+    "x": 3,
+    "y": 5,
+    "title": "Computers enjoy dramatic pauses almost…",
+    "text": "Computers enjoy dramatic pauses almost as much as wizards."
+  },
+  {
+    "id": 46,
+    "map": "ruins",
+    "x": 20,
+    "y": 5,
+    "title": "Whenever someone says \"combine ancient…",
+    "text": "Whenever someone says “combine ancient magic with new technology,” you should step several feet back. You’re liable to catch a curse and a computer virus simultaneously. I’m not sure whom you call to help you with that."
+  },
+  {
+    "id": 47,
+    "map": "apartment",
+    "x": 7,
+    "y": 5,
+    "title": "Time travel is widely considered the…",
+    "text": "Time travel is widely considered the fastest way to make a complicated situation worse. I have personal experience with this as evidenced by some of my previous records. I’ll let you review those."
+  },
+  {
+    "id": 48,
+    "map": "ship",
+    "x": 4,
+    "y": 3,
+    "title": "Indiana Jones is a fictional scholar…",
+    "text": "Indiana Jones is a fictional scholar who solves ancient riddles chiefly by running away from them very quickly. As archaeological methods go, it is more effective than one might hope."
+  },
+  {
+    "id": 49,
+    "map": "ship",
+    "x": 15,
+    "y": 3,
+    "title": "A dish in which a chicken is persuaded…",
+    "text": "A dish in which a chicken is persuaded to contain both ham and cheese, presumably against its wishes. The Beandom never managed to fit one animal so tidily inside another, though our chefs died trying. Several of them."
+  },
+  {
+    "id": 50,
+    "map": "ship",
+    "x": 10,
+    "y": 8,
+    "title": "Modern courtship involves escorting…",
+    "text": "Modern courtship involves escorting one’s beloved to watch strangers play games, and then to admire a single enormous decorated tree. In my day, one simply slew something impressive and presented the head. Both customs have their detractors."
+  },
+  {
+    "id": 51,
+    "map": "ruins",
+    "x": 6,
+    "y": 10,
+    "title": "A scrying-glass that shows mostly…",
+    "text": "A scrying-glass that shows mostly sharks, the assembly of very large vehicles, and the occasional man shouting about gold. Against all odds, I find it soothing."
+  },
+  {
+    "id": 52,
+    "map": "mothership",
+    "x": 2,
+    "y": 8,
+    "title": "A Swiss Army knife is a tiny toolbox…",
+    "text": "A Swiss Army knife is a tiny toolbox masquerading as a blade, able to open bottles, file nails, and, in theory, remove stones from horses’ hooves, though I have yet to meet anyone who has used that last part. Gopat is much the same, minus the bottle opener."
+  },
+  {
+    "id": 53,
+    "map": "mothership",
+    "x": 16,
+    "y": 8,
+    "title": "NASA is the realm's foremost guild of…",
+    "text": "NASA is the realm’s foremost guild of sky-wizards, who hurl their apprentices into the heavens atop enormous, carefully scheduled explosions. I admire the ambition and have profound questions about the methodology."
+  },
+  {
+    "id": 54,
+    "map": "bank",
+    "x": 11,
+    "y": 5,
+    "title": "Dr",
+    "text": "Dr. Pepper holds no medical degree that I have been able to confirm. I wrote to inquire and received, by way of reply, only more Dr. Pepper, which I suppose settles the matter."
+  },
+  {
+    "id": 55,
+    "map": "mothership",
+    "x": 2,
+    "y": 1,
+    "title": "The Care Bears were an enormously…",
+    "text": "The Care Bears were an enormously popular troop of pastel bears who fired beams of pure affection from their stomachs. I maintain that ‘Beanful Babies’ was the superior concept, though I concede the stomach-beam is a difficult act to follow."
+  },
+  {
+    "id": 56,
+    "map": "beandom",
+    "x": 2,
+    "y": 3,
+    "title": "It was, in fact, the third option",
+    "text": "It was, in fact, the third option. The ‘luteolin” was infamous throughout the Netherworld. I’ll let you fill in the blanks."
+  },
+  {
+    "id": 57,
+    "map": "beandom",
+    "x": 21,
+    "y": 3,
+    "title": "Rightbeard is the master of combining…",
+    "text": "Rightbeard is the master of combining goods deeds and bad deeds. He did indeed get the aforementioned refugees to safety. But along the way, he managed to charge every kind of fee, tariff, and surcharge known to man or beast. His “excessive blinking fee” was especially egregious, seeing as he strategically hid raw onions throughout the ship."
+  },
+  {
+    "id": 58,
+    "map": "beandom",
+    "x": 6,
+    "y": 10,
+    "title": "Pokémon are small magical creatures who…",
+    "text": "Pokémon are small magical creatures who battle one another for sport and are stored in pocket-sized spheres. The Beandom banned the practice ages ago, largely because our creatures kept eating the spheres."
+  },
+  {
+    "id": 59,
+    "map": "mothership",
+    "x": 16,
+    "y": 1,
+    "title": "The thing about odds is that it's a big…",
+    "text": "The thing about odds is that it’s a big universe out there. Just for kicks, I later looked into this question and it turns out there is an alien gem collector named Trevor Pogonopolis who also operates on the far side of Saturn. But he had nothing to do with Mercury Enterprises, so it’s a moot point."
+  },
+  {
+    "id": 60,
+    "map": "beandom",
+    "x": 17,
+    "y": 10,
+    "title": "I'm looking at you, Farmer Mordeck",
+    "text": "I’m looking at you, Farmer Mordeck. I know you tricked me in that game of Bury the Bard. I want my signed Elvish Parsley card back."
+  },
+  {
+    "id": 61,
+    "map": "mothership",
+    "x": 10,
+    "y": 2,
+    "title": "A rival sorcerer had cursed one of my…",
+    "text": "A rival sorcerer had cursed one of my molars to explode as soon as the sun set. I arrived at twilight, and had to proceed with the extraction without anesthesia. We had just enough time to chuck the tooth-bomb out the window, where it blew a hole the size of a full-grown ogre in the dentist’s front lawn. You should have seen the bill for that whole incident."
+  }
+];
+
 
 function mapFrom(rows) {
   const grid = rows.map((r) => r.split(""));
@@ -431,6 +949,18 @@ const MAPS = {
     "#.......h..........#",
     "#..................#",
     "####################"
+  ]),
+  copydesk: mapFrom([
+    "################",
+    "#..............#",
+    "#..oooooooooo..#",
+    "#..o........o..#",
+    "#..o........o..#",
+    "#..o........o..#",
+    "#..oooooooooo..#",
+    "#..............#",
+    "#......h.......#",
+    "####D###########"
   ])
 };
 
@@ -658,7 +1188,9 @@ function newState() {
     glove: false,
     petraOut: false,
     sergio: false,
-    vincenza: false
+    vincenza: false,
+    notes: {},
+    returnTo: null
   };
 }
 
@@ -766,7 +1298,7 @@ function finishGame() {
   mode = "ending";
   hudEl.classList.remove("show");
   goalEl.classList.remove("show");
-  sayMany([
+  const lines = [
     ["gary", "Vincenza? I was expecting... wait. We're married?"],
     ["vincenza", "I'd like to name him after my dad. His first name is Sergio."],
     ["jd", "Gary had awakened to the life he might have lived."],
@@ -774,10 +1306,15 @@ function finishGame() {
     ["gopat", "Adler's message suggests that we are already behind schedule."],
     ["jd", "Then there won't be anyone left to write Book Three."],
     ["jd", "Set course for the Eagle's Roost. Excelsior!"]
-  ], () => {
+  ];
+  if (state.flags.editorDone) {
+    lines.splice(lines.length - 1, 0, ["jd", "And the footnotes stayed. All sixty-one of them. On principle."]);
+  }
+  sayMany(lines, () => {
     endingUI.classList.add("show");
     document.getElementById("endingText").textContent =
-      "One piece of the Deus Ex Machina is ours. Fourteen remain. The Singhilarity is already racing toward Tatsrar. The mothership plunges into Middlespace. Book I is complete.";
+      "One piece of the Deus Ex Machina is ours. Fourteen remain. The Singhilarity is already racing toward Tatsrar. The mothership plunges into Middlespace. Book I is complete."
+      + (state.flags.editorDone ? " The Unabridged Edition rides along in the satchel." : "");
     localStorage.removeItem(SAVE_KEY);
   });
 }
@@ -789,8 +1326,149 @@ function loadSave() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const s = JSON.parse(raw);
+    if (!s.notes) s.notes = {};
+    return s;
   } catch (e) { return null; }
+}
+
+function noteCount() {
+  if (!state || !state.notes) return 0;
+  return FOOTNOTES.reduce((n, fn) => n + (state.notes[fn.id] || state.notes[String(fn.id)] ? 1 : 0), 0);
+}
+function allNotesFound() { return noteCount() === FOOTNOTES.length; }
+function noteAt(tx, ty) {
+  return FOOTNOTES.find((fn) => fn.map === state.map && fn.x === tx && fn.y === ty && !(state.notes[fn.id] || state.notes[String(fn.id)]));
+}
+function pigeonTile() {
+  const m = curMap();
+  const taken = new Set(FOOTNOTES.filter((f) => f.map === state.map).map((f) => f.x + "," + f.y));
+  for (let y = m.h - 2; y >= 1; y--) {
+    for (let x = 1; x < m.w - 1; x++) {
+      if (!BLOCK.has(m.grid[y][x]) && !taken.has(x + "," + y)) return { x, y };
+    }
+  }
+  return { x: 2, y: 2 };
+}
+function collectNote(fn) {
+  state.notes[fn.id] = true;
+  save();
+  const n = noteCount();
+  const lines = [
+    ["fn", "† " + n + " / " + FOOTNOTES.length + " — " + fn.title],
+    ["fn", fn.text]
+  ];
+  if (n === FOOTNOTES.length && !state.flags.editorQuest) {
+    state.flags.editorQuest = true;
+    lines.push(["jd", "That's every margin. On principle. I believe I have earned a meeting."]);
+    lines.push(["pigeon", "A skeletal pigeon flaps out of the Netherworld postal system, unencumbered by flesh, feathers, or patience."]);
+    setGoal("Speak to the skeletal pigeon. The Editor will see you now.");
+  } else {
+    lines.push(["", "Filed in the journal (X, then JOURNAL)."]);
+  }
+  sayMany(lines);
+}
+
+function enterCopydesk() {
+  state.returnTo = { map: state.map, x: state.x, y: state.y };
+  state.map = "copydesk";
+  state.x = 7 * TS;
+  state.y = 8 * TS;
+  state.dir = "up";
+  state.flags.editorVisit = true;
+  setGoal("Meet the Editor. Do not cut the footnotes.");
+  sayMany([
+    ["editor", "Seventeen pages. Cut them. Then we will talk."],
+    ["jd", "I refused to do so on principle. I still refuse."]
+  ]);
+}
+
+function leaveCopydesk() {
+  const r = state.returnTo || { map: chapter().map, x: chapter().spawn[0] * TS, y: chapter().spawn[1] * TS };
+  state.map = r.map;
+  state.x = r.x;
+  state.y = r.y;
+  state.returnTo = null;
+  save();
+  setGoal(state.flags.editorDone ? chapter().goal : "The Unabridged Edition is yours. The main quest continues.");
+}
+
+function startEditorQuest() {
+  sayMany([
+    ["pigeon", "The Editor will see you now. Bring the footnotes. All of them."],
+    ["jd", "I tried 'Take me to your editor' once. This time I brought seventeen pages and refused to leave them at the door."]
+  ], () => enterCopydesk());
+}
+
+function talkEditor() {
+  if (state.flags.editorDone) {
+    say("editor", "Fine. Keep the margins. On principle. Now get off my copy desk.");
+    return;
+  }
+  mode = "choice";
+  showChoices([
+    ["Refuse to cut a single footnote", () => {
+      mode = "explore";
+      sayMany([
+        ["jd", "I refused on principle then. I refuse on principle now."],
+        ["editor", "Then the red pen will have to do the cutting."]
+      ], () => startBattle("editor", () => {
+        state.flags.editorDone = true;
+        give("unabridged");
+        save();
+        sayMany([
+          ["editor", "Very well. The Unabridged Edition stands."],
+          ["jd", "Margin notes with teeth. I think I'll keep this spell."],
+          ["pigeon", "The Netherworld postal system stamps your journal COMPLETE."]
+        ], () => leaveCopydesk());
+      }));
+    }],
+    ["Offer to cut seventeen pages", () => {
+      mode = "explore";
+      say("jd", "Absolutely not. I only said that so you would hear how it sounds. The footnotes stay.");
+    }]
+  ]);
+}
+
+function openJournal() {
+  closeMenu();
+  mode = "journal";
+  const found = noteCount();
+  const total = FOOTNOTES.length;
+  const rows = FOOTNOTES.map((fn) => {
+    const have = state.notes[fn.id] || state.notes[String(fn.id)];
+    const label = have ? ("†" + fn.id + "  " + fn.title) : ("†" + fn.id + "  — uncollected —");
+    return `<button class="jitem${have ? "" : " locked"}" data-id="${fn.id}">${label}</button>`;
+  }).join("");
+  const extra = state.flags.editorDone
+    ? "Side quest complete: The Unabridged Edition."
+    : (found === total ? "All footnotes filed. A skeletal pigeon is waiting." : "Optional. Hunt the gold daggers while you explore.");
+  const questBtn = (found === total && !state.flags.editorDone)
+    ? `<button id="jQuest">MEET THE EDITOR</button>` : "";
+  journalEl.classList.add("show");
+  journalEl.innerHTML = `<div class="panel">
+    <h2>J.D.'S JOURNAL</h2>
+    <div class="jcount">${found} / ${total} footnotes · ${extra}</div>
+    <div class="jbody" id="jbody">Select a collected footnote to reread J.D.'s commentary.</div>
+    <div class="jlist">${rows}</div>
+    ${questBtn}
+    <button id="jClose">CLOSE</button>
+  </div>`;
+  journalEl.querySelector("#jClose").onclick = closeJournal;
+  const jq = journalEl.querySelector("#jQuest");
+  if (jq) jq.onclick = () => { closeJournal(); startEditorQuest(); };
+  journalEl.querySelectorAll(".jitem").forEach((btn) => {
+    btn.onclick = () => {
+      const fn = FOOTNOTES.find((f) => String(f.id) === btn.dataset.id);
+      if (!fn || !(state.notes[fn.id] || state.notes[String(fn.id)])) return;
+      journalEl.querySelector("#jbody").textContent = "† " + fn.title + " — " + fn.text;
+    };
+  });
+}
+function closeJournal() {
+  journalEl.classList.remove("show");
+  journalEl.innerHTML = "";
+  if (mode === "journal") mode = "explore";
 }
 
 function interact() {
@@ -801,6 +1479,21 @@ function interact() {
   const flags = state.flags;
   const t = (f.t && f.t !== "." && f.t !== "," && f.t !== "=" && f.t !== "h") ? f.t : under;
   const tx = f.tx, ty = f.ty;
+  const standTx = Math.floor((state.x + 8) / TS), standTy = Math.floor((state.y + 12) / TS);
+
+  const note = noteAt(f.tx, f.ty) || noteAt(standTx, standTy);
+  if (note) { collectNote(note); return; }
+
+  if (state.flags.editorQuest && !state.flags.editorDone && state.map !== "copydesk") {
+    const p = pigeonTile();
+    if (near(p.x, p.y, 2)) { startEditorQuest(); return; }
+  }
+  if (state.map === "copydesk") {
+    if (near(7, 4, 2) || t === "o") { talkEditor(); return; }
+    if (t === "D" && state.flags.editorDone) { leaveCopydesk(); return; }
+    say("editor", "The copy desk does not have a snack bar. It has a red pen.");
+    return;
+  }
 
   if (state.hero === "jd" && !state.petraOut && ch.id === "ch1" && t !== "*") {
     sayMany([
@@ -1221,12 +1914,14 @@ function openMenu() {
     <div>LV ${state.lv}  HP ${state.hp}/${state.maxHp}  MP ${state.mp}/${state.maxMp}</div>
     ${prop}
     <p>${inv}</p>
+    <button id="mJournal">JOURNAL (${noteCount()}/${FOOTNOTES.length})</button>
     <button id="mPetra">SUMMON PETRA (NAVY DOT)</button>
     <button id="mItem">USE COLA</button>
     <button id="mSave">SAVE QUEST</button>
     <button id="mClose">CLOSE</button>
   </div>`;
   pauseEl.querySelector("#mClose").onclick = closeMenu;
+  pauseEl.querySelector("#mJournal").onclick = openJournal;
   pauseEl.querySelector("#mSave").onclick = () => { save(); closeMenu(); say("", "The watch ticks. Progress remembered."); };
   pauseEl.querySelector("#mItem").onclick = () => { useItem("coke"); closeMenu(); };
   pauseEl.querySelector("#mPetra").onclick = () => {
@@ -1299,9 +1994,14 @@ function renderBattle() {
 }
 
 function heroSpells() {
-  if (state.hero === "gary") return state.flags.leaf || state.flags.fire ? ["leaf", "confuse"] : ["confuse"];
+  if (state.hero === "gary") {
+    const g = state.flags.leaf || state.flags.fire ? ["leaf", "confuse"] : ["confuse"];
+    if (allNotesFound()) g.push("margin");
+    return g;
+  }
   const s = ["fireball", "quench", "prog"];
   if (state.glove) s.push("silence", "laser", "rabbit");
+  if (allNotesFound()) s.push("margin");
   return s;
 }
 
@@ -1348,7 +2048,13 @@ function castSpell(id) {
     || (id === "leaf" && (battle.foe.weak === "fire" || battle.foe.weak === "quench"))
     || (id === "confuse" && battle.foe.weak === "confuse")
     || (id === "laser" && battle.foe.weak === "laser")
-    || (id === "rabbit" && battle.foe.weak === "rabbit");
+    || (id === "rabbit" && battle.foe.weak === "rabbit")
+    || (id === "margin" && battle.foe.weak === "margin");
+  if (id === "margin") {
+    const extra = Math.floor(noteCount() / 6);
+    playerHit(sp.dmg[0] + extra, sp.dmg[1] + extra, sp.name + "!", weak);
+    return;
+  }
   playerHit(sp.dmg[0], sp.dmg[1], sp.name + "!", weak);
 }
 
@@ -1460,6 +2166,7 @@ function draw() {
     drawActor(state.x + 16, state.y, "vincenza", "left", false);
   }
   drawChapterNpcs();
+  drawFootnotes();
   if (mode === "card") {
     ctx.fillStyle = "rgba(6,2,14,0.55)";
     ctx.fillRect(0, 0, W, H);
@@ -1596,8 +2303,30 @@ function drawChapterNpcs() {
   }
   if (ch.id === "ch12") drawActor(7 * TS, 4 * TS, "felgarath", "down", false);
   if (ch.id === "ch14" || ch.id === "ch15") drawActor(6 * TS, 4 * TS, "tiberius", "down", false);
+  if (state.map === "copydesk") drawActor(7 * TS, 4 * TS, "editor", "down", false);
+  if (state.flags.editorQuest && !state.flags.editorDone && state.map !== "copydesk") {
+    const p = pigeonTile();
+    drawActor(p.x * TS, p.y * TS, "pigeon", "down", false);
+  }
 }
 
+function drawFootnotes() {
+  if (!state) return;
+  for (let i = 0; i < FOOTNOTES.length; i++) {
+    const fn = FOOTNOTES[i];
+    if (fn.map !== state.map) continue;
+    if (state.notes[fn.id] || state.notes[String(fn.id)]) continue;
+    const x = fn.x * TS - cam.x, y = fn.y * TS - cam.y;
+    if (x < -TS || y < -TS || x > W || y > H) continue;
+    const pulse = 0.45 + 0.55 * Math.sin(anim / 8);
+    ctx.fillStyle = "rgba(20,10,40,0.55)";
+    ctx.fillRect(x + 4, y + 3, 8, 11);
+    ctx.fillStyle = `rgba(232,200,90,${0.55 + pulse * 0.45})`;
+    ctx.fillRect(x + 7, y + 3, 2, 10);
+    ctx.fillRect(x + 5, y + 4, 6, 2);
+    ctx.fillRect(x + 6, y + 11, 4, 2);
+  }
+}
 function drawActor(px, py, who, dir, moving) {
   const a = ACTORS[who];
   if (!a) return;
@@ -1641,7 +2370,7 @@ function updateHud() {
   hudEl.innerHTML = `<div class="hud-card">${ACTORS[state.hero].name} LV${state.lv}
     <div class="hpbar${low}"><i style="width:${Math.max(0, 100 * state.hp / state.maxHp)}%"></i></div>
     HP ${state.hp}/${state.maxHp}  MP ${state.mp}/${state.maxMp}</div>
-    <div class="hud-card">CH ${state.ch + 1}/${CHAPTERS.length}<br>${chapter().title}</div>`;
+    <div class="hud-card">CH ${state.ch + 1}/${CHAPTERS.length}<br>${chapter().title}<br>† ${noteCount()}/${FOOTNOTES.length}</div>`;
 }
 
 function update(dt) {
@@ -1683,7 +2412,7 @@ function update(dt) {
 function confirm() {
   getAudio();
   if (dialogEl.classList.contains("show")) { nextLine(); beep(660, 0.04); return; }
-  if (mode === "title" || mode === "ending" || mode === "pause" || mode === "choice" || mode === "battle") return;
+  if (mode === "title" || mode === "ending" || mode === "pause" || mode === "choice" || mode === "battle" || mode === "journal") return;
   interact();
 }
 
@@ -1697,7 +2426,8 @@ window.addEventListener("keydown", (e) => {
   if (k === "arrowright") keys.right = true;
   if (k === "z" || k === "enter" || k === " ") confirm();
   if (k === "x" || k === "escape") {
-    if (mode === "pause") closeMenu();
+    if (mode === "journal") closeJournal();
+    else if (mode === "pause") closeMenu();
     else openMenu();
   }
 });
@@ -1715,7 +2445,11 @@ document.querySelectorAll("#mobile b[data-k]").forEach((b) => {
   const down = (e) => {
     e.preventDefault();
     if (k === "ok") confirm();
-    else if (k === "menu") { if (mode === "pause") closeMenu(); else openMenu(); }
+    else if (k === "menu") {
+      if (mode === "journal") closeJournal();
+      else if (mode === "pause") closeMenu();
+      else openMenu();
+    }
     else keys[k] = true;
   };
   const up = () => { if (k !== "ok" && k !== "menu") keys[k] = false; };
@@ -1754,6 +2488,7 @@ document.getElementById("btnHow").onclick = () => {
     ["", "You play J.D. Zaubermann and Gary Baumgartner in alternating chapters from the novel."],
     ["", "Talk to everyone. Touch glowing gears. When a purple wisp or a treble appears, fight."],
     ["", "J.D.'s watch summons Petra. Gopat's glove learns spells. Gary's red-leaf mark remembers fire."],
+    ["", "Gold daggers on the map are optional footnotes — J.D.'s commentary. File them in the journal (X). Collect every one to unlock a side quest."],
     ["", "The prophecy wants the twelve and the three at the site of the tree. Book I ends at Excelsior."]
   ]);
 };
@@ -1778,6 +2513,13 @@ window.LAUNCH_TIME = {
   mode: () => mode,
   facing: () => facingTile(),
   talk: () => interact(),
+  notes: () => FOOTNOTES,
+  collectAll: () => {
+    FOOTNOTES.forEach((fn) => { state.notes[fn.id] = true; });
+    state.flags.editorQuest = true;
+    save();
+  },
+  winFight: () => { if (typeof battle !== "undefined" && battle) { battle.foe.hp = 0; winBattle(); } },
   chapters: CHAPTERS.map((c) => c.id),
   maps: Object.keys(MAPS)
 };

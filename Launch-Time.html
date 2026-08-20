@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Launch Time — 16-bit RPG</title>
+  <style>
+    :root {
+      --navy: #1a1430;
+      --gold: #e8c85a;
+      --pale: #fff4c4;
+      --purple: #9b5cff;
+      --ink: #0a0714;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; height: 100%; background: #05030a; color: var(--pale);
+      font-family: "Courier New", Courier, ui-monospace, monospace;
+      overflow: hidden; user-select: none; touch-action: none;
+    }
+    #wrap {
+      position: absolute; inset: 0; display: grid; place-items: center;
+    }
+    #stage {
+      position: relative; image-rendering: pixelated; image-rendering: crisp-edges;
+      box-shadow: 0 0 0 3px #2a1a4a, 0 0 0 6px #e8c85a, 0 18px 50px rgba(155,92,255,.35);
+      background: #000;
+    }
+    canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+    #hud { z-index: 4; } #goal { z-index: 4; }
+    #dialog { z-index: 40; }
+    #titleUI, #endingUI { z-index: 20; }
+    #pause { z-index: 30; } #battle { z-index: 35; }
+    .overlay {
+      position: absolute; inset: 0; display: none; pointer-events: none;
+    }
+    .overlay.show { display: block; }
+    #titleUI, #endingUI {
+      pointer-events: auto;
+      background:
+        radial-gradient(circle at 50% 28%, rgba(155,92,255,.35), transparent 42%),
+        linear-gradient(#12081f, #070510 58%, #140a28);
+      color: var(--pale); text-align: center; padding: 18px 16px 12px;
+    }
+    #titleUI h1, #endingUI h1 {
+      margin: 0; font-size: 28px; letter-spacing: .16em; color: #ffe58a;
+      text-shadow: 3px 3px 0 #4a1d86, -1px 0 #9b5cff;
+    }
+    #titleUI .sub { margin: 6px 0 16px; color: #c9b4ff; font-size: 11px; letter-spacing: .08em; }
+    .menu-btn {
+      pointer-events: auto; display: block; width: min(280px, 86%); margin: 7px auto;
+      padding: 8px 10px; border: 3px solid var(--gold); background: linear-gradient(#3a1f78, #1a0d3a);
+      color: var(--pale); font: 700 13px "Courier New", monospace; letter-spacing: .08em;
+      cursor: pointer; text-shadow: 2px 2px #000;
+    }
+    .menu-btn:hover, .menu-btn:focus { filter: brightness(1.25); outline: none; }
+    #dialog {
+      position: absolute; left: 6px; right: 6px; bottom: 6px; min-height: 58px;
+      border: 3px solid var(--gold); background: rgba(10,7,20,.94); color: var(--pale);
+      padding: 7px 10px 8px; font-size: 12px; line-height: 1.35; pointer-events: auto;
+      text-shadow: 1px 1px #000; display: none;
+    }
+    #dialog.show { display: block; }
+    #dialog .who { color: var(--gold); font-weight: 700; letter-spacing: .06em; }
+    #dialog .next { position: absolute; right: 8px; bottom: 4px; color: var(--gold); animation: blink 1s steps(2) infinite; }
+    #hud {
+      position: absolute; left: 6px; top: 6px; right: 6px; display: none; pointer-events: none;
+      font-size: 10px; text-shadow: 1px 1px #000;
+    }
+    #hud.show { display: flex; justify-content: space-between; gap: 8px; }
+    .hud-card {
+      border: 2px solid #e8c85a; background: rgba(12,8,28,.86); padding: 4px 7px; min-width: 108px;
+    }
+    .hpbar { height: 5px; background: #2a2038; margin-top: 3px; }
+    .hpbar > i { display: block; height: 100%; background: linear-gradient(#7dff9a, #1f9a4a); }
+    .hpbar.low > i { background: linear-gradient(#ff7a62, #b41e2e); }
+    #goal {
+      position: absolute; left: 6px; right: 6px; top: 44px; display: none;
+      font-size: 10px; color: #d7c6ff; text-shadow: 1px 1px #000; pointer-events: none;
+    }
+    #goal.show { display: block; }
+    #pause, #battle {
+      position: absolute; inset: 0; display: none; pointer-events: auto;
+      background: rgba(4,2,10,.72);
+    }
+    #pause.show, #battle.show { display: grid; place-items: center; }
+    .panel {
+      width: min(300px, 92%); border: 3px solid var(--gold); background: #120a22;
+      padding: 10px; color: var(--pale); font-size: 12px;
+    }
+    .panel h2 { margin: 0 0 8px; font-size: 13px; color: var(--gold); letter-spacing: .1em; }
+    .panel button, .blist button {
+      display: block; width: 100%; margin: 4px 0; padding: 6px; border: 2px solid #c9a33a;
+      background: #231547; color: var(--pale); font: 700 12px "Courier New", monospace; cursor: pointer; text-align: left;
+    }
+    .panel button:hover, .blist button:hover, .panel button:focus { filter: brightness(1.2); }
+    .choice { display: block; width: 100%; margin: 5px 0; padding: 7px; border: 2px solid #9b5cff;
+      background: #1b1036; color: #fff4c4; font: 700 12px "Courier New", monospace; cursor: pointer; text-align: left; }
+    #battle .panel { width: min(340px, 94%); }
+    .brow { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+    .bstat { flex: 1; border: 2px solid #6d4cff; padding: 5px; background: #0d0820; }
+    .blist { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    #mobile {
+      display: none; position: absolute; left: 0; right: 0; bottom: 8px; height: 132px;
+      pointer-events: none; justify-content: space-between; padding: 0 12px;
+    }
+    .pad, .ab { pointer-events: auto; }
+    .pad { display: grid; grid-template-columns: 44px 44px 44px; grid-template-rows: 44px 44px 44px; gap: 4px; }
+    .pad b, .ab b {
+      display: grid; place-items: center; border: 2px solid #e8c85a; background: rgba(30,16,64,.8);
+      color: #fff4c4; font-size: 14px; font-weight: 700;
+    }
+    .pad b:nth-child(1), .pad b:nth-child(3), .pad b:nth-child(7), .pad b:nth-child(9) { visibility: hidden; }
+    .ab { display: flex; gap: 10px; align-items: flex-end; }
+    .ab b { width: 54px; height: 54px; border-radius: 50%; }
+    @keyframes blink { 50% { opacity: 0; } }
+    @media (max-width: 820px), (pointer: coarse) {
+      #mobile { display: flex; }
+      #wrap { align-items: start; padding-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="wrap">
+    <div id="stage">
+      <canvas id="game" width="256" height="224"></canvas>
+      <div id="hud"></div>
+      <div id="goal"></div>
+      <div id="dialog"><div class="who"></div><div class="txt"></div><div class="next">▼</div></div>
+      <div id="titleUI" class="overlay show">
+        <div style="height:54px"></div>
+        <h1>LAUNCH TIME</h1>
+        <div class="sub">BOOK I · A WONDERFUL WEEK FOR A LAUNCH</div>
+        <p style="max-width:340px;margin:0 auto 14px;font-size:11px;line-height:1.45;color:#e6dcff">
+          A 16-bit RPG from the novel by Michael D. Young, with footnotes by J.D. Zaubermann.
+        </p>
+        <button class="menu-btn" id="btnNew">NEW QUEST</button>
+        <button class="menu-btn" id="btnContinue">CONTINUE</button>
+        <button class="menu-btn" id="btnHow">HOW TO PLAY</button>
+        <p style="margin-top:16px;font-size:10px;color:#9b8cc0">ARROWS / WASD MOVE · Z / SPACE CONFIRM · X MENU</p>
+      </div>
+      <div id="endingUI" class="overlay">
+        <h1>EXCELSIOR</h1>
+        <div class="sub" id="endingSub">THE END OF BOOK I</div>
+        <p id="endingText" style="max-width:360px;margin:10px auto 14px;font-size:11px;line-height:1.5;color:#e6dcff"></p>
+        <button class="menu-btn" id="btnAgain">RETURN TO TITLE</button>
+      </div>
+      <div id="pause"></div>
+      <div id="battle"></div>
+    </div>
+    <div id="mobile">
+      <div class="pad">
+        <b></b><b data-k="up">▲</b><b></b>
+        <b data-k="left">◀</b><b></b><b data-k="right">▶</b>
+        <b></b><b data-k="down">▼</b><b></b>
+      </div>
+      <div class="ab">
+        <b data-k="menu">X</b>
+        <b data-k="ok">Z</b>
+      </div>
+    </div>
+  </div>
+<script>
+"use strict";
+const W = 256, H = 224, TS = 16;
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+const stage = document.getElementById("stage");
+const hudEl = document.getElementById("hud");
+const goalEl = document.getElementById("goal");
+const dialogEl = document.getElementById("dialog");
+const titleUI = document.getElementById("titleUI");
+const endingUI = document.getElementById("endingUI");
+const pauseEl = document.getElementById("pause");
+const battleEl = document.getElementById("battle");
+const SAVE_KEY = "launch-time-16bit-v1";
+
+const PAL = {
+  night: "#0b1024", grass: "#16351c", grass2: "#1f4a24", road: "#3a3a44",
+  dirt: "#4a3724", crater: "#2a1848", glow: "#c45cff", wall: "#1c1630",
+  wood: "#6a3d22", floor: "#3a2a1c", rug: "#4a2040", neon: "#3ad0ff",
+  water: "#163a68", sand: "#c2a46a", bean: "#2f6a28", lumen: "#6ad0ff",
+  space: "#07061a", gold: "#e8c85a", ink: "#fff4c4"
+};
+
+const ACTORS = {
+  jd:     { name: "J.D.", skin: "#e0b48a", hair: "#6a5440", coat: "#2a4068", acc: "#1a3a8a", ghost: false },
+  petra:  { name: "Petra", skin: "#c8e8ff", hair: "#d8c070", coat: "#7ec8e8", acc: "#ffffff", ghost: true },
+  gary:   { name: "Gary", skin: "#dca888", hair: "#3a2418", coat: "#6a3a28", acc: "#222", ghost: false },
+  mercury:{ name: "Mr. Mercury", skin: "#c49470", hair: "#1a1210", coat: "#121014", acc: "#c9a33a", ghost: false },
+  vincenza:{ name: "Vincenza", skin: "#c68658", hair: "#1a0e08", coat: "#3a5a78", acc: "#c9a33a", ghost: false },
+  sergio: { name: "Sergio", skin: "#c9a07a", hair: "#161616", coat: "#4a4a52", acc: "#222", ghost: false },
+  gopat:  { name: "Gopat", skin: "#d0e8ff", hair: "#8ad0ff", coat: "#5a7a9a", acc: "#c45cff", ghost: false },
+  rightbeard:{ name: "Rightbeard", skin: "#e8c8a0", hair: "#f0f0f0", coat: "#3a3048", acc: "#8899aa", ghost: false },
+  beanwitch:{ name: "Beanwitch", skin: "#e0b070", hair: "#6a2030", coat: "#2a5a28", acc: "#c45cff", ghost: false },
+  felgarath:{ name: "Felgarath", skin: "#b09070", hair: "#2a1010", coat: "#4a1020", acc: "#ff4040", ghost: false },
+  tiberius:{ name: "Tiberius", skin: "#4aa0d0", hair: "#083050", coat: "#f0e8c8", acc: "#e8c85a", ghost: false },
+  bouncer:{ name: "Bouncer", skin: "#8a6244", hair: "#0e0e0e", coat: "#1a1a22", acc: "#888", ghost: false },
+  larson: { name: "Mr. Larson", skin: "#e0c8a0", hair: "#c8c8c8", coat: "#3a3a48", acc: "#8899aa", ghost: false },
+  courier:{ name: "Courier", skin: "#d2a07a", hair: "#4a3020", coat: "#6a3a18", acc: "#222", ghost: false },
+  teller: { name: "Teller", skin: "#e8c4a0", hair: "#8a5040", coat: "#3a5a88", acc: "#fff", ghost: false },
+  sibyl:  { name: "Cave Sibyl", skin: "#c8a070", hair: "#f0e0b0", coat: "#5a3a58", acc: "#c45cff", ghost: false }
+};
+
+const ENEMIES = {
+  wisp:    { name: "Purple Wisp", hp: 18, atk: 4, def: 1, xp: 8, weak: "quench", col: "#c45cff" },
+  punk:    { name: "Alley Tough", hp: 22, atk: 5, def: 1, xp: 10, weak: "fire", col: "#8a3040" },
+  bouncer: { name: "Club Bouncer", hp: 28, atk: 6, def: 2, xp: 12, weak: "confuse", col: "#303040" },
+  barrel:  { name: "Flaming Barrel", hp: 16, atk: 6, def: 0, xp: 6, weak: "quench", col: "#ff6030" },
+  treble:  { name: "Treble", hp: 36, atk: 8, def: 6, xp: 20, weak: "silence", col: "#f0e8d8" },
+  spark:   { name: "Red-Leaf Spark", hp: 20, atk: 7, def: 1, xp: 10, weak: "quench", col: "#ff4040" },
+  golem:   { name: "Thorn Golem", hp: 48, atk: 9, def: 4, xp: 28, weak: "fire", col: "#2a5a20" },
+  felgarath:{ name: "Felgarath", hp: 72, atk: 10, def: 4, xp: 50, weak: "fire", col: "#6a1020", boss: true },
+  dragon:  { name: "Mothership Dragon", hp: 64, atk: 11, def: 5, xp: 40, weak: "rabbit", col: "#40c070", boss: true },
+  tiberius:{ name: "Tiberius Plinth", hp: 80, atk: 12, def: 5, xp: 60, weak: "laser", col: "#3090c0", boss: true }
+};
+
+const SPELLS = {
+  fireball: { name: "Fireball", mp: 4, dmg: [10, 16], desc: "A classic. Beans optional." },
+  quench:   { name: "Quench", mp: 3, dmg: [8, 12], desc: "Douse flame and wild magic." },
+  prog:     { name: "Prognosticate", mp: 2, dmg: [0, 0], desc: "Reveal HP and a weakness." },
+  silence:  { name: "Iso-Silence", mp: 5, dmg: [6, 10], desc: "Gopat's sonic shield, weaponized." },
+  leaf:     { name: "Red Leaf Fire", mp: 4, dmg: [12, 18], desc: "The mark remembers." },
+  confuse:  { name: "Stage Magic", mp: 3, dmg: [6, 10], desc: "Misdirect. Take a bow." },
+  laser:    { name: "Laser Sword", mp: 6, dmg: [14, 20], desc: "Gopat, a REAL one this time." },
+  rabbit:   { name: "Bunny Projection", mp: 6, dmg: [16, 22], desc: "Flame-resistant evolutionary theory." }
+};
+
+const ITEMS = {
+  coke: { name: "Coca-Cola", heal: 18, desc: "A fizzy potion. Don't you ever change." },
+  beans: { name: "Vulcan Beans", heal: 12, desc: "Grimblewaith would approve." },
+  helmet: { name: "Yeti Helmet", desc: "Sound-dampening fur from Yetipalooza." },
+  gear: { name: "DEM Gear", desc: "A piece of the Deus Ex Machina." },
+  card: { name: "Club Mercury Card", desc: "Black card. Golden planet. Blue gem." },
+  glove: { name: "Magus Glove", desc: "Integration complete." },
+  pipes: { name: "Tiberius's Panpipes", desc: "Drums are terribly cumbersome." },
+  crown: { name: "Blue-Jewel Crown", desc: "Thin black crown. One blue jewel." }
+};
+
+function mapFrom(rows) {
+  const grid = rows.map((r) => r.split(""));
+  return { w: grid[0].length, h: grid.length, grid };
+}
+
+const MAPS = {
+  countryside: mapFrom([
+    "########################",
+    "#TT......TTT...........#",
+    "#T......TT+TT..........#",
+    "#........T+T...........#",
+    "#.........,,...........#",
+    "#.........,*,..........#",
+    "#.........,,...........#",
+    "#..........,...........#",
+    "#..........,...........#",
+    "#====,====,,====,======#",
+    "#....=............=....#",
+    "#....=............=....#",
+    "#TT..=............=.TT.#",
+    "#T...=............=..T.#",
+    "#....=====,,,,=====....#",
+    "#..........,,..........#",
+    "#.........A,,..........#",
+    "#..........,,..........#",
+    "#TTTT......,,.....TTTT.#",
+    "########################"
+  ]),
+  apartment: mapFrom([
+    "##############",
+    "#s..k$....B..#",
+    "#............#",
+    "#..f....c....#",
+    "#............#",
+    "#....w.......#",
+    "#............#",
+    "##D###########"
+  ]),
+  nyc: mapFrom([
+    "########################",
+    "#HHHH..=======....HHHHH#",
+    "#H..H..=.....=....H..TH#",
+    "#H..H..=.a...=....H...H#",
+    "#HHHH..=======....HHHHH#",
+    "#......=======.........#",
+    "#......=======.........#",
+    "#HHHH..=======....HHHHH#",
+    "#H..H..=.....=....H...H#",
+    "#H..H..=.....=....H...H#",
+    "#HHHH..=======....HH.HH#",
+    "#~~~~~~=======~~~~~~~~.#",
+    "#~~~~~~=======~~~~~~~~.#",
+    "#......=======.........#",
+    "#......=======....n....#",
+    "########################"
+  ]),
+  club: mapFrom([
+    "################",
+    "#..............#",
+    "#....=======...#",
+    "#....=======...#",
+    "#....=======...#",
+    "#NN..=======.NN#",
+    "#N...=======..N#",
+    "#....===M===...#",
+    "#..............#",
+    "####D###########"
+  ]),
+  office: mapFrom([
+    "############",
+    "#..........#",
+    "#..oooooo..#",
+    "#..o.*..o..#",
+    "#..oooooo..#",
+    "#..........#",
+    "#....h.....#",
+    "#..........#",
+    "####D#######"
+  ]),
+  arcade: mapFrom([
+    "################",
+    "#..............#",
+    "#.mmm.....mmm..#",
+    "#.mKm.....m.m..#",
+    "#.mmm.....mmm..#",
+    "#..............#",
+    "#....====......#",
+    "#..............#",
+    "####D###########"
+  ]),
+  garyapt: mapFrom([
+    "##########",
+    "#p...b...#",
+    "#........#",
+    "#...c....#",
+    "#........#",
+    "##D#######"
+  ]),
+  bank: mapFrom([
+    "##############",
+    "#............#",
+    "#..oooooooo..#",
+    "#............#",
+    "#....h.......#",
+    "#............#",
+    "####D#########"
+  ]),
+  ruins: mapFrom([
+    "########################",
+    "#RR..RR....RR....RR..RR#",
+    "#R....R....R......R...R#",
+    "#..%%...........%%.....#",
+    "#..%%....A......%%.....#",
+    "#......................#",
+    "#RR..............RR....#",
+    "#R.....%%%%.......R....#",
+    "#......%%%%............#",
+    "#......................#",
+    "#..%%..........%%......#",
+    "#..%%....D.....%%......#",
+    "#RR..............RR..RR#",
+    "########################"
+  ]),
+  ship: mapFrom([
+    "####################",
+    "#~~~~~~~~~~~~~~~~~~#",
+    "#~~............~~~~#",
+    "#~.....====......~~#",
+    "#~.....====......~~#",
+    "#~.....====......~~#",
+    "#~~....====.....~~~#",
+    "#~~~...====....~~~~#",
+    "#~~~~..====...~~~~~#",
+    "#~~~~~======~~~~~~~#",
+    "####################"
+  ]),
+  island: mapFrom([
+    "####################",
+    "#~~~~~~~~TTT~~~~~~~#",
+    "#~~~~~~.....~~~~~~~#",
+    "#~~~~~.......~~~~~~#",
+    "#~~~~...***...~~~~~#",
+    "#~~~~~.......~~~~~~#",
+    "#~~~~~~.....~~~~~~~#",
+    "#~~~~~~.....~~~~~~~#",
+    "#~~~~~~.....~~~~~~~#",
+    "#~~~~~.......~~~~~~#",
+    "#~~~~....C....~~~~~#",
+    "#~~~~~.......~~~~~~#",
+    "#~~~~~~.....~~~~~~~#",
+    "####################"
+  ]),
+  cave: mapFrom([
+    "################",
+    "#..............#",
+    "#....T..T......#",
+    "#...T.**.T.....#",
+    "#...T.**.T.....#",
+    "#....T..T......#",
+    "#..............#",
+    "#..............#",
+    "#......h.......#",
+    "#..............#",
+    "####D###########"
+  ]),
+  beandom: mapFrom([
+    "########################",
+    "#bbbbbb....LLLL..bbbbbb#",
+    "#bb..bb....LLLL..bb..bb#",
+    "#......................#",
+    "#..bb....++++....bb....#",
+    "#..bb...++**++...bb....#",
+    "#.......++**++.........#",
+    "#........++++..........#",
+    "#......................#",
+    "#bbbb..............bbbb#",
+    "#bb..................bb#",
+    "#.........h............#",
+    "#bbbb..............bbbb#",
+    "########################"
+  ]),
+  mothership: mapFrom([
+    "####################",
+    "#..................#",
+    "#..=======.........#",
+    "#..=.....=....BBB..#",
+    "#..=..P..=....B.B..#",
+    "#..=.....=....BBB..#",
+    "#..=======.........#",
+    "#..................#",
+    "#.......h..........#",
+    "#..................#",
+    "####################"
+  ])
+};
+
+const SOLID = new Set("#HTRNBokfsmwcKpA*+".split(""));
+SOLID.delete("*");
+SOLID.delete("+");
+SOLID.delete("A");
+SOLID.delete("K");
+SOLID.delete("w");
+SOLID.delete("f");
+SOLID.delete("s");
+SOLID.delete("c");
+SOLID.delete("p");
+SOLID.delete("b");
+SOLID.delete("m");
+SOLID.delete("$");
+SOLID.delete("o");
+// walls, water, buildings, machines that block
+const BLOCK = new Set(["#", "H", "T", "R", "N", "B", "~"]);
+
+const CHAPTERS = [
+  {
+    id: "ch1",
+    title: "THE PURPLE LIGHT",
+    subtitle: "01010001 01110101 01100101 01110011 01110100",
+    hero: "jd",
+    map: "countryside",
+    spawn: [11, 16],
+    goal: "Summon Petra, then investigate the crater.",
+    intro: [
+      ["jd", "Greetings, people of Earth. Take me to your reader. Ah. Yes. That's you."],
+      ["jd", "I'm immortal, magic has nearly faded, and my companions linger as ghosts. I go by J.D. now."],
+      ["jd", "Enough history. The new trouble began with a purple light falling out of the sky."]
+    ]
+  },
+  {
+    id: "ch2",
+    title: "THE UPPER CASE",
+    hero: "jd",
+    map: "apartment",
+    spawn: [4, 6],
+    goal: "Decode the binary at your computer.",
+    intro: [
+      ["petra", "Well? What is it? My bet's on absolute nonsense."],
+      ["jd", "That's where you're wrong, my friend. I'll show you."]
+    ]
+  },
+  {
+    id: "ch3",
+    title: "GARY'S AUDITION",
+    hero: "gary",
+    map: "nyc",
+    spawn: [9, 13],
+    goal: "Get to the theater. Try not to miss your stop.",
+    intro: [
+      ["jd", "Watch him closely. He's about to become an important actor — just not on the stage he was expecting."],
+      ["gary", "Oklahoma sides, Walkman with a short in the wire, and a city that already rolled right over me."]
+    ]
+  },
+  {
+    id: "ch4",
+    title: "EXPEDITION RED LEAF",
+    hero: "gary",
+    map: "club",
+    spawn: [8, 8],
+    goal: "Show the card and meet Mr. Mercury.",
+    intro: [
+      ["gary", "Oklahoma! is a known entity. Club Mercury is a mystery with my name on a black card."]
+    ]
+  },
+  {
+    id: "ch5",
+    title: "GAME OVER",
+    hero: "jd",
+    map: "arcade",
+    spawn: [4, 7],
+    goal: "Play the ape machine, then hear Petra's news.",
+    intro: [
+      ["jd", "All right, you big filthy ape. I've got an entire roll of quarters, and I know how to use them."]
+    ]
+  },
+  {
+    id: "ch6",
+    title: "MESSAGE FOR A MILLIONAIRE",
+    hero: "gary",
+    map: "garyapt",
+    spawn: [2, 4],
+    goal: "Decide whether to sign Mercury's contract.",
+    intro: [
+      ["gary", "One million bucks. Just for starters. The mark on my hand gets warm when I think about walking away."]
+    ]
+  },
+  {
+    id: "ch7",
+    title: "GREAT GOOGLY MOOGLY",
+    hero: "jd",
+    map: "apartment",
+    spawn: [4, 6],
+    goal: "Merge the DEM with the computer. Petra must witness it.",
+    intro: [
+      ["jd", "One keystroke. More megabytes than this primitive machine knows what to do with."]
+    ]
+  },
+  {
+    id: "ch8",
+    title: "FIRE AT SEA",
+    hero: "gary",
+    map: "ship",
+    spawn: [8, 5],
+    goal: "Find Vincenza. Keep dinner — and your hands — under control.",
+    intro: [
+      ["gary", "Some people see rolling waves as beautiful. I am struggling not to throw up everything I've ever eaten."]
+    ]
+  },
+  {
+    id: "ch9",
+    title: "MAGUS 1.2",
+    hero: "jd",
+    map: "apartment",
+    spawn: [4, 6],
+    goal: "Run Magus 1.2 and ask Gopat to find the island.",
+    intro: [
+      ["jd", "The glove fused to my skin. On the back: Run magus 1.2?"]
+    ]
+  },
+  {
+    id: "ch10",
+    title: "THE SUNKEN DOOR",
+    hero: "gary",
+    map: "island",
+    spawn: [10, 11],
+    goal: "Find the cave in the hill and the tree below.",
+    intro: [
+      ["gary", "The island feels like going home to a place I have never been."]
+    ]
+  },
+  {
+    id: "ch11",
+    title: "RETURN TO THE BEANDOM",
+    hero: "jd",
+    map: "beandom",
+    spawn: [11, 11],
+    goal: "Speak with the Beanwitch and find the anti-pirate.",
+    intro: [
+      ["jd", "Borobeans underfoot. Lumen beans above. There can be no mistaking it: I have returned to the Beandom."]
+    ]
+  },
+  {
+    id: "ch12",
+    title: "ROOTS AND BRANCHES",
+    hero: "gary",
+    map: "cave",
+    spawn: [7, 8],
+    goal: "Approach the red tree. Do not let Felgarath keep the last word.",
+    intro: [
+      ["vincenza", "It's beautiful and terrifying at the same time."],
+      ["gary", "I don't know. But I'm willing to find out."]
+    ]
+  },
+  {
+    id: "ch13",
+    title: "THE TREBLE WITH TREBLES",
+    hero: "jd",
+    map: "ruins",
+    spawn: [10, 11],
+    goal: "Reach the Treble Mothership with Sergio.",
+    intro: [
+      ["sergio", "If you want a ship that's going to take you a long way... it's the Treble Mothership."],
+      ["jd", "Naturally."]
+    ]
+  },
+  {
+    id: "ch14",
+    title: "THE BLUE",
+    hero: "jd",
+    map: "mothership",
+    spawn: [8, 8],
+    goal: "Find T.P. — Tiberius Plinth, the Blue Messenger.",
+    intro: [
+      ["tiberius", "Well done. You're smarter than most."]
+    ]
+  },
+  {
+    id: "ch15",
+    title: "EXCELSIOR",
+    hero: "jd",
+    map: "mothership",
+    spawn: [8, 4],
+    goal: "Set course for the Eagle's Roost.",
+    intro: [
+      ["jd", "Fourteen pieces remain. The Singhilarity is already heading for Tatsrar."]
+    ]
+  }
+];
+
+let keys = Object.create(null);
+let mode = "title";
+let state = null;
+let dialogQ = [];
+let dialogCb = null;
+let typing = "";
+let typeFull = "";
+let typeT = 0;
+let cam = { x: 0, y: 0 };
+let anim = 0;
+let last = 0;
+let battle = null;
+let audio;
+let musicTimer = 0;
+let encounterCool = 0;
+
+function deep(o) { return JSON.parse(JSON.stringify(o)); }
+
+function newState() {
+  return {
+    ch: 0,
+    hero: "jd",
+    x: 11 * TS, y: 16 * TS, dir: "up", moving: false,
+    hp: 40, maxHp: 40, mp: 16, maxMp: 16, xp: 0, lv: 1,
+    items: { coke: 3, beans: 1 },
+    flags: {},
+    party: ["jd"],
+    map: "countryside",
+    prophecy: false,
+    glove: false,
+    petraOut: false,
+    sergio: false,
+    vincenza: false
+  };
+}
+
+function chapter() { return CHAPTERS[state.ch]; }
+function curMap() { return MAPS[state.map]; }
+
+function tileAt(px, py) {
+  const m = curMap();
+  const tx = Math.floor(px / TS), ty = Math.floor(py / TS);
+  if (ty < 0 || tx < 0 || ty >= m.h || tx >= m.w) return "#";
+  return m.grid[ty][tx];
+}
+function blocked(px, py) {
+  const pts = [
+    [px + 3, py + 10], [px + 12, py + 10],
+    [px + 3, py + 15], [px + 12, py + 15]
+  ];
+  return pts.some(([x, y]) => BLOCK.has(tileAt(x, y)));
+}
+
+function say(who, text) {
+  dialogQ.push({ who, text });
+  if (!dialogEl.classList.contains("show")) nextLine();
+}
+function sayMany(lines, cb) {
+  lines.forEach((l) => dialogQ.push({ who: l[0], text: l[1] }));
+  dialogCb = cb || null;
+  if (!dialogEl.classList.contains("show")) nextLine();
+}
+function nextLine() {
+  if (typing.length < typeFull.length) {
+    typing = typeFull;
+    renderDialog();
+    return;
+  }
+  const n = dialogQ.shift();
+  if (!n) {
+    dialogEl.classList.remove("show");
+    typeFull = typing = "";
+    const cb = dialogCb; dialogCb = null;
+    if (cb) cb();
+    return;
+  }
+  const actor = ACTORS[n.who] || { name: n.who };
+  dialogEl.querySelector(".who").textContent = actor.name.toUpperCase();
+  typeFull = n.text;
+  typing = "";
+  dialogEl.classList.add("show");
+  renderDialog();
+}
+function renderDialog() {
+  dialogEl.querySelector(".txt").textContent = typing;
+}
+
+function setGoal(t) {
+  goalEl.textContent = t ? "QUEST: " + t : "";
+  goalEl.classList.toggle("show", mode === "explore" && !!t);
+}
+
+function loadChapter(i, extraIntro) {
+  state.ch = i;
+  const ch = CHAPTERS[i];
+  state.hero = ch.hero;
+  state.map = ch.map;
+  state.x = ch.spawn[0] * TS;
+  state.y = ch.spawn[1] * TS;
+  state.dir = "up";
+  state.petraOut = false;
+  if (ch.hero === "jd") { state.party = state.sergio ? ["jd", "sergio"] : ["jd"]; state.maxHp = 40 + state.lv * 4; }
+  else { state.party = state.vincenza ? ["gary", "vincenza"] : ["gary"]; state.maxHp = 32 + state.lv * 3; }
+  state.hp = state.maxHp;
+  state.mp = state.maxMp;
+  mode = "explore";
+  titleUI.classList.remove("show");
+  endingUI.classList.remove("show");
+  pauseEl.classList.remove("show");
+  battleEl.classList.remove("show");
+  hudEl.classList.add("show");
+  setGoal(ch.goal);
+  save();
+  showTitleCard(ch, extraIntro);
+}
+
+function showTitleCard(ch, extraIntro) {
+  mode = "card";
+  const lines = [
+    ["", "CHAPTER " + (state.ch + 1)],
+    ["", ch.title],
+    ...(ch.subtitle ? [["", ch.subtitle]] : []),
+    ...ch.intro
+  ];
+  if (extraIntro) lines.push(...extraIntro);
+  sayMany(lines, () => { mode = "explore"; });
+}
+
+function advanceChapter() {
+  if (state.ch >= CHAPTERS.length - 1) {
+    finishGame();
+    return;
+  }
+  loadChapter(state.ch + 1);
+}
+
+function finishGame() {
+  mode = "ending";
+  hudEl.classList.remove("show");
+  goalEl.classList.remove("show");
+  sayMany([
+    ["gary", "Vincenza? I was expecting... wait. We're married?"],
+    ["vincenza", "I'd like to name him after my dad. His first name is Sergio."],
+    ["jd", "Gary had awakened to the life he might have lived."],
+    ["sergio", "The coordinates are confirmed. The Eagle's Roost. After that, Tatsrar."],
+    ["gopat", "Adler's message suggests that we are already behind schedule."],
+    ["jd", "Then there won't be anyone left to write Book Three."],
+    ["jd", "Set course for the Eagle's Roost. Excelsior!"]
+  ], () => {
+    endingUI.classList.add("show");
+    document.getElementById("endingText").textContent =
+      "One piece of the Deus Ex Machina is ours. Fourteen remain. The Singhilarity is already racing toward Tatsrar. The mothership plunges into Middlespace. Book I is complete.";
+    localStorage.removeItem(SAVE_KEY);
+  });
+}
+
+function save() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+function loadSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) { return null; }
+}
+
+function interact() {
+  if (mode !== "explore") return;
+  const f = facingTile();
+  const under = tileAt(state.x + 8, state.y + 12);
+  const ch = chapter();
+  const flags = state.flags;
+  const t = (f.t && f.t !== "." && f.t !== "," && f.t !== "=" && f.t !== "h") ? f.t : under;
+  const tx = f.tx, ty = f.ty;
+
+  if (state.hero === "jd" && !state.petraOut && ch.id === "ch1" && t !== "*") {
+    sayMany([
+      ["jd", "The watch looks cheap. Dark blue band, colored dots. I tell people it's from a comic book."],
+      ["jd", "Each dot summons a different spirit. Tonight I need the voice that keeps me in line."],
+      ["jd", "Petra."]
+    ], () => {
+      state.petraOut = true;
+      flags.petra = true;
+      say("petra", "Hey. Long time no hunt. I was starting to think you'd forgotten about me.");
+    });
+    return;
+  }
+
+  if (t === "*" && ch.id === "ch1") {
+    sayMany([
+      ["petra", "Yep, that's a big shiny gear, all right. Looks like one of the bigger ones."],
+      ["jd", "If this isn't the DEM, it is definitely something we do not want in unscrupulous hands."],
+      ["jd", "Pinky first. I'd never been one for pinky rings anyway."]
+    ], () => startBattle("wisp", () => {
+      sayMany([
+        ["", "Yellow letters scroll out of blackness:"],
+        ["", "Help me, J.D. Zaubermann. You're probably my only hope."],
+        ["", "Then, in blocky green: Hello, world."],
+        ["petra", "Jackdaw! Jackdaw! You were like... in a trance!"],
+        ["jd", "Hello, world — then ones and zeros. It etched itself into my mind."],
+        ["jd", "There is something in this time that speaks precisely that kind of code. The computer."]
+      ], () => {
+        flags.gear = true;
+        give("gear");
+        advanceChapter();
+      });
+    }));
+    return;
+  }
+
+  if (t === "$" && ch.id === "ch2") {
+    sayMany([
+      ["jd", "I typed the whole binary sequence and ran it through every decoding program I own."],
+      ["", "The blue screen approaches for all of existence."],
+      ["", "Averting disaster will require persistence."],
+      ["", "The ghosts of the past must assemble as one"],
+      ["", "To inspire a new cast if the job's to be done."],
+      ["", "So once you've collected the twelve and the three,"],
+      ["", "Return with them all to the site of the tree."],
+      ["", "The Singhilarity comes. Arrives with Mercury's drums."],
+      ["petra", "But... that sounds like..."],
+      ["jd", "An uppercase prophecy."]
+    ], () => {
+      flags.prophecy = true;
+      state.prophecy = true;
+      advanceChapter();
+    });
+    return;
+  }
+
+  if (t === "f") { say("jd", "A device that keeps your drink cold. Not a potion cupboard, Petra."); give("coke"); return; }
+  if (t === "s" && ch.id === "ch2") { say("jd", "The gear stays in the safe until we know what we're doing."); return; }
+  if (t === "w") { say("jd", "What looks like a humble thermostat can actually adjust the time-perature."); return; }
+  if (t === "B") { say("jd", "Signage from the '70s. YOUR TAX DOLLARS AT WORK. A NEW DMV LOCATION IS COMING SOON."); return; }
+
+  if (ch.id === "ch3") {
+    if (near(14, 3, 2) && !flags.mercury) {
+      sayMany([
+        ["mercury", "Gary Baumgartner. I have a message for you."],
+        ["gary", "Are you a casting director?"],
+        ["mercury", "No. But I am here to offer you a role greater than any you can imagine."],
+        ["mercury", "You come from a noble lineage. You should not be crawling about this city. You should be ruling it."]
+      ], () => startBattle("punk", () => {
+        flags.mercury = true;
+        give("card");
+        say("mercury", "Meet me at Club Mercury. Nine P.M. We will discuss your future, and your past.");
+      }));
+      return;
+    }
+    if (near(13, 8, 2)) {
+      if (!flags.mercury) { say("gary", "The theater is up the avenue — but I still have to get through that alley."); return; }
+      sayMany([
+        ["gary", "I gave the sides everything I had. I still knew, walking off, that this audition wouldn't be it."],
+        ["gary", "Tonight, things might be different."]
+      ], () => advanceChapter());
+      return;
+    }
+  }
+
+  if (ch.id === "ch4") {
+    if (state.map === "club" && (t === "N" || near(8, 2, 2))) {
+      if (!has("card")) { say("bouncer", "Do you have an invitation?"); return; }
+      sayMany([
+        ["bouncer", "Yeah, that checks out. Follow the stairs up. Mr. Mercury will see you."]
+      ], () => {
+        state.map = "office";
+        state.x = 5 * TS; state.y = 7 * TS;
+      });
+      return;
+    }
+    if (state.map === "office" && (t === "o" || t === "*" || near(5, 3, 2))) {
+      sayMany([
+        ["mercury", "The occasion, Gary, is a crossroads. Have you ever felt drawn toward the mystical arts?"],
+        ["gary", "Tricks. Illusions. Not Ouija boards."],
+        ["mercury", "There is only one test that I need. Hold out your hand, palm down."]
+      ], () => startBattle("spark", () => {
+        flags.leaf = true;
+        sayMany([
+          ["gary", "There's a bright red mark. A coiling snake with five heads."],
+          ["mercury", "There can be no doubt. Only someone of the proper bloodline can open the sunken kingdom."],
+          ["mercury", "Two million dollars. Sicily. Then a boat. Welcome to Expedition Red Leaf."]
+        ], () => advanceChapter());
+      }));
+      return;
+    }
+  }
+
+  if (ch.id === "ch5" && (t === "K" || t === "m")) {
+    sayMany([
+      ["jd", "If only all conflicts were this straightforward. Big ape bad. Little man good."],
+      ["petra", "Hey, I'm here."],
+      ["jd", "Blasted, boiled, bunco beans. I was doing so well."]
+    ], () => startBattle("barrel", () => {
+      sayMany([
+        ["petra", "The detective said Rightbeard is not in the Netherworld and not on Earth. He's in the Sunken Lands."],
+        ["jd", "The Beandom. I was there the day the lands sank."],
+        ["jd", "I want to combine the DEM with a modern computer. Fail-safes. Code words. No megalomania."],
+        ["petra", "All right. Try it out. Always watching."]
+      ], () => { flags.plan = true; advanceChapter(); });
+    }));
+    return;
+  }
+
+  if (ch.id === "ch6") {
+    if (t === "p" || t === "c") {
+      sayMany([
+        ["gary", "The mark heats up when I think about tossing this. It cools when I look at the signature line."]
+      ], () => {
+        mode = "choice";
+        showChoices([
+          ["Sign the contract", () => {
+            flags.signed = true;
+            sayMany([
+              ["courier", "I've got your check right here, Mr. Baumgartner. One million dollars and no cents."],
+              ["gary", "Nice doing business with you."]
+            ], () => {
+              state.map = "bank";
+              state.x = 5 * TS; state.y = 5 * TS;
+              setGoal("Deposit the check from Mercury Enterprises.");
+              mode = "explore";
+            });
+          }],
+          ["Go back to Oklahoma!", () => {
+            say("gary", "The mark burns until I look at the signature line again. Yeah, that's not creepy at all.");
+            mode = "explore";
+          }]
+        ]);
+      });
+      return;
+    }
+    if (state.map === "bank" && (t === "o" || near(6, 2, 2))) {
+      sayMany([
+        ["teller", "Ah, yes. Mr. Mercury. We've been expecting you."],
+        ["courier", "All right then, Mr. Baumgartner. I need you to come with me."]
+      ], () => advanceChapter());
+      return;
+    }
+  }
+
+  if (ch.id === "ch7") {
+    if (state.map === "apartment" && t === "$" && !flags.init) {
+      if (!state.petraOut && !flags.petraSeen) {
+        sayMany([
+          ["jd", "Petra wanted to be here for the big moment."],
+          ["petra", "Oh, is it ready? I haven't been this excited since the dragon love potion."]
+        ], () => { state.petraOut = true; flags.petraSeen = true; });
+        return;
+      }
+      sayMany([
+        ["", "Initializing."],
+        ["", "Calculating time remaining: forty-two years."],
+        ["petra", "What are we going to do, sit around here for forty-two years?"],
+        ["jd", "This apartment can become untethered from time. Never get off at 2020."]
+      ], () => {
+        flags.init = true;
+        state.map = "ruins";
+        state.x = 10 * TS; state.y = 4 * TS;
+        state.sergio = true;
+        setGoal("Grab the glove. Survive the trebles. Get back.");
+      });
+      return;
+    }
+    if (state.map === "ruins") {
+      if (near(10, 4, 2) && !flags.sergioTalk) {
+        sayMany([
+          ["sergio", "Where's your ear protection? Are you insane? They're coming! The trebles!"],
+          ["jd", "We're not from around here."]
+        ], () => { flags.sergioTalk = true; });
+        return;
+      }
+      if (t === "A") {
+        startBattle("treble", () => {
+          flags.glove = true;
+          state.glove = true;
+          give("glove"); give("helmet");
+          sayMany([
+            ["", "Integration complete. Slip on any hand to continue."],
+            ["petra", "Did the DEM turn your computer into a glove?"],
+            ["jd", "Most unexpected. But I suppose it's convenient."]
+          ], () => {
+            state.map = "apartment";
+            state.x = 4 * TS; state.y = 6 * TS;
+            sayMany([
+              ["petra", "If you instantly turn into a crazed maniac, I'll be standing by with the keyword."],
+              ["jd", "Deal. Here goes nothing."]
+            ], () => advanceChapter());
+          });
+        });
+        return;
+      }
+    }
+  }
+
+  if (ch.id === "ch8") {
+    if (!flags.vincenza && near(12, 4, 3)) {
+      sayMany([
+        ["vincenza", "Is it your first time at sea?"],
+        ["gary", "Was it that obvious?"],
+        ["vincenza", "I'm Vincenza. I'm with the expedition too."]
+      ], () => { flags.vincenza = true; state.vincenza = true; });
+      return;
+    }
+    if (flags.vincenza && !flags.fire) {
+      sayMany([
+        ["larson", "Chicken cordon bleu tonight. Bon appétit."],
+        ["gary", "The flag at the stern looks suspiciously like the tattoo on my hand."],
+        ["vincenza", "Gary — your hand —"]
+      ], () => startBattle("spark", () => {
+        flags.fire = true;
+        sayMany([
+          ["vincenza", "What are you?"],
+          ["gary", "Mr. Mercury said I come from a long line of sorcerers. I'm going to find him. We'll see how well he reacts to fire."]
+        ], () => advanceChapter());
+      }));
+      return;
+    }
+  }
+
+  if (ch.id === "ch9") {
+    if (t === "$" || t === "w") {
+      sayMany([
+        ["", "Run magus 1.2?"],
+        ["jd", "Yes. Run program."],
+        ["gopat", "Hello. I am Gopat, your spell-crafting assistant. I prefer 'synthetic life-form' to A.I."],
+        ["jd", "Find Rightbeard. Also known as E.L.M. Last seen... not in the Netherworld."],
+        ["gopat", "Champ, I have an island. Latitude, longitude, the whole souvenir model."]
+      ], () => { flags.magus = true; state.glove = true; advanceChapter(); });
+      return;
+    }
+  }
+
+  if (ch.id === "ch10") {
+    if (t === "*" || t === "+" || t === "C") {
+      state.map = "cave";
+      state.x = 7 * TS; state.y = 8 * TS;
+      sayMany([
+        ["sibyl", "You speak like him. You have his look about you."],
+        ["gary", "Who? Say his name."],
+        ["sibyl", "Felgarath."]
+      ], () => { flags.door = true; advanceChapter(); });
+      return;
+    }
+  }
+
+  if (ch.id === "ch11") {
+    if (!flags.witch && (t === "+" || t === "*" || near(11, 5, 3))) {
+      sayMany([
+        ["beanwitch", "This is the Beandom, all right. After so many years, so much trying."],
+        ["gopat", "Whoever sent this says you need to take your time traveler and have him touch the tree. Signed: Adler, the Great and Powerful."],
+        ["rightbeard", "You'd better start believing in ghost stories... because you're in one."],
+        ["rightbeard", "I'm not actually a ghost. I might as well be; I'm old enough."]
+      ], () => startBattle("golem", () => {
+        flags.witch = true;
+        flags.rightbeard = true;
+        say("beanwitch", "We've got a prophecy to untangle. I hear the pubs here are quite good.");
+        advanceChapter();
+      }));
+      return;
+    }
+  }
+
+  if (ch.id === "ch12") {
+    if (t === "*" || t === "+") {
+      sayMany([
+        ["felgarath", "I shall be the root and you the branch."],
+        ["vincenza", "Gary — don't —"]
+      ], () => startBattle("felgarath", () => {
+        flags.tree = true;
+        sayMany([
+          ["felgarath", "Now sleep. Descend with me into the darkest dreams."],
+          ["jd", "Meanwhile, elsewhere, the living members of the new cast prepared a ship for a quest."]
+        ], () => advanceChapter());
+      }));
+      return;
+    }
+  }
+
+  if (ch.id === "ch13") {
+    if (t === "A" || t === "D" || near(10, 4, 2)) {
+      startBattle("treble", () => {
+        sayMany([
+          ["jd", "Gopat handles the sonic shield. Everyone stays close. No unnecessary sound."],
+          ["gopat", "It is not ridiculously named. The Iso-Rambo-Dodecahedron of Silence is a precise technical designation."]
+        ], () => startBattle("dragon", () => {
+          flags.ship = true;
+          sayMany([
+            ["gopat", "This door is biometrically sealed. Registered owner: T.P."],
+            ["jd", "Tiberius Plinth. The Blue Messenger."]
+          ], () => advanceChapter());
+        }));
+      });
+      return;
+    }
+  }
+
+  if (ch.id === "ch14") {
+    if (t === "P" || t === "B" || near(6, 4, 2)) {
+      sayMany([
+        ["tiberius", "You survived my dragon. Welcome. I am Tiberius Plinth, the Blue Messenger."],
+        ["tiberius", "Dear Mercury. One of my more ambitious Earthside clients."],
+        ["tiberius", "Sometimes, to get what you want, you must pay an arm and a leg."],
+        ["jd", "Gopat! Laser sword! Now!"]
+      ], () => startBattle("tiberius", () => {
+        give("pipes"); give("crown");
+        flags.blue = true;
+        sayMany([
+          ["jd", "Panpipes. A thin black crown with a single blue jewel."],
+          ["sergio", "Drums are terribly cumbersome. I've always preferred something more portable."]
+        ], () => advanceChapter());
+      }));
+      return;
+    }
+  }
+
+  if (ch.id === "ch15") {
+    if (t === "P" || near(6, 4, 2)) {
+      sayMany([
+        ["sergio", "The coordinates are confirmed. The Eagle's Roost. After that, Tatsrar."],
+        ["jd", "How long until the Singhilarity reaches Tatsrar?"],
+        ["gopat", "I don't have enough information to calculate that. Adler suggests we are already behind schedule."],
+        ["jd", "I've been late to battles, coronations, weddings, and one particularly important dentist appointment."],
+        ["sergio", "Course locked."],
+        ["jd", "Excelsior!"]
+      ], () => finishGame());
+      return;
+    }
+  }
+
+  const npc = npcHere();
+  if (npc) { npc.talk(); return; }
+  bumpFlavor();
+}
+
+function npcHere() { return null; }
+
+function bumpFlavor() {
+  const ch = chapter();
+  const lines = {
+    ch1: ["The purple shaft of light is still climbing. The car keys stay in the ignition — just in case."],
+    ch2: ["Deadlines, deadlines, and more deadlines. The prophecy is not changing."],
+    ch3: ["Freddie Mercury leaks through one ear of the Walkman. The other ear is a rumor."],
+    ch4: ["The carpet is thick enough to swallow a man. The mercury symbol is everywhere."],
+    ch5: ["The high score still belongs to D.M.Y. Someday J.D.W. will knock it off."],
+    ch6: ["The apartment does not allow for much pacing. That has never stopped Gary."],
+    ch7: ["Never get off at 2020. First rule of time travel."],
+    ch8: ["The ship's flag looks like the tattoo. That cannot be a coincidence."],
+    ch9: ["Cast, craft, or quench. Gopat is already humming."],
+    ch10: ["No dock. Barely an island. A cave in the hill like a mouth."],
+    ch11: ["The air smells like beans and old magic. Home, in the least convenient sense."],
+    ch12: ["The tree's trunk is dark red with green veins. One of those leaves marked Gary's hand."],
+    ch13: ["A ruined city under a sickly green sky. The trebles are warming up."],
+    ch14: ["The hallway is bathed in blue light. Jewelry glints in the dark."],
+    ch15: ["Ahead, a crack of white light opens on Middlespace."]
+  }[ch.id];
+  if (lines) say(state.hero, lines[0]);
+}
+
+function facingTile() {
+  const dx = state.dir === "left" ? -16 : state.dir === "right" ? 16 : 0;
+  const dy = state.dir === "up" ? -16 : state.dir === "down" ? 16 : 0;
+  const px = state.x + 8 + dx, py = state.y + 8 + dy;
+  return { t: tileAt(px, py), tx: Math.floor(px / TS), ty: Math.floor(py / TS) };
+}
+function near(tx, ty, r) {
+  const px = Math.floor((state.x + 8) / TS), py = Math.floor((state.y + 12) / TS);
+  return Math.abs(px - tx) <= r && Math.abs(py - ty) <= r;
+}
+function has(id) { return !!state.items[id]; }
+function give(id, n) {
+  state.items[id] = (state.items[id] || 0) + (n || 1);
+}
+
+function showChoices(opts) {
+  pauseEl.classList.add("show");
+  pauseEl.innerHTML = `<div class="panel"><h2>CHOOSE</h2>${opts.map((o, i) => `<button class="choice" data-i="${i}">${o[0]}</button>`).join("")}</div>`;
+  [...pauseEl.querySelectorAll("button")].forEach((b, i) => {
+    b.onclick = () => { pauseEl.classList.remove("show"); pauseEl.innerHTML = ""; opts[i][1](); };
+  });
+}
+
+function openMenu() {
+  if (mode !== "explore") return;
+  mode = "pause";
+  pauseEl.classList.add("show");
+  const inv = Object.entries(state.items).filter(([, n]) => n).map(([k, n]) => {
+    const it = ITEMS[k];
+    return `${it ? it.name : k}${typeof n === "number" && n > 1 ? " x" + n : ""}`;
+  }).join("<br>") || "(empty)";
+  const prop = state.prophecy ? `<p style="color:#c9b4ff;font-size:11px">The blue screen approaches for all of existence. Collect the twelve and the three. Return to the site of the tree. The Singhilarity comes with Mercury's drums.</p>` : "";
+  pauseEl.innerHTML = `<div class="panel">
+    <h2>WATCH / PACK</h2>
+    <div>LV ${state.lv}  HP ${state.hp}/${state.maxHp}  MP ${state.mp}/${state.maxMp}</div>
+    ${prop}
+    <p>${inv}</p>
+    <button id="mPetra">SUMMON PETRA (NAVY DOT)</button>
+    <button id="mItem">USE COLA</button>
+    <button id="mSave">SAVE QUEST</button>
+    <button id="mClose">CLOSE</button>
+  </div>`;
+  pauseEl.querySelector("#mClose").onclick = closeMenu;
+  pauseEl.querySelector("#mSave").onclick = () => { save(); closeMenu(); say("", "The watch ticks. Progress remembered."); };
+  pauseEl.querySelector("#mItem").onclick = () => { useItem("coke"); closeMenu(); };
+  pauseEl.querySelector("#mPetra").onclick = () => {
+    closeMenu();
+    if (state.hero !== "jd") { say("gary", "I don't have a watch full of ghosts. I have a Walkman with a short in the wire."); return; }
+    state.petraOut = !state.petraOut;
+    say("petra", state.petraOut ? "Always watching." : "Back to the Netherworld. Try not to start an orphanage-destroying scheme.");
+  };
+}
+function closeMenu() {
+  pauseEl.classList.remove("show");
+  pauseEl.innerHTML = "";
+  if (mode === "pause") mode = "explore";
+}
+function useItem(id) {
+  if (!state.items[id]) { say("", "None left."); return; }
+  const it = ITEMS[id];
+  if (it && it.heal) {
+    state.items[id]--;
+    if (state.items[id] <= 0) delete state.items[id];
+    state.hp = Math.min(state.maxHp, state.hp + it.heal);
+    say("", it.name + "! HP restored.");
+  }
+}
+
+function startBattle(id, onWin) {
+  const src = ENEMIES[id];
+  if (!src) { if (onWin) onWin(); return; }
+  const foe = { ...src, hp: src.hp, max: src.hp, revealed: false };
+  battle = { foe, onWin, log: foe.name + " appears!", menu: "main" };
+  mode = "battle";
+  renderBattle();
+  beep(180, 0.08); beep(120, 0.12);
+}
+
+function renderBattle() {
+  const b = battle;
+  const revealed = b.foe.revealed ? `HP ${b.foe.hp}/${b.foe.max}  WEAK: ${b.foe.weak}` : `HP ???  WEAK: ???`;
+  let extra = "";
+  if (b.menu === "magic") {
+    const list = heroSpells().map((id) => `<button data-sp="${id}">${SPELLS[id].name} (${SPELLS[id].mp} MP)</button>`).join("");
+    extra = `<div class="blist">${list}<button data-back="1">BACK</button></div>`;
+  } else if (b.menu === "item") {
+    extra = `<div class="blist">
+      <button data-it="coke">COLA</button>
+      <button data-it="beans">VULCAN BEANS</button>
+      <button data-back="1">BACK</button>
+    </div>`;
+  } else {
+    extra = `<div class="blist">
+      <button data-act="fight">FIGHT</button>
+      <button data-act="magic">MAGIC</button>
+      <button data-act="item">ITEM</button>
+      <button data-act="run">RUN</button>
+    </div>`;
+  }
+  battleEl.classList.add("show");
+  battleEl.innerHTML = `<div class="panel">
+    <div class="brow">
+      <div class="bstat"><b>${ACTORS[state.hero].name}</b><br>HP ${state.hp}/${state.maxHp}<br>MP ${state.mp}/${state.maxMp}</div>
+      <div class="bstat"><b>${b.foe.name}</b><br>${revealed}</div>
+    </div>
+    <div style="min-height:28px;color:#ffe58a;margin-bottom:6px">${b.log}</div>
+    ${extra}
+  </div>`;
+  battleEl.querySelectorAll("[data-act]").forEach((el) => el.onclick = () => battleAct(el.dataset.act));
+  battleEl.querySelectorAll("[data-sp]").forEach((el) => el.onclick = () => castSpell(el.dataset.sp));
+  battleEl.querySelectorAll("[data-it]").forEach((el) => el.onclick = () => battleItem(el.dataset.it));
+  battleEl.querySelectorAll("[data-back]").forEach((el) => el.onclick = () => { battle.menu = "main"; renderBattle(); });
+}
+
+function heroSpells() {
+  if (state.hero === "gary") return state.flags.leaf || state.flags.fire ? ["leaf", "confuse"] : ["confuse"];
+  const s = ["fireball", "quench", "prog"];
+  if (state.glove) s.push("silence", "laser", "rabbit");
+  return s;
+}
+
+function battleAct(act) {
+  if (!battle || battle.foe.hp <= 0) return;
+  if (act === "magic") { battle.menu = "magic"; renderBattle(); return; }
+  if (act === "item") { battle.menu = "item"; renderBattle(); return; }
+  if (act === "run") {
+    if (battle.foe.boss) { battle.log = "You cannot run from this."; renderBattle(); return; }
+    endBattle(false);
+    say("", "Escaped!");
+    return;
+  }
+  if (act === "fight") playerHit(6 + state.lv, 10 + state.lv, "A solid hit.");
+}
+
+function playerHit(lo, hi, msg, weakBonus) {
+  if (!battle || battle.resolved || battle.foe.hp <= 0) return;
+  let dmg = lo + Math.floor(Math.random() * (hi - lo + 1));
+  dmg = Math.max(1, dmg - battle.foe.def);
+  if (weakBonus) dmg = Math.floor(dmg * 1.6);
+  battle.foe.hp -= dmg;
+  battle.log = msg + " " + dmg + " damage!";
+  beep(520, 0.06);
+  if (battle.foe.hp <= 0) { winBattle(); return; }
+  renderBattle();
+  setTimeout(enemyTurn, 420);
+}
+
+function castSpell(id) {
+  const sp = SPELLS[id];
+  if (state.mp < sp.mp) { battle.log = "Not enough MP."; renderBattle(); return; }
+  state.mp -= sp.mp;
+  if (id === "prog") {
+    battle.foe.revealed = true;
+    battle.log = "A hunch, uppercase-adjacent: " + battle.foe.name + " is weak to " + battle.foe.weak + ".";
+    renderBattle();
+    setTimeout(enemyTurn, 500);
+    return;
+  }
+  const weak = (id === "fireball" && battle.foe.weak === "fire")
+    || (id === "quench" && battle.foe.weak === "quench")
+    || (id === "silence" && battle.foe.weak === "silence")
+    || (id === "leaf" && (battle.foe.weak === "fire" || battle.foe.weak === "quench"))
+    || (id === "confuse" && battle.foe.weak === "confuse")
+    || (id === "laser" && battle.foe.weak === "laser")
+    || (id === "rabbit" && battle.foe.weak === "rabbit");
+  playerHit(sp.dmg[0], sp.dmg[1], sp.name + "!", weak);
+}
+
+function battleItem(id) {
+  if (!state.items[id]) { battle.log = "None left."; renderBattle(); return; }
+  const it = ITEMS[id];
+  state.items[id]--;
+  if (it.heal) state.hp = Math.min(state.maxHp, state.hp + it.heal);
+  battle.log = "Used " + it.name + ".";
+  renderBattle();
+  setTimeout(enemyTurn, 400);
+}
+
+function enemyTurn() {
+  if (!battle || battle.foe.hp <= 0) return;
+  let dmg = Math.max(1, battle.foe.atk - Math.floor(state.lv / 2) + Math.floor(Math.random() * 3));
+  if (has("helmet") && battle.foe.name === "Treble") dmg = Math.max(1, Math.floor(dmg * 0.5));
+  state.hp -= dmg;
+  battle.log = battle.foe.name + " hits for " + dmg + "!";
+  battle.menu = "main";
+  beep(140, 0.1);
+  if (state.hp <= 0) {
+    state.hp = 1;
+    battle.log = "You drop... but J.D. has died before. Or Gary refuses to miss this callback.";
+    renderBattle();
+    setTimeout(() => { endBattle(false); say("", "You stagger back. Try another approach."); }, 700);
+    return;
+  }
+  renderBattle();
+}
+
+function winBattle() {
+  if (!battle || battle.resolved) return;
+  battle.resolved = true;
+  battle.log = battle.foe.name + " is defeated!";
+  state.xp += battle.foe.xp;
+  if (state.xp >= state.lv * 20) {
+    state.lv++;
+    state.maxHp += 4; state.maxMp += 2;
+    state.hp = state.maxHp; state.mp = state.maxMp;
+    battle.log += " Level up!";
+  }
+  renderBattle();
+  const cb = battle.onWin;
+  setTimeout(() => { endBattle(true); if (cb) cb(); }, 500);
+}
+
+function endBattle() {
+  battleEl.classList.remove("show");
+  battleEl.innerHTML = "";
+  battle = null;
+  mode = "explore";
+  encounterCool = 180;
+  save();
+}
+
+function getAudio() {
+  if (audio) return audio;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return null;
+  audio = new AC();
+  return audio;
+}
+function beep(freq, dur, vol) {
+  const ac = getAudio();
+  if (!ac) return;
+  if (ac.state === "suspended") ac.resume();
+  const o = ac.createOscillator();
+  const g = ac.createGain();
+  o.type = "square";
+  o.frequency.value = freq;
+  g.gain.value = vol || 0.035;
+  g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+  o.connect(g); g.connect(ac.destination);
+  o.start(); o.stop(ac.currentTime + dur);
+}
+function musicTick() {
+  if (mode === "title" || mode === "ending") {
+    const n = [196, 247, 294, 392, 311, 247, 220, 196][Math.floor(anim / 40) % 8];
+    if (anim % 40 === 0) beep(n, 0.18, 0.02);
+  } else if (mode === "battle") {
+    const n = [130, 164, 196, 164][Math.floor(anim / 18) % 4];
+    if (anim % 18 === 0) beep(n, 0.1, 0.02);
+  } else if (mode === "explore" && anim % 55 === 0) {
+    const n = [164, 196, 220, 196][Math.floor(anim / 55) % 4];
+    beep(n, 0.12, 0.012);
+  }
+}
+
+function draw() {
+  const m = curMap();
+  cam.x = Math.max(0, Math.min(m.w * TS - W, state.x - W / 2 + 8));
+  cam.y = Math.max(0, Math.min(m.h * TS - H + 16, state.y - H / 2 + 8));
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, W, H);
+  for (let y = 0; y < m.h; y++) {
+    for (let x = 0; x < m.w; x++) {
+      drawTile(x, y, m.grid[y][x]);
+    }
+  }
+  drawActor(state.x, state.y, state.hero, state.dir, state.moving);
+  if (state.petraOut && state.hero === "jd") {
+    drawActor(state.x - 14, state.y - 6, "petra", state.dir, false);
+  }
+  if (state.sergio && (state.map === "ruins" || state.map === "beandom" || state.map === "mothership")) {
+    drawActor(state.x + 16, state.y + 2, "sergio", "left", false);
+  }
+  if (state.vincenza && (state.map === "ship" || state.map === "cave" || state.map === "island")) {
+    drawActor(state.x + 16, state.y, "vincenza", "left", false);
+  }
+  drawChapterNpcs();
+  if (mode === "card") {
+    ctx.fillStyle = "rgba(6,2,14,0.55)";
+    ctx.fillRect(0, 0, W, H);
+  }
+}
+
+function drawTile(tx, ty, t) {
+  const x = tx * TS - cam.x, y = ty * TS - cam.y;
+  if (x < -TS || y < -TS || x > W || y > H) return;
+  const ch = state.map;
+  const palettes = {
+    countryside: ["#0b1024", "#16351c"],
+    apartment: ["#241818", "#3a2a1c"],
+    nyc: ["#14141c", "#2a2a34"],
+    club: ["#0a0814", "#161022"],
+    office: ["#07061a", "#101028"],
+    arcade: ["#120c14", "#2a1a20"],
+    garyapt: ["#1c1410", "#3a2a20"],
+    bank: ["#202428", "#3a4048"],
+    ruins: ["#142014", "#2a3a18"],
+    ship: ["#102030", "#1a3048"],
+    island: ["#102030", "#c2a46a"],
+    cave: ["#140c10", "#2a1818"],
+    beandom: ["#0e1c10", "#2f6a28"],
+    mothership: ["#07061a", "#12142a"]
+  };
+  const [bg, fl] = palettes[ch] || ["#111", "#333"];
+  ctx.fillStyle = bg;
+  ctx.fillRect(x, y, TS, TS);
+  if (t === ".") {
+    ctx.fillStyle = fl;
+    ctx.fillRect(x, y, TS, TS);
+    if ((tx + ty) % 2) { ctx.fillStyle = "rgba(255,255,255,.04)"; ctx.fillRect(x, y, TS, TS); }
+  } else if (t === "=") {
+    ctx.fillStyle = "#3a3a44"; ctx.fillRect(x, y, TS, TS);
+    ctx.fillStyle = "#d8c85a"; ctx.fillRect(x + 7, y, 2, TS);
+  } else if (t === ",") {
+    ctx.fillStyle = "#4a3724"; ctx.fillRect(x, y, TS, TS);
+  } else if (t === "~") {
+    ctx.fillStyle = "#163a68"; ctx.fillRect(x, y, TS, TS);
+    ctx.fillStyle = "#2a6aaa"; ctx.fillRect(x, y + (anim / 8 + tx) % 8, TS, 2);
+  } else if (t === "#") {
+    ctx.fillStyle = "#1c1630"; ctx.fillRect(x, y, TS, TS);
+    ctx.fillStyle = "#3a3058"; ctx.fillRect(x + 1, y + 1, TS - 2, TS - 2);
+  } else if (t === "H") {
+    ctx.fillStyle = "#3a3048"; ctx.fillRect(x, y, TS, TS);
+    ctx.fillStyle = "#889"; ctx.fillRect(x + 3, y + 4, 4, 5);
+    ctx.fillStyle = "#c45cff"; ctx.fillRect(x + 9, y + 2, 4, 3);
+  } else if (t === "T") {
+    ctx.fillStyle = "#16351c"; ctx.fillRect(x, y, TS, TS);
+    ctx.fillStyle = "#2a5a20"; ctx.fillRect(x + 2, y + 1, 12, 10);
+    ctx.fillStyle = "#6a3d22"; ctx.fillRect(x + 7, y + 10, 3, 6);
+  } else if (t === "+" || t === "*") {
+    ctx.fillStyle = fl; ctx.fillRect(x, y, TS, TS);
+    if (t === "*") {
+      const pulse = 0.5 + 0.5 * Math.sin(anim / 10);
+      ctx.fillStyle = `rgba(196,92,255,${0.4 + pulse * 0.5})`;
+      ctx.fillRect(x + 4, y + 4, 8, 8);
+      ctx.fillStyle = "#ffe58a"; ctx.fillRect(x + 6, y + 6, 4, 4);
+    } else {
+      ctx.fillStyle = "#6a2030"; ctx.fillRect(x + 6, y + 4, 4, 12);
+      ctx.fillStyle = "#c45a40"; ctx.fillRect(x + 2, y + 1, 12, 8);
+    }
+  } else if (t === "R") {
+    ctx.fillStyle = "#3a4030"; ctx.fillRect(x, y, TS, TS);
+    ctx.fillStyle = "#202818"; ctx.fillRect(x + 2, y + 6, TS - 4, 10);
+  } else if (t === "%" ) {
+    ctx.fillStyle = "#2a3a18"; ctx.fillRect(x, y, TS, TS);
+    ctx.fillStyle = "#8a8"; ctx.fillRect(x + 4, y + 4, 8, 8);
+  } else if (t === "b" || t === "L") {
+    ctx.fillStyle = t === "L" ? "#123848" : "#2f6a28";
+    ctx.fillRect(x, y, TS, TS);
+    ctx.fillStyle = t === "L" ? "#6ad0ff" : "#8ad04a";
+    ctx.fillRect(x + 5, y + 3, 6, 6);
+  } else if (t === "N") {
+    ctx.fillStyle = "#121018"; ctx.fillRect(x, y, TS, TS);
+    ctx.fillStyle = "#3ad0ff"; ctx.fillRect(x + 2, y + 2, 12, 3);
+  } else if (t === "o" || t === "k" || t === "$" || t === "f" || t === "s" || t === "c" || t === "w" || t === "B" || t === "p" || t === "m" || t === "K" || t === "A" || t === "P" || t === "M") {
+    ctx.fillStyle = fl; ctx.fillRect(x, y, TS, TS);
+    if (t === "$" || t === "k") {
+      ctx.fillStyle = "#1a1a22"; ctx.fillRect(x + 2, y + 4, 12, 8);
+      ctx.fillStyle = "#3f6"; ctx.fillRect(x + 4, y + 6, 8, 4);
+    } else if (t === "f") {
+      ctx.fillStyle = "#c03030"; ctx.fillRect(x + 4, y + 2, 8, 12);
+    } else if (t === "s") {
+      ctx.fillStyle = "#666"; ctx.fillRect(x + 3, y + 6, 10, 8);
+      ctx.fillStyle = "#c45cff"; ctx.fillRect(x + 6, y + 8, 4, 4);
+    } else if (t === "c") {
+      ctx.fillStyle = "#4a3040"; ctx.fillRect(x + 1, y + 8, 14, 6);
+    } else if (t === "w") {
+      ctx.fillStyle = "#888"; ctx.fillRect(x + 5, y + 4, 6, 8);
+      ctx.fillStyle = "#c33"; ctx.fillRect(x + 6, y + 6, 4, 3);
+    } else if (t === "K" || t === "m") {
+      ctx.fillStyle = "#222"; ctx.fillRect(x + 3, y + 2, 10, 14);
+      ctx.fillStyle = "#fc3"; ctx.fillRect(x + 5, y + 4, 6, 5);
+    } else if (t === "A") {
+      ctx.fillStyle = "#889"; ctx.fillRect(x + 3, y + 6, 10, 6);
+      ctx.fillStyle = "#c45cff"; ctx.fillRect(x + 5, y + 8, 6, 3);
+    } else if (t === "P") {
+      ctx.fillStyle = "#1a3050"; ctx.fillRect(x + 2, y + 4, 12, 10);
+      ctx.fillStyle = "#4aa0d0"; ctx.fillRect(x + 5, y + 6, 6, 6);
+    } else if (t === "o") {
+      ctx.fillStyle = "#6a3d22"; ctx.fillRect(x, y + 6, TS, 8);
+    } else if (t === "p") {
+      ctx.fillStyle = "#d8c070"; ctx.fillRect(x + 4, y + 6, 8, 8);
+    } else if (t === "B") {
+      ctx.fillStyle = "#3a2a10"; ctx.fillRect(x + 2, y + 2, 12, 12);
+    } else if (t === "M") {
+      ctx.fillStyle = "#c9a33a"; ctx.fillRect(x + 4, y + 4, 8, 8);
+    }
+  } else if (t === "D") {
+    ctx.fillStyle = "#4a3020"; ctx.fillRect(x, y, TS, TS);
+    ctx.fillStyle = "#c9a33a"; ctx.fillRect(x + 6, y + 7, 3, 3);
+  } else if (t === "h") {
+    ctx.fillStyle = fl; ctx.fillRect(x, y, TS, TS);
+  } else if (t === "a" || t === "n") {
+    ctx.fillStyle = fl; ctx.fillRect(x, y, TS, TS);
+  } else {
+    ctx.fillStyle = fl; ctx.fillRect(x, y, TS, TS);
+  }
+}
+
+function drawChapterNpcs() {
+  const ch = chapter();
+  if (ch.id === "ch1" && state.petraOut) { /* follower drawn already */ }
+  if (ch.id === "ch3" && !state.flags.mercury) drawActor(14 * TS, 3 * TS, "mercury", "down", false);
+  if (ch.id === "ch4" && state.map === "club") drawActor(8 * TS, 2 * TS, "bouncer", "down", false);
+  if (ch.id === "ch4" && state.map === "office") drawActor(5 * TS, 2 * TS, "mercury", "down", false);
+  if (ch.id === "ch5") drawActor(10 * TS, 6 * TS, "petra", "left", false);
+  if (ch.id === "ch8") drawActor(12 * TS, 4 * TS, "vincenza", "left", false);
+  if (ch.id === "ch11") {
+    drawActor(8 * TS, 5 * TS, "beanwitch", "down", false);
+    drawActor(14 * TS, 8 * TS, "rightbeard", "left", false);
+  }
+  if (ch.id === "ch12") drawActor(7 * TS, 4 * TS, "felgarath", "down", false);
+  if (ch.id === "ch14" || ch.id === "ch15") drawActor(6 * TS, 4 * TS, "tiberius", "down", false);
+}
+
+function drawActor(px, py, who, dir, moving) {
+  const a = ACTORS[who];
+  if (!a) return;
+  const x = Math.floor(px - cam.x), y = Math.floor(py - cam.y);
+  const bob = moving && (anim % 16 < 8) ? 1 : 0;
+  ctx.globalAlpha = a.ghost ? 0.72 : 1;
+  ctx.fillStyle = a.coat;
+  ctx.fillRect(x + 4, y + 8 - bob, 8, 8);
+  ctx.fillStyle = a.skin;
+  ctx.fillRect(x + 5, y + 2 - bob, 6, 6);
+  ctx.fillStyle = a.hair;
+  ctx.fillRect(x + 5, y + 1 - bob, 6, 3);
+  if (dir === "left") ctx.fillRect(x + 4, y + 3 - bob, 2, 4);
+  if (dir === "right") ctx.fillRect(x + 10, y + 3 - bob, 2, 4);
+  ctx.fillStyle = "#111";
+  if (dir !== "up") {
+    ctx.fillRect(x + 6, y + 5 - bob, 1, 1);
+    ctx.fillRect(x + 9, y + 5 - bob, 1, 1);
+  }
+  ctx.fillStyle = a.acc;
+  ctx.fillRect(x + 3, y + 10 - bob, 3, 2);
+  if (who === "jd") {
+    ctx.fillStyle = "#1a3a8a";
+    ctx.fillRect(x + 3, y + 11 - bob, 4, 2);
+  }
+  if (who === "gary") {
+    ctx.fillStyle = "#222";
+    ctx.fillRect(x + 4, y + 3 - bob, 8, 2);
+  }
+  if (who === "petra") {
+    ctx.fillStyle = "rgba(180,230,255,.5)";
+    ctx.fillRect(x + 2, y + 14, 12, 2);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function updateHud() {
+  if (mode !== "explore" && mode !== "card") { hudEl.classList.remove("show"); return; }
+  hudEl.classList.add("show");
+  const low = state.hp < state.maxHp * 0.3 ? " low" : "";
+  hudEl.innerHTML = `<div class="hud-card">${ACTORS[state.hero].name} LV${state.lv}
+    <div class="hpbar${low}"><i style="width:${Math.max(0, 100 * state.hp / state.maxHp)}%"></i></div>
+    HP ${state.hp}/${state.maxHp}  MP ${state.mp}/${state.maxMp}</div>
+    <div class="hud-card">CH ${state.ch + 1}/${CHAPTERS.length}<br>${chapter().title}</div>`;
+}
+
+function update(dt) {
+  anim++;
+  musicTick();
+  if (dialogEl.classList.contains("show") && typing.length < typeFull.length) {
+    typeT += dt;
+    if (typeT > 16) { typing += typeFull[typing.length]; typeT = 0; renderDialog(); }
+  }
+  if (mode === "explore") {
+    let dx = 0, dy = 0;
+    if (keys.left || keys.a) dx -= 1;
+    if (keys.right || keys.d) dx += 1;
+    if (keys.up || keys.w) dy -= 1;
+    if (keys.down || keys.s) dy += 1;
+    if (dx && dy) { dx *= 0.74; dy *= 0.74; }
+    state.moving = !!(dx || dy);
+    if (dx < 0) state.dir = "left";
+    else if (dx > 0) state.dir = "right";
+    else if (dy < 0) state.dir = "up";
+    else if (dy > 0) state.dir = "down";
+    const sp = 1.15;
+    if (dx || dy) {
+      const nx = state.x + dx * sp;
+      const ny = state.y + dy * sp;
+      if (!blocked(nx, state.y)) state.x = nx;
+      if (!blocked(state.x, ny)) state.y = ny;
+    }
+    encounterCool = Math.max(0, encounterCool - 1);
+    if (state.moving && encounterCool === 0 && (state.map === "ruins" || state.map === "beandom") && Math.random() < 0.004) {
+      encounterCool = 200;
+      startBattle(state.map === "ruins" ? "treble" : "golem");
+    }
+  }
+  if (mode === "explore" || mode === "card") draw();
+  updateHud();
+}
+
+function confirm() {
+  getAudio();
+  if (dialogEl.classList.contains("show")) { nextLine(); beep(660, 0.04); return; }
+  if (mode === "title" || mode === "ending" || mode === "pause" || mode === "choice" || mode === "battle") return;
+  interact();
+}
+
+window.addEventListener("keydown", (e) => {
+  const k = e.key.toLowerCase();
+  keys[k] = true;
+  if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(e.key.toLowerCase()) || e.code.startsWith("Arrow")) e.preventDefault();
+  if (k === "arrowup") keys.up = true;
+  if (k === "arrowdown") keys.down = true;
+  if (k === "arrowleft") keys.left = true;
+  if (k === "arrowright") keys.right = true;
+  if (k === "z" || k === "enter" || k === " ") confirm();
+  if (k === "x" || k === "escape") {
+    if (mode === "pause") closeMenu();
+    else openMenu();
+  }
+});
+window.addEventListener("keyup", (e) => {
+  const k = e.key.toLowerCase();
+  keys[k] = false;
+  if (k === "arrowup") keys.up = false;
+  if (k === "arrowdown") keys.down = false;
+  if (k === "arrowleft") keys.left = false;
+  if (k === "arrowright") keys.right = false;
+});
+
+document.querySelectorAll("#mobile b[data-k]").forEach((b) => {
+  const k = b.dataset.k;
+  const down = (e) => {
+    e.preventDefault();
+    if (k === "ok") confirm();
+    else if (k === "menu") { if (mode === "pause") closeMenu(); else openMenu(); }
+    else keys[k] = true;
+  };
+  const up = () => { if (k !== "ok" && k !== "menu") keys[k] = false; };
+  b.addEventListener("pointerdown", down);
+  b.addEventListener("pointerup", up);
+  b.addEventListener("pointerleave", up);
+});
+
+function fit() {
+  const pad = window.matchMedia("(pointer: coarse)").matches ? 150 : 24;
+  const s = Math.max(1, Math.floor(Math.min((innerWidth - 16) / W, (innerHeight - pad) / H)));
+  stage.style.width = (W * s) + "px";
+  stage.style.height = (H * s) + "px";
+}
+window.addEventListener("resize", fit);
+fit();
+
+document.getElementById("btnNew").onclick = () => {
+  getAudio();
+  state = newState();
+  loadChapter(0);
+};
+document.getElementById("btnContinue").onclick = () => {
+  getAudio();
+  const s = loadSave();
+  if (!s) { say("", "No saved quest. The Netherworld keeps poor records of save files."); return; }
+  state = s;
+  mode = "explore";
+  titleUI.classList.remove("show");
+  hudEl.classList.add("show");
+  setGoal(chapter().goal);
+};
+document.getElementById("btnHow").onclick = () => {
+  sayMany([
+    ["", "Walk with arrows or WASD. Confirm with Z or Space. Menu with X."],
+    ["", "You play J.D. Zaubermann and Gary Baumgartner in alternating chapters from the novel."],
+    ["", "Talk to everyone. Touch glowing gears. When a purple wisp or a treble appears, fight."],
+    ["", "J.D.'s watch summons Petra. Gopat's glove learns spells. Gary's red-leaf mark remembers fire."],
+    ["", "The prophecy wants the twelve and the three at the site of the tree. Book I ends at Excelsior."]
+  ]);
+};
+document.getElementById("btnAgain").onclick = () => {
+  endingUI.classList.remove("show");
+  titleUI.classList.add("show");
+  mode = "title";
+};
+
+function loop(t) {
+  const dt = Math.min(40, t - last || 16);
+  last = t;
+  update(dt);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+window.LAUNCH_TIME = {
+  start: () => { state = newState(); loadChapter(0); },
+  chapter: (i) => { state = state || newState(); loadChapter(i); },
+  state: () => state,
+  mode: () => mode,
+  facing: () => facingTile(),
+  talk: () => interact(),
+  chapters: CHAPTERS.map((c) => c.id),
+  maps: Object.keys(MAPS)
+};
+</script>
+</body>
+</html>

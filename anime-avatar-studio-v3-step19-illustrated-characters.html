@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Anime Avatar Studio — Japanese Classroom Edition v3 Step 19</title>
+<title>Anime Avatar Studio — Japanese Classroom Edition v3 Step 19 · Unified Contour</title>
 <style>
 :root{
   --bg:#f4f7fb; --panel:#ffffff; --ink:#1b2940; --muted:#6a768a; --line:#e5e9f1;
@@ -214,7 +214,7 @@ button{cursor:pointer}
       <div class="flower">🌸</div>
       <div>
         <h1>Anime Avatar Studio</h1>
-        <small>Japanese Classroom Edition — v3 Step 19: Illustrated Characters</small>
+        <small>Japanese Classroom Edition — v3 Step 19: Unified Contour</small>
       </div>
     </div>
     <div class="toolbar">
@@ -644,12 +644,13 @@ How are you today?</textarea>
       <h2>What improved in v3 — Step 19?</h2>
       <button class="close" data-close>✕</button>
     </div>
-    <p>Step 19 rebuilds the character silhouettes so they read as illustrated school-anime figures instead of assembled polygons. Art direction, posing, and customization from earlier steps remain, but clothing, limbs, hair, and hands now use overlapping construction and curved garment drawing.</p>
+    <p>Step 19 rebuilds the character silhouettes so they read as illustrated school-anime figures instead of assembled polygons. Masses now share one outer ink contour: overlapping fills hide joint strokes, and only interior seams (collar, lapel, cuff, hairline) stay drawn.</p>
     <ul>
+      <li>Hair, face, sleeve, torso, and hand no longer each stroke themselves, so overlaps are not double-outlined</li>
       <li>Torso, neck, and limb paths use anatomical tapers, hidden joint roots, and soft end-caps instead of capsule tubes</li>
       <li>Collars, lapels, sailor yokes, cuffs, and pockets are redrawn with cubic construction instead of clip-art polygons</li>
-      <li>Hands use tapered finger silhouettes and a continuous wrist bridge rather than sausage strokes and washer joints</li>
-      <li>Hair is denser: overlapping bangs, undercut framing locks, inner strand edges, and a quieter rear-mass outline</li>
+      <li>Hands use tapered finger silhouettes and a fill-only wrist bridge rather than sausage strokes and washer joints</li>
+      <li>Hair is denser: overlapping bangs, undercut framing locks, inner strand edges, and a forehead hairline seam</li>
       <li>The face silhouette uses a multi-point jaw curve so cheeks no longer read as a rounded hexagon</li>
       <li>Shoes, backpacks, scarves, and held props follow the same illustration language instead of rectangles and blobs</li>
       <li>All existing sliders — exaggeration, art direction, pose, folds, depth, hair motion, expression, and anatomy — still drive the new drawing</li>
@@ -755,6 +756,91 @@ function svgEl(tag, attrs={}){
   const el = document.createElementNS(NS, tag);
   Object.entries(attrs).forEach(([k,v])=>el.setAttribute(k, v));
   return el;
+}
+
+// Unified outer contour: each mass is inked, then filled. Later fills hide interior
+// strokes at overlaps, so the figure keeps one silhouette and only drawn seams.
+const CONTOUR = { ink:'#1a1520', width:3.6, interior:1.45 };
+function beginContour(lines){
+  CONTOUR.ink = lines.ink || '#1a1520';
+  CONTOUR.width = (lines.weights && lines.weights.outer) || 3.6;
+  CONTOUR.interior = (lines.weights && lines.weights.interior) || 1.45;
+}
+function contourExtras(extra={}){
+  const attrs = {};
+  if(extra.transform) attrs.transform = extra.transform;
+  if(extra.opacity != null) attrs.opacity = extra.opacity;
+  return attrs;
+}
+function contourPair(){
+  return {
+    ink: svgEl('g', {'data-contour':'ink'}),
+    fill: svgEl('g', {'data-contour':'fill'}),
+    mount(parent){
+      parent.appendChild(this.ink);
+      parent.appendChild(this.fill);
+      return this;
+    }
+  };
+}
+function contourStack(){
+  const ink = svgEl('g', {'data-contour':'ink'});
+  const back = svgEl('g', {'data-contour':'fill-back'});
+  const far = svgEl('g', {'data-contour':'fill-far'});
+  const core = svgEl('g', {'data-contour':'fill-core'});
+  const near = svgEl('g', {'data-contour':'fill-near'});
+  const layer = (fill)=>({ ink, fill });
+  return {
+    ink, back, far, core, near,
+    layerBack: layer(back),
+    layerFar: layer(far),
+    layerCore: layer(core),
+    layerNear: layer(near),
+    mount(parent, slots={}){
+      parent.appendChild(ink);
+      parent.appendChild(back);
+      if(slots.afterBack) parent.appendChild(slots.afterBack);
+      parent.appendChild(far);
+      if(slots.afterFar) parent.appendChild(slots.afterFar);
+      parent.appendChild(core);
+      if(slots.afterCore) parent.appendChild(slots.afterCore);
+      parent.appendChild(near);
+      if(slots.afterNear) parent.appendChild(slots.afterNear);
+      return this;
+    }
+  };
+}
+function isContourPair(parent){
+  return !!(parent && parent.ink && parent.fill && typeof parent.ink.appendChild === 'function');
+}
+function silhouette(parent, d, fill, extra={}){
+  const attrs = contourExtras(extra);
+  const strokeWidth = extra.strokeWidth != null ? extra.strokeWidth : CONTOUR.width * 2;
+  const inkEl = svgEl('path', Object.assign({
+    d, fill:'none', stroke: extra.ink || CONTOUR.ink, 'stroke-width': strokeWidth,
+    'stroke-linejoin':'round', 'stroke-linecap':'round'
+  }, attrs));
+  const fillEl = svgEl('path', Object.assign({ d, fill, stroke:'none' }, attrs));
+  if(isContourPair(parent)){
+    parent.ink.appendChild(inkEl);
+    parent.fill.appendChild(fillEl);
+  } else {
+    parent.appendChild(inkEl);
+    parent.appendChild(fillEl);
+  }
+}
+function fillMass(parent, d, fill, extra={}){
+  const target = isContourPair(parent) ? parent.fill : parent;
+  target.appendChild(svgEl('path', Object.assign({ d, fill, stroke:'none' }, contourExtras(extra))));
+}
+function interiorStroke(parent, d, extra={}){
+  parent.appendChild(svgEl('path', Object.assign({
+    d, fill:'none',
+    stroke: extra.stroke || CONTOUR.ink,
+    'stroke-width': extra.strokeWidth != null ? extra.strokeWidth : CONTOUR.interior,
+    'stroke-linecap':'round', 'stroke-linejoin':'round',
+    opacity: extra.opacity != null ? extra.opacity : 0.72
+  }, extra.transform ? { transform: extra.transform } : {})));
 }
 function setupSwatches(containerId, key, values){
   const box = document.getElementById(containerId);
@@ -1196,9 +1282,7 @@ function hairPalette(base){
 }
 
 function hairLock(parent, d, fill, line, width=1.45, opacity=1){
-  parent.appendChild(svgEl('path',{
-    d,fill,stroke:line,'stroke-width':width,'stroke-linejoin':'round','stroke-linecap':'round',opacity
-  }));
+  silhouette(parent, d, fill, { opacity });
 }
 
 function hairDynamicsProfile(s){
@@ -1230,8 +1314,7 @@ function hairLockTransform(hd,index,count,kind,side=0){
 }
 function applyHairMotion(parent,items,fill,line,hd,kind,width=1.55,opacity=1){
   items.forEach((d,i)=>{
-    const el=svgEl('path',{d,fill,stroke:line,'stroke-width':width,'stroke-linejoin':'round','stroke-linecap':'round',opacity,transform:hairLockTransform(hd,i,items.length,kind)});
-    parent.appendChild(el);
+    silhouette(parent, d, fill, { opacity, transform: hairLockTransform(hd,i,items.length,kind) });
   });
 }
 
@@ -1239,27 +1322,22 @@ function renderHairBack(s, data, st=styleProfile(s), ft=headTurnProfile(s), hd=h
   const p = hairPalette(s.hair);
   const perspectiveX=1-ft.abs*0.018;
   const g = svgEl('g', {'data-hair-layer':'rear',transform:`translate(${ft.hairShift.toFixed(2)} 0) ${scaleAround(210,248,st.hairX*perspectiveX,st.hairY)}`});
-  const rearMass=svgEl('path',{d:data.rearMass,fill:'url(#hairLight)',stroke:p.shadow,'stroke-width':1.15,'stroke-linejoin':'round','stroke-linecap':'round',opacity:'0.96'});
-  rearMass.setAttribute('transform',`translate(${(hd.sway*0.16).toFixed(2)} ${hd.bowDrop*0.18}) rotate(${(hd.poseLag*4).toFixed(2)} 210 180)`);
-  g.appendChild(rearMass);
+  const pair = contourPair().mount(g);
+  const rearXform=`translate(${(hd.sway*0.16).toFixed(2)} ${hd.bowDrop*0.18}) rotate(${(hd.poseLag*4).toFixed(2)} 210 180)`;
+  silhouette(pair, data.rearMass, 'url(#hairLight)', { opacity:'0.96', transform: rearXform });
   (data.rearShadow || []).forEach((d,i)=>{
-    const el=svgEl('path',{d,fill:i%2?p.deep:p.shadow,stroke:p.line,'stroke-width':1.0,'stroke-linejoin':'round','stroke-linecap':'round',opacity:0.78,transform:hairLockTransform(hd,i,(data.rearShadow||[]).length,'rear')});
-    g.appendChild(el);
+    fillMass(pair, d, i%2?p.deep:p.shadow, { opacity:0.78, transform: hairLockTransform(hd,i,(data.rearShadow||[]).length,'rear') });
   });
-  applyHairMotion(g,data.rearLocks||[],p.base,p.line,hd,'rear',1.55,1);
+  applyHairMotion(pair,data.rearLocks||[],p.base,p.line,hd,'rear',1.55,1);
   if(data.ponyMass){
-    const el=svgEl('path',{d:data.ponyMass,fill:'url(#hairLight)',stroke:p.shadow,'stroke-width':1.2,'stroke-linejoin':'round','stroke-linecap':'round'});
     const lag=(hd.sway*1.55+hd.walkLag*1.9), drop=hd.bowDrop*0.55;
-    el.setAttribute('transform',`translate(${lag.toFixed(2)} ${drop.toFixed(2)}) rotate(${(hd.poseLag*12).toFixed(2)} 286 230)`);
-    g.appendChild(el);
+    silhouette(pair, data.ponyMass, 'url(#hairLight)', { transform:`translate(${lag.toFixed(2)} ${drop.toFixed(2)}) rotate(${(hd.poseLag*12).toFixed(2)} 286 230)` });
   }
   (data.ponyLocks || []).forEach((d,i)=>{
-    const el=svgEl('path',{d,fill:[p.base,p.mid,p.shadow,p.light][i%4],stroke:p.line,'stroke-width':1.55,'stroke-linejoin':'round','stroke-linecap':'round',opacity:0.98});
     const lag=hd.sway*(1.55+0.18*i)+hd.walkLag*(1.9+0.22*i);
     const drop=hd.bowDrop*(0.42+0.08*i);
     const rot=hd.poseLag*(12+1.5*i);
-    el.setAttribute('transform',`translate(${lag.toFixed(2)} ${drop.toFixed(2)}) rotate(${rot.toFixed(2)} 292 250)`);
-    g.appendChild(el);
+    silhouette(pair, d, [p.base,p.mid,p.shadow,p.light][i%4], { opacity:0.98, transform:`translate(${lag.toFixed(2)} ${drop.toFixed(2)}) rotate(${rot.toFixed(2)} 292 250)` });
   });
   return g;
 }
@@ -1269,22 +1347,19 @@ function renderHairFront(s, data, st=styleProfile(s), ft=headTurnProfile(s), hd=
   const perspectiveX=1-ft.abs*0.018;
   const g = svgEl('g', {'data-hair-layer':'front',transform:`translate(${ft.hairShift.toFixed(2)} 0) ${scaleAround(210,248,st.hairX*perspectiveX,st.hairY)}`});
   const fills = [p.base,p.mid,p.base,p.shadow,p.base,p.light];
+  const pair = contourPair().mount(g);
 
   (data.sideLocks || []).forEach((d,i)=>{
     const side=i%2===0?'left':'right';
     const far=(ft.t>0 && side==='right') || (ft.t<0 && side==='left');
     const near=(ft.t>0 && side==='left') || (ft.t<0 && side==='right');
-    const lock=svgEl('path',{d,fill:fills[i%fills.length],stroke:p.line,'stroke-width':far?1.8:2.15,'stroke-linejoin':'round','stroke-linecap':'round',opacity:far?String(1-ft.abs*0.18):'1'});
     const perspective=far?`${scaleAround(210,190,1-ft.abs*0.045,1)} translate(${(-ft.t*2.1).toFixed(2)} 0)`:near?`${scaleAround(210,190,1+ft.abs*0.018,1)} translate(${(ft.t*0.8).toFixed(2)} 0)`:'';
     const motion=hairLockTransform(hd,i,data.sideLocks.length,'side',side==='left'?-1:1);
-    lock.setAttribute('transform',`${perspective} ${motion}`.trim());
-    g.appendChild(lock);
+    silhouette(pair, d, fills[i%fills.length], { opacity: far?String(1-ft.abs*0.18):'1', transform:`${perspective} ${motion}`.trim() });
   });
 
   (data.bangs || []).forEach((d,i)=>{
-    const el=svgEl('path',{d,fill:fills[(i+1)%fills.length],stroke:p.line,'stroke-width':i<2?1.05:1.55,'stroke-linejoin':'round','stroke-linecap':'round'});
-    el.setAttribute('transform',hairLockTransform(hd,i,(data.bangs||[]).length,'bang'));
-    g.appendChild(el);
+    silhouette(pair, d, fills[(i+1)%fills.length], { transform: hairLockTransform(hd,i,(data.bangs||[]).length,'bang') });
   });
 
   (data.strandEdges || []).forEach((d,i)=>{
@@ -1366,6 +1441,7 @@ function lineArtPalette(s, pal){
     facial:mixHex(s.skin,'#4c2934',0.72),
     lip:mixHex(s.skin,'#8e3950',0.66),
     shoe:'#405779',
+    ink:mixHex(mixHex(skin, top, 0.28), '#1a1520', 0.82),
     weights:{outer:3.6, major:2.8, medium:2.0, interior:1.45, micro:0.95}
   };
 }
@@ -1589,7 +1665,6 @@ function facePath(shape, exaggeration=65, headTurn=0, anatomy={faceWidth:1,cheek
 function earMarkup(skin, lines, ft={t:0,abs:0,farEarOpacity:1,nearEarScale:1}, anatomy={faceWidth:1}){
   const g = svgEl('g');
   const inner = lines ? lines.skinInner : mixHex(skin,'#a55b62',0.26);
-  const outer = lines ? lines.skin : mixHex(skin,'#7a4048',0.42);
   const makeEar=(side)=>{
     const left=side==='left';
     const group=svgEl('g');
@@ -1599,7 +1674,8 @@ function earMarkup(skin, lines, ft={t:0,abs:0,farEarOpacity:1,nearEarScale:1}, a
     const innerD=left
       ? 'M150 181 C145 181 145 191 148 199 C150 204 153 207 156 204 C153 200 151 195 153 190'
       : 'M270 181 C275 181 275 191 272 199 C270 204 267 207 264 204 C267 200 269 195 267 190';
-    group.appendChild(svgEl('path',{d,fill:skin,stroke:outer,'stroke-width':'2.4','stroke-linejoin':'round'}));
+    // Outer ear uses the unified contour; the inner bowl stays an interior seam.
+    silhouette(group, d, skin);
     group.appendChild(svgEl('path',{d:innerD,stroke:inner,'stroke-width':'1.25',fill:'none','stroke-linecap':'round',opacity:'0.75'}));
     const far=(ft.t>0 && !left)||(ft.t<0 && left);
     const near=(ft.t>0 && left)||(ft.t<0 && !left);
@@ -2055,7 +2131,7 @@ function toward(a,b,amount){
   return {x:a.x+d.x*amount,y:a.y+d.y*amount,z:Number(a.z||0)+(Number(b.z||0)-Number(a.z||0))*t};
 }
 
-// Erase only the transverse seam at a wrist and then restore the two side contours.
+// Cover the transverse wrist seam with fill only so arm and hand share one outer contour.
 function smoothWristJointMarkup(wrist,from,fill,stroke,width=2.15){
   const g=svgEl('g');
   const d=norm(vec(from,wrist)), n={x:-d.y,y:d.x};
@@ -2064,15 +2140,7 @@ function smoothWristJointMarkup(wrist,from,fill,stroke,width=2.15){
     C${(wrist.x+n.x*rx*1.15).toFixed(1)} ${(wrist.y+n.y*rx*1.15).toFixed(1)} ${(wrist.x+d.x*ry+n.x*rx).toFixed(1)} ${(wrist.y+d.y*ry+n.y*rx).toFixed(1)} ${(wrist.x+d.x*ry).toFixed(1)} ${(wrist.y+d.y*ry).toFixed(1)}
     C${(wrist.x+d.x*ry-n.x*rx).toFixed(1)} ${(wrist.y+d.y*ry-n.y*rx).toFixed(1)} ${(wrist.x-n.x*rx*1.15).toFixed(1)} ${(wrist.y-n.y*rx*1.15).toFixed(1)} ${(wrist.x-d.x*ry-n.x*rx).toFixed(1)} ${(wrist.y-d.y*ry-n.y*rx).toFixed(1)}
     C${(wrist.x-d.x*ry).toFixed(1)} ${(wrist.y-d.y*ry).toFixed(1)} ${(wrist.x-d.x*ry+n.x*rx).toFixed(1)} ${(wrist.y-d.y*ry+n.y*rx).toFixed(1)} ${(wrist.x-d.x*ry+n.x*rx).toFixed(1)} ${(wrist.y-d.y*ry+n.y*rx).toFixed(1)} Z`;
-  g.appendChild(svgEl('path',{d:oval,fill,stroke:'none'}));
-  const side=(sgn)=>{
-    const p1={x:wrist.x-d.x*7+n.x*6.2*sgn,y:wrist.y-d.y*7+n.y*6.2*sgn};
-    const pm={x:wrist.x+n.x*7.0*sgn,y:wrist.y+n.y*7.0*sgn};
-    const p2={x:wrist.x+d.x*7+n.x*5.6*sgn,y:wrist.y+d.y*7+n.y*5.6*sgn};
-    return `M${p1.x.toFixed(1)} ${p1.y.toFixed(1)} Q${pm.x.toFixed(1)} ${pm.y.toFixed(1)} ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
-  };
-  g.appendChild(svgEl('path',{d:side(1),fill:'none',stroke,'stroke-width':width,'stroke-linecap':'round'}));
-  g.appendChild(svgEl('path',{d:side(-1),fill:'none',stroke,'stroke-width':width,'stroke-linecap':'round'}));
+  fillMass(g, oval, fill);
   return g;
 }
 // Step 10: high-fidelity articulated hand renderer.
@@ -2154,12 +2222,12 @@ function fingerSilhouettePath(p0,p1,p2,w0,w2){
   const p=q=>`${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
   return `M${p(L0)} C${p(L1)} ${p(L2)} ${p(L2)} Q${p(tip)} ${p(R2)} C${p(R1)} ${p(R0)} ${p(R0)} Z`;
 }
-function fingerStrokeMarkup(frame,finger,skinFill,skinStroke,lights,detailStroke){
+function fingerStrokeMarkup(frame,finger,skinFill,skinStroke,lights,detailStroke,pair){
   const g=svgEl('g');
   const p0=frame.local(finger.b[0]-2.4,finger.b[1]), p1=frame.local(finger.m[0],finger.m[1]), p2=frame.local(finger.t[0],finger.t[1]);
   const tipW=finger.tw || finger.w*0.64;
   const d=fingerSilhouettePath(p0,p1,p2,finger.w,tipW);
-  g.appendChild(svgEl('path',{d,fill:skinFill,stroke:skinStroke,'stroke-width':'1.7','stroke-linecap':'round','stroke-linejoin':'round'}));
+  silhouette(pair || g, d, skinFill);
   if(lights){
     const hi=frame.local(finger.m[0]-1.5,finger.m[1]-1.2);
     const ht=frame.local(finger.t[0]-2,finger.t[1]-1.2);
@@ -2177,23 +2245,22 @@ function handMarkup(wrist,from,gesture='relaxed',side='left',skinFill='#f2c7a5',
   const frame=handFrame(wrist,from,gesture,side), spec=frame.spec;
   const detailStroke=lines?lines.skinInner:mixHex('#c78672','#6d3441',0.35);
 
-  // Palm first. Fingers overlap it, which removes the segmented mitten look at the knuckles.
-  g.appendChild(svgEl('path',{d:palmPath(wrist,frame),fill:skinFill,stroke:skinStroke,'stroke-width':'2.25','stroke-linejoin':'round'}));
+  const pair = contourPair().mount(g);
+
+  const fingerTips=[];
+  spec.fingers.slice().reverse().forEach(f=>{
+    const out=fingerStrokeMarkup(frame,f,skinFill,skinStroke,lights,detailStroke,pair);
+    g.appendChild(out.g); fingerTips.push(out.tip);
+  });
+  silhouette(pair, palmPath(wrist,frame), skinFill);
   if(lights){
     const h1=frame.local(3,-spec.palmW*.24), h2=frame.local(spec.palmL*.72,-spec.palmW*.30);
     g.appendChild(svgEl('path',{d:`M${h1.x.toFixed(1)} ${h1.y.toFixed(1)} Q${h2.x.toFixed(1)} ${h2.y.toFixed(1)} ${frame.local(spec.palmL*.88,-spec.palmW*.14).x.toFixed(1)} ${frame.local(spec.palmL*.88,-spec.palmW*.14).y.toFixed(1)}`,fill:'none',stroke:lights.skin.highlight,'stroke-width':'1.15','stroke-linecap':'round',opacity:'0.28'}));
   }
 
-  const fingerTips=[];
-  spec.fingers.slice().reverse().forEach(f=>{
-    const out=fingerStrokeMarkup(frame,f,skinFill,skinStroke,lights,detailStroke);
-    g.appendChild(out.g); fingerTips.push(out.tip);
-  });
-
-  // Thumb is independently posed and slightly heavier than the fingers.
   const th=spec.thumb;
   const t0=frame.local(th.b[0]-1.6,th.b[1]), t1=frame.local(th.m[0],th.m[1]), t2=frame.local(th.t[0],th.t[1]);
-  g.appendChild(svgEl('path',{d:fingerSilhouettePath(t0,t1,t2,th.w,th.tw||th.w*0.7),fill:skinFill,stroke:skinStroke,'stroke-width':'1.7','stroke-linecap':'round','stroke-linejoin':'round'}));
+  silhouette(pair, fingerSilhouettePath(t0,t1,t2,th.w,th.tw||th.w*0.7), skinFill);
 
   // Palm and knuckle creases are deliberately subtle so the hand still reads as clean anime line art.
   const c1=frame.local(4,1.5), c2=frame.local(10,3.0), c3=frame.local(5,-2.2), c4=frame.local(9,-3.4);
@@ -2319,8 +2386,9 @@ function neckPath(){
   return 'M196 248 C198 266 196 284 190 298 C199 306 221 306 230 298 C224 284 222 266 224 248 Z';
 }
 
-function shoeMarkup(side, ankle, profile, lines, depthScale=1){
-  const g=svgEl('g',{transform:scaleAround(ankle.x,ankle.y,depthScale,depthScale)});
+function shoeMarkup(side, ankle, profile, lines, depthScale=1, pair=null){
+  const xform=scaleAround(ankle.x,ankle.y,depthScale,depthScale);
+  const g=svgEl('g',{transform:xform});
   const dir=side==='left'?-1:1;
   const stroke=profile.shoe==='sneaker'?'#405779':mixHex('#3b3540','#111827',0.34);
   let fill='#3b3540';
@@ -2329,7 +2397,7 @@ function shoeMarkup(side, ankle, profile, lines, depthScale=1){
   if(profile.shoe==='oxford') fill='#44382f';
   const toe=profile.shoe==='loafer'?17:profile.shoe==='sneaker'?20:16;
   const upper=`M${ankle.x-9} ${ankle.y-2} C${ankle.x} ${ankle.y-10} ${ankle.x+10} ${ankle.y-2} ${ankle.x+12} ${ankle.y+1} C${ankle.x+toe*dir} ${ankle.y+5} ${ankle.x+toe*dir} ${ankle.y+12} ${ankle.x+8*dir} ${ankle.y+15} C${ankle.x} ${ankle.y+18} ${ankle.x-11*dir} ${ankle.y+16} ${ankle.x-12*dir} ${ankle.y+8} C${ankle.x-11} ${ankle.y+3} ${ankle.x-9} ${ankle.y-2} ${ankle.x-9} ${ankle.y-2} Z`;
-  g.appendChild(svgEl('path',{d:upper,fill,stroke,'stroke-width':'2.15','stroke-linejoin':'round'}));
+  silhouette(pair || g, upper, fill, pair ? { transform: xform } : {});
   g.appendChild(svgEl('path',{d:`M${ankle.x-12*dir} ${ankle.y+15} C${ankle.x} ${ankle.y+19} ${ankle.x+14*dir} ${ankle.y+16} ${ankle.x+8*dir} ${ankle.y+13}`,fill:'none',stroke:mixHex(stroke,'#111827',0.18),'stroke-width':'2.4','stroke-linecap':'round'}));
   g.appendChild(svgEl('path',{d:`M${ankle.x-10*dir} ${ankle.y+16.5} Q${ankle.x} ${ankle.y+19.5} ${ankle.x+12*dir} ${ankle.y+14.5}`,fill:'none',stroke:mixHex(stroke,'#ffffff',0.18),'stroke-width':'1.05','stroke-linecap':'round'}));
   if(profile.shoe==='loafer'){
@@ -2344,31 +2412,31 @@ function shoeMarkup(side, ankle, profile, lines, depthScale=1){
   return g;
 }
 
-function sockMarkup(side, rig, profile, lines){
+function sockMarkup(side, rig, profile, lines, pair=null){
   if(profile.sock==='none') return svgEl('g');
   const g=svgEl('g');
   const knee=rig.knee[side],ankle=rig.ankle[side];
   const top=pointAlong(knee,ankle,profile.lower==='skirt'?.42:.78);
   const fill=profile.sock==='white'?'#f6f7fa':'#303744';
-  const stroke=profile.sock==='white'?'#c8cdd7':'#1c2330';
   const topS=jointDepthScale(top), ankleS=jointDepthScale(ankle);
-  g.appendChild(svgEl('path',{d:limbSegmentPath(top,ankle,(profile.lower==='skirt'?18:19)*topS,14*ankleS,0),fill,stroke,'stroke-width':'1.55','stroke-linejoin':'round'}));
+  silhouette(pair || g, limbSegmentPath(top,ankle,(profile.lower==='skirt'?18:19)*topS,14*ankleS,0), fill);
   g.appendChild(svgEl('path',{d:bandPath(top,vec(knee,ankle),8.6*topS,2.8*topS),fill:mixHex(fill,'#ffffff',0.08),stroke:'none'}));
   return g;
 }
 
-function legMarkup(side, rig, color, lights, lines, s, profile){
+function legMarkup(side, rig, color, lights, lines, s, profile, pair=null){
   const g=svgEl('g',{'data-depth':limbDepth(rig,side,'leg').toFixed(2)});
+  const mass=pair || g;
   const hip=rig.hip[side], knee=rig.knee[side], ankle=rig.ankle[side];
   const hs=jointDepthScale(hip),ks=jointDepthScale(knee),as=jointDepthScale(ankle);
   const stroke=lines?lines.lower:mixHex(color,'#111827',0.45);
   if(profile.lower==='skirt'){
     const hipRoot=pointAlong(hip,knee,0.08);
-    g.appendChild(svgEl('path',{d:smoothBentLimbPath(hipRoot,knee,ankle,28*hs,21*ks,14*as),fill:lights.skinFill,stroke:lines.skin,'stroke-width':(2.35*((hs+ks+as)/3)).toFixed(2),'stroke-linejoin':'round'}));
-    g.appendChild(sockMarkup(side,rig,profile,lines));
+    silhouette(mass, smoothBentLimbPath(hipRoot,knee,ankle,28*hs,21*ks,14*as), lights.skinFill);
+    g.appendChild(sockMarkup(side,rig,profile,lines,pair));
   } else {
     const hipRoot=toward(hip,{x:210,y:420},12);
-    g.appendChild(svgEl('path',{d:smoothBentLimbPath(hipRoot,knee,ankle,33*hs,24*ks,16*as),fill:lights.lowerFill,stroke,'stroke-width':(3.15*((hs+ks+as)/3)).toFixed(2),'stroke-linejoin':'round'}));
+    silhouette(mass, smoothBentLimbPath(hipRoot,knee,ankle,33*hs,24*ks,16*as), lights.lowerFill);
     const n1=perp(vec(hip,knee)), n2=perp(vec(knee,ankle));
     g.appendChild(svgEl('path',{d:`M${hip.x+n1.x*5*hs} ${hip.y+n1.y*5*hs} Q${(hip.x+knee.x)/2+n1.x*3*ks} ${(hip.y+knee.y)/2+n1.y*3*ks} ${knee.x+n1.x*2*ks} ${knee.y+n1.y*2*ks} Q${(knee.x+ankle.x)/2+n2.x*2*as} ${(knee.y+ankle.y)/2+n2.y*2*as} ${ankle.x+n2.x*3*as} ${ankle.y+n2.y*3*as}`,fill:'none',stroke:mixHex(color,'#ffffff',0.22),'stroke-width':'1.0','stroke-linecap':'round',opacity:'0.45'}));
     g.appendChild(foldMarksAtJoint(knee,hip,ankle,lines.lower,1.1,.8*ks));
@@ -2379,16 +2447,15 @@ function legMarkup(side, rig, color, lights, lines, s, profile){
     }
   }
   dynamicLimbFolds(g, knee, hip, ankle, lines.lower, foldStrength(s), side==='left'?-1:1, 'knee');
-  g.appendChild(shoeMarkup(side,ankle,profile,lines,as));
+  g.appendChild(shoeMarkup(side,ankle,profile,lines,as,pair));
   return g;
 }
 
-function armMarkup(side, rig, s, pal, lights, lines, profile){
+function armMarkup(side, rig, s, pal, lights, lines, profile, pair=null){
   const g=svgEl('g',{'data-depth':limbDepth(rig,side,'arm').toFixed(2)});
   const shoulder=rig.shoulder[side], elbow=rig.elbow[side], wrist=rig.wrist[side];
   const shS=jointDepthScale(shoulder),elS=jointDepthScale(elbow),wrS=jointDepthScale(wrist);
   const sleeveFill=lights.topFill, skinFill=lights.skinFill;
-  const sleeveStroke=lines.top, skinStroke=lines.skin;
   const spec=sleeveSpec(profile);
   let cuff;
   if(spec.where==='upper') cuff=pointAlong(shoulder,elbow,spec.t);
@@ -2398,15 +2465,16 @@ function armMarkup(side, rig, s, pal, lights, lines, profile){
   // Width now follows z-depth as well as anatomy, creating near/far limb scale without raster distortion.
   const torsoCenter={x:210,y:360};
   const buriedShoulder=toward(shoulder,torsoCenter,10);
+  const mass=pair || contourPair().mount(g);
   if(spec.where==='upper'){
     const skinStart=toward(cuff,shoulder,8), skinS=jointDepthScale(skinStart);
-    g.appendChild(svgEl('path',{d:smoothBentLimbPath(skinStart,elbow,wrist,22*skinS,20*elS,13*wrS),fill:skinFill,stroke:skinStroke,'stroke-width':(2.35*((skinS+elS+wrS)/3)).toFixed(2),'stroke-linejoin':'round'}));
-    g.appendChild(svgEl('path',{d:limbSegmentPath(buriedShoulder,cuff,spec.upperWidth*shS,spec.endWidth*cuffS,side==='left'?-1.5:1.5),fill:sleeveFill,stroke:sleeveStroke,'stroke-width':(2.85*((shS+cuffS)/2)).toFixed(2),'stroke-linejoin':'round'}));
+    silhouette(mass, smoothBentLimbPath(skinStart,elbow,wrist,22*skinS,20*elS,13*wrS), skinFill);
+    silhouette(mass, limbSegmentPath(buriedShoulder,cuff,spec.upperWidth*shS,spec.endWidth*cuffS,side==='left'?-1.5:1.5), sleeveFill);
   } else {
-    g.appendChild(svgEl('path',{d:smoothBentLimbPath(buriedShoulder,elbow,wrist,24*shS,19*elS,13*wrS),fill:skinFill,stroke:'none'}));
+    fillMass(mass, smoothBentLimbPath(buriedShoulder,elbow,wrist,24*shS,19*elS,13*wrS), skinFill);
     const skinStart=toward(cuff,elbow,6), skinS=jointDepthScale(skinStart);
-    g.appendChild(svgEl('path',{d:limbSegmentPath(skinStart,wrist,16*skinS,13*wrS,side==='left'?1:-1),fill:skinFill,stroke:skinStroke,'stroke-width':(2.25*((skinS+wrS)/2)).toFixed(2),'stroke-linejoin':'round'}));
-    g.appendChild(svgEl('path',{d:smoothBentLimbPath(buriedShoulder,elbow,cuff,spec.upperWidth*shS,spec.elbowWidth*elS,spec.endWidth*cuffS),fill:sleeveFill,stroke:sleeveStroke,'stroke-width':(2.95*((shS+elS+cuffS)/3)).toFixed(2),'stroke-linejoin':'round'}));
+    silhouette(mass, limbSegmentPath(skinStart,wrist,16*skinS,13*wrS,side==='left'?1:-1), skinFill);
+    silhouette(mass, smoothBentLimbPath(buriedShoulder,elbow,cuff,spec.upperWidth*shS,spec.elbowWidth*elS,spec.endWidth*cuffS), sleeveFill);
   }
 
   if(profile.cuff || profile.sleeve==='kimono'){
@@ -2432,10 +2500,10 @@ function armMarkup(side, rig, s, pal, lights, lines, profile){
   return g;
 }
 
-function skirtMarkup(s, pal, lights, lines, profile){
+function skirtMarkup(s, pal, lights, lines, profile, pair=null, xform=null){
   const g=svgEl('g',{'data-garment':'skirt'});
   const d='M158 442 C176 448 193 452 210 452 C227 452 244 448 262 442 C272 470 286 508 286 528 C268 542 240 548 210 548 C180 548 152 542 134 528 C134 508 148 470 158 442 Z';
-  g.appendChild(svgEl('path',{d,fill:lights.lowerFill,stroke:lines.lower,'stroke-width':'3.05','stroke-linejoin':'round'}));
+  silhouette(pair || g, d, lights.lowerFill, xform ? { transform: xform } : {});
   g.appendChild(svgEl('path',{d:'M157 444 C178 450 193 452 210 452 C227 452 242 450 263 444 C264 452 250 460 210 462 C170 460 156 452 157 444 Z',fill:lights.accent.shadow,opacity:'0.32'}));
   [161,181,199,221,239,259].forEach((x,i)=>{
     const target=210+(x-210)*(i===0||i===5?1.28:1.12);
@@ -2619,7 +2687,7 @@ function addAccessories(parent, s, lines=null){
     parent.appendChild(svgEl('path',{d:'M266 324 C252 318 238 312 230 308',fill:'none',stroke:'#3b2e24','stroke-width':'2.4','stroke-linecap':'round'}));
   }
   if(s.accessories.includes('scarf')){
-    parent.appendChild(svgEl('path',{d:'M176 284 C196 296 224 296 244 284 C246 300 238 318 210 324 C182 318 174 300 176 284 Z',fill:'#d95a6a',stroke:'#b44758','stroke-width':'1.4'}));
+    silhouette(parent,'M176 284 C196 296 224 296 244 284 C246 300 238 318 210 324 C182 318 174 300 176 284 Z','#d95a6a');
     parent.appendChild(svgEl('path',{d:'M198 322 C190 360 186 400 192 420',fill:'none',stroke:'#d95a6a','stroke-width':'7.5','stroke-linecap':'round'}));
     parent.appendChild(svgEl('path',{d:'M222 322 C230 360 238 398 232 420',fill:'none',stroke:'#d95a6a','stroke-width':'7.5','stroke-linecap':'round'}));
   }
@@ -2717,6 +2785,7 @@ function renderAvatar(){
   const hair = hairData(s.hairStyle, s.gender==='feminine');
   const lights = artDirectionLightingTune(buildLightingDefs(group, s, pal, hair),ad);
   const lines = artDirectionLineTune(lineArtPalette(s, pal),ad);
+  beginContour(lines);
 
   const whole = svgEl('g');
   group.appendChild(whole);
@@ -2733,57 +2802,61 @@ function renderAvatar(){
     whole.appendChild(svgEl('line',{x1:270,y1:497,x2:274,y2:666,stroke:'#684b34','stroke-width':'7','stroke-linecap':'round'}));
   }
 
-  // lower body
+  // Shared body ink behind layered fills: far limbs, torso/legs, then near limbs.
+  const torsoXform = rig.torsoTransform;
+  const propCarrier=propHandSide(s,rig);
+  const farArms=rig.armOrder.filter(side=>limbDepth(rig,side,'arm') < -3.5 && propCarrier!=='both' && propCarrier!==side);
+  const nearArms=rig.armOrder.filter(side=>!farArms.includes(side));
+  const farLimbLayer=svgEl('g',{'data-limb-layer':'far'});
+  const backDetailLayer=svgEl('g',{'data-contour-details':'back'});
+  const coreDetailLayer=svgEl('g',{'data-contour-details':'core'});
+  const nearLimbLayer=svgEl('g',{'data-limb-layer':'near'});
+  const torsoGroup = svgEl('g',{transform:torsoXform});
+  const stack = contourStack().mount(whole, { afterBack: backDetailLayer, afterFar: farLimbLayer, afterCore: coreDetailLayer, afterNear: nearLimbLayer });
+
+  farArms.forEach(side=>{
+    farLimbLayer.appendChild(armMarkup(side,rig,s,pal,lights,lines,profile,stack.layerFar));
+    const gesture=handGestureFor(side,rig,s);
+    farLimbLayer.appendChild(handMarkup(rig.wrist[side],rig.elbow[side],gesture,side,lights.skinFill,lines.skin,lights,lines,jointDepthScale(rig.wrist[side])));
+  });
+
   if(s.outfit === 'festival'){
-    // The robe itself is already a continuous silhouette; keep it flowing and add visible footwear beneath it.
-    whole.appendChild(svgEl('path',{d:'M145 308 C171 290 190 282 210 282 C230 282 249 290 275 308 C286 390 292 498 298 664 C270 683 240 692 210 693 C180 692 150 683 122 664 C128 498 134 390 145 308 Z',fill:lights.topFill,stroke:lines.top,'stroke-width':'3.6','stroke-linejoin':'round'}));
-    whole.appendChild(svgEl('path',{d:'M122 664 C150 678 180 686 210 686 C240 686 270 678 298 664',fill:'none',stroke:lines.top,'stroke-width':'1.2',opacity:'0.55'}));
-    whole.appendChild(svgEl('path',{d:'M173 314 C188 303 199 298 210 298 C221 298 232 303 247 314 C250 430 251 548 250 664 C238 680 224 687 210 689 C196 687 182 680 170 664 C169 548 170 430 173 314 Z',fill:'#e6d2a6',opacity:'0.15'}));
-    whole.appendChild(svgEl('path',{d:'M186 270 C194 265 202 263 210 263 C218 263 226 265 234 270 L234 326 C226 332 218 335 210 335 C202 335 194 332 186 326 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'2.6','stroke-linejoin':'round'}));
-    whole.appendChild(svgEl('path',{d:'M151 654 C161 650 177 651 187 656 C191 661 191 667 186 671 L148 671 C143 667 145 660 151 654 Z',fill:'#463a34',stroke:'#2c2522','stroke-width':'2.4'}));
-    whole.appendChild(svgEl('path',{d:'M269 654 C259 650 243 651 233 656 C229 661 229 667 234 671 L272 671 C277 667 275 660 269 654 Z',fill:'#463a34',stroke:'#2c2522','stroke-width':'2.4'}));
+    silhouette(stack.layerCore,'M145 308 C171 290 190 282 210 282 C230 282 249 290 275 308 C286 390 292 498 298 664 C270 683 240 692 210 693 C180 692 150 683 122 664 C128 498 134 390 145 308 Z',lights.topFill);
+    silhouette(stack.layerBack,'M151 654 C161 650 177 651 187 656 C191 661 191 667 186 671 L148 671 C143 667 145 660 151 654 Z','#463a34');
+    silhouette(stack.layerBack,'M269 654 C259 650 243 651 233 656 C229 661 229 667 234 671 L272 671 C277 667 275 660 269 654 Z','#463a34');
   } else {
-    rig.legOrder.forEach(side=>whole.appendChild(legMarkup(side, rig, pal.lower, lights, lines, s, profile)));
+    rig.legOrder.forEach(side=>backDetailLayer.appendChild(legMarkup(side, rig, pal.lower, lights, lines, s, profile, stack.layerBack)));
   }
 
-  // torso follows the rig's body transform; arm/leg joints are already expressed in final stage coordinates.
-  const torsoGroup = svgEl('g',{transform:rig.torsoTransform});
-  whole.appendChild(torsoGroup);
-  if(profile.lower==='skirt'){ torsoGroup.appendChild(skirtMarkup(s,pal,lights,lines,profile)); skirtPoseFolds(torsoGroup,s,rig,lines); }
-
-  // neck
-  torsoGroup.appendChild(svgEl('path',{d:neckPath(),fill:lights.skinFill,stroke:lines.skin,'stroke-width':'2.7','stroke-linejoin':'round'}));
-  torsoGroup.appendChild(neckCastShadowMarkup(s,pal));
-
-  // torso base silhouette. Garment construction details are layered separately so every outfit can share the rig while retaining its own tailoring.
-  let torso;
+  silhouette(stack.layerCore, neckPath(), lights.skinFill, { transform: torsoXform });
   if(s.outfit!=='festival'){
-    torso = svgEl('path',{d:torsoPath(s.gender,profile.fit),fill:lights.topFill,stroke:lines.top,'stroke-width':'3.6','stroke-linejoin':'round'});
-    torsoGroup.appendChild(torso);
+    silhouette(stack.layerCore, torsoPath(s.gender,profile.fit), lights.topFill, { transform: torsoXform });
+  }
+  nearArms.forEach(side=>nearLimbLayer.appendChild(armMarkup(side, rig, s, pal, lights, lines, profile, stack.layerNear)));
+
+  coreDetailLayer.appendChild(torsoGroup);
+  if(profile.lower==='skirt'){
+    torsoGroup.appendChild(skirtMarkup(s,pal,lights,lines,profile,stack.layerCore,torsoXform));
+    skirtPoseFolds(torsoGroup,s,rig,lines);
+  }
+  torsoGroup.appendChild(neckCastShadowMarkup(s,pal));
+  if(s.outfit!=='festival'){
     outfitTorsoDetails(torsoGroup,s,pal,lights,lines,profile);
     torsoGroup.appendChild(torsoCastShadowMarkup(s,rig,pal,profile));
   } else {
-    festivalGarmentDetails(whole,pal,lights,lines);
+    coreDetailLayer.appendChild(svgEl('path',{d:'M122 664 C150 678 180 686 210 686 C240 686 270 678 298 664',fill:'none',stroke:lines.top,'stroke-width':'1.2',opacity:'0.55'}));
+    fillMass(coreDetailLayer,'M173 314 C188 303 199 298 210 298 C221 298 232 303 247 314 C250 430 251 548 250 664 C238 680 224 687 210 689 C196 687 182 680 170 664 C169 548 170 430 173 314 Z','#e6d2a6',{opacity:'0.15'});
+    coreDetailLayer.appendChild(svgEl('path',{d:'M186 270 C194 265 202 263 210 263 C218 263 226 265 234 270 L234 326 C226 332 218 335 210 335 C202 335 194 332 186 326 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':String(CONTOUR.interior),'stroke-linejoin':'round'}));
+    festivalGarmentDetails(coreDetailLayer,pal,lights,lines);
   }
 
   torsoPoseFolds(torsoGroup,s,rig,lines,profile);
   torsoGroup.appendChild(torsoLightingMarkup(lights));
   if(s.outfit!=='festival'){
-    whole.appendChild(lowerCastShadowMarkup(s,rig,pal,profile));
+    coreDetailLayer.appendChild(lowerCastShadowMarkup(s,rig,pal,profile));
     litEdge(torsoGroup,'M160 299 C171 286 190 280 207 279',lights.top.highlight,3.8,0.38);
   }
 
-  // Step 14 depth ordering remains active: far arms can pass behind the torso while near arms remain in the foreground.
-  // A prop-carrying arm stays foreground so the object and gripping fingers remain one coherent contact stack.
-  const propCarrier=propHandSide(s,rig);
-  const farArms=rig.armOrder.filter(side=>limbDepth(rig,side,'arm') < -3.5 && propCarrier!=='both' && propCarrier!==side);
-  const nearArms=rig.armOrder.filter(side=>!farArms.includes(side));
-  farArms.forEach(side=>{
-    whole.insertBefore(armMarkup(side,rig,s,pal,lights,lines,profile),torsoGroup);
-    const gesture=handGestureFor(side,rig,s);
-    whole.insertBefore(handMarkup(rig.wrist[side],rig.elbow[side],gesture,side,lights.skinFill,lines.skin,lights,lines,jointDepthScale(rig.wrist[side])),torsoGroup);
-  });
-  nearArms.forEach(side=>whole.appendChild(armMarkup(side, rig, s, pal, lights, lines, profile)));
   if(s.prop!=='none'){
     if(rig.twoHanded) whole.appendChild(heldPropMarkup(s, rig, lines));
     else whole.appendChild(riggedPropMarkup(s, rig, lines));
@@ -2805,8 +2878,9 @@ function renderAvatar(){
   // Step 19 keeps the facial stack grouped so the new jaw curve, eyes, and hair framing stay coherent.
   const faceCore = svgEl('g',{transform:scaleAround(210,202,faceAnatomyProfile(s).faceCoreX,faceAnatomyProfile(s).faceCoreY),'data-face-core-scale':'1.10x'});
   headGroup.appendChild(faceCore);
+  silhouette(faceCore, facePath(s.faceShape,s.exaggeration,s.headTurn,faceAnatomyProfile(s)), lights.skinFill);
   faceCore.appendChild(earMarkup(s.skin, lines, ft, faceAnatomyProfile(s)));
-  faceCore.appendChild(svgEl('path',{d:facePath(s.faceShape,s.exaggeration,s.headTurn,faceAnatomyProfile(s)), fill:lights.skinFill,stroke:lines.skin,'stroke-width':'2.45','stroke-linejoin':'round'}));
+  interiorStroke(faceCore, 'M168 150 C186 144 210 142 234 146 C248 149 256 153 264 158', { stroke: lines.hair, strokeWidth: 1.15, opacity: 0.48 });
   faceCore.appendChild(faceLightingMarkup(s, lights));
   // Upper-left key light breaks the dark face contour instead of outlining every edge equally.
   litEdge(faceCore,'M154 149 C149 166 147 188 149 211 C151 230 158 248 170 264',lights.skin.highlight,3.45,0.50);
@@ -2987,7 +3061,7 @@ function randomize(){
   renderAvatar();
 }
 function saveStateFile(){
-  const data = {version:3, rendererStep:19, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', silhouetteModel:'illustrated-anatomical-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'articulated-anime-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'material-variable-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'anatomy-aware-v1', activeVariant, variants};
+  const data = {version:3, rendererStep:19, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', silhouetteModel:'unified-outer-contour-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'articulated-anime-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'unified-outer-contour-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'anatomy-aware-v1', activeVariant, variants};
   const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);

@@ -189,8 +189,8 @@ const SPECTRUM = {
     return i < 0 ? null : this.order[(i + 3) % 6];
   },
   relation(atk, def) {
-    if (def === "umbra") return "umbra";
     if (atk === "white") return "chorus";
+    if (def === "umbra") return "umbra";
     const a = this.index(atk), d = this.index(def);
     if (a < 0 || d < 0) return "glance";
     const dist = Math.min((a - d + 6) % 6, (d - a + 6) % 6);
@@ -479,7 +479,7 @@ const CHAPTERS = [
     ]
   },
   {
-    id: "ch4", title: "GREENHOUSE", hero: "wanda", map: "green", spawn: [5, 8],
+    id: "ch4", title: "GREENHOUSE", hero: "wanda", map: "green", spawn: [4, 8],
     goal: "Speak with the gardener. Life mends — and also grows thorns.",
     intro: [
       ["gard", "Green is Life. Roots, mend, the stubborn fact of growing anyway."],
@@ -815,9 +815,20 @@ function battleAct(act) {
     if (state.chroma < 6) { battle.log = "Not enough Chroma to braid talents."; renderBattle(); return; }
     const warm = SPECTRUM.warm.find((c) => hasColor(c));
     const cool = SPECTRUM.cool.find((c) => hasColor(c));
-    if (battle.foe.hue === "umbra" && hasColor("yellow") && hasColor("violet") && colorCount() >= 6) {
-      state.chroma -= 8;
-      castColor("white", true);
+    if (battle.foe.hue === "umbra") {
+      if (colorCount() >= 6 && state.chroma >= 8) {
+        state.chroma -= 8;
+        castColor("white", true);
+        return;
+      }
+      const rebound = battle.foe.stolen ? SPECTRUM.opposite(battle.foe.stolen) : null;
+      if (rebound && hasColor(rebound)) {
+        state.chroma -= 6;
+        castColor(rebound, true);
+        return;
+      }
+      battle.log = "Umbra drinks unmatched color. Clash with the opposite of what it stole, or Chorus with every hue.";
+      renderBattle();
       return;
     }
     if (warm && cool) {
@@ -988,6 +999,14 @@ function handleTile(t, tx, ty) {
     say("", "The door waits until this Wavelength is settled.");
     return;
   }
+  if (t === "R" && state.map !== "street" && state.map !== "prism") {
+    say("", "A red memory, not a door.");
+    return;
+  }
+  if (t === "R" && state.map === "prism") {
+    say("prism", "Force still shouts in the crystal. Save it for the Unpainter.");
+    return;
+  }
   if (t === "R") {
     unlock("red", [
       ["hal", "A brick, a chili, a scrape of rusted paint. Force."],
@@ -999,6 +1018,14 @@ function handleTile(t, tx, ty) {
       });
       else say("hal", "The rift is quieter. Force is a muscle. It can rest.");
     });
+    return;
+  }
+  if (t === "O" && state.map === "prism") {
+    say("prism", "Change flickers in the copper vein. It will not sit still even here.");
+    return;
+  }
+  if (t === "O" && state.map !== "market") {
+    say("", "Orange without a market is only rust.");
     return;
   }
   if (t === "O") {
@@ -1015,6 +1042,10 @@ function handleTile(t, tx, ty) {
     });
     return;
   }
+  if (t === "Y" && state.map === "prism") {
+    say("prism", "Light sits in the yellow facet, asking the same question the attic lamp asked.");
+    return;
+  }
   if (t === "Y" && state.map === "library") {
     unlock("yellow", [
       ["page", "The Primer is short because the rules are short."],
@@ -1029,6 +1060,14 @@ function handleTile(t, tx, ty) {
     });
     return;
   }
+  if (t === "G" && state.map === "prism") {
+    say("prism", "Life in crystal is a slow green. It will wait.");
+    return;
+  }
+  if (t === "G" && state.map !== "green") {
+    say("", "Green wants soil.");
+    return;
+  }
   if (t === "G") {
     unlock("green", [
       ["gard", "A jade leaf, still deciding whether to be plant or stone. Life."],
@@ -1041,6 +1080,14 @@ function handleTile(t, tx, ty) {
     });
     return;
   }
+  if (t === "B" && state.map === "prism") {
+    say("prism", "Thought pools in the blue facet. Do not rush it.");
+    return;
+  }
+  if (t === "B" && state.map !== "harbor") {
+    say("", "Blue wants water and quiet.");
+    return;
+  }
   if (t === "B") {
     unlock("blue", [
       ["dock", "Ink in a bottle that remembers every letter it was almost."],
@@ -1051,6 +1098,14 @@ function handleTile(t, tx, ty) {
         advanceChapter();
       });
     });
+    return;
+  }
+  if (t === "V" && state.map === "prism") {
+    say("prism", "Door-light. The last ribbon before the gallery.");
+    return;
+  }
+  if (t === "V" && state.map !== "theater") {
+    say("", "Violet wants a threshold.");
     return;
   }
   if (t === "V") {
@@ -1067,6 +1122,10 @@ function handleTile(t, tx, ty) {
     return;
   }
   if (t === "U") {
+    if (state.map !== "prism" && state.map !== "umbra") {
+      say("", "A hole where a color used to be.");
+      return;
+    }
     if (state.map === "prism") {
       sayMany([
         ["prism", "He is already unpainting the gallery."],

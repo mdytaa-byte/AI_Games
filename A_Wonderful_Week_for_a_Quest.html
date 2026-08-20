@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>A Wonderful Week for a Quest</title>
-<meta name="description" content="A 16-bit RPG of Michael D. Young’s A Wonderful Week for a Quest. Books I–VII: Squires, Bellissimo, Roderick, ELM, Grimblewaith, Jackdaw, and the Refried Beandom.">
+<meta name="description" content="A 16-bit RPG of Michael D. Young’s A Wonderful Week for a Quest. Books I–VII plus the Book I epilogue: statue, restored Meriwethers, and reasonably happy.">
 <style>
   :root {
     --ink: #0a0714;
@@ -180,7 +180,7 @@
       <div id="footnote" class="panel"></div>
       <div id="titleui">
         <div class="inner">
-          <div class="sub">Michael D. Young · Books 1–7 of the Beandom</div>
+          <div class="sub">Michael D. Young · Books 1–7 + Epilogue</div>
           <h1>A Wonderful Week<br>for a Quest</h1>
           <div class="sub">A 16-bit love letter to the genre</div>
           <div class="blink" id="press">Press Start / Enter / Tap</div>
@@ -192,6 +192,7 @@
             <button id="btnBook5">Book V</button>
             <button id="btnBook6">Book VI</button>
             <button id="btnBook7">Book VII</button>
+            <button id="btnEpi">Epilogue</button>
             <button id="btnCont" class="ghost">Continue</button>
             <button id="btnMute" class="ghost">Sound: On</button>
           </div>
@@ -349,6 +350,7 @@
   function isB5() { return G.day === 5; }
   function isB6() { return G.day === 6; }
   function isB7() { return G.day === 7; }
+  function isEpi() { return G.day === 8; }
 
   const ITEMS = {
     luna: { name: "Luna Bean", desc: "Tastes terrible. Restores 18 HP.", heal: 18 },
@@ -424,7 +426,8 @@
     compassshot: { name: "Pelican’s Compass", mp: 0, desc: "A teleportation Precht cannot drain twice.", special: "precht" },
     planv: { name: "Launch Plan V", mp: 0, desc: "A future-borrowed rocket. Mount Ominous. The machine leaves the world.", special: "nether" },
     namemagnus: { name: "Name King Magnus", mp: 0, desc: "The Netherking is the first wizard. He loathes owing anyone.", special: "nether" },
-    settledebt: { name: "Collect the Debt", mp: 0, desc: "Roderick’s sacrifice settles the account. Magnus returns Bell.", special: "nether" }
+    settledebt: { name: "Collect the Debt", mp: 0, desc: "Roderick’s sacrifice settles the account. Magnus returns Bell.", special: "nether" },
+    pitchfork: { name: "Pitchfork Policy", mp: 0, desc: "Mordeck’s tool. Ogres are a harvest problem.", special: "ogre" }
   };
 
   /* ---------- maps ---------- */
@@ -845,6 +848,7 @@ NNNNNNNNNNNNNNNN
     village: "Beanvale",
     world: "The Beandom",
     tower: "Jackdaw’s Tower",
+    /* epilogue hud overrides this name when isEpi() */
     forest: "Elven Woods (allegedly)",
     arena: "Dwarven Amphitheater",
     cave: "Goblin Family Cave",
@@ -990,6 +994,11 @@ NNNNNNNNNNNNNNNN
         if (!f.b6rod) list.push(npc(16, 8, "roderick", "Sir Roderick 3RG", talkRoderickB6));
         list.push(npc(22, 14, "bell", "Bellissimo", talkBellB6));
         if (f.b6rod && !f.b6arach) list.push(npc(11, 8, "arach", "Arach", talkArach));
+      } else if (isEpi()) {
+        list.push(npc(22, 14, "bell", "Bellissimo", talkBellEpi));
+        list.push(npc(12, 7, "grimble", "Grimblewaith", talkGrimbleEpi));
+        list.push(npc(20, 7, "elm", "ELM", talkElmEpi));
+        if (f.epiStatue) list.push(npc(16, 7, "worm", "Wormtoe", talkGoatEpi));
       } else if (isB5() || isB4() || isB7()) {
         /* Book V starts at BPD HQ. Book IV starts in Pintoburg. Beanvale keeps Jackdaw. */
       } else if (isB3()) {
@@ -1012,10 +1021,12 @@ NNNNNNNNNNNNNNNN
       list.push(npc(25, 11, "villager", "Innkeeper", talkInn));
     }
     if (G.map === "world") {
-      if (!isB2() && !isB3() && !isB4() && !isB5() && !isB6() && !isB7() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
+      if (!isB2() && !isB3() && !isB4() && !isB5() && !isB6() && !isB7() && !isEpi() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
       if (isB3() && f.b3wish && !f.b3grim) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleB3));
       if (isB5() && f.b5snow && !f.b5rod) list.push(npc(16, 9, "roderick", "Sir Roderick 3RG", talkRoderickB5));
-      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB7()
+      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isEpi()
+        ? "Beanvale west: statue, ale, a goat with a résumé. NE mountain gap: Mother Merry’s cottage. Shortcakes are the local currency."
+        : isB7()
         ? "The Cinder is south-island. NE gap: Jackdaw. West beans: Worstashire. East of the golden P: abandoned palace. North grass: old EBI. North of the east highway, a little: Mount Ominous."
         : isB6()
         ? "NE gap: your tower. Beanvale west. SE stone ring: bard arena. East grass: Pintoburg. One step north of the fey door: the border. East of the golden P: palace gates."
@@ -1039,6 +1050,12 @@ NNNNNNNNNNNNNNNN
       } else if (isB6()) {
         if (!f.b6merlin) list.push(npc(7, 6, "petra", "Petra", talkPetra));
         else list.push(npc(8, 3, "petra", "Petra", talkPetra));
+      } else if (isEpi()) {
+        list.push(npc(7, 6, "merry", "Mother Merry", talkMerryEpi));
+        list.push(npc(5, 6, "ellie", "Michelle", talkSistersEpi));
+        list.push(npc(9, 6, "bell", "Petronella", talkSistersEpi));
+        list.push(npc(10, 3, "meriwether", "Mr. Meriwether", talkDadEpi));
+        if (f.epiMerry && !f.epiDone) list.push(npc(8, 3, "pris", "Princess Rezella", talkRezellaEpi));
       } else {
         list.push(npc(8, 3, "jackdaw", "Jackdaw", talkJackdawTower));
         if (isB2() && f.b2ogeron && !f.b2bell) list.push(npc(10, 3, "elm", "ELM", talkElmBell));
@@ -1229,15 +1246,24 @@ NNNNNNNNNNNNNNNN
 
   function questBang(n) {
     const f = G.flags;
-    if (n.sprite === "jackdaw" && G.map === "village" && !f.prophecy) return true;
-    if (n.sprite === "roderick" && f.prophecy && !f.rejected) return true;
-    if (n.sprite === "grimble" && G.map === "world" && !f.grimble) return true;
-    if (n.sprite === "jackdaw" && G.map === "tower" && (!f.quest || (f.secretL && f.secretE && f.secretM && !f.finale))) return true;
-    if (n.sprite === "elf" && !f.secretL) return true;
-    if (n.sprite === "champ" && !f.secretE) return true;
-    if (n.sprite === "hob" && !f.secretM) return true;
-    if (n.sprite === "elm" && G.map === "rally" && !f.elmDown) return true;
-    if (n.sprite === "worm" && !f.wormDown) return true;
+    if (isEpi()) {
+      if (n.sprite === "mordeck" && !f.epiStatue) return true;
+      if (n.sprite === "jackdaw" && G.map === "village" && f.epiStatue && !f.epiJackdaw) return true;
+      if (n.sprite === "merry" && !f.epiMerry) return true;
+      if (n.sprite === "pris" && f.epiMerry && !f.epiDone) return true;
+      return false;
+    }
+    if (!isB2() && !isB3() && !isB4() && !isB5() && !isB6() && !isB7()) {
+      if (n.sprite === "jackdaw" && G.map === "village" && !f.prophecy) return true;
+      if (n.sprite === "roderick" && f.prophecy && !f.rejected) return true;
+      if (n.sprite === "grimble" && G.map === "world" && !f.grimble) return true;
+      if (n.sprite === "jackdaw" && G.map === "tower" && (!f.quest || (f.secretL && f.secretE && f.secretM && !f.finale))) return true;
+      if (n.sprite === "elf" && !f.secretL) return true;
+      if (n.sprite === "champ" && !f.secretE) return true;
+      if (n.sprite === "hob" && !f.secretM) return true;
+      if (n.sprite === "elm" && G.map === "rally" && !f.elmDown) return true;
+      if (n.sprite === "worm" && !f.wormDown) return true;
+    }
     if (isB2()) {
       if (n.sprite === "jackdaw" && G.map === "village" && !f.b2prophecy) return true;
       if (n.sprite === "roderick" && f.b2prophecy && !f.b2rod) return true;
@@ -1378,6 +1404,7 @@ NNNNNNNNNNNNNNNN
   }
 
   function talkJackdawVillage() {
+    if (isEpi()) return talkJackdawEpi();
     if (isB5()) {
       say([
         { who: "Jackdaw", text: "A Whatsit on official business. I am not saying the Chief is lying. I am saying the footnotes will be expensive." },
@@ -1441,6 +1468,7 @@ NNNNNNNNNNNNNNNN
   }
 
   function talkMordeck() {
+    if (isEpi()) return talkMordeckEpi();
     if (isB6()) {
       say([
         { who: "Mordeck", text: "Bards. I have a column. It is louder than the harvest and less useful." },
@@ -1490,6 +1518,13 @@ NNNNNNNNNNNNNNNN
   }
 
   function talkEllie() {
+    if (isEpi()) {
+      say([
+        { who: "Ellie", text: "The Hero Call worked. I blew the ram’s horn. You tripped on a pebble. The harvest came back anyway." },
+        { who: "Ellie", text: "Bean farmers are in the fields again. If another river dries up, I still have the horn. Try not to need it before lunch." }
+      ]);
+      return;
+    }
     say([
       { who: "Ellie", text: "Any certified Hero is oath-bound to answer the Hero Call. I have the ram’s horn ready." },
       { who: "Ellie", text: "If Roderick doesn’t show, maybe we need a new hero. Don’t look at me. Look at the guy with goat smell and a prophecy." }
@@ -1760,6 +1795,150 @@ NNNNNNNNNNNNNNNN
 
   function talkEnding() {
     say([{ who: "Mordeck", text: "One statue per world-saving victory. House policy. Now eat something before the elves start a food chant." }]);
+  }
+
+  function talkMordeckEpi() {
+    if (G.flags.epiStatue) {
+      say([
+        { who: "Mordeck", text: "FREE FOOD AND ALE remains in effect. If the elves start a food chant, I am not translating." },
+        { who: "Mordeck", text: "Jackdaw still owes the statue a shorter speech. I would not have bet a bean on you. I am eating that sentence with gravy." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Mordeck", text: "FREE FOOD AND ALE FOR ALL! …Now that I have your attention: a statue of Roddy Squires, who I would not have bet a bean on." },
+      { who: "Mordeck", text: "The river runs. The beans remember how to be magical. If an ogre asks about the harvest, I still have the pitchfork." },
+      { who: "Squires", text: "I tripped. The pebble moved. I am not sure that is a technique." },
+      { who: "Mordeck", text: "House policy: one statue per world-saving accident. Eat something. Then let Jackdaw ruin the ending on purpose." }
+    ], () => {
+      G.flags.epiStatue = true;
+      G.quest = "Jackdaw has seventy words and a refusal to say happily ever after.";
+      save();
+    });
+  }
+
+  function talkJackdawEpi() {
+    if (!G.flags.epiStatue) {
+      say([{ who: "Jackdaw", text: "Mordeck first. He paid for the statue. I am only here for the ending, and I will not start until the ale has a witness." }]);
+      return;
+    }
+    if (G.flags.epiJackdaw) {
+      say([
+        { who: "Jackdaw", text: "Mother Merry’s cottage is the northeast gap. Shortcakes. A husband who is no longer landscaping. Do not offer household advice." },
+        { who: "Jackdaw", text: "I have used my seventy words. Indoor plumbing is waiting. The sequel can find its own narrator." , note: "It will not. I am contractually the sequel." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Jackdaw", text: "Henceforth the Meriwethers revert to Michelle, Petronella, Theodora, and Kumquat. Rutabaga, quixotic, anthropomorphic." , note: "I cursed the names. I un-cursed the names. The footnotes remain cursed." },
+      { who: "Jackdaw", text: "Mr. Meriwether is a man again. Permanently. Mother Merry has shortcakes and a tilted cottage. Visit before I spend my remaining words on plumbing." },
+      { who: "ELM", text: "Don’t you dare end with an H.E.A. It’s so cliché. End it properly." },
+      { who: "Jackdaw", text: "Very well. And many of them lived reasonably happy for some time thereafter." },
+      { who: "Jackdaw", text: "That is the ending. The mountain still wants a visit. Northeast gap. Do not skip the matriarch. She kept this family standing while I was being clever." }
+    ], () => {
+      G.flags.epiJackdaw = true;
+      G.quest = "Visit Mother Merry’s mountain cottage (northeast). Shortcakes are not optional.";
+      save();
+    });
+  }
+
+  function talkBellEpi() {
+    say([
+      { who: "Bellissimo", text: "They spelled your name right. They did not spell mine on anything. I am still not a damsel." },
+      { who: "Bellissimo", text: "If the next quest involves a bell, that is me. I will be napping until then. Wake me with tacos, not a horn." }
+    ]);
+  }
+
+  function talkGrimbleEpi() {
+    say([
+      { who: "Grimblewaith", text: "A statue. Of you. I did the supporting. The sculptor did the standing around." },
+      { who: "Grimblewaith", text: "ELM is still a jerk. He is also at the buffet. I am counting that as character development." }
+    ]);
+  }
+
+  function talkElmEpi() {
+    say([
+      { who: "ELM", text: "Elisabeth Louisa Meriwether is a family name. Lord ELM is a brand. I am keeping the cape until further notice." },
+      { who: "ELM", text: "If Jackdaw says happily ever after, I will file a complaint with the Viler Villains Society. They have a form." }
+    ]);
+  }
+
+  function talkGoatEpi() {
+    say([
+      { who: "Wormtoe", text: "No, not water! Also not the landscaping. Being a goat is a lateral career move." },
+      { who: "Jackdaw", text: "Actually, it’s quite a wonderful world, and you are seeing much more of it… from approximately knee height." }
+    ]);
+  }
+
+  function talkMerryEpi() {
+    if (G.flags.epiMerry) {
+      say([
+        { who: "Mother Merry", text: "The shortcakes refill. The cottage stays tilted. Edward is still my son. The cape is his problem." },
+        { who: "Mother Merry", text: "A princess has been leaning out of Jackdaw’s extra window. She asked for a plumber. She received a hero. That is not the same tool." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Mother Merry", text: "Sit. Eat. The mountain is not impressed by statues, and neither is the oven." },
+      { who: "Mother Merry", text: "Jackdaw’s curse named my daughters for a joke he has now unsaid. Michelle, Petronella, Theodora, Kumquat. Their father is a man at this table, not a goat in the garden." },
+      { who: "Mother Merry", text: "Edward Louis Merriwether remains my son. Dark lordship did not cancel supper. I will not excuse the pebble. I will also not stop setting a plate." },
+      { who: "Squires", text: "I only meant to trip helpfully." },
+      { who: "Mother Merry", text: "Helpful is a kind of heroism the handbooks skip. Take a shortcake. Then deal with the princess in the window before she throws a shoe." }
+    ], () => {
+      G.flags.epiMerry = true;
+      give("luna");
+      G.quest = "A princess at the window has plumbing, not a rescue. Also, ogres.";
+      save();
+    });
+  }
+
+  function talkSistersEpi() {
+    say([
+      { who: "Michelle", text: "Michael was the cursed name. Michelle is the one I kept. Pageant posture still works on minions." },
+      { who: "Petronella", text: "Peter, Thomas, Phillip—returned. We distracted Wormtoe’s auditions. We will not be doing that again without snacks." }
+    ]);
+  }
+
+  function talkDadEpi() {
+    say([
+      { who: "Mr. Meriwether", text: "I have hands again. I have opinions about shortcakes that no longer involve eating the landscaping." },
+      { who: "Mr. Meriwether", text: "Once a year was not a marriage. Jackdaw finally finished the job. Tell him the apples are for eating, not for apologies." }
+    ]);
+  }
+
+  function talkRezellaEpi() {
+    if (G.flags.epiDone) {
+      say([{ who: "Princess Rezella", text: "The plumbing can wait. The ogres cannot. I asked for a repair. I am delivering a sequel." }]);
+      return;
+    }
+    say([
+      { who: "Princess Rezella", text: "Stop looking at the hair. The tower has a plumbing problem. I have already assessed it. I do not require rescuing. I require a wrench." },
+      { who: "Sir Roderick 3RG", text: "A princess! In a tower! With hair! This is the chapter I practiced." },
+      { who: "Princess Rezella", text: "Your chapter is a work order. Also: ogres. An uprising. The celebration is over. The next quest did not wait for dessert." },
+      { who: "Jackdaw", text: "Book II will involve an ox and a moron, not necessarily in that order. First, the garden has grown a scout." }
+    ], () => {
+      G.flags.epiRezella = true;
+      save();
+      startBattle([enemy("ogre")], { canFlee: false, boss: true, heal: true, onWin: epiWin });
+    });
+  }
+
+  function epiWin() {
+    say([
+      { who: "Mordeck", text: "Pitchfork. Ogre. Transferable skills. I will add a column for it." },
+      { who: "Princess Rezella", text: "Thank you for the garden. Do not thank yourselves for a rescue I did not request. The plumbing is still the plumbing." },
+      { who: "ELM", text: "If anyone says happily ever after, I am leaving. Use the other ending." },
+      { who: "Jackdaw", text: "Very well. And many of them lived reasonably happy for some time thereafter." },
+      { who: "Jackdaw", text: "There are six more days in this wonderful week. This, goat boy, was your statue. Try not to scuff it on the way to the ox." }
+    ], () => {
+      G.flags.epiDone = true;
+      G.flags.credits = true;
+      G.mode = "credits";
+      G.creditT = 0;
+      $("hud").classList.remove("show");
+      $("dialog").classList.remove("show");
+      save();
+    });
   }
 
   function talkSquiresB2() {
@@ -3324,7 +3503,8 @@ NNNNNNNNNNNNNNNN
       troll: { name: "Worstashire Troll", hp: 52, maxHp: 52, atk: 10, def: 5, xp: 36, gold: 14, spr: "troll", boss: true },
       organ: { name: "Palace Organ", hp: 56, maxHp: 56, atk: 10, def: 6, xp: 40, gold: 16, spr: "organ", boss: true },
       precht: { name: "Precht", hp: 60, maxHp: 60, atk: 11, def: 6, xp: 48, gold: 0, spr: "precht", boss: true },
-      nether: { name: "The Reassembled DEM", hp: 70, maxHp: 70, atk: 12, def: 7, xp: 60, gold: 0, spr: "nether", boss: true }
+      nether: { name: "The Reassembled DEM", hp: 70, maxHp: 70, atk: 12, def: 7, xp: 60, gold: 0, spr: "nether", boss: true },
+      ogre: { name: "Ogre Scout", hp: 46, maxHp: 46, atk: 9, def: 4, xp: 28, gold: 12, spr: "orc", boss: true }
     };
     return Object.assign({ stun: 0, confuse: 0 }, E[type]);
   }
@@ -3420,6 +3600,7 @@ NNNNNNNNNNNNNNNN
         else if (ns === 1) opts.unshift("Name King Magnus");
         else opts.unshift("Collect the Debt");
       }
+      if (b.foes.some((f) => f.spr === "orc" && f.hp > 0) && isEpi()) opts.unshift("Pitchfork Policy");
     } else if (b.menu === "skill") {
       const p = G.party[b.i];
       opts = p.skills.map((id) => SKILLS[id].name + " (" + SKILLS[id].mp + " MP)");
@@ -3482,6 +3663,7 @@ NNNNNNNNNNNNNNNN
       else if (c === "Launch Plan V") { b.pending = { type: "skill", id: "planv" }; resolvePlayer(); return; }
       else if (c === "Name King Magnus") { b.pending = { type: "skill", id: "namemagnus" }; resolvePlayer(); return; }
       else if (c === "Collect the Debt") { b.pending = { type: "skill", id: "settledebt" }; resolvePlayer(); return; }
+      else if (c === "Pitchfork Policy") { b.pending = { type: "skill", id: "pitchfork" }; resolvePlayer(); return; }
       else if (c === "Attack") {
         b.pending = { type: "atk" };
         b.menu = "target";
@@ -3552,6 +3734,7 @@ NNNNNNNNNNNNNNNN
       else if (f.spr === "organ") { b.log = "The pipes want a better genre. Fae-pop has standards."; }
       else if (f.spr === "precht") { b.log = "A stain with a hostage. Pelican’s compass."; }
       else if (f.spr === "nether") { b.log = "A machine that wants to keep life. Plan V. Magnus. The debt."; }
+      else if (f.spr === "orc" && isEpi()) { b.log = "Steel is not a pitchfork. Mordeck sharpened the tool he already had."; }
       else if (f.evade && Math.random() * 100 < f.evade) { b.log = f.name + " skipped aside. (Skipping beans. It’s a whole thing.)"; }
       else {
         const n = dmg(p.atk, f.def);
@@ -3695,6 +3878,10 @@ NNNNNNNNNNNNNNNN
       } else if (act.id === "settledebt") {
         b.foes.forEach((f) => { if (f.spr === "nether") f.hp = 0; });
         b.log = "Roderick pays the last memory. Magnus settles. Grimma does not keep the machine.";
+        sfx("magic");
+      } else if (act.id === "pitchfork") {
+        b.foes.forEach((f) => { if (f.spr === "orc") f.hp = 0; });
+        b.log = "Mordeck’s pitchfork finds the ogre. Bean farming develops transferable skills.";
         sfx("magic");
       } else {
         const targets = sk.all ? b.foes.filter((f) => f.hp > 0) : [b.foes[b.target]];
@@ -3882,7 +4069,7 @@ NNNNNNNNNNNNNNNN
     if (isB2() && w.need && (String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5") || String(w.need).startsWith("b6") || String(w.need).startsWith("b7"))) return;
     if (!isB2() && !isB3() && !isB4() && !isB5() && !isB6() && !isB7() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5") || String(w.need).startsWith("b6") || String(w.need).startsWith("b7"))) return;
     if (w.need === "grimbleJoin" && !G.flags.rejected) {
-      if (isB4() || isB5() || isB6() || isB7()) { warp(w.to, w.tx, w.ty); return; }
+      if (isB4() || isB5() || isB6() || isB7() || isEpi()) { warp(w.to, w.tx, w.ty); return; }
       if (isB3()) {
         if (!G.flags.b3sirsi) {
           say([{ who: "Sirsi", text: "Jackdaw first is traditional. I am standing in the square. I am the tradition this time." }]);
@@ -3916,7 +4103,11 @@ NNNNNNNNNNNNNNNN
         warp(w.to, w.tx, w.ty);
         return;
       }
-      if (isB2() || isB6()) {
+      if (isB2() || isB6() || isEpi()) {
+        if (isEpi() && !G.flags.epiJackdaw) {
+          say([{ who: "Squires", text: "Jackdaw first. He has the names. Mother Merry will know if I skip the footnotes." }]);
+          return;
+        }
         warp(w.to, w.tx, w.ty);
         return;
       }
@@ -4229,6 +4420,16 @@ NNNNNNNNNNNNNNNN
       col("#6a3"); r(px + 3, py + 8, 10, 7);
       col(PAL.skin); r(px + 5, py + 4, 6, 5);
       col("#c8b"); r(px + 5, py + 3, 6, 2);
+    } else if (kind === "merry") {
+      col("#8a4a28"); r(px + 3, py + 8, 10, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#e8d0a0"); r(px + 4, py + 2, 8, 4);
+      col("#fff4d2"); r(px + 5, py + 10, 6, 3);
+    } else if (kind === "meriwether") {
+      col("#4a5a3a"); r(px + 4, py + 8, 8, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#c8b070"); r(px + 5, py + 2, 6, 3);
+      col("#6a3"); r(px + 6, py + 12, 4, 2);
     } else if (kind === "elm") {
       col("#2a1a28"); r(px + 4, py + 8, 8, 7);
       col(PAL.skin); r(px + 5, py + 4, 6, 5);
@@ -4555,7 +4756,31 @@ NNNNNNNNNNNNNNNN
 
   function drawCredits(t) {
     col("#0a0714"); r(0, 0, W, H);
-    const lines = isB7() ? [
+    const lines = isEpi() ? [
+      "A WONDERFUL WEEK FOR A QUEST",
+      "Epilogue  ·  Reasonably Happy",
+      "",
+      "Adapted from the novel by",
+      "Michael D. Young",
+      "",
+      "Roddy Squires   -  statue, still accidental",
+      "Farmer Mordeck  -  ale, pitchfork, column",
+      "Jackdaw         -  seventy words, no H.E.A.",
+      "Mother Merry    -  shortcakes, still standing",
+      "The Meriwethers -  names restored",
+      "Mr. Meriwether  -  a man, not a goat",
+      "Ellie           -  the horn, the harvest",
+      "Princess Rezella - plumbing, then ogres",
+      "Wormtoe         -  lateral career move",
+      "",
+      "Book II: Both an Ox and a Moron…",
+      "",
+      "And many of them lived",
+      "reasonably happy",
+      "for some time thereafter.",
+      "",
+      "Press Enter"
+    ] : isB7() ? [
       "A WONDERFUL WEEK FOR A QUEST",
       "Book VII  ·  The End of the Quest as We Know It",
       "",
@@ -4759,7 +4984,8 @@ NNNNNNNNNNNNNNNN
     $("mpN").textContent = p.mp;
     $("hpB").style.width = Math.max(0, 100 * p.hp / p.maxHp) + "%";
     $("mpB").style.width = Math.max(0, 100 * p.mp / p.maxMp) + "%";
-    $("loc").textContent = ((isB7() && G.map === "misfit") ? "The Cinder"
+    $("loc").textContent = ((isEpi() && G.map === "tower") ? "Mother Merry’s Cottage"
+      : (isB7() && G.map === "misfit") ? "The Cinder"
       : (isB7() && G.map === "hill") ? "Worstashire"
       : (isB7() && G.map === "ebi") ? "Abandoned EBI"
       : (isB7() && G.map === "palace") ? "Abandoned Palace"
@@ -4774,7 +5000,9 @@ NNNNNNNNNNNNNNNN
     $("menu").classList.add("show");
     const body = G.party.map((p) => p.name + "  HP " + p.hp + "/" + p.maxHp + "  MP " + p.mp + "/" + p.maxMp).join("\n");
     const items = G.inv.length ? G.inv.map((i) => ((ITEMS[i.id] && ITEMS[i.id].name) || i.id) + " ×" + i.n).join("\n") : "(empty pockets, full destiny)";
-    const secrets = isB7()
+    const secrets = isEpi()
+      ? ["Statue", "Names", "Shortcakes", "Plumbing"].filter((_, i) => [G.flags.epiStatue, G.flags.epiJackdaw, G.flags.epiMerry, G.flags.epiRezella][i]).join(", ")
+      : isB7()
       ? ["Cinder", "Bargain", "Mirror", "Worstashire", "Palace"].filter((_, i) => [G.flags.b7brief, G.flags.b7grimma, G.flags.b7mirror, G.flags.b7worst, G.flags.b7palace][i]).join(", ")
       : isB6()
       ? ["Petra", "Arach", "Tryouts", "Border", "Library"].filter((_, i) => [G.flags.b6merlin, G.flags.b6arach, G.flags.b6try, G.flags.b6border, G.flags.b6lib][i]).join(", ")
@@ -4789,7 +5017,7 @@ NNNNNNNNNNNNNNNN
       : ["Louisa", "Elisabeth", "Meriwether"].filter((_, i) => [G.flags.secretL, G.flags.secretE, G.flags.secretM][i]).join(", ");
     $("mBody").innerHTML = "<pre style='white-space:pre-wrap;font:inherit'>" +
       body + "\n\nInventory\n" + items + "\n\nQuest\n" + G.quest +
-      "\n\n" + (isB7() ? "Gears: " : isB6() ? "Acts: " : isB5() ? "Offerings: " : isB4() ? "Crew: " : isB3() ? "Rod Squad: " : isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
+      "\n\n" + (isEpi() ? "Guests: " : isB7() ? "Gears: " : isB6() ? "Acts: " : isB5() ? "Offerings: " : isB4() ? "Crew: " : isB3() ? "Rod Squad: " : isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
       "\n\nArrows move · Enter talk · Esc menu</pre>";
   }
 
@@ -4996,6 +5224,25 @@ NNNNNNNNNNNNNNNN
     ]);
     save();
   }
+  function startEpilogue() {
+    audioInit();
+    G.day = 8;
+    G.flags = { saved: true, wormDown: true, elmDown: true };
+    G.gold = 20;
+    G.inv = [{ id: "luna", n: 3 }, { id: "magic", n: 2 }];
+    G.party = [hero(), grimble()];
+    G.map = "village";
+    G.px = 15.5; G.py = 8.5; G.dir = 1;
+    G.quest = "Mordeck has a statue and a speech. Both are mandatory.";
+    G.mode = "explore";
+    $("titleui").classList.remove("show");
+    hud();
+    say([
+      { who: "Jackdaw", text: "Epilogue. The pebble moved. The river runs. I have seventy words, a vacation tower, and a refusal to say happily ever after." },
+      { who: "Jackdaw", text: "That statue is you, Roddy Squires. Mordeck paid for the ale. Walk east and let him make a speech. Then I will ruin the ending properly." }
+    ]);
+    save();
+  }
   function continueGame() {
     audioInit();
     if (!load()) { startNew(); return; }
@@ -5050,6 +5297,7 @@ NNNNNNNNNNNNNNNN
   $("btnBook5").onclick = startBook5;
   $("btnBook6").onclick = startBook6;
   $("btnBook7").onclick = startBook7;
+  $("btnEpi").onclick = startEpilogue;
   $("btnCont").onclick = continueGame;
   $("btnMute").onclick = toggleMute;
   $("btnSave").onclick = () => { save(); $("mBody").insertAdjacentHTML("afterbegin", "<p style='color:var(--gold)'>Saved in this browser.</p>"); };
@@ -5105,7 +5353,8 @@ NNNNNNNNNNNNNNNN
     startBook4,
     startBook5,
     startBook6,
-    startBook7
+    startBook7,
+    startEpilogue
   };
 })();
 </script>

@@ -835,7 +835,7 @@ NNNNNNNNNNNNNNNN
 
   function tileAt(map, x, y) {
     const m = MAPS[map];
-    if (y < 0 || x < 0 || y >= m.h || x >= m.w) return "wall";
+    if (!m || y < 0 || x < 0 || y >= m.h || x >= m.w) return "wall";
     return TILE[m.rows[y][x]] || "grass";
   }
   function blocked(map, x, y) {
@@ -879,12 +879,12 @@ NNNNNNNNNNNNNNNN
       { x: 36, y: 9, to: "fey", tx: 8, ty: 5, need: "b4cinder" },
       { x: 10, y: 14, to: "beanshow", tx: 8, ty: 5, need: "b4cinder" },
       { x: 12, y: 16, to: "bay", tx: 8, ty: 5, need: "b4grimma" },
-      { x: 8, y: 8, to: "bpd", tx: 8, ty: 5, need: "b5chief" },
-      { x: 18, y: 8, to: "web", tx: 8, ty: 5, need: "b5chief" },
+      { x: 6, y: 8, to: "bpd", tx: 8, ty: 5, need: "b5chief" },
+      { x: 19, y: 7, to: "web", tx: 8, ty: 5, need: "b5chief" },
       { x: 37, y: 7, to: "oasis", tx: 8, ty: 5, need: "b5web" },
       { x: 28, y: 4, to: "snow", tx: 8, ty: 5, need: "b5contest" },
-      { x: 14, y: 8, to: "butte", tx: 8, ty: 5, need: "b5rod" },
-      { x: 8, y: 16, to: "pie", tx: 8, ty: 5, need: "b5butte" }
+      { x: 13, y: 6, to: "butte", tx: 8, ty: 5, need: "b5rod" },
+      { x: 7, y: 16, to: "pie", tx: 8, ty: 5, need: "b5butte" }
     ],
     tower: [{ x: 12, y: 8, to: "world", tx: 28, ty: 6 }],
     forest: [
@@ -966,7 +966,7 @@ NNNNNNNNNNNNNNNN
       if (isB3() && f.b3wish && !f.b3grim) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleB3));
       if (isB5() && f.b5snow && !f.b5rod) list.push(npc(16, 9, "roderick", "Sir Roderick 3RG", talkRoderickB5));
       list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB5()
-        ? "West of plaza: BPD return. East-of-road grass: Web wizard. Far east grass: phoenix cavern. Northeast peaks: snow. West of plaza: bakery. South puddles: Humble Pie."
+        ? "West grass by the road: BPD. East of the road, a little north: Web wizard. Far east grass: phoenix cavern. Northeast peaks: snow. North of the west road: bakery. South puddles: Humble Pie."
         : isB4()
         ? "East grass: Pintoburg / Black-Eyed Fey. South of the trees: Three-Bean Circus. Beside the south puddles: EBI bay. Bring a necromancer."
         : isB3()
@@ -3675,6 +3675,7 @@ NNNNNNNNNNNNNNNN
 
   function drawMap() {
     const m = MAPS[G.map];
+    if (!m) return;
     G.camX = G.px * T - W / 2 + 8;
     G.camY = G.py * T - H / 2 + 8;
     G.camX = Math.max(0, Math.min(m.w * T - W, G.camX));
@@ -4174,7 +4175,10 @@ NNNNNNNNNNNNNNNN
     save,
     load,
     blocked: (x, y) => blocked(G.map, x, y),
-    mapSize: () => ({ w: MAPS[G.map].w, h: MAPS[G.map].h, id: G.map }),
+    mapSize: () => {
+      const m = MAPS[G.map];
+      return { w: m ? m.w : 0, h: m ? m.h : 0, id: G.map };
+    },
     startBook2,
     startBook3,
     startBook4,

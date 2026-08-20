@@ -919,7 +919,7 @@ NNNNNNNNNNNNNNNN
       { x: 11, y: 10, to: "world", tx: 16, ty: 10 },
       { x: 12, y: 10, to: "world", tx: 16, ty: 10 }
     ],
-    arena: [{ x: 10, y: 8, to: "world", tx: 29, ty: 15 }, { x: 9, y: 8, to: "world", tx: 29, ty: 15 }],
+    arena: [{ x: 10, y: 8, to: "world", tx: 30, ty: 15 }, { x: 9, y: 8, to: "world", tx: 30, ty: 15 }],
     cave: [{ x: 13, y: 7, to: "world", tx: 30, ty: 10 }],
     lair: [{ x: 10, y: 6, to: "world", tx: 24, ty: 16 }],
     rally: [{ x: 2, y: 8, to: "world", tx: 24, ty: 8 }, { x: 1, y: 8, to: "world", tx: 24, ty: 8 }],
@@ -3757,12 +3757,16 @@ NNNNNNNNNNNNNNNN
     if (dx) {
       const nx = G.px + dx * 0.12;
       const destX = dx > 0 ? Math.floor(nx + 0.45) : Math.floor(nx);
-      if (!blocked(G.map, destX, cy)) G.px = nx;
+      const lookX = dx > 0 ? cx + 1 : cx - 1;
+      if (destX === cx && blocked(G.map, cx, cy) && !blocked(G.map, lookX, cy)) G.px = nx;
+      else if (!blocked(G.map, destX, cy)) G.px = nx;
     }
     if (dy) {
       const ny = G.py + dy * 0.12;
       const destY = dy > 0 ? Math.floor(ny + 0.45) : Math.floor(ny);
-      if (!blocked(G.map, Math.floor(G.px), destY)) G.py = ny;
+      const lookY = dy > 0 ? cy + 1 : cy - 1;
+      if (destY === cy && blocked(G.map, Math.floor(G.px), cy) && !blocked(G.map, Math.floor(G.px), lookY)) G.py = ny;
+      else if (!blocked(G.map, Math.floor(G.px), destY)) G.py = ny;
     }
     if (G.px === oldX && G.py === oldY) return;
     G.walk += 0.2;

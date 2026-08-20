@@ -408,6 +408,7 @@
         <button class="btn primary" id="genBtn" type="button">Generate</button>
         <button class="btn warn" id="mutateBtn" type="button">Mutate</button>
         <button class="btn" id="wavBtn" type="button">Export WAV</button>
+        <button class="btn" id="midiBtn" type="button">Export MIDI</button>
         <button class="btn" id="jsonBtn" type="button">Save JSON</button>
         <button class="btn" id="copyBtn" type="button">Copy Player</button>
         <button class="btn" id="linkBtn" type="button">Copy Link</button>
@@ -1404,6 +1405,163 @@
       toast("JSON saved");
     }
 
+    function midiVlq(value) {
+      let n = Math.max(0, value | 0);
+      const bytes = [n & 0x7f];
+      n >>>= 7;
+      while (n > 0) {
+        bytes.unshift((n & 0x7f) | 0x80);
+        n >>>= 7;
+      }
+      return bytes;
+    }
+
+    function midiTextBytes(text) {
+      return Array.from(String(text || "")).map((ch) => ch.charCodeAt(0) & 0x7f);
+    }
+
+    function midiProgramFor(channel, wave) {
+      if (channel === "bass") return 38;
+      if (channel === "harmony") return 89;
+      if (channel === "arp") return 46;
+      if (wave === "triangle") return 79;
+      if (wave === "detuned") return 81;
+      return 80;
+    }
+
+    function midiPackTrack(events, endTick) {
+      events.sort((a, b) => a.tick - b.tick || a.rank - b.rank);
+      const bytes = [];
+      let prev = 0;
+      for (const event of events) {
+        bytes.push(...midiVlq(event.tick - prev), ...event.data);
+        prev = event.tick;
+      }
+      bytes.push(...midiVlq(Math.max(0, endTick - prev)), 0xff, 0x2f, 0x00);
+      const len = bytes.length;
+      return [
+        0x4d, 0x54, 0x72, 0x6b,
+        (len >>> 24) & 0xff, (len >>> 16) & 0xff, (len >>> 8) & 0xff, len & 0xff,
+        ...bytes
+      ];
+    }
+
+    function songToMidi(song) {
+      const ppq = 480;
+      const ticks16 = ppq / 4;
+      const endTick = song.bars * 16 * ticks16;
+      const swing = clamp(finite(song.swing, 0), 0, 40) / 100;
+      const stepTick = (step) => {
+        const swung = step % 2 === 1 ? Math.round(ticks16 * swing) : 0;
+        return step * ticks16 + swung;
+      };
+      const usec = Math.round(60000000 / Math.max(40, finite(song.tempo, 120)));
+      const tracks = [];
+      const conductor = [
+        { tick: 0, rank: 0, data: [0xff, 0x03, ...midiVlq(midiTextBytes(song.title).length), ...midiTextBytes(song.title)] },
+        { tick: 0, rank: 1, data: [0xff, 0x51, 0x03, (usec >> 16) & 0xff, (usec >> 8) & 0xff, usec & 0xff] },
+        { tick: 0, rank: 2, data: [0xff, 0x58, 0x04, 0x04, 0x02, 0x18, 0x08] },
+        { tick: 0, rank: 3, data: [0xff, 0x06, ...midiVlq(10), ...midiTextBytes("loop-start")] },
+        { tick: endTick, rank: 0, data: [0xff, 0x06, ...midiVlq(8), ...midiTextBytes("loop-end")] }
+      ];
+      tracks.push(midiPackTrack(conductor, endTick));
+
+      const melodic = ["lead", "harmony", "bass", "arp"];
+      melodic.forEach((name, index) => {
+        const ch = song.channels[name];
+        const midiCh = index;
+        const program = midiProgramFor(name, ch && ch.wave);
+        const events = [
+          { tick: 0, rank: 0, data: [0xff, 0x03, ...midiVlq(midiTextBytes(name).length), ...midiTextBytes(name)] },
+          { tick: 0, rank: 1, data: [0xc0 | midiCh, program] },
+          { tick: 0, rank: 2, data: [0xb0 | midiCh, 7, clamp(Math.round((ch && ch.volume ? ch.volume : 0.7) * 127), 1, 127)] }
+        ];
+        const notes = (ch && ch.notes) || [];
+        notes.forEach((note) => {
+          const start = stepTick(note.step);
+          const stop = Math.max(start + Math.round(ticks16 * 0.9), stepTick(note.step + Math.max(1, finite(note.length, 1))));
+          const pitch = clamp(finite(note.midi, 60) | 0, 0, 127);
+          const vel = clamp(Math.round(finite(note.vel, 0.8) * 127), 1, 127);
+          events.push({ tick: start, rank: 8, data: [0x90 | midiCh, pitch, vel] });
+          events.push({ tick: stop, rank: 1, data: [0x80 | midiCh, pitch, 0] });
+        });
+        tracks.push(midiPackTrack(events, endTick));
+      });
+
+      const drums = song.channels.drums;
+      const drumEvents = [
+        { tick: 0, rank: 0, data: [0xff, 0x03, ...midiVlq(5), ...midiTextBytes("drums")] },
+        { tick: 0, rank: 1, data: [0xb9, 7, clamp(Math.round((drums && drums.volume ? drums.volume : 0.8) * 127), 1, 127)] }
+      ];
+      ((drums && drums.notes) || []).forEach((note) => {
+        const start = stepTick(note.step);
+        const stop = start + Math.round(ticks16 * 0.8);
+        const pitch = clamp(finite(note.midi, 36) | 0, 0, 127);
+        const vel = clamp(Math.round(finite(note.vel, 0.8) * 127), 1, 127);
+        drumEvents.push({ tick: start, rank: 8, data: [0x99, pitch, vel] });
+        drumEvents.push({ tick: stop, rank: 1, data: [0x89, pitch, 0] });
+      });
+      tracks.push(midiPackTrack(drumEvents, endTick));
+
+      const body = tracks.reduce((all, track) => all.concat(track), []);
+      const header = [
+        0x4d, 0x54, 0x68, 0x64, 0x00, 0x00, 0x00, 0x06,
+        0x00, 0x01,
+        0x00, tracks.length,
+        (ppq >> 8) & 0xff, ppq & 0xff
+      ];
+      return new Uint8Array(header.concat(body));
+    }
+
+    function midiReadVlq(bytes, cursor) {
+      let n = 0;
+      while (cursor.i < bytes.length) {
+        const b = bytes[cursor.i];
+        cursor.i += 1;
+        n = (n << 7) | (b & 0x7f);
+        if ((b & 0x80) === 0) break;
+      }
+      return n;
+    }
+
+    function midiNoteOnCount(bytes) {
+      let count = 0;
+      let i = 14;
+      while (i + 8 <= bytes.length) {
+        if (bytes[i] !== 0x4d || bytes[i + 1] !== 0x54 || bytes[i + 2] !== 0x72 || bytes[i + 3] !== 0x6b) break;
+        const len = (bytes[i + 4] << 24) | (bytes[i + 5] << 16) | (bytes[i + 6] << 8) | bytes[i + 7];
+        const end = i + 8 + len;
+        const cursor = { i: i + 8 };
+        while (cursor.i < end) {
+          midiReadVlq(bytes, cursor);
+          if (cursor.i >= end) break;
+          const status = bytes[cursor.i];
+          cursor.i += 1;
+          const cmd = status & 0xf0;
+          if (status === 0xff) {
+            cursor.i += 1;
+            const n = midiReadVlq(bytes, cursor);
+            cursor.i += n;
+          } else if (cmd === 0xc0 || cmd === 0xd0) {
+            cursor.i += 1;
+          } else {
+            if (cmd === 0x90 && cursor.i + 1 < end && bytes[cursor.i + 1] > 0) count += 1;
+            cursor.i += 2;
+          }
+        }
+        i = end;
+      }
+      return count;
+    }
+
+    function exportMidi() {
+      const bytes = songToMidi(state.song);
+      const blob = new Blob([bytes], { type: "audio/midi" });
+      downloadBlob(blob, slug(state.song.title) + ".mid");
+      setStatus("Exported MIDI · " + midiNoteOnCount(bytes) + " notes");
+      toast("MIDI downloaded");
+    }
+
     function playerSnippet(song) {
       return `<!-- 16-Bit Music Forge player. Call BitForgePlay() after a user gesture. -->
 <script>
@@ -2041,6 +2199,10 @@ window.BitForgePlay = async function BitForgePlay(song) {
       $("genBtn").addEventListener("click", () => generate(false));
       $("mutateBtn").addEventListener("click", () => generate(true));
       $("wavBtn").addEventListener("click", () => exportWav().catch((err) => setStatus(String(err.message || err))));
+      $("midiBtn").addEventListener("click", () => {
+        try { exportMidi(); }
+        catch (err) { setStatus(String(err.message || err)); }
+      });
       $("jsonBtn").addEventListener("click", saveJson);
       $("copyBtn").addEventListener("click", copyPlayer);
       $("linkBtn").addEventListener("click", copyLink);
@@ -2237,6 +2399,15 @@ window.BitForgePlay = async function BitForgePlay(song) {
         check("share-roundtrip", round.seed === original.seed && round.channels.lead.notes.length === original.channels.lead.notes.length);
         check("sfx-kit", SFX_KIT.length === 8 && SFX_KIT.every((item) => item.id && item.label));
         check("vibrato-field", Number.isFinite(original.vibrato));
+        const midi = songToMidi(original);
+        const magic = String.fromCharCode(midi[0], midi[1], midi[2], midi[3]);
+        const format = (midi[8] << 8) | midi[9];
+        const ntrks = (midi[10] << 8) | midi[11];
+        const ppq = (midi[12] << 8) | midi[13];
+        const noteOns = midiNoteOnCount(midi);
+        const expected = CHANNELS.reduce((sum, name) => sum + original.channels[name].notes.length, 0);
+        check("midi-header", magic === "MThd" && format === 1 && ntrks === 6 && ppq === 480, { magic, format, ntrks, ppq });
+        check("midi-notes", noteOns === expected, { noteOns, expected, bytes: midi.length });
       } catch (err) {
         check("share-roundtrip", false, String(err && err.message ? err.message : err));
       }
@@ -2253,6 +2424,8 @@ window.BitForgePlay = async function BitForgePlay(song) {
       playSfx,
       encodeSong,
       decodeSong,
+      songToMidi,
+      exportMidi,
       get song() { return state.song; },
       play,
       stop: () => stopPlayback(true)

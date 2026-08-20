@@ -11,7 +11,7 @@ defaults:
 # until a manuscript confirms whether they are the same book.
 books:
   - slug: tales-from-the-promised-land
-    title: Tales from the Promised Land
+    title: Tales of the Promised Land
     subtitle: Book of Mormon Stories Your Teacher Didn’t Tell You
     genre: Historical fiction
     series: null
@@ -19,7 +19,8 @@ books:
       A promised land. A divided people. A legacy of faith, fear, and war.
       Historical-fiction short stories inspired by the Book of Mormon,
       imagining life among the Nephites and Lamanites in the ancient Americas.
-    status: awaiting_manuscript
+    status: converted
+    note: Print PDF title is Tales of the Promised Land (listed as Tales from the Promised Land).
     queue: 1
 
   - slug: wally-the-web-wizard

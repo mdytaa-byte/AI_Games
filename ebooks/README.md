@@ -6,12 +6,12 @@ The files reflow with the reader’s font, size, and screen. They are not fixed-
 
 ## Conversion queue
 
-The next manuscript needed is **Tales from the Promised Land**.
+The next manuscript needed is **Wally the Web Wizard**.
 
-| # | Title | Series |
-|---|---|---|
-| 1 | Tales from the Promised Land | — |
-| 2 | Wally the Web Wizard | — |
+| # | Title | Series | Status |
+|---|---|---|---|
+| 1 | Tales of the Promised Land | — | converted |
+| 2 | Wally the Web Wizard | — | awaiting manuscript |
 | 3 | The Song of the Saints | — |
 | 4 | In the Quiet Heart | — |
 | 5 | Before Sunset | — |
@@ -49,7 +49,7 @@ Helpful, but optional:
 - A chapter list if headings are not already in the file
 - Notes about poems, lyrics, or unusual formatting that should stay intact
 
-Do **not** send a print PDF if you can send the original Word or text file. PDF is a layout, not a manuscript, and it does not reflow well.
+Print PDFs can be used when a Word file is not available. The extractor reconstructs paragraphs from InDesign first-line indents and sentence breaks, then the same EPUB/MOBI build runs as usual.
 
 ## How to drop a manuscript in
 

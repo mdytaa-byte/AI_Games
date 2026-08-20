@@ -21,7 +21,7 @@ def test_catalog_has_unique_queue_and_starts_with_promised_land():
     titles = [book["title"] for book in books]
     assert len(books) == 22
     assert len(set(slugs)) == 22
-    assert titles[0] == "Tales from the Promised Land"
+    assert titles[0] == "Tales of the Promised Land"
     assert titles.count("Age of Archangels") == 1
     assert "Wally the Web Wizard" in titles
     assert "The Song of the Saints" in titles
@@ -30,10 +30,10 @@ def test_catalog_has_unique_queue_and_starts_with_promised_land():
     assert queues == list(range(1, 23))
 
 
-def test_next_awaiting_is_first_in_queue():
+def test_next_awaiting_skips_converted_titles():
     nxt = build_ebook.next_awaiting()
     assert nxt is not None
-    assert nxt["slug"] == "tales-from-the-promised-land"
+    assert nxt["status"] == "awaiting_manuscript"
 
 
 def test_split_markdown_chapters_uses_headings():
@@ -86,9 +86,10 @@ def test_sample_epub_and_kindle_build(tmp_path, monkeypatch):
         assert outputs["azw3"].exists()
 
 
-def test_missing_manuscript_explains_next_title():
+def test_missing_manuscript_explains_next_title(tmp_path, monkeypatch):
+    monkeypatch.setattr(build_ebook, "MANUSCRIPTS_DIR", tmp_path)
     with pytest.raises(SystemExit) as raised:
         build_ebook.build_from_manuscript("tales-from-the-promised-land")
     message = str(raised.value)
-    assert "Tales from the Promised Land" in message
+    assert "Tales from the Promised Land" in message or "Tales of the Promised Land" in message
     assert "manuscript.md" in message

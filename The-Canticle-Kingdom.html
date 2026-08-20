@@ -182,9 +182,9 @@
       <div class="title-panel">
         <canvas id="titleArt" width="420" height="150"></canvas>
         <h1>THE CANTICLE<br>KINGDOM</h1>
-        <div class="sub">A 16-bit role-playing game after the novels by Michael D. Young<br>Book I: The Canticle Kingdom · Book II: The Frozen Globe · Book III: The Skyward Isle</div>
+        <div class="sub">A 16-bit role-playing game after the novels by Michael D. Young<br>Prelude: The Canticle Prelude · Book I: The Canticle Kingdom · Book II: The Frozen Globe · Book III: The Skyward Isle</div>
         <div class="title-actions">
-          <button class="title-btn" id="newGameBtn">Book I: New Game</button>
+          <button class="title-btn" id="newGameBtn">Book I: New Game (Prelude)</button>
           <button class="title-btn" id="book2Btn">Book II: The Frozen Globe</button>
           <button class="title-btn" id="book3Btn">Book III: The Skyward Isle</button>
           <button class="title-btn" id="continueBtn" disabled>Continue</button>
@@ -312,6 +312,11 @@
       id: "howa", name: "Howa", color: "#e0a050",
       maxHp: 58, maxMp: 26, atk: 10, mag: 16, def: 6, spd: 9,
       bio: "A broad, exuberant drummer of the hidden Musicanters. He calls Johann little bird."
+    },
+    jorgen: {
+      id: "jorgen", name: "Jorgen", color: "#c9a24a",
+      maxHp: 28, maxMp: 20, atk: 7, mag: 11, def: 3, spd: 7,
+      bio: "A carpenter-musician of Idar-Oberstein. Weak lungs. A Mozart sonata still stuck on the repeat."
     }
   };
 
@@ -348,7 +353,9 @@
     roar: { name: "Dark Cry", mp: 7, pow: 20, all: true, who: ["bruno"], desc: "Bruno's impression of the Drevinwyrm — too convincing." },
     staffc: { name: "Clear Staff", mp: 8, pow: 26, who: ["richard"], desc: "The rod flies, strikes, and snaps back to the hand." },
     banish: { name: "Banishing Melody", mp: 9, pow: 20, all: true, who: ["johann"], desc: "The old music that once kept darkness out of the box." },
-    drum: { name: "Avalanche Drum", mp: 7, pow: 22, all: true, who: ["howa"], desc: "Rhythm that rides snow, cracks earth, and hurries a whole company." }
+    drum: { name: "Avalanche Drum", mp: 7, pow: 22, all: true, who: ["howa"], desc: "Rhythm that rides snow, cracks earth, and hurries a whole company." },
+    sonata: { name: "Mozart Sonata", mp: 5, pow: 15, who: ["jorgen"], desc: "Eighty-eight keys, played from memory — until the woods melody steals the repeat." },
+    sweetness: { name: "Klara's Air", mp: 6, heal: 18, all: true, who: ["jorgen"], desc: "A melody poured from Klara Engel's sweetness. It does not lure toward a cliff." }
   };
 
   const ENEMIES = {
@@ -369,7 +376,8 @@
     shard: { name: "Name-Shard", hp: 40, atk: 14, def: 5, spd: 9, xp: 20, gold: 6, tint: "#4a2060" },
     dolor: { name: "Doom Acolyte", hp: 44, atk: 13, def: 6, spd: 7, xp: 22, gold: 7, tint: "#5a3048" },
     doom: { name: "The Doom Tone", hp: 160, atk: 17, def: 8, spd: 6, xp: 95, gold: 16, tint: "#2a1020", boss: true },
-    many3: { name: "The Many-Named One", hp: 220, atk: 18, def: 8, spd: 10, xp: 120, gold: 0, tint: "#100410", boss: true }
+    many3: { name: "The Many-Named One", hp: 220, atk: 18, def: 8, spd: 10, xp: 120, gold: 0, tint: "#100410", boss: true },
+    edelphus: { name: "Edelphus the Enchanter", hp: 70, atk: 9, def: 4, spd: 8, xp: 36, gold: 8, tint: "#2a1028", boss: true }
   };
 
   const QUEST_TEXT = {
@@ -414,7 +422,13 @@
     telegroq: "Reach Telegro's moving Sanctuary. Petitioners must attain the heights.",
     anchq: "Plant the Custodians' anchor on the Skyward Isle. One question. One answer.",
     darkq: "Weaken the Many-Named One in Darkespace. The empty box will be his prison.",
-    done3: "The last movement is finished. The kingdom is out of the box."
+    done3: "The last movement is finished. The kingdom is out of the box.",
+    karsten_pre: "Karsten leaves for the front today. Speak with him before the train.",
+    woods_pre: "A music-box melody haunts the snowy woods. Follow it — but do not step off the cliff.",
+    klara_pre: "Klara Engel is at the door. Play for her. Do not let the dark song finish the phrase.",
+    cabin_pre: "Klara ran toward the black cabin. Confront Edelphus the Enchanter.",
+    box_pre: "The cabin burns. Karsten is home. Speak with him.",
+    craft_pre: "At the piano, pour Klara's sweetness into a melody that does not lure toward death."
   };
 
   const CHAR = {
@@ -1298,6 +1312,70 @@ mmmmmmmmmmmmmmmmmmmm
     encounters: ["shard"]
   });
 
+  addMap("jorgen_house", {
+    name: "The Müller House", music: "home", start: [10, 4],
+    rows: `
+WWWWWWWWWWWWWWWWWWWW
+W========t=========W
+W==================W
+W==================W
+W========r=========W
+W==================W
+W=========D========W
+WWWWWWWWWWWWWWWWWWWW
+`,
+    npcs: [
+      { id: "karsten_pre", x: 13, y: 4, sprite: "karsten", name: "Karsten" },
+      { id: "klara_pre", x: 5, y: 4, sprite: "klara", name: "Klara Engel" },
+      { id: "karsten_return", x: 13, y: 4, sprite: "karsten", name: "Karsten" },
+      { id: "pre_piano", x: 9, y: 1, sprite: "score", name: "Piano" }
+    ],
+    exits: [{ x: 10, y: 6, to: "woods_pre", tx: 11, ty: 9 }]
+  });
+
+  addMap("woods_pre", {
+    name: "Woods above the Felsenkirche", music: "woods", start: [11, 9],
+    rows: `
+TTTTTTTTTTTTTTTTTTTTTT
+T....................T
+T.............######.T
+T.............#====#.T
+T.............#==D=#.T
+T.............######.T
+T....................T
+T....TTTT............T
+T....T..T............T
+T....................T
+T..........D.........T
+TTTTTTTTTTTTTTTTTTTTTT
+`,
+    npcs: [
+      { id: "cliff_pre", x: 6, y: 8, sprite: "sign", name: "Cliff path" },
+      { id: "cabin_sign", x: 15, y: 6, sprite: "sign", name: "Black cabin" }
+    ],
+    exits: [
+      { x: 11, y: 10, to: "jorgen_house", tx: 10, ty: 5 },
+      { x: 17, y: 4, to: "cabin_pre", tx: 5, ty: 3 }
+    ]
+  });
+
+  addMap("cabin_pre", {
+    name: "Cabin of Edelphus", music: "secret", start: [5, 3],
+    rows: `
+##########
+#========#
+#========#
+#========#
+#====D===#
+##########
+`,
+    npcs: [
+      { id: "edelphus_pre", x: 4, y: 2, sprite: "edelphus", name: "Edelphus" },
+      { id: "pre_device", x: 6, y: 2, sprite: "musicbox", name: "Strange mechanism" }
+    ],
+    exits: [{ x: 5, y: 4, to: "woods_pre", tx: 17, ty: 6 }]
+  });
+
   function member(id) {
     const base = HEROES[id];
     return { ...base, hp: base.maxHp, mp: base.maxMp, alive: true };
@@ -1325,6 +1403,11 @@ mmmmmmmmmmmmmmmmmmmm
     if (n.id === "howa_npc" && hasHero("howa")) return false;
     if (n.id === "many_dark" && flag("won3")) return false;
     if (n.id === "homu_npc" && flag("homu_used")) return false;
+    if (n.id === "karsten_pre") return !flag("karsten_gone");
+    if (n.id === "klara_pre") return flag("klara_arrived") && !flag("klara_lost");
+    if (n.id === "karsten_return") return flag("cabin_burned") && !flag("box_made");
+    if (n.id === "edelphus_pre") return !flag("edelphus_defeated");
+    if (n.id === "pre_device") return !flag("cabin_burned");
     return true;
   }
 
@@ -1371,6 +1454,16 @@ mmmmmmmmmmmmmmmmmmmm
       });
       return;
     }
+    if (book === 0) {
+      Object.assign(state, {
+        map: "jorgen_house", x: 10 * TILE, y: 4 * TILE, dir: "down",
+        flags: {}, gold: 2,
+        inventory: { ...blankInv(), porridge: 2 },
+        party: [member("jorgen")],
+        quest: "karsten_pre", playtime: 0, book: 0
+      });
+      return;
+    }
     Object.assign(state, {
       map: "home", x: 9 * TILE, y: 4 * TILE, dir: "down",
       flags: {}, gold: 4,
@@ -1394,7 +1487,7 @@ mmmmmmmmmmmmmmmmmmmm
       const raw = JSON.parse(localStorage.getItem(SAVE_KEY));
       if (!raw) return false;
       Object.assign(state, raw);
-      state.book = raw.book || 1;
+      state.book = raw.book == null ? 1 : raw.book;
       state.inventory = { ...blankInv(), ...(raw.inventory || {}) };
       return true;
     } catch { return false; }
@@ -1504,6 +1597,16 @@ mmmmmmmmmmmmmmmmmmmm
     sprites.musicbox = makeSpr(16, 16, (g) => { pix(g, 3, 6, "#8a4a22", 10, 7); pix(g, 4, 5, "#c9a24a", 8, 2); pix(g, 7, 8, "#e8d080", 2, 2); });
     sprites.shadow = makeSpr(16, 24, (g) => { pix(g, 4, 2, "#1a1028", 8, 20); });
     sprites.jorgen = makeSpr(16, 24, (g) => person(g, { hair: "#2a2018", shirt: "#4a3a28", pants: "#2a2418", extra: (g) => pix(g, 4, 6, "#3a2a20", 8, 4) }));
+    sprites.klara = makeSpr(16, 24, (g) => person(g, {
+      hair: "#e2c15a", skin: "#f3d0b0", shirt: "#3a5a88", pants: "#2f3a4a",
+      extra: (g) => pix(g, 3, 8, "#c9a24a", 10, 2)
+    }));
+    sprites.edelphus = makeSpr(16, 24, (g) => {
+      pix(g, 4, 2, "#1a1020", 8, 20);
+      pix(g, 5, 6, "#3a2418", 6, 5);
+      pix(g, 4, 5, "#2a2018", 8, 3);
+      pix(g, 6, 7, "#c9a24a", 1, 1); pix(g, 9, 7, "#c9a24a", 1, 1);
+    });
     sprites.karsten = makeSpr(16, 24, (g) => person(g, { hair: "#c8b090", shirt: "#5a4a38", pants: "#3a3028" }));
     sprites.nachtigal = makeSpr(16, 24, (g) => person(g, {
       hair: "#1a1210", shirt: "#2a5a58", pants: "#1a3030",
@@ -1764,12 +1867,47 @@ mmmmmmmmmmmmmmmmmmmm
 
   /* ---------- Cinematics ---------- */
   const PROLOGUE = [
-    { kicker: "Idar-Oberstein, Germany · 1939", title: "Canticle of Night",
-      body: "Long after the shop has closed, two brothers still huddle over the workbench. Tools drop. Laughter fills the candlelight. “It is finished, Jorgen! Our masterpiece!” On the underside they etch: J und K Müller — Frankfurt, Deutschland.",
+    { kicker: "Idar-Oberstein, Germany · wartime", title: "Canticle of Night",
+      body: "“There must be some mistake, Herr Doktor. I am fit and ready to fight.” The doctor does not look up from his clipboard. Jorgen's mind and vision are sharp, but his lungs are far too weak. The army does not pay him to recommend defective soldiers.",
+      art: "doctor" },
+    { kicker: "The same afternoon", title: "Keep the home fires burning",
+      body: "Father is already serving. Karsten has been cleared. “Let them carry the torch for your family,” the doctor says. Jorgen wrings his cap in both hands, glad the beard hides how red his face has gone, and slams the office door.",
+      art: "doctor" },
+    { kicker: "The gemstone town", title: "A melody like snow",
+      body: "On the bus home the brightly-colored houses and snow-capped forests cannot cheer him. A haunting tune — like a music box — keeps visiting in bits and snatches. The more he tries to catch it, the more it melts, like a snowflake on an ungloved hand.",
+      art: "woodsnight" },
+    { kicker: "The Müller house", title: "Eighty-eight keys",
+      body: "Karsten is in the kitchen, mouth full of red cabbage, already glowing about glory and the train. Jorgen wants only the back room off the kitchen: a Mozart sonata, played through in his mind until the repeat sticks, and a concert someday at Kaiserslautern.",
+      art: "workshop" }
+  ];
+  const PROLOGUE_AFTER = [
+    { kicker: "Frankfurt · years later", title: "Our masterpiece",
+      body: "The brothers work until the tools drop of their own accord. Laughter fills the candlelight. “It is finished, Jorgen! Our masterpiece!” On the underside they etch: J und K Müller — Frankfurt, Deutschland.",
       art: "workshop" },
     { kicker: "The same night", title: "You're mine",
-      body: "A shadow slinks down the stairwell after they have gone to bed. It broods over the finished music box. “You're mine,” it whispers.",
+      body: "Long after they have gone to bed, a quiet creak sounds on the stair. A shadow — or a brother who is no longer only a brother — broods over the finished music box. “You're mine,” it whispers.",
       art: "shadow" },
+    { kicker: "Inside the box", title: "Queen Minna",
+      body: "The world inside is pristine and whimsical: a palace, a village, a thick forest carved around the rim. “Queen Minna,” Jorgen whispers. Klara Engel is there too — Lady Klara of Germania — living inside a song that does not lure anyone toward a cliff.",
+      art: "minnaart" },
+    { kicker: "The Canticle Kingdom", title: "Canticle of Dawn",
+      body: "A veiled queen wants a song to make her beautiful. One parchment, covered in leaping frogs, produces a wart on the end of her nose. She should have known better than to trust a piece named the Toad Toccata. Frederick burns that sheet — and hides the rest of the music in an iron chest, so it will live.",
+      art: "dawnart" },
+    { kicker: "The white streets", title: "Thantos",
+      body: "A three-headed beast nearly takes the city. A stranger in armor nets poison, steam, and ice in the same breath. “I have been known by many,” he says. “But you will call me Thantos.”",
+      art: "thantosart" },
+    { kicker: "Middlespace", title: "Featureless white",
+      body: "Knights Karsten, Wilhelm, Siegfried, and Peter follow Thantos through a portal. The other side is a nowhere of white. Thantos vanishes. They are stranded in the Space Between — and the kingdom they swore to guard goes on without them.",
+      art: "whiteart" },
+    { kicker: "The Canticle Kingdom", title: "Canticle of Twilight",
+      body: "Ellis sits a throne that is no longer wholly hers. Siegfried organizes a resistance under the alias Sir Heinrich. Wilhelm's wife Maria has a baby on the way. Brutus — her brother — keeps a craftsman's secret: a false wall, and a hidden chamber behind it.",
+      art: "twilightart" },
+    { kicker: "The palace", title: "The infant Brigitta",
+      body: "Karsten carries a bawling infant out of the palace and into Brutus's shop. “Stoop down and feel low against the wall. There's a false wall there.” In the hidden chamber sits a tiny bed. Brigitta will be safe — if the baby does not make a peep.",
+      art: "twilightart" },
+    { kicker: "The resistance", title: "The fox wrap",
+      body: "Cornelius wears a fox-fur wrap that commands fox creatures. Karsten flings it into the fire. The fox soldiers burst. Peter is already changed — a reminder that the Many-Named One collects names, and bodies, and songs.",
+      art: "foxart" },
     { kicker: "Frankfurt, 1940", title: "The Bank Vault",
       body: "A heavily bearded man places a wrapped parcel in a special safe-deposit box. When the teller finally opens the door, the man is gone. Only the music box remains.",
       art: "vault" },
@@ -1831,6 +1969,55 @@ mmmmmmmmmmmmmmmmmmmm
       g.fillStyle = "#3a5088"; g.fillRect(142, 28, 52, 16); g.fillRect(226, 28, 52, 16); g.fillRect(174, 42, 72, 16);
       g.fillStyle = "#c9a24a"; g.fillRect(206, 10, 6, 22);
       g.fillStyle = "#9ad4ff"; g.fillRect(160, 70, 8, 10); g.fillRect(252, 70, 8, 10); g.fillRect(198, 80, 8, 10);
+    } else if (kind === "doctor") {
+      g.fillStyle = "#3a3430"; g.fillRect(40, 30, 340, 130);
+      g.fillStyle = "#c8b090"; g.fillRect(180, 70, 90, 50);
+      g.drawImage(sprites.jorgen, 90, 80);
+      g.drawImage(sprites.vendor, 250, 76);
+    } else if (kind === "woodsnight") {
+      g.fillStyle = "#0e1820"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#e8eef6"; for (let i = 0; i < 16; i++) g.fillRect(18 + i * 24, 10 + (i % 4) * 8, 3, 3);
+      g.fillStyle = "#1e4a30"; g.fillRect(40, 50, 50, 90); g.fillRect(160, 40, 60, 100); g.fillRect(300, 60, 46, 80);
+      g.fillStyle = "#1a1020"; g.fillRect(250, 70, 40, 70);
+      g.drawImage(sprites.jorgen, 110, 90);
+    } else if (kind === "minnaart") {
+      g.fillStyle = "#1a3060"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#e8eef6"; g.fillRect(170, 30, 80, 90);
+      g.fillStyle = "#c9a24a"; g.fillRect(206, 12, 6, 20);
+      g.drawImage(sprites.queen, 200, 70);
+      g.drawImage(sprites.klara, 120, 90);
+      g.drawImage(sprites.musicbox, 280, 110);
+    } else if (kind === "dawnart") {
+      g.fillStyle = "#2a2038"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#e07030"; g.fillRect(280, 70, 40, 70);
+      g.fillStyle = "#efe4c4"; g.fillRect(80, 90, 70, 50);
+      g.drawImage(sprites.queen, 180, 70);
+      g.drawImage(sprites.score, 90, 100);
+    } else if (kind === "thantosart") {
+      g.fillStyle = "#3a2418"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#e07030"; g.fillRect(40, 90, 80, 40); g.fillRect(300, 80, 70, 50);
+      g.drawImage(sprites.wyrm, 180, 50);
+      g.drawImage(sprites.hood, 250, 80);
+    } else if (kind === "whiteart") {
+      g.fillStyle = "#f4f6ff"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#d0d8e8"; g.fillRect(190, 40, 40, 80);
+      g.drawImage(sprites.karsten, 80, 90);
+      g.drawImage(sprites.siegfried, 150, 80);
+      g.drawImage(sprites.guard, 230, 86);
+      g.drawImage(sprites.peter, 300, 88);
+    } else if (kind === "twilightart") {
+      g.fillStyle = "#1a2040"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#5a3a22"; g.fillRect(60, 50, 80, 100);
+      g.drawImage(sprites.brutus, 80, 80);
+      g.drawImage(sprites.sister, 200, 110);
+      g.drawImage(sprites.maria, 250, 86);
+      g.drawImage(sprites.siegfried, 320, 70);
+    } else if (kind === "foxart") {
+      g.fillStyle = "#2a1810"; g.fillRect(0, 0, 420, 180);
+      g.fillStyle = "#e07030"; g.fillRect(180, 90, 70, 50);
+      g.drawImage(sprites.cornelius, 120, 70);
+      g.drawImage(sprites.cat, 240, 110);
+      g.drawImage(sprites.karsten, 300, 80);
     } else if (kind === "munich") {
       g.fillStyle = "#0a1220"; g.fillRect(0, 0, 420, 180);
       g.fillStyle = "#e8eef6"; for (let i = 0; i < 18; i++) g.fillRect(12 + i * 22, 8 + (i % 5) * 6, 3, 3);
@@ -1919,9 +2106,13 @@ mmmmmmmmmmmmmmmmmmmm
   function showPrologue(i = 0) { showCine(PROLOGUE, i); }
   function showPrologue2(i = 0) { showCine(PROLOGUE2, i); }
   function showPrologue3(i = 0) { showCine(PROLOGUE3, i); }
+  function showPrologueAfter(i = 0) { showCine(PROLOGUE_AFTER, i); }
   function advanceCine() {
     if (cineIndex < cineList.length - 1) showCine(cineList, cineIndex + 1);
-    else beginExplore();
+    else if (cineList === PROLOGUE_AFTER) {
+      resetGame(1);
+      beginExplore();
+    } else beginExplore();
   }
 
   function beginExplore(fromSave) {
@@ -1946,6 +2137,13 @@ mmmmmmmmmmmmmmmmmmmm
         ["Karsten", "The only thing that can't wait for breakfast is a burning house, am I right?"],
         ["Johann", "And even that could probably wait if you live in a stone house."],
         ["Brigitta", "Karsten. Jorgen still hasn't written. You should go."]
+      ]);
+    } else if (!fromSave && state.book === 0 && !flag("intro0")) {
+      setFlag("intro0");
+      story([
+        ["Jorgen", "The doctor will not sign. Weak lungs. A liability."],
+        ["", "Karsten is in the kitchen, mouth full of red cabbage, already glowing about the train."],
+        ["Jorgen", "Speak with him. Then the piano. Then perhaps the woods."]
       ]);
     } else if (!fromSave && state.book === 1 && !flag("intro")) {
       setFlag("intro");
@@ -1980,6 +2178,14 @@ mmmmmmmmmmmmmmmmmmmm
   }
 
   function useExit(exit) {
+    if (exit.to === "woods_pre" && !flag("karsten_gone")) {
+      toast("Karsten leaves today. Speak with him first.");
+      return;
+    }
+    if (exit.to === "cabin_pre" && !flag("klara_lost")) {
+      toast("The black cabin can wait. Klara is not lost yet.");
+      return;
+    }
     if (exit.to === "woods_edge" && !flag("got_ribbon") && state.quest !== "woods" && !flag("met_brigitta")) {
       toast("The Dunkel Woods... not without a reason.");
       return;
@@ -2080,10 +2286,124 @@ mmmmmmmmmmmmmmmmmmmm
     renderHud();
     save(true);
     beep(520, 0.05, "square", 0.04);
+    preludeArrive();
+  }
+
+  async function preludeArrive() {
+    if (state.book !== 0) return;
+    if (state.map === "woods_pre" && !flag("heard_melody")) {
+      setFlag("heard_melody");
+      state.quest = "woods_pre";
+      renderHud();
+      await story([
+        ["", "A haunting melody, like a music box, threads the snow-capped forest."],
+        ["Jorgen", "Lorelei lured sailors on these cliffs. Someone has painted a cabin black."],
+        ["", "A woman in a pale dress runs toward the drop above the Felsenkirche. You cannot reach her in time."]
+      ]);
+      return;
+    }
+    if (state.map === "jorgen_house" && flag("heard_melody") && flag("karsten_gone") && !flag("klara_arrived") && !flag("klara_lost")) {
+      setFlag("klara_arrived");
+      state.quest = "klara_pre";
+      renderHud();
+      await story([
+        ["", "An urgent knock. Klara Engel stands in the doorway, golden hair in shambles, bright blue eyes raw with tears."],
+        ["Klara", "Frieda fell from the cliff above the Felsenkirche. People are whispering. Some even mentioned your name."],
+        ["Jorgen", "Come in from the cold. I will play until the dark melody lets you go."]
+      ]);
+      return;
+    }
+    if (state.map === "cabin_pre" && !flag("cabin_seen")) {
+      setFlag("cabin_seen");
+      await story([
+        ["", "The black cabin smells of varnish and old songs. A device like an oversized music-box mechanism ticks without a hand to wind it."],
+        ["Jorgen", "Klara?"]
+      ]);
+    }
   }
 
   async function talk(npc) {
     const id = npc.id;
+    if (id === "karsten_pre") {
+      if (flag("karsten_gone")) return;
+      await story([
+        ["Karsten", "Glory of Germany this, family honor that. Father is already serving. The doctor signed my papers before breakfast."],
+        ["Jorgen", "He would not sign mine. Weak lungs. A cook or a mechanic would have been enough."],
+        ["Karsten", "Keep the home fires burning, brother. Look after the shop. If you lock yourself in the piano room, at least eat."],
+        ["", "Karsten slings a kit over his shoulder. The front door lets in a slice of snow, then shuts."]
+      ]);
+      setFlag("karsten_gone");
+      state.quest = "woods_pre";
+      renderHud();
+      return;
+    }
+    if (id === "pre_piano") {
+      if (flag("box_made")) { await say("", "The keys are quiet. The masterpiece is already downstairs."); return; }
+      if (flag("karsten_home")) {
+        await story([
+          ["", "Jorgen plays until the woods melody is no longer a lure. He pours Klara Engel's sweetness into a phrase that promises life, not a cliff."],
+          ["Karsten", "I can carve the palace and the forest. You shape the cylinder. Gold leaf from Minna's father — if we ever dare to say her name aloud."],
+          ["Jorgen", "It is not finished until the underside reads J und K Müller."]
+        ]);
+        setFlag("box_made");
+        showPrologueAfter(0);
+        return;
+      }
+      if (flag("played_for_klara")) { await say("", "The repeat still sticks. The woods melody will not stay on the page."); return; }
+      if (flag("karsten_gone")) {
+        await say("Jorgen", "Mozart, from beginning to end — except the repeat, which will not let go. That other tune is still out in the snow.");
+        return;
+      }
+      await say("", "Eighty-eight black and white keys. Karsten's laugh is still in the kitchen. Speak with him first.");
+      return;
+    }
+    if (id === "klara_pre") {
+      await story([
+        ["Klara", "Play it. The food can wait. I only want the song."],
+        ["", "Jorgen's hands find the woods melody. At the same instant Klara's face goes blank, as if she had walked out of her own eyes."],
+        ["Jorgen", "Klara. Hands over your ears. You cannot let it draw you in."],
+        ["", "With surprising force she pulls free and runs for the door — toward the black cabin, toward the drop above the Felsenkirche."]
+      ]);
+      setFlag("played_for_klara");
+      setFlag("klara_lost");
+      state.quest = "cabin_pre";
+      renderHud();
+      return;
+    }
+    if (id === "cliff_pre") {
+      await say("", "Years ago a man built a church into this cliff face as penance. The drop above the Felsenkirche does not forgive a second mistake.");
+      return;
+    }
+    if (id === "cabin_sign") {
+      await say("", "Someone has painted the cabin black. The music-box melody is louder here.");
+      return;
+    }
+    if (id === "pre_device") {
+      await say("", "An oversized music-box mechanism, built to snare a soul the way a mountain might be trapped in a snow globe.");
+      return;
+    }
+    if (id === "edelphus_pre") {
+      if (flag("edelphus_defeated")) { await say("", "The enchanter is gone. Only varnish and ash remain."); return; }
+      await story([
+        ["Edelphus", "I am called Edelphus the Enchanter. The Pied Piper of Hamelin. Lorelei. Musicanter. Given the proper instruction, you might have kept Klara from the snare."],
+        ["Jorgen", "What did you do to my Klara?"],
+        ["Edelphus", "She did not want to die. The song wanted a listener. I need a new host. Minna is already spoken for — beauty in a jewelry box, like a mountain in snow."],
+        ["Jorgen", "Show me the door, or this cabin burns."]
+      ]);
+      startBattle(["edelphus"], { after: "edelphus" });
+      return;
+    }
+    if (id === "karsten_return") {
+      await story([
+        ["Karsten", "The front sent me home with a limp and fewer jokes. Minna... I cannot say it in a kitchen this small."],
+        ["Jorgen", "Then we finish one box. Klara's sweetness. A song that does not lure anyone toward a cliff."],
+        ["Karsten", "You at the piano. Me at the carvings. A craftsman worth his salt needs a place for his really important works."]
+      ]);
+      setFlag("karsten_home");
+      state.quest = "craft_pre";
+      renderHud();
+      return;
+    }
     if (id === "bowl" && !flag("ate")) {
       await say("Maria", "Eat. That porridge has long since stopped steaming.");
       flagHeal("porridge");
@@ -2986,6 +3306,10 @@ mmmmmmmmmmmmmmmmmmmm
       g.fillRect(x + 8, y + 28, 56, 40);
       g.fillRect(x + 36, y + 8, 28, 28);
       g.fillStyle = "#1a1020"; g.fillRect(x + 44, y + 16, 5, 5);
+    } else if (e.id === "edelphus") {
+      g.fillStyle = "#140818"; g.fillRect(x + 10, y, 48, 90);
+      g.fillStyle = "#3a2418"; g.fillRect(x + 18, y + 18, 32, 24);
+      g.fillStyle = "#c9a24a"; g.fillRect(x + 22, y + 24, 4, 4); g.fillRect(x + 38, y + 24, 4, 4);
     } else if (e.id === "many" || e.id === "many2") {
       g.fillStyle = "#140818"; g.fillRect(x + 10, y, 48, 90);
       g.fillStyle = "#6a2060"; g.fillRect(x + 18, y + 18, 32, 24);
@@ -3267,12 +3591,30 @@ mmmmmmmmmmmmmmmmmmmm
       if (after === "bruno_roar") afterBrunoRoar();
       if (after === "doom") afterDoom();
       if (after === "final3") afterFinal3();
+      if (after === "edelphus") afterEdelphus();
     }
     battle = null;
     startMusic(currentMap().music);
     renderHud();
     save(true);
   }
+  async function afterEdelphus() {
+    setFlag("edelphus_defeated");
+    setFlag("cabin_burned");
+    healParty(true);
+    state.quest = "box_pre";
+    await story([
+      ["", "The enchanter's song breaks like a stuck piano repeat. Jorgen sets the black cabin burning so no other listener will find the mechanism."],
+      ["Jorgen", "Klara, wait for me. I will build a world where that melody cannot finish."],
+      ["", "Snow takes the smoke. At the Müller house, a wounded step is already on the stair."]
+    ]);
+    state.map = "jorgen_house";
+    state.x = 10 * TILE;
+    state.y = 4 * TILE;
+    startMusic("home");
+    renderHud();
+  }
+
   async function afterSerpent() {
     setFlag("snake_gone");
     if (!hasHero("siegfried")) {
@@ -3426,7 +3768,7 @@ mmmmmmmmmmmmmmmmmmmm
       ctx.drawImage(spr, Math.floor(n.x * TILE - camX), Math.floor(n.y * TILE - camY - (spr.height - 16)));
     });
     const bob = settings.reduce ? 0 : ((anim / 200 | 0) % 2);
-    const hero = sprites.johann;
+    const hero = state.book === 0 ? sprites.jorgen : sprites.johann;
     ctx.drawImage(hero, Math.floor(state.x - camX), Math.floor(state.y - camY - 8 - bob));
     if (hasHero("brigitta")) ctx.drawImage(sprites.brigitta, Math.floor(state.x - camX - 10), Math.floor(state.y - camY - 6));
     if (hasHero("siegfried")) ctx.drawImage(sprites.siegfried, Math.floor(state.x - camX + 12), Math.floor(state.y - camY - 10));
@@ -3507,7 +3849,7 @@ mmmmmmmmmmmmmmmmmmmm
         b.onclick = () => { useFieldItem(b.dataset.useItem); openPause("items"); };
       });
     } else if (view === "journal") {
-      extra.innerHTML = `${QUEST_TEXT[state.quest] || ""}<br><br>Book ${state.book || 1}<br>Gold: ${state.gold}<br>Party: ${state.party.map((p) => p.name).join(", ")}`;
+      extra.innerHTML = `${QUEST_TEXT[state.quest] || ""}<br><br>${state.book === 0 ? "Prelude" : "Book " + (state.book || 1)}<br>Gold: ${state.gold}<br>Party: ${state.party.map((p) => p.name).join(", ")}`;
     } else extra.innerHTML = "Enter / Space: talk · I inventory · Esc pause · O options<br>Battle: 1 Attack  2 Canticle  3 Item  4 Defend  5 Flee";
   }
 
@@ -3569,7 +3911,7 @@ mmmmmmmmmmmmmmmmmmmm
 
   function startNew() {
     ensureAudio();
-    resetGame(1);
+    resetGame(0);
     showPrologue(0);
   }
   function startBook2() {
@@ -3626,6 +3968,8 @@ mmmmmmmmmmmmmmmmmmmm
       state,
       startBook2,
       startBook3,
+      startNew,
+      startBook1() { resetGame(1); beginExplore(); },
       warp(map, x, y) { state.map = map; state.x = x * TILE; state.y = y * TILE; if (blocked(state.x, state.y)) { /* keep */ } renderHud(); },
       join(id) { if (!hasHero(id)) state.party.push(member(id)); },
       flag: setFlag, battle: startBattle,

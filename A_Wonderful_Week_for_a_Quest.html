@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>A Wonderful Week for a Quest</title>
-<meta name="description" content="A 16-bit RPG of Michael D. Young’s A Wonderful Week for a Quest. Books I–VI: Squires, Bellissimo, Roderick, ELM, Grimblewaith’s phoenix, and Jackdaw’s Battle of the Bards.">
+<meta name="description" content="A 16-bit RPG of Michael D. Young’s A Wonderful Week for a Quest. Books I–VII: Squires, Bellissimo, Roderick, ELM, Grimblewaith, Jackdaw, and the Refried Beandom.">
 <style>
   :root {
     --ink: #0a0714;
@@ -191,6 +191,7 @@
             <button id="btnBook4">Book IV</button>
             <button id="btnBook5">Book V</button>
             <button id="btnBook6">Book VI</button>
+            <button id="btnBook7">Book VII</button>
             <button id="btnCont" class="ghost">Continue</button>
             <button id="btnMute" class="ghost">Sound: On</button>
           </div>
@@ -335,11 +336,19 @@
       skills: ["block", "handy"]
     };
   }
+  function ghostHero() {
+    return {
+      id: "squires", name: "Roddy Squires",
+      maxHp: 28, hp: 28, maxMp: 16, mp: 16, atk: 6, def: 3, spd: 7,
+      skills: ["trip", "goat", "accident"]
+    };
+  }
   function isB2() { return G.day === 2; }
   function isB3() { return G.day === 3; }
   function isB4() { return G.day === 4; }
   function isB5() { return G.day === 5; }
   function isB6() { return G.day === 6; }
+  function isB7() { return G.day === 7; }
 
   const ITEMS = {
     luna: { name: "Luna Bean", desc: "Tastes terrible. Restores 18 HP.", heal: 18 },
@@ -361,7 +370,10 @@
     pie: { name: "Humble Pie", desc: "Layered. Winning. Joaquin is already interested in the bakery." },
     salt: { name: "Salt Swords", desc: "Sir Ruprecht’s idea of cutlery. Sand slugs hate them." },
     bardcard: { name: "Bard Card", desc: "Merlin required a trading table. Collectors are a second audience." },
-    letter: { name: "Merlin’s Missive", desc: "Host the Battle. Reserve time for Bard Cards. Do not embarrass the Magus line." }
+    letter: { name: "Merlin’s Missive", desc: "Host the Battle. Reserve time for Bard Cards. Do not embarrass the Magus line." },
+    gear: { name: "DEM Gear", desc: "One twenty-first of a machine that promised life. Do not oil it with hope." },
+    compass: { name: "Pelican’s Compass", desc: "The source of his greatest jumps. It still points at Jackie." },
+    mirror: { name: "Midnight Mirror", desc: "Bell sees gears. Each look costs Roderick one memory of her." }
   };
 
   const SKILLS = {
@@ -406,7 +418,13 @@
     turnplay: { name: "Take Your Turn", mp: 0, desc: "Ruprecht trapped his brother on a board. Play anyway.", special: "rupboard" },
     harpcall: { name: "Request the Golden Harp", mp: 0, desc: "Goose, donkey, cat, dog, rooster. Ask it to drown a machine.", special: "dem" },
     dragonbond: { name: "Dragonbond", mp: 0, desc: "Arach and Rodfather, gold and flame, against a dragonlord.", special: "dem" },
-    merlinbird: { name: "Dark Merlin Bird", mp: 0, desc: "Jealousy shaped like a bird. Jackdaw’s best spell is a feeling.", special: "dem" }
+    merlinbird: { name: "Dark Merlin Bird", mp: 0, desc: "Jealousy shaped like a bird. Jackdaw’s best spell is a feeling.", special: "dem" },
+    trollcook: { name: "Ask the Halflings", mp: 0, desc: "Missing cooks. A troll with a union. Grimblewaith translates smash.", special: "troll" },
+    faepop: { name: "Fae-Pop", mp: 0, desc: "Regina 3RM. Zomart’s hidden route. The palace monster prefers country.", special: "organ" },
+    compassshot: { name: "Pelican’s Compass", mp: 0, desc: "A teleportation Precht cannot drain twice.", special: "precht" },
+    planv: { name: "Launch Plan V", mp: 0, desc: "A future-borrowed rocket. Mount Ominous. The machine leaves the world.", special: "nether" },
+    namemagnus: { name: "Name King Magnus", mp: 0, desc: "The Netherking is the first wizard. He loathes owing anyone.", special: "nether" },
+    settledebt: { name: "Collect the Debt", mp: 0, desc: "Roderick’s sacrifice settles the account. Magnus returns Bell.", special: "nether" }
   };
 
   /* ---------- maps ---------- */
@@ -910,7 +928,8 @@ NNNNNNNNNNNNNNNN
       { x: 28, y: 4, to: "snow", tx: 8, ty: 5, need: "b5contest" },
       { x: 13, y: 6, to: "butte", tx: 8, ty: 5, need: "b5rod" },
       { x: 7, y: 16, to: "pie", tx: 8, ty: 5, need: "b5butte" },
-      { x: 35, y: 8, to: "mafaea", tx: 8, ty: 5, need: "b6rup" }
+      { x: 35, y: 8, to: "mafaea", tx: 8, ty: 5, need: "b6rup" },
+      { x: 24, y: 4, to: "crater", tx: 7, ty: 4, need: "b7pelican" }
     ],
     tower: [{ x: 12, y: 8, to: "world", tx: 28, ty: 6 }],
     forest: [
@@ -965,13 +984,13 @@ NNNNNNNNNNNNNNNN
     const f = G.flags;
     const list = [];
     if (G.map === "village") {
-      if (!isB6()) list.push(npc(14, 6, "jackdaw", "Jackdaw", talkJackdawVillage));
+      if (!isB6() && !isB7()) list.push(npc(14, 6, "jackdaw", "Jackdaw", talkJackdawVillage));
       list.push(npc(18, 7, "mordeck", "Mordeck", talkMordeck));
       if (isB6()) {
         if (!f.b6rod) list.push(npc(16, 8, "roderick", "Sir Roderick 3RG", talkRoderickB6));
         list.push(npc(22, 14, "bell", "Bellissimo", talkBellB6));
         if (f.b6rod && !f.b6arach) list.push(npc(11, 8, "arach", "Arach", talkArach));
-      } else if (isB5() || isB4()) {
+      } else if (isB5() || isB4() || isB7()) {
         /* Book V starts at BPD HQ. Book IV starts in Pintoburg. Beanvale keeps Jackdaw. */
       } else if (isB3()) {
         list.push(npc(12, 6, "sirsi", "Sirsi", talkSirsi));
@@ -993,10 +1012,12 @@ NNNNNNNNNNNNNNNN
       list.push(npc(25, 11, "villager", "Innkeeper", talkInn));
     }
     if (G.map === "world") {
-      if (!isB2() && !isB3() && !isB4() && !isB5() && !isB6() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
+      if (!isB2() && !isB3() && !isB4() && !isB5() && !isB6() && !isB7() && !f.grimble && f.rejected) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleMeet));
       if (isB3() && f.b3wish && !f.b3grim) list.push(npc(16, 10, "grimble", "Grimblewaith", talkGrimbleB3));
       if (isB5() && f.b5snow && !f.b5rod) list.push(npc(16, 9, "roderick", "Sir Roderick 3RG", talkRoderickB5));
-      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB6()
+      list.push(npc(16, 7, "sign", "Weathered Sign", () => say([{ who: "Sign", text: isB7()
+        ? "The Cinder is south-island. NE gap: Jackdaw. West beans: Worstashire. East of the golden P: abandoned palace. North grass: old EBI. North of the east highway, a little: Mount Ominous."
+        : isB6()
         ? "NE gap: your tower. Beanvale west. SE stone ring: bard arena. East grass: Pintoburg. One step north of the fey door: the border. East of the golden P: palace gates."
         : isB5()
         ? "West grass by the road: BPD. East of the road, a little north: Web wizard. Far east grass: phoenix cavern. Northeast peaks: snow. North of the west road: bakery. South puddles: Humble Pie."
@@ -1009,7 +1030,13 @@ NNNNNNNNNNNNNNNN
         : "NE mountain gap: Jackdaw. Stand in the trees south of the highway: elves. East caves: goblins. SE stone ring: dwarves. Far south hole: ELM. Golden P: rally (later)." }])));
     }
     if (G.map === "tower") {
-      if (isB6()) {
+      if (isB7()) {
+        if (!f.b7grimma) list.push(npc(7, 6, "grimma", "Grimma", talkGrimmaB7));
+        else {
+          list.push(npc(10, 3, "grimma", "Grimma", talkGrimmaB7));
+          if (!f.b7mirror) list.push(npc(8, 3, "roderick", "Sir Roderick 3RG", talkMirror));
+        }
+      } else if (isB6()) {
         if (!f.b6merlin) list.push(npc(7, 6, "petra", "Petra", talkPetra));
         else list.push(npc(8, 3, "petra", "Petra", talkPetra));
       } else {
@@ -1047,7 +1074,13 @@ NNNNNNNNNNNNNNNN
       if (f.saved) list.push(npc(8, 8, "mordeck", "Mordeck", talkEnding));
     }
     if (G.map === "hill") {
-      list.push(npc(10, 4, "grossina", "Grossina", talkGrossina));
+      if (isB7()) {
+        list.push(npc(10, 4, "grimble", "Grimblewaith", talkWorstashire));
+        list.push(npc(8, 4, "wren", "Wren", () => say([{ who: "Wren", text: "Serrinanal still fits on a border. Worstashire is missing cooks. The troll filed a complaint about stew." }])));
+        list.push(npc(12, 4, "glocke", "Donna Glocke", () => say([{ who: "Donna Glocke", text: "BPD does not cover trolls. The Godmother paperwork covers even less. Smash first. Cite later." }])));
+      } else {
+        list.push(npc(10, 4, "grossina", "Grossina", talkGrossina));
+      }
     }
     if (G.map === "hornfang") {
       if (!f.b2lg) list.push(npc(7, 4, "lg", "Little Giant", talkLittleGiant));
@@ -1069,12 +1102,20 @@ NNNNNNNNNNNNNNNN
       if (!f.b2fire) list.push(npc(4, 2, "spoon", "Ex-caliper", talkSpoon));
     }
     if (G.map === "crater") {
-      if (!f.b2ogeron) list.push(npc(6, 3, "bean", "The One Bean", talkOneBean));
+      if (isB7()) {
+        if (!f.b7done) list.push(npc(6, 3, "nether", "The Reassembled DEM", talkPlanV));
+        else list.push(npc(6, 3, "magnus", "King Magnus", talkPlanV));
+      } else if (!f.b2ogeron) list.push(npc(6, 3, "bean", "The One Bean", talkOneBean));
       else list.push(npc(6, 3, "ogeron", "King Ogeron", talkOgeron));
     }
     if (G.map === "ebi") {
-      list.push(npc(7, 3, "elf", "Elegantia", talkElegantia));
-      list.push(npc(10, 3, "elf", "Director Misterssippi", talkMisterssippi));
+      if (isB7()) {
+        if (!f.b7pelican) list.push(npc(8, 3, "pelican", "Pelican", talkPelicanB7));
+        else list.push(npc(8, 3, "sign", "Hidden Study", () => say([{ who: "Study", text: "Pelican’s robe is folded. The compass is gone. Precht left a stain that is trying to be a person." }])));
+      } else {
+        list.push(npc(7, 3, "elf", "Elegantia", talkElegantia));
+        list.push(npc(10, 3, "elf", "Director Misterssippi", talkMisterssippi));
+      }
     }
     if (G.map === "well") {
       list.push(npc(6, 4, "well", "Wunderwell", talkWunderwell));
@@ -1082,7 +1123,9 @@ NNNNNNNNNNNNNNNN
       else list.push(npc(10, 4, "marble", "Miss Marble", talkMichelle));
     }
     if (G.map === "gates") {
-      if (isB6()) {
+      if (isB7()) {
+        list.push(npc(10, 4, "sign", "Gate", () => say([{ who: "Gate", text: "The palace is abandoned. The organ is not. Regina 3RM brought a lute and a refusal to indulge her brother." }])));
+      } else if (isB6()) {
         list.push(npc(10, 4, "sign", "Gate", () => say([{ who: "Gate", text: "The palace is loud with visiting wizards. The library is pretending to be quiet. That is a lie with better lighting." }])));
       } else {
         if (!f.b3pris) list.push(npc(6, 4, "pris", "Priscilla", talkPriscilla));
@@ -1090,7 +1133,10 @@ NNNNNNNNNNNNNNNN
       }
     }
     if (G.map === "palace") {
-      if (isB6()) {
+      if (isB7()) {
+        if (!f.b7palace) list.push(npc(8, 3, "regina", "Regina 3RM", talkRegina));
+        else list.push(npc(8, 3, "regina", "Regina 3RM", talkRegina));
+      } else if (isB6()) {
         list.push(npc(5, 4, "bell", "Bellissimo", talkBellLib));
         if (!f.b6lib) list.push(npc(8, 3, "petra", "Petra", talkLibrary));
       } else {
@@ -1117,7 +1163,13 @@ NNNNNNNNNNNNNNNN
       if (!f.b4quacken) list.push(npc(6, 3, "quacken", "The Quacken", talkQuacken));
     }
     if (G.map === "misfit") {
-      list.push(npc(10, 4, "ronchi", "Ronchi", talkRonchi));
+      if (isB7()) {
+        list.push(npc(10, 4, "rightbeard", "Captain Rightbeard", talkCinderB7));
+        list.push(npc(8, 4, "lol", "Lol", () => say([{ who: "Lol", text: "First mate. Full-sized later. The grin is still chipped. The Cinder was stolen back. I kept the door habit." }])));
+        list.push(npc(12, 5, "willow", "Willow", () => say([{ who: "Willow", text: "Beanunculus. Jar. Hexen Tech first in class. If I come apart, it is the conversation’s fault. Rightbeard is not the jar." }])));
+      } else {
+        list.push(npc(10, 4, "ronchi", "Ronchi", talkRonchi));
+      }
     }
     if (G.map === "wreck") {
       list.push(npc(8, 3, "leftbird", "Leftbird", talkLeftbird));
@@ -1248,6 +1300,15 @@ NNNNNNNNNNNNNNNN
       if (n.sprite === "petra" && G.map === "palace" && !f.b6lib) return true;
       if (n.sprite === "merlin" && f.b6lib && !f.b6council) return true;
       if (n.sprite === "felgarath" && f.b6council && !f.b6done) return true;
+    }
+    if (isB7()) {
+      if (n.sprite === "rightbeard" && !f.b7brief) return true;
+      if (n.sprite === "grimma" && G.map === "tower" && !f.b7grimma) return true;
+      if (n.sprite === "roderick" && f.b7grimma && !f.b7mirror) return true;
+      if (n.sprite === "grimble" && G.map === "hill" && !f.b7worst) return true;
+      if (n.sprite === "regina" && !f.b7palace) return true;
+      if (n.sprite === "pelican" && !f.b7pelican) return true;
+      if (n.sprite === "nether" && f.b7pelican && !f.b7done) return true;
     }
     return false;
   }
@@ -1384,6 +1445,13 @@ NNNNNNNNNNNNNNNN
       say([
         { who: "Mordeck", text: "Bards. I have a column. It is louder than the harvest and less useful." },
         { who: "Mordeck", text: "If Merlin sent a letter, hide the good beans. Visiting wizards eat like prophecies." }
+      ]);
+      return;
+    }
+    if (isB7()) {
+      say([
+        { who: "Mordeck", text: "Gears. I have a column. It is twenty-one items long and none of them agree." },
+        { who: "Mordeck", text: "If a ghost with goat legs asks for a briefing, file it under sequel. The harvest is not coming." }
       ]);
       return;
     }
@@ -3052,6 +3120,175 @@ NNNNNNNNNNNNNNNN
     });
   }
 
+  function talkCinderB7() {
+    if (G.flags.b7brief) {
+      say([
+        { who: "Captain Rightbeard", text: "Willow is still a jar with opinions. Lol kept the door habit. Jackdaw’s tower is the NE gap. The ghost is already you." }
+      ]);
+      return;
+    }
+    say([
+      { who: "Captain Rightbeard", text: "The Cinder was stolen back. You are a ghost with goat legs. I am not filing that under ordinary piracy." },
+      { who: "Willow", text: "The Beandom is refrying itself without permission. Grimma brought a bargain. One gear, one life. I am not the life they meant." },
+      { who: "Lol", text: "Jackdaw’s tower. NE mountain gap. I will keep the ship. If a troll is a first mate, the door was practice." , note: "Roddy Squires died in the uprising and came back incorrect. The goat legs are a citation." }
+    ], () => {
+      G.flags.b7brief = true;
+      G.quest = "NE mountain gap: Jackdaw’s tower. Grimma has the Netherking’s bargain. Roderick has a mirror that charges interest.";
+      save();
+    });
+  }
+
+  function talkGrimmaB7() {
+    if (G.flags.b7grimma) {
+      say([{ who: "Grimma", text: "One gear, one soul. My list is longer than theirs. Felgarath wants Gwyneth. Mercurius wants victims. I want the balance." }]);
+      return;
+    }
+    say([
+      { who: "Grimma", text: "The Netherking offers life by the gear. Twenty-one pieces of a machine that already ruined a festival. I am the messenger. I am also the fine print." },
+      { who: "Jackdaw", text: "Bell is dead. Precht used Petra to do it. Pelican brought the body and a confession. Roderick brought a mirror that steals the parts of her he still has." },
+      { who: "Jackdaw", text: "You are the ghost who can walk into undead territory without filling out a form. I am joining because footnotes do not resurrect anyone." , note: "One returned life per gear. Everyone brought a different list. That is the plot. Also the problem." }
+    ], () => {
+      G.flags.b7grimma = true;
+      join(jackdawHero());
+      G.quest = "Roderick is north of the cauldron. Pay the memory. Ask Bell. Do not ask the mirror to be kind.";
+      save();
+    });
+  }
+
+  function talkMirror() {
+    if (G.flags.b7mirror) {
+      say([{ who: "Sir Roderick 3RG", text: "Worstashire. Palace. Old EBI. I remember that she liked tacos. I am not sure I remember why." }]);
+      return;
+    }
+    say([{
+      who: "Sir Roderick 3RG",
+      text: "The Midnight Mirror. Bell is on the other side. She can see disguises and five mortal gears. Every look costs me one memory of her. I have not decided if that is a fair price.",
+      choices: [
+        { label: "Pay the memory. Ask Bell.", fn: () => mirrorAsk() },
+        { label: "Refuse. Keep every memory and no map.", fn: () => say([{ who: "Bellissimo", text: "(from the glass, unimpressed) I located gears, not a knight who wanted to win by sitting." }], () => talkMirror()) }
+      ]
+    }]);
+  }
+  function mirrorAsk() {
+    say([
+      { who: "Bellissimo", text: "Worstashire. Halfling cooks, a troll, Grimblewaith. The abandoned palace: Regina and an organ that eats silence. The old EBI: Pelican and a study that is a trap." },
+      { who: "Bellissimo", text: "I wished for a way to find the pieces. The well took my legs and Precht took the rest. Do not make this about rescuing me until you have finished the list." },
+      { who: "Sir Roderick 3RG", text: "I paid. I still know her name. West beans: Worstashire. Then the palace. Then the EBI. Then I will have fewer stories and the same job." , note: "The mirror is honest. That is the expensive part." }
+    ], () => {
+      G.flags.b7mirror = true;
+      give("mirror");
+      G.quest = "West beans: Worstashire. Grimblewaith, Wren, Glocke, missing cooks. Ask the halflings. Do not ask the troll to share.";
+      save();
+    });
+  }
+
+  function talkWorstashire() {
+    if (G.flags.b7worst) {
+      say([{ who: "Grimblewaith", text: "The cooks are back. The troll is unemployed. The gear is not a snack. Glocke will invoice the Netherworld and lose." }]);
+      return;
+    }
+    say([
+      { who: "Grimblewaith", text: "Faekind. Still green. Worstashire misplaced its halfling cooks. The troll says stew is a negotiation." },
+      { who: "Wren", text: "A gear fell in the larder. I am not a trophy. I am the person who will tell the troll that." },
+      { who: "Donna Glocke", text: "Ask the cooks. Smash if the answer is teeth. I did not join the BPD to be a footnote in a recipe." }
+    ], () => {
+      startBattle([enemy("troll")], {
+        canFlee: false, boss: true, heal: true,
+        onWin: () => {
+          G.flags.b7worst = true;
+          give("gear");
+          G.quest = "East of the golden P: abandoned palace. Regina 3RM. Fae-pop. The organ is not a metaphor.";
+          save();
+          say([{ who: "Grimblewaith", text: "Gear one. The palace next. If Glocke is on a gold list later, tell them the troll started it." }]);
+        }
+      });
+    });
+  }
+
+  function talkRegina() {
+    if (G.flags.b7palace) {
+      say([{ who: "Regina 3RM", text: "Really, really, really melodious. The organ retired. Zomart can come out of his tower when the fae-pop is no longer a weapon." }]);
+      return;
+    }
+    say([
+      { who: "Regina 3RM", text: "I am the other Gallantson. Lute. Hat. I do not indulge Roderick’s moods. The palace monster is an organ that wanted a better genre." },
+      { who: "The Great Zomart", text: "(from a hidden tower, professionally alarmed)" },
+      { who: "Regina 3RM", text: "Fae-pop has standards. Play them. Bell’s memory left the route in the pipes." }
+    ], () => {
+      startBattle([enemy("organ")], {
+        canFlee: false, boss: true, heal: true,
+        onWin: () => {
+          G.flags.b7palace = true;
+          give("gear");
+          G.quest = "North grass: abandoned EBI. Pelican has a study, a serpent’s leftover, and one last compass.";
+          save();
+          say([{ who: "Regina 3RM", text: "Gear two. Tell my brother the song worked. Tell him I will not be the person who forgets her." }]);
+        }
+      });
+    });
+  }
+
+  function talkPelicanB7() {
+    if (G.flags.b7pelican) {
+      say([{ who: "Study", text: "The compass is with Jackdaw. Pelican is not. Precht is a stain that learned a name." }]);
+      return;
+    }
+    say([
+      { who: "Pelican", text: "Jackie. I wore Felgarath’s serpent. I took Bell to the well. I delivered her to Petra’s body because I thought leverage was not murder. I was wrong in every direction." },
+      { who: "Pelican", text: "Arach’s study is here in the old files. A gear and my compass. Take both. If Precht grabs me, do not trade." },
+      { who: "Precht", text: "(Petra’s handy, a jagged streak of purple and scarlet, arriving as a hostage situation)" }
+    ], () => {
+      startBattle([enemy("precht")], {
+        canFlee: false, boss: true, heal: true,
+        onWin: () => {
+          G.flags.b7pelican = true;
+          give("gear");
+          give("compass");
+          G.quest = "North of the east highway: Mount Ominous. Plan V. A rocket that has not been invented yet. Name Magnus before Grimma keeps the machine.";
+          save();
+          say([
+            { who: "Pelican", text: "The compass is the source. Wear it. Reunite. Stop him. I am out of jumps." },
+            { who: "Jackdaw", text: "I will carry you home after the volcano. I am billing the Magus line for the funeral and the rocket." }
+          ]);
+        }
+      });
+    });
+  }
+
+  function talkPlanV() {
+    if (G.flags.b7done) {
+      say([{ who: "King Magnus", text: "The account is settled. Bell is returned. All mortals visit later. I do not do layaway." }]);
+      return;
+    }
+    say([
+      { who: "Jackdaw", text: "Plan V. NASA has not been invented. The rocket has. Mount Ominous is a launch pad that thinks it is a volcano." },
+      { who: "Felgarath", text: "Gwyneth is on my list. Mercurius brought knives. Grimma brought a longer list than the Netherking approved." },
+      { who: "Grimma", text: "The DEM is together enough to steal life instead of returning it. I prefer that ending." }
+    ], () => {
+      startBattle([enemy("nether")], {
+        canFlee: false, boss: true, heal: true,
+        onWin: () => {
+          G.flags.b7done = true;
+          G.quest = "The Refried Beandom. Quest Remembrance Day. Happy-ishly ever after.";
+          save();
+          say([
+            { who: "King Magnus", text: "I am the first wizard. I loathe a debt. Roderick’s remaining memory bought order. Bellissimo is returned with no further condition. You will all visit later." },
+            { who: "Bellissimo", text: "I am not a monument. I am late for a taco and a knight who forgot why I liked them and will have to learn again." },
+            { who: "Grimblewaith", text: "Wren and I will take the rebuilt map. Whatsit and faekind. The gold figures can include Glocke if the lava insists." },
+            { who: "Captain Rightbeard", text: "Willow is out of the jar. The Cinder is leaving the Grey Mountains. Lol is growing into the job." },
+            { who: "Roddy Squires", text: "I stay on the gold list. Goat legs. Ghost. The week is over. The next era can bill Jackdaw." , note: "Refried is not merely a joke. Happy-ish is the durable kind." }
+          ], () => {
+            G.mode = "credits";
+            G.creditT = 0;
+            $("hud").classList.remove("show");
+            $("dialog").classList.remove("show");
+            save();
+          });
+        }
+      });
+    });
+  }
+
   function updateQuestSecrets() {
     const a = [G.flags.secretL && "Louisa", G.flags.secretE && "Elisabeth", G.flags.secretM && "Meriwether"].filter(Boolean);
     if (a.length === 3) G.quest = "Return to Jackdaw’s tower. The name is complete. (It is a terrible villain name.)";
@@ -3083,7 +3320,11 @@ NNNNNNNNNNNNNNNN
       slug: { name: "Sand Slug", hp: 48, maxHp: 48, atk: 9, def: 6, xp: 32, gold: 14, spr: "slug", boss: true },
       fell: { name: "The Fell Five", hp: 54, maxHp: 54, atk: 10, def: 5, xp: 40, gold: 18, spr: "fell", boss: true },
       rupboard: { name: "Turn-Based Duel", hp: 50, maxHp: 50, atk: 9, def: 4, xp: 34, gold: 12, spr: "rupboard", boss: true },
-      dem: { name: "The DEM", hp: 66, maxHp: 66, atk: 11, def: 7, xp: 55, gold: 0, spr: "dem", boss: true }
+      dem: { name: "The DEM", hp: 66, maxHp: 66, atk: 11, def: 7, xp: 55, gold: 0, spr: "dem", boss: true },
+      troll: { name: "Worstashire Troll", hp: 52, maxHp: 52, atk: 10, def: 5, xp: 36, gold: 14, spr: "troll", boss: true },
+      organ: { name: "Palace Organ", hp: 56, maxHp: 56, atk: 10, def: 6, xp: 40, gold: 16, spr: "organ", boss: true },
+      precht: { name: "Precht", hp: 60, maxHp: 60, atk: 11, def: 6, xp: 48, gold: 0, spr: "precht", boss: true },
+      nether: { name: "The Reassembled DEM", hp: 70, maxHp: 70, atk: 12, def: 7, xp: 60, gold: 0, spr: "nether", boss: true }
     };
     return Object.assign({ stun: 0, confuse: 0 }, E[type]);
   }
@@ -3170,6 +3411,15 @@ NNNNNNNNNNNNNNNN
         else if (ds === 1) opts.unshift("Dragonbond");
         else opts.unshift("Dark Merlin Bird");
       }
+      if (b.foes.some((f) => f.spr === "troll" && f.hp > 0)) opts.unshift("Ask the Halflings");
+      if (b.foes.some((f) => f.spr === "organ" && f.hp > 0)) opts.unshift("Fae-Pop");
+      if (b.foes.some((f) => f.spr === "precht" && f.hp > 0)) opts.unshift("Pelican’s Compass");
+      if (b.foes.some((f) => f.spr === "nether" && f.hp > 0)) {
+        const ns = b.netherstep || 0;
+        if (ns === 0) opts.unshift("Launch Plan V");
+        else if (ns === 1) opts.unshift("Name King Magnus");
+        else opts.unshift("Collect the Debt");
+      }
     } else if (b.menu === "skill") {
       const p = G.party[b.i];
       opts = p.skills.map((id) => SKILLS[id].name + " (" + SKILLS[id].mp + " MP)");
@@ -3226,6 +3476,12 @@ NNNNNNNNNNNNNNNN
       else if (c === "Request the Golden Harp") { b.pending = { type: "skill", id: "harpcall" }; resolvePlayer(); return; }
       else if (c === "Dragonbond") { b.pending = { type: "skill", id: "dragonbond" }; resolvePlayer(); return; }
       else if (c === "Dark Merlin Bird") { b.pending = { type: "skill", id: "merlinbird" }; resolvePlayer(); return; }
+      else if (c === "Ask the Halflings") { b.pending = { type: "skill", id: "trollcook" }; resolvePlayer(); return; }
+      else if (c === "Fae-Pop") { b.pending = { type: "skill", id: "faepop" }; resolvePlayer(); return; }
+      else if (c === "Pelican’s Compass") { b.pending = { type: "skill", id: "compassshot" }; resolvePlayer(); return; }
+      else if (c === "Launch Plan V") { b.pending = { type: "skill", id: "planv" }; resolvePlayer(); return; }
+      else if (c === "Name King Magnus") { b.pending = { type: "skill", id: "namemagnus" }; resolvePlayer(); return; }
+      else if (c === "Collect the Debt") { b.pending = { type: "skill", id: "settledebt" }; resolvePlayer(); return; }
       else if (c === "Attack") {
         b.pending = { type: "atk" };
         b.menu = "target";
@@ -3292,6 +3548,10 @@ NNNNNNNNNNNNNNNN
       else if (f.spr === "fell") { b.log = "Apocalypse with extra letters. Name the Alpaca Lips."; }
       else if (f.spr === "rupboard") { b.log = "It is not your turn until you take it."; }
       else if (f.spr === "dem") { b.log = "A machine named like a play. Harp. Dragonbond. Bird."; }
+      else if (f.spr === "troll") { b.log = "Stew is a negotiation. Ask the halflings."; }
+      else if (f.spr === "organ") { b.log = "The pipes want a better genre. Fae-pop has standards."; }
+      else if (f.spr === "precht") { b.log = "A stain with a hostage. Pelican’s compass."; }
+      else if (f.spr === "nether") { b.log = "A machine that wants to keep life. Plan V. Magnus. The debt."; }
       else if (f.evade && Math.random() * 100 < f.evade) { b.log = f.name + " skipped aside. (Skipping beans. It’s a whole thing.)"; }
       else {
         const n = dmg(p.atk, f.def);
@@ -3412,6 +3672,30 @@ NNNNNNNNNNNNNNNN
         b.foes.forEach((f) => { if (f.spr === "dem") f.hp = 0; });
         b.log = "A dark merlin bird made of decades of jealousy. The DEM screams like an orchestra pit. The door behind it does not close.";
         sfx("magic");
+      } else if (act.id === "trollcook") {
+        b.foes.forEach((f) => { if (f.spr === "troll") f.hp = 0; });
+        b.log = "The cooks vote. The troll is out. Grimblewaith files the stew under smash.";
+        sfx("magic");
+      } else if (act.id === "faepop") {
+        b.foes.forEach((f) => { if (f.spr === "organ") f.hp = 0; });
+        b.log = "Regina 3RM. Zomart’s requiem. The organ learns country and resigns.";
+        sfx("magic");
+      } else if (act.id === "compassshot") {
+        b.foes.forEach((f) => { if (f.spr === "precht") f.hp = 0; });
+        b.log = "Pelican’s last jump. Precht cannot drain a compass that is already leaving.";
+        sfx("magic");
+      } else if (act.id === "planv") {
+        b.netherstep = Math.max(b.netherstep || 0, 1);
+        b.log = "A rocket from a future that has not invented NASA. The DEM leaves the crater and does not get a souvenir photo.";
+        sfx("magic");
+      } else if (act.id === "namemagnus") {
+        b.netherstep = Math.max(b.netherstep || 0, 2);
+        b.log = "King Magnus. First wizard. He contests the usurper and the fine print.";
+        sfx("magic");
+      } else if (act.id === "settledebt") {
+        b.foes.forEach((f) => { if (f.spr === "nether") f.hp = 0; });
+        b.log = "Roderick pays the last memory. Magnus settles. Grimma does not keep the machine.";
+        sfx("magic");
       } else {
         const targets = sk.all ? b.foes.filter((f) => f.hp > 0) : [b.foes[b.target]];
         let msg = p.name + " uses " + sk.name + "! ";
@@ -3432,6 +3716,10 @@ NNNNNNNNNNNNNNNN
           if (f.spr === "fell") { msg += "Wrong genre. "; return; }
           if (f.spr === "rupboard") { msg += "Not your turn. "; return; }
           if (f.spr === "dem") { msg += "The machine absorbs that. "; return; }
+          if (f.spr === "troll") { msg += "The stew is unmoved. "; return; }
+          if (f.spr === "organ") { msg += "Wrong genre. "; return; }
+          if (f.spr === "precht") { msg += "The stain drinks that. "; return; }
+          if (f.spr === "nether") { msg += "The machine keeps that. "; return; }
           if (f.evade && Math.random() * 100 < f.evade / 2) { msg += f.name + " hops. "; return; }
           const n = dmg(sk.dmg, f.def);
           f.hp = Math.max(0, f.hp - n);
@@ -3570,21 +3858,31 @@ NNNNNNNNNNNNNNNN
   }
 
   function tryWarp(w) {
+    if (isB7() && w.need && (
+      String(w.need).startsWith("b5") ||
+      String(w.need).startsWith("b6") ||
+      (String(w.need).startsWith("b4") && w.to !== "world") ||
+      (String(w.need).startsWith("b3") && w.to !== "gates" && w.to !== "palace" && w.to !== "ebi") ||
+      (String(w.need).startsWith("b2") && w.to !== "hill" && w.to !== "crater") ||
+      w.need === "allSecrets" ||
+      w.need === "quest"
+    )) return;
     if (isB6() && w.need && (
       String(w.need).startsWith("b2") ||
       String(w.need).startsWith("b5") ||
+      String(w.need).startsWith("b7") ||
       (String(w.need).startsWith("b4") && w.to !== "fey" && G.map !== "fey") ||
       (String(w.need).startsWith("b3") && w.to !== "gates" && w.to !== "palace") ||
       w.need === "allSecrets" ||
       (w.need === "quest" && w.to !== "arena")
     )) return;
-    if (isB5() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || String(w.need).startsWith("b6") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
-    if (isB4() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b5") || String(w.need).startsWith("b6") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
-    if (isB3() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5") || String(w.need).startsWith("b6") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
-    if (isB2() && w.need && (String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5") || String(w.need).startsWith("b6"))) return;
-    if (!isB2() && !isB3() && !isB4() && !isB5() && !isB6() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5") || String(w.need).startsWith("b6"))) return;
+    if (isB5() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || String(w.need).startsWith("b6") || String(w.need).startsWith("b7") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
+    if (isB4() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b5") || String(w.need).startsWith("b6") || String(w.need).startsWith("b7") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
+    if (isB3() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5") || String(w.need).startsWith("b6") || String(w.need).startsWith("b7") || w.need === "grimble" || w.need === "quest" || w.need === "allSecrets")) return;
+    if (isB2() && w.need && (String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5") || String(w.need).startsWith("b6") || String(w.need).startsWith("b7"))) return;
+    if (!isB2() && !isB3() && !isB4() && !isB5() && !isB6() && !isB7() && w.need && (String(w.need).startsWith("b2") || String(w.need).startsWith("b3") || String(w.need).startsWith("b4") || String(w.need).startsWith("b5") || String(w.need).startsWith("b6") || String(w.need).startsWith("b7"))) return;
     if (w.need === "grimbleJoin" && !G.flags.rejected) {
-      if (isB4() || isB5() || isB6()) { warp(w.to, w.tx, w.ty); return; }
+      if (isB4() || isB5() || isB6() || isB7()) { warp(w.to, w.tx, w.ty); return; }
       if (isB3()) {
         if (!G.flags.b3sirsi) {
           say([{ who: "Sirsi", text: "Jackdaw first is traditional. I am standing in the square. I am the tradition this time." }]);
@@ -3610,6 +3908,14 @@ NNNNNNNNNNNNNNNN
       return;
     }
     if (w.need === "grimble" && !G.flags.grimble) {
+      if (isB7()) {
+        if (!G.flags.b7brief) {
+          say([{ who: "Captain Rightbeard", text: "The Cinder first. I am the briefing. The ghost is you." }]);
+          return;
+        }
+        warp(w.to, w.tx, w.ty);
+        return;
+      }
       if (isB2() || isB6()) {
         warp(w.to, w.tx, w.ty);
         return;
@@ -3634,6 +3940,14 @@ NNNNNNNNNNNNNNNN
       return;
     }
     if (w.need === "b2prop" && !G.flags.b2prophecy) {
+      if (isB7()) {
+        if (!G.flags.b7mirror) {
+          say([{ who: "Bellissimo", text: "Worstashire after the mirror. I did not locate gears for a knight who skipped the glass." }]);
+          return;
+        }
+        warp(w.to, w.tx, w.ty);
+        return;
+      }
       say([{ who: "Bellissimo", text: "That hill can wait until Jackdaw finishes yelling about napkins." }]);
       return;
     }
@@ -3658,10 +3972,22 @@ NNNNNNNNNNNNNNNN
       return;
     }
     if (w.need === "b2ogeron" && !G.flags.b2ogeron) {
+      if (isB7()) {
+        warp("world", 23, 4);
+        return;
+      }
       say([{ who: "Lava", text: "Finish the conversation. The Bean is still making offers." }]);
       return;
     }
     if (w.need === "b3sirsi" && !G.flags.b3sirsi) {
+      if (isB7()) {
+        if (!G.flags.b7palace) {
+          say([{ who: "Pelican", text: "The old EBI after the organ. I have a study and a confession. I am not the first appointment." }]);
+          return;
+        }
+        warp(w.to, w.tx, w.ty);
+        return;
+      }
       say([{ who: "Quantiflow", text: "The EBI does not admit restless knights until Sirsi writes the referral." }]);
       return;
     }
@@ -3670,6 +3996,14 @@ NNNNNNNNNNNNNNNN
       return;
     }
     if (w.need === "b3wish" && !G.flags.b3wish) {
+      if (isB7()) {
+        if (!G.flags.b7worst) {
+          say([{ who: "Gate", text: "The palace is abandoned. Come back when Worstashire has a gear and fewer trolls." }]);
+          return;
+        }
+        warp(w.to, w.tx, w.ty);
+        return;
+      }
       if (isB6()) {
         if (!G.flags.b6border) {
           say([{ who: "Gate", text: "The palace is hosting wizards. Come back when the border has spoken." }]);
@@ -3682,7 +4016,7 @@ NNNNNNNNNNNNNNNN
       return;
     }
     if (w.need === "b3golem" && !G.flags.b3golem) {
-      if (isB6()) {
+      if (isB6() || isB7()) {
         warp(w.to, w.tx, w.ty);
         return;
       }
@@ -3738,6 +4072,10 @@ NNNNNNNNNNNNNNNN
       say([{ who: "Wren", text: "The border after the board. Ruprecht first. I am not a shortcut." }]);
       return;
     }
+    if (w.need === "b7pelican" && !G.flags.b7pelican) {
+      say([{ who: "Jackdaw", text: "Plan V after Pelican. The compass is not a souvenir yet." }]);
+      return;
+    }
     warp(w.to, w.tx, w.ty);
   }
   function warp(map, x, y) {
@@ -3778,7 +4116,7 @@ NNNNNNNNNNNNNNNN
       tryWarp(standing);
     }
     if (!standing) G.warpKey = null;
-    if (["world", "forest", "hornfang", "swamp"].includes(G.map) && ((G.flags.quest && !G.flags.saved) || (isB2() && G.flags.b2grossina && !G.flags.b2done) || (isB3() && G.flags.b3ebi && !G.flags.b3done) || (isB4() && G.flags.b4cinder && !G.flags.b4done) || (isB5() && G.flags.b5chief && !G.flags.b5done) || (isB6() && G.flags.b6merlin && !G.flags.b6done))) {
+    if (["world", "forest", "hornfang", "swamp"].includes(G.map) && ((G.flags.quest && !G.flags.saved) || (isB2() && G.flags.b2grossina && !G.flags.b2done) || (isB3() && G.flags.b3ebi && !G.flags.b3done) || (isB4() && G.flags.b4cinder && !G.flags.b4done) || (isB5() && G.flags.b5chief && !G.flags.b5done) || (isB6() && G.flags.b6merlin && !G.flags.b6done) || (isB7() && G.flags.b7grimma && !G.flags.b7done))) {
       if (here.x !== lastTile.x || here.y !== lastTile.y) {
         lastTile = here;
         G.enc += 1;
@@ -3859,10 +4197,11 @@ NNNNNNNNNNNNNNNN
     const px = Math.round(x), py = Math.round(y);
     if (shadow) { col("#0006"); r(px + 2, py + 14, 12, 3); }
     if (kind === "squires") {
-      col("#6a4a28"); r(px + 4, py + 9, 8, 6);
-      col(PAL.skin); r(px + 5, py + 4, 6, 6);
+      col(isB7() ? "#8a9aaa" : "#6a4a28"); r(px + 4, py + 9, 8, 6);
+      col(isB7() ? "#d0d8e0" : PAL.skin); r(px + 5, py + 4, 6, 6);
       col(PAL.hair); r(px + 5, py + 2, 6, 3);
-      col("#3a2"); r(px + 4, py + 14, 3, 3); r(px + 9, py + 14, 3, 3);
+      col(isB7() ? "#6a5a3a" : "#3a2"); r(px + 4, py + 14, 3, 3); r(px + 9, py + 14, 3, 3);
+      if (isB7()) { col("#c8d0d866"); r(px + 3, py + 7, 10, 5); }
       if (frame) { r(px + 4, py + 14, 3, 2); }
     } else if (kind === "grimble") {
       col(G.flags.b5fae ? "#5aca6a" : PAL.green); r(px + 3, py + 6, 10, 9);
@@ -4118,9 +4457,38 @@ NNNNNNNNNNNNNNNN
       col("#4a2060"); r(px + 2, py + 4, 12, 12);
       col(PAL.gold); r(px + 4, py + 6, 3, 8); r(px + 8, py + 5, 2, 9); r(px + 11, py + 6, 3, 8);
       col("#c45"); r(px + 6, py + 2, 4, 3);
+    } else if (kind === "willow") {
+      col("#8cf"); r(px + 5, py + 4, 6, 10);
+      col("#3a8a4a"); r(px + 6, py + 6, 4, 6);
+      col(PAL.gold); r(px + 7, py + 3, 2, 2);
+    } else if (kind === "regina") {
+      col("#6a4ac8"); r(px + 4, py + 8, 8, 7);
+      col(PAL.skin); r(px + 5, py + 4, 6, 5);
+      col("#3a1a10"); r(px + 3, py + 1, 10, 4);
+      col(PAL.gold); r(px + 12, py + 8, 3, 6);
+    } else if (kind === "pelican") {
+      col("#2a2460"); r(px + 4, py + 8, 8, 7);
+      col("#eee"); r(px + 5, py + 4, 6, 5);
+      col("#c45"); r(px + 4, py + 1, 8, 4);
+      col(PAL.gold); r(px + 7, py + 10, 3, 3);
+    } else if (kind === "precht") {
+      col("#6a2048"); r(px + 3, py + 6, 10, 10);
+      col("#c45"); r(px + 5, py + 3, 6, 5);
+      col("#9aa4b0"); r(px + 10, py + 8, 3, 4);
+    } else if (kind === "troll") {
+      col("#3a7a3a"); r(px + 3, py + 6, 10, 10);
+      col("#2a5a2a"); r(px + 5, py + 3, 6, 5);
+      col("#c45"); r(px + 11, py + 8, 3, 3);
+    } else if (kind === "organ") {
+      col("#3a2418"); r(px + 2, py + 4, 12, 12);
+      col(PAL.gold); r(px + 4, py + 6, 2, 8); r(px + 7, py + 5, 2, 9); r(px + 10, py + 6, 2, 8);
+    } else if (kind === "nether" || kind === "magnus") {
+      col("#1a1020"); r(px + 2, py + 4, 12, 13);
+      col("#4a2060"); r(px + 4, py + 2, 8, 6);
+      col(PAL.gold); r(px + 6, py + 0, 4, 3);
     }
     // eyes
-    if (!["sign", "bug", "skip", "spoon", "bean", "ox", "well", "fannie", "leftbird", "mimic", "sand", "slug", "rupboard", "dem"].includes(kind)) {
+    if (!["sign", "bug", "skip", "spoon", "bean", "ox", "well", "fannie", "leftbird", "mimic", "sand", "slug", "rupboard", "dem", "organ", "nether"].includes(kind)) {
       col("#112"); r(px + 6, py + 6, 1, 1); r(px + 9, py + 6, 1, 1);
     }
   }
@@ -4187,7 +4555,33 @@ NNNNNNNNNNNNNNNN
 
   function drawCredits(t) {
     col("#0a0714"); r(0, 0, W, H);
-    const lines = isB6() ? [
+    const lines = isB7() ? [
+      "A WONDERFUL WEEK FOR A QUEST",
+      "Book VII  ·  The End of the Quest as We Know It",
+      "",
+      "Adapted from the novel by",
+      "Michael D. Young",
+      "",
+      "Roddy Squires  -  goat-legged ghost, gold list",
+      "Jackdaw        -  Plan V, vizier, footnotes",
+      "Sir Roderick   -  the last memory, the debt",
+      "Bellissimo     -  returned, still not a damsel",
+      "Pelican        -  compass, confession, last jump",
+      "Regina 3RM     -  fae-pop, standards",
+      "Willow         -  out of the jar, beyond the mountains",
+      "King Magnus    -  first wizard, settled accounts",
+      "Grimblewaith   -  king, still green",
+      "Wren           -  queen, still two names",
+      "",
+      "The Beandom is refried.",
+      "Happy-ishly ever after.",
+      "",
+      "And many of them lived",
+      "reasonably happy",
+      "for some time thereafter.",
+      "",
+      "Press Enter"
+    ] : isB6() ? [
       "A WONDERFUL WEEK FOR A QUEST",
       "Book VI  ·  Battle of the Bards",
       "",
@@ -4365,7 +4759,12 @@ NNNNNNNNNNNNNNNN
     $("mpN").textContent = p.mp;
     $("hpB").style.width = Math.max(0, 100 * p.hp / p.maxHp) + "%";
     $("mpB").style.width = Math.max(0, 100 * p.mp / p.maxMp) + "%";
-    $("loc").textContent = ((isB6() && G.map === "arena") ? "Bard Arena" : MAPNAME[G.map]) + " · " + G.gold + " beans";
+    $("loc").textContent = ((isB7() && G.map === "misfit") ? "The Cinder"
+      : (isB7() && G.map === "hill") ? "Worstashire"
+      : (isB7() && G.map === "ebi") ? "Abandoned EBI"
+      : (isB7() && G.map === "palace") ? "Abandoned Palace"
+      : (isB7() && G.map === "crater") ? "Mount Ominous"
+      : (isB6() && G.map === "arena") ? "Bard Arena" : MAPNAME[G.map]) + " · " + G.gold + " beans";
     if (G.mode === "explore" || G.mode === "dialog" || G.mode === "battle") $("hud").classList.add("show");
     else $("hud").classList.remove("show");
   }
@@ -4375,7 +4774,9 @@ NNNNNNNNNNNNNNNN
     $("menu").classList.add("show");
     const body = G.party.map((p) => p.name + "  HP " + p.hp + "/" + p.maxHp + "  MP " + p.mp + "/" + p.maxMp).join("\n");
     const items = G.inv.length ? G.inv.map((i) => ((ITEMS[i.id] && ITEMS[i.id].name) || i.id) + " ×" + i.n).join("\n") : "(empty pockets, full destiny)";
-    const secrets = isB6()
+    const secrets = isB7()
+      ? ["Cinder", "Bargain", "Mirror", "Worstashire", "Palace"].filter((_, i) => [G.flags.b7brief, G.flags.b7grimma, G.flags.b7mirror, G.flags.b7worst, G.flags.b7palace][i]).join(", ")
+      : isB6()
       ? ["Petra", "Arach", "Tryouts", "Border", "Library"].filter((_, i) => [G.flags.b6merlin, G.flags.b6arach, G.flags.b6try, G.flags.b6border, G.flags.b6lib][i]).join(", ")
       : isB5()
       ? ["Oz", "Wally", "Joaquin", "Yeahrti", "Pie"].filter((_, i) => [G.flags.b5oz, G.flags.b5web, G.flags.b5contest, G.flags.b5snow, G.flags.b5pie][i]).join(", ")
@@ -4388,7 +4789,7 @@ NNNNNNNNNNNNNNNN
       : ["Louisa", "Elisabeth", "Meriwether"].filter((_, i) => [G.flags.secretL, G.flags.secretE, G.flags.secretM][i]).join(", ");
     $("mBody").innerHTML = "<pre style='white-space:pre-wrap;font:inherit'>" +
       body + "\n\nInventory\n" + items + "\n\nQuest\n" + G.quest +
-      "\n\n" + (isB6() ? "Acts: " : isB5() ? "Offerings: " : isB4() ? "Crew: " : isB3() ? "Rod Squad: " : isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
+      "\n\n" + (isB7() ? "Gears: " : isB6() ? "Acts: " : isB5() ? "Offerings: " : isB4() ? "Crew: " : isB3() ? "Rod Squad: " : isB2() ? "Oxymorons: " : "Secrets: ") + secrets +
       "\n\nArrows move · Enter talk · Esc menu</pre>";
   }
 
@@ -4576,6 +4977,25 @@ NNNNNNNNNNNNNNNN
     ]);
     save();
   }
+  function startBook7() {
+    audioInit();
+    G.day = 7;
+    G.flags = { saved: true };
+    G.gold = 20;
+    G.inv = [{ id: "luna", n: 3 }, { id: "magic", n: 2 }];
+    G.party = [ghostHero()];
+    G.map = "misfit";
+    G.px = 10.5; G.py = 5.5; G.dir = 0;
+    G.quest = "Rightbeard is north of you on the Cinder. The briefing has goat legs. You are the goat legs.";
+    G.mode = "explore";
+    $("titleui").classList.remove("show");
+    hud();
+    say([
+      { who: "Jackdaw", text: "Book VII. The Beandom fell. Bell is dead. You are a ghost. I refuse to call this a satisfying sequel structure." },
+      { who: "Roddy Squires", text: "I am Roddy Squires. I used to herd goats. Now I am one from the knees down and also deceased. Rightbeard is north. Try talking before the jar starts a lecture." }
+    ]);
+    save();
+  }
   function continueGame() {
     audioInit();
     if (!load()) { startNew(); return; }
@@ -4629,6 +5049,7 @@ NNNNNNNNNNNNNNNN
   $("btnBook4").onclick = startBook4;
   $("btnBook5").onclick = startBook5;
   $("btnBook6").onclick = startBook6;
+  $("btnBook7").onclick = startBook7;
   $("btnCont").onclick = continueGame;
   $("btnMute").onclick = toggleMute;
   $("btnSave").onclick = () => { save(); $("mBody").insertAdjacentHTML("afterbegin", "<p style='color:var(--gold)'>Saved in this browser.</p>"); };
@@ -4683,7 +5104,8 @@ NNNNNNNNNNNNNNNN
     startBook3,
     startBook4,
     startBook5,
-    startBook6
+    startBook6,
+    startBook7
   };
 })();
 </script>

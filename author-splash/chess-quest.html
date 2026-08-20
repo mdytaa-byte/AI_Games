@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#163a45">
   <title>The Chess Quest Series — Michael D. Young</title>
   <meta name="description" content="Seven days. Four trials. The pawn has your initials. Start Paladin: Pawn or read the free Chess Quest prequel.">
-  <link rel="canonical" href="https://authormichaelyoung.com/">
+  <link rel="canonical" href="https://authormichaelyoung.com/the-chess-quest-series/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Grenze:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
@@ -725,7 +725,9 @@
   .amy-btn,
   .amy-cover,
   .amy-book img,
-  .amy-cast {
+  .amy-cast,
+  .amy-job,
+  .amy-rank {
     animation: none !important;
     transition: none !important;
     transform: none !important;
@@ -737,12 +739,7 @@ body:has(.amy-splash--home) .wp-block-template-part,
 body:has(.amy-splash--home) header.wp-block-template-part,
 body:has(.amy-splash--home) footer.wp-block-template-part,
 body:has(.amy-splash--home) .entry-header,
-body:has(.amy-splash--home) h1.wp-block-post-title,
-body.amy-splash-page:not(:has(.amy-splash--chess)) .wp-block-template-part,
-body.amy-splash-page:not(:has(.amy-splash--chess)) header.wp-block-template-part,
-body.amy-splash-page:not(:has(.amy-splash--chess)) footer.wp-block-template-part,
-body.amy-splash-page:not(:has(.amy-splash--chess)) .entry-header,
-body.amy-splash-page:not(:has(.amy-splash--chess)) h1.wp-block-post-title {
+body:has(.amy-splash--home) h1.wp-block-post-title {
   display: none !important;
 }
 
@@ -842,6 +839,118 @@ body.amy-splash-page:not(:has(.amy-splash--chess)) h1.wp-block-post-title {
 
   .amy-rank {
     flex: 0 0 150px;
+    scroll-snap-align: start;
+  }
+}
+
+/* Picture books / New Jobs for Mythical Characters */
+.amy-splash--picture .amy-bean,
+.amy-splash--picture .amy-bean-2,
+.amy-splash--picture .amy-bean-3 {
+  display: none;
+}
+
+.amy-splash--picture .amy-cover-stage {
+  min-height: 0;
+}
+
+.amy-splash--picture .amy-cover {
+  width: min(100%, 420px);
+  transform: none;
+  border-radius: 18px;
+  border: 1px solid rgba(209, 184, 148, 0.45);
+  box-shadow: var(--amy-shadow);
+}
+
+.amy-splash--picture .amy-cover img {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.amy-splash--picture .amy-hero h1 {
+  max-width: 14ch;
+}
+
+.amy-jobs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.amy-job {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  background: var(--amy-cream);
+  border: 1px solid var(--amy-gold-light);
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 100%;
+  box-shadow: 0 10px 24px rgba(14, 42, 51, 0.06);
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.amy-job:hover,
+.amy-job:focus-visible {
+  transform: translateY(-4px);
+  border-color: var(--amy-gold);
+  outline: none;
+}
+
+.amy-job img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  background: #ddd;
+}
+
+.amy-job-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 0.9rem 1.05rem;
+  flex: 1;
+}
+
+.amy-job em {
+  font-family: var(--amy-sans);
+  font-size: 0.72rem;
+  font-style: normal;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amy-gold);
+}
+
+.amy-job strong {
+  font-family: var(--amy-serif);
+  font-size: 1.05rem;
+  line-height: 1.25;
+  font-weight: 700;
+}
+
+.amy-job p {
+  margin: 0;
+  font-family: var(--amy-sans);
+  font-size: 0.84rem;
+  color: var(--amy-muted);
+  line-height: 1.45;
+}
+
+.amy-splash--picture .amy-band-ink {
+  background: linear-gradient(180deg, #1a2f48, var(--amy-ink));
+}
+
+@media (max-width: 980px) {
+  .amy-jobs {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.6rem;
+  }
+
+  .amy-job {
+    flex: 0 0 210px;
     scroll-snap-align: start;
   }
 }
@@ -1058,6 +1167,5 @@ body.amy-splash-page:not(:has(.amy-splash--chess)) h1.wp-block-post-title {
     </span>
   </footer>
 </div>
-
 </body>
 </html>

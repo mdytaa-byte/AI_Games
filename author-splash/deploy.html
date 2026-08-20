@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deploy the splash page on WordPress</title>
+  <style>
+    body{margin:0;background:#f7f3ee;color:#163a45;font:1.05rem/1.6 Georgia,serif}
+    main{width:min(760px,calc(100% - 2rem));margin:2rem auto 3rem}
+    h1,h2{font-family:Georgia,serif}
+    code,pre{font-family:ui-monospace,monospace;background:#efe7db;padding:.15rem .35rem;border-radius:4px}
+    pre{padding:1rem;overflow:auto}
+    ol{padding-left:1.2rem}
+    a{color:#8e6c3d}
+  </style>
+</head>
+<body>
+<main>
+  <p><a href="./index.html">Preview the splash page</a></p>
+  <h1>Put this splash on authormichaelyoung.com</h1>
+  <p>The live site is WordPress.com. Use Method A there. Use Method B if you later move to self-hosted WordPress or a WordPress.com Business plan that allows plugins.</p>
+  <p>Companion Canva art (optional promo / Open Graph images):</p>
+  <ul>
+    <li><a href="https://www.canva.com/d/iRDhWNvWJgUltbG">Splash poster</a></li>
+    <li><a href="https://www.canva.com/d/uHroNaX62YjkxEO">Landscape hero banner</a></li>
+  </ul>
+
+  <h2>Method A — WordPress.com (recommended)</h2>
+  <p>Fastest path: one Custom HTML paste.</p>
+  <ol>
+    <li>In WP Admin, go to <strong>Pages → Add New</strong>. Title it <em>Welcome</em> or <em>Home</em>.</li>
+    <li>Add a <strong>Custom HTML</strong> block and paste the entire contents of <code>wordpress/custom-html-with-styles.html</code>.</li>
+    <li>If WordPress strips the <code>&lt;style&gt;</code> tag, paste <code>wordpress/splash-markup.html</code> into the Custom HTML block instead, then paste <code>wordpress/additional.css</code> into <strong>Appearance → Customize → Additional CSS</strong>.</li>
+    <li>In the page sidebar, choose a full-width or blank template if your theme offers one. Hide the page title if there is a title toggle.</li>
+    <li>Publish the page.</li>
+    <li>Go to <strong>Settings → Reading</strong>. Set “Your homepage displays” to <strong>A static page</strong> and choose the page you just created.</li>
+    <li>If the theme header still shows, Additional CSS already includes a <code>body:has(.amy-splash)</code> rule to hide block-theme header, footer, and the page title.</li>
+  </ol>
+
+  <h2>Method B — Plugin + shortcode (self-hosted or WP.com Business)</h2>
+  <ol>
+    <li>Upload <code>wordpress-plugin/amy-author-splash.zip</code> in WP Admin under <strong>Plugins → Add New → Upload Plugin</strong>. Activate it. (Or zip the folder yourself so <code>amy-author-splash.php</code> is at the top of the archive.)</li>
+    <li>Create a page whose only content is the shortcode <code>[amy_splash]</code>.</li>
+    <li>Set that page as the homepage under <strong>Settings → Reading</strong>.</li>
+  </ol>
+
+  <h2>What this page is designed to do</h2>
+  <p>Lead with Book One of <em>A Wonderful Week for a Quest</em> (family-friendly comedic fantasy), then offer Audible, a free story, the rest of the seven-book week, picture books, and sacred-music titles. CTAs use your existing Amazon affiliate tag.</p>
+</main>
+</body>
+</html>

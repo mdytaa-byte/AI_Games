@@ -44,6 +44,61 @@
   let anim = 'idle', character = null, xray = false, poseEdit = false, turntable = false;
   let helper = null, joints = [];
   let selectedBone = null;
+  let hoveredBone = null;
+  let poseDrag = null;
+  let poseEditPrev = 'idle';
+  const POSE_LIMBS = [
+    { id: 'head', label: 'Head', group: 'head', r: 1.28 },
+    { id: 'neck', label: 'Neck', group: 'head', r: .92 },
+    { id: 'chest', label: 'Chest', group: 'torso', r: 1.18 },
+    { id: 'spine', label: 'Spine', group: 'torso', r: .95 },
+    { id: 'hips', label: 'Hips', group: 'torso', r: 1.2 },
+    { id: 'upperArmL', label: 'L arm', group: 'arm', r: 1.02 },
+    { id: 'forearmL', label: 'L elbow', group: 'arm', r: .95 },
+    { id: 'handL', label: 'L hand', group: 'arm', r: 1.42, ik: 'armL' },
+    { id: 'upperArmR', label: 'R arm', group: 'arm', r: 1.02 },
+    { id: 'forearmR', label: 'R elbow', group: 'arm', r: .95 },
+    { id: 'handR', label: 'R hand', group: 'arm', r: 1.42, ik: 'armR' },
+    { id: 'thighL', label: 'L thigh', group: 'leg', r: 1.05 },
+    { id: 'shinL', label: 'L knee', group: 'leg', r: .95 },
+    { id: 'footL', label: 'L foot', group: 'leg', r: 1.38, ik: 'legL' },
+    { id: 'thighR', label: 'R thigh', group: 'leg', r: 1.05 },
+    { id: 'shinR', label: 'R knee', group: 'leg', r: .95 },
+    { id: 'footR', label: 'R foot', group: 'leg', r: 1.38, ik: 'legR' }
+  ];
+  const POSE_BY_ID = {};
+  POSE_LIMBS.forEach(p => { POSE_BY_ID[p.id] = p; });
+  const IK_CHAINS = {
+    armL: { root: 'upperArmL', mid: 'forearmL', tip: 'handL' },
+    armR: { root: 'upperArmR', mid: 'forearmR', tip: 'handR' },
+    legL: { root: 'thighL', mid: 'shinL', tip: 'footL' },
+    legR: { root: 'thighR', mid: 'shinR', tip: 'footR' }
+  };
+  const AXIS_LABELS = {
+    head: ['Nod', 'Turn', 'Tilt'],
+    torso: ['Bend', 'Turn', 'Side'],
+    arm: ['Raise', 'Twist', 'Swing'],
+    leg: ['Lift', 'Twist', 'Open']
+  };
+  const POSE_STARTERS = {
+    rest: {},
+    wave: {
+      upperArmR: { x: -.2, y: 0, z: -2.35 }, forearmR: { x: -.28, y: 0, z: -.28 },
+      chest: { y: -.08 }, head: { y: -.12, z: .1 }
+    },
+    think: {
+      upperArmR: { x: -1.15, y: .15, z: -1.05 }, forearmR: { x: -1.55, y: .2, z: .15 },
+      head: { x: .22, y: .28 }
+    },
+    point: {
+      upperArmL: { x: -1.32, y: 0, z: -.45 }, forearmL: { x: -.18 },
+      head: { y: .22 }, chest: { y: .08 }
+    },
+    akimbo: {
+      upperArmL: { x: .48, z: -1.12 }, forearmL: { x: 1.18 },
+      upperArmR: { x: .48, z: 1.12 }, forearmR: { x: 1.18 }
+    }
+  };
   let activeVariant = 'A';
   const variants = { A: null, B: null, C: null };
   const history = [];
@@ -115,10 +170,14 @@
     helper.material.depthTest = false;
     helper.visible = xray || poseEdit; scene.add(helper);
 
-    const jm = new THREE.MeshBasicMaterial({ color: 0xF2A93B, depthTest: false });
-    const jg = new THREE.SphereGeometry(.016 * cfg.height, 10, 8);
-    joints = character.bones.map(b => {
-      const dot = new THREE.Mesh(jg, jm);
+    const jg = new THREE.SphereGeometry(1, 12, 10);
+    joints = character.bones.filter(b => POSE_BY_ID[b.name]).map(b => {
+      const spec = POSE_BY_ID[b.name];
+      const mat = new THREE.MeshBasicMaterial({
+        color: 0xF2A93B, depthTest: false, transparent: true, opacity: .82
+      });
+      const dot = new THREE.Mesh(jg, mat);
+      dot.scale.setScalar(jointSize(spec));
       dot.userData.rigDot = true;
       dot.userData.boneName = b.name;
       dot.renderOrder = 3;
@@ -141,12 +200,30 @@
       if (o.isMesh && o !== character.mesh && !o.userData.rigDot) o.visible = !xray;
     });
     if (helper) helper.visible = showDots;
-    joints.forEach(d => {
-      d.visible = showDots;
-      d.material.color.set(d.userData.boneName === selectedBone ? '#6FD3E0' : '#F2A93B');
-    });
+    styleJoints();
     document.getElementById('btn-xray').textContent = xray ? 'Hide rig' : 'Show rig';
-    document.getElementById('btn-pose-edit').setAttribute('aria-pressed', poseEdit);
+    const poseBtn = document.getElementById('btn-pose-edit');
+    poseBtn.setAttribute('aria-pressed', poseEdit);
+    poseBtn.textContent = poseEdit ? 'Done posing' : 'Pose figure';
+    document.body.classList.toggle('posing', poseEdit);
+    const hud = document.getElementById('pose-hud');
+    if (hud) hud.classList.toggle('on', poseEdit);
+  }
+  function jointSize(spec) {
+    const size = character ? character.size : 1;
+    return .024 * size * ((spec && spec.r) || 1);
+  }
+  function styleJoints() {
+    joints.forEach(d => {
+      const spec = POSE_BY_ID[d.userData.boneName] || {};
+      const selected = d.userData.boneName === selectedBone;
+      const hovered = d.userData.boneName === hoveredBone;
+      d.visible = xray || poseEdit;
+      d.scale.setScalar(jointSize(spec) * (selected ? 1.38 : hovered ? 1.18 : 1));
+      d.material.color.set(selected ? '#6FD3E0' : hovered ? '#E8EEF7' : '#F2A93B');
+      d.material.opacity = selected ? 1 : hovered ? .95 : .78;
+    });
+    if (el) el.style.cursor = poseEdit ? (poseDrag ? 'grabbing' : (hoveredBone ? 'grab' : 'default')) : '';
   }
 
   let az = .55, pol = 1.30, dist = 2.55, target = new THREE.Vector3(0, .52, 0);
@@ -179,34 +256,153 @@
   const el = renderer.domElement;
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
+  const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
+  const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _q3 = new THREE.Quaternion();
+  const _plane = new THREE.Plane();
+
+  function setPointer(e) {
+    const rect = el.getBoundingClientRect();
+    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  }
+  function hitJoint(e) {
+    if (!poseEdit || !character || !joints.length) return null;
+    setPointer(e);
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObjects(joints, false);
+    return hits.length ? hits[0].object.userData.boneName : null;
+  }
+  function clipEuler(name) {
+    const b = character.getBone(name);
+    const o = (cfg.poseOffsets || {})[name] || {};
+    if (!b) return { x: 0, y: 0, z: 0 };
+    return { x: b.rotation.x - (o.x || 0), y: b.rotation.y - (o.y || 0), z: b.rotation.z - (o.z || 0) };
+  }
+  function harvestOffset(name, clip) {
+    const b = character.getBone(name);
+    if (!b) return;
+    cfg.poseOffsets = cfg.poseOffsets || {};
+    cfg.poseOffsets[name] = {
+      x: b.rotation.x - clip.x, y: b.rotation.y - clip.y, z: b.rotation.z - clip.z
+    };
+  }
+  function applyWorldDelta(bone, qWorld) {
+    _q3.copy(qWorld);
+    bone.parent.getWorldQuaternion(_q1);
+    bone.getWorldQuaternion(_q2);
+    _q3.multiply(_q2);
+    bone.quaternion.copy(_q1.clone().invert().multiply(_q3));
+    bone.updateMatrixWorld(true);
+  }
+  function rotateBoneToward(bone, tip, target) {
+    bone.getWorldPosition(_v1);
+    tip.getWorldPosition(_v2);
+    const from = _v2.sub(_v1);
+    const to = target.clone().sub(_v1);
+    if (from.lengthSq() < 1e-8 || to.lengthSq() < 1e-8) return;
+    from.normalize(); to.normalize();
+    const dot = THREE.MathUtils.clamp(from.dot(to), -1, 1);
+    const angle = Math.acos(dot);
+    if (angle < .001) return;
+    _v3.crossVectors(from, to);
+    if (_v3.lengthSq() < 1e-8) return;
+    _v3.normalize();
+    _q2.setFromAxisAngle(_v3, angle);
+    applyWorldDelta(bone, _q2);
+  }
+  function poseFK(name, dx, dy) {
+    const bone = character.getBone(name);
+    if (!bone) return;
+    const clip = clipEuler(name);
+    camera.getWorldDirection(_v1);
+    _v2.crossVectors(_v1, camera.up).normalize();
+    _v3.crossVectors(_v2, _v1).normalize();
+    _q1.setFromAxisAngle(_v3, dx * .012);
+    _q2.setFromAxisAngle(_v2, dy * .012);
+    _q1.multiply(_q2);
+    applyWorldDelta(bone, _q1);
+    harvestOffset(name, clip);
+    character.setPoseOffsets(cfg.poseOffsets);
+  }
+  function poseIK(chainId, clientX, clientY) {
+    const chain = IK_CHAINS[chainId];
+    if (!chain || !character) return;
+    const tip = character.getBone(chain.tip);
+    const root = character.getBone(chain.root);
+    const mid = character.getBone(chain.mid);
+    if (!tip || !root || !mid) return;
+    const clips = { root: clipEuler(chain.root), mid: clipEuler(chain.mid) };
+    setPointer({ clientX, clientY });
+    raycaster.setFromCamera(pointer, camera);
+    const tHit = raycaster.ray.distanceToPlane(_plane);
+    if (tHit == null || tHit < .08) return;
+    raycaster.ray.at(tHit, _v1);
+    const target = _v1.clone();
+    for (let i = 0; i < 10; i++) {
+      rotateBoneToward(mid, tip, target);
+      rotateBoneToward(root, tip, target);
+    }
+    harvestOffset(chain.root, clips.root);
+    harvestOffset(chain.mid, clips.mid);
+    character.setPoseOffsets(cfg.poseOffsets);
+  }
+  function beginPoseDrag(name, e) {
+    selectedBone = name;
+    const spec = POSE_BY_ID[name] || {};
+    const useIK = spec.ik && !e.shiftKey;
+    poseDrag = { name, x: e.clientX, y: e.clientY, ik: useIK ? spec.ik : null, moved: false };
+    if (poseDrag.ik) {
+      const tip = character.getBone(IK_CHAINS[spec.ik].tip);
+      tip.getWorldPosition(_v1);
+      camera.getWorldDirection(_v2);
+      _plane.setFromNormalAndCoplanarPoint(_v2, _v1);
+    }
+    syncBoneSliders();
+    styleJoints();
+    fillPoseLimbs();
+  }
+  function endPoseDrag() {
+    if (poseDrag && poseDrag.moved) pushHistory();
+    poseDrag = null;
+    styleJoints();
+  }
+
   el.addEventListener('pointerdown', e => {
-    if (poseEdit && character) {
-      const rect = el.getBoundingClientRect();
-      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
-      raycaster.setFromCamera(pointer, camera);
-      const hits = raycaster.intersectObjects(joints, false);
-      if (hits.length) {
-        selectedBone = hits[0].object.userData.boneName;
-        syncBoneSliders();
-        applyXray();
-        e.preventDefault();
-        return;
-      }
+    const name = hitJoint(e);
+    if (name) {
+      beginPoseDrag(name, e);
+      el.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      return;
     }
     drag = { x: e.clientX, y: e.clientY }; orbiting = false;
     el.setPointerCapture(e.pointerId);
   });
   el.addEventListener('pointermove', e => {
-    if (!drag) return;
+    if (poseDrag) {
+      const dx = e.clientX - poseDrag.x, dy = e.clientY - poseDrag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 1) poseDrag.moved = true;
+      if (poseDrag.ik) poseIK(poseDrag.ik, e.clientX, e.clientY);
+      else poseFK(poseDrag.name, dx, -dy);
+      poseDrag.x = e.clientX; poseDrag.y = e.clientY;
+      syncBoneSliders();
+      return;
+    }
+    if (!drag) {
+      if (poseEdit) {
+        const next = hitJoint(e);
+        if (next !== hoveredBone) { hoveredBone = next; styleJoints(); }
+      }
+      return;
+    }
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     if (Math.abs(dx) + Math.abs(dy) > 2) orbiting = true;
     az -= dx * .008;
     pol = THREE.MathUtils.clamp(pol - dy * .006, .35, 2.0);
     drag = { x: e.clientX, y: e.clientY };
   });
-  addEventListener('pointerup', () => drag = null);
-  addEventListener('pointercancel', () => drag = null);
+  addEventListener('pointerup', () => { endPoseDrag(); drag = null; });
+  addEventListener('pointercancel', () => { endPoseDrag(); drag = null; });
   el.addEventListener('wheel', e => {
     e.preventDefault();
     dist = THREE.MathUtils.clamp(dist + e.deltaY * .0022, .85, 6);
@@ -379,7 +575,10 @@
       () => cfg.legPattern, v => { cfg.legPattern = v; });
     seg('anims', [['idle', 'Idle'], ['hold', 'Hold'], ['walk', 'Walk'], ['run', 'Run'],
       ['wave', 'Wave'], ['jump', 'Jump'], ['dance', 'Dance'], ['tpose', 'T-pose']],
-      () => anim, v => { anim = v; }, true);
+      () => anim, v => {
+        anim = v;
+        if (poseEdit && v !== 'hold' && v !== 'tpose') setPoseMode(false, true);
+      }, true);
     const faceItems = [['happy', 'Happy'], ['neutral', 'Neutral'], ['surprised', 'Surprised'],
       ['determined', 'Set'], ['sad', 'Sad'], ['confused', 'Confused'], ['annoyed', 'Annoyed'],
       ['excited', 'Excited'], ['skeptical', 'Skeptical'], ['embarrassed', 'Embarrassed'], ['custom', 'Custom']];
@@ -398,6 +597,8 @@
     refreshLinks();
     refreshStates();
     refreshSavedPoses();
+    fillPoseLimbs();
+    fillPoseStarts();
   }
 
   const SLIDERS = [
@@ -893,37 +1094,107 @@
     a.href = sheet.toDataURL('image/png'); a.click();
   };
 
-  function syncBoneSliders() {
-    const lab = document.getElementById('bone-label');
-    const off = (cfg.poseOffsets || {})[selectedBone] || { x: 0, y: 0, z: 0 };
-    lab.textContent = selectedBone ? ('Limb: ' + selectedBone) : 'Click a joint while the pose editor is on.';
-    ['x', 'y', 'z'].forEach(k => {
-      document.getElementById('s-b' + k).value = off[k] || 0;
-      document.getElementById('v-b' + k).textContent = (off[k] || 0).toFixed(2);
+  function radToDeg(r) { return Math.round((r || 0) * 180 / Math.PI); }
+  function degToRad(d) { return (d || 0) * Math.PI / 180; }
+  function axisLabelsFor(name) {
+    const spec = POSE_BY_ID[name];
+    return AXIS_LABELS[(spec && spec.group) || 'head'] || AXIS_LABELS.head;
+  }
+  function fillPoseLimbs() {
+    const box = document.getElementById('pose-limbs');
+    if (!box) return;
+    box.innerHTML = '';
+    POSE_LIMBS.forEach(p => {
+      const b = document.createElement('button');
+      b.textContent = p.label;
+      b.setAttribute('aria-pressed', String(selectedBone === p.id));
+      b.onclick = () => {
+        selectedBone = p.id;
+        syncBoneSliders();
+        styleJoints();
+        fillPoseLimbs();
+      };
+      box.appendChild(b);
     });
   }
-  function writeBone(axis, value) {
+  function fillPoseStarts() {
+    const box = document.getElementById('pose-starts');
+    if (!box) return;
+    box.innerHTML = '';
+    [['rest', 'Rest'], ['wave', 'Wave'], ['think', 'Think'], ['point', 'Point'], ['akimbo', 'Hands on hips']]
+      .forEach(([id, label]) => {
+        const b = document.createElement('button');
+        b.textContent = label;
+        b.onclick = () => applyPoseStart(id);
+        box.appendChild(b);
+      });
+  }
+  function applyPoseStart(id) {
+    if (!poseEdit) setPoseMode(true);
+    cfg.poseOffsets = deep(POSE_STARTERS[id] || {});
+    if (character) character.setPoseOffsets(cfg.poseOffsets);
+    anim = 'hold';
+    syncBoneSliders();
+    refreshSegs();
+    pushHistory();
+  }
+  function setPoseMode(on, keepAnim) {
+    if (on === poseEdit) {
+      applyXray();
+      return;
+    }
+    poseEdit = on;
+    if (poseEdit) {
+      poseEditPrev = anim;
+      anim = (anim === 'tpose') ? 'tpose' : 'hold';
+      const grp = document.getElementById('grp-pose');
+      if (grp) grp.open = true;
+      if (!selectedBone) selectedBone = 'head';
+    } else {
+      if (!keepAnim) anim = poseEditPrev || 'idle';
+      hoveredBone = null;
+    }
+    applyXray();
+    syncBoneSliders();
+    refreshSegs();
+  }
+  function syncBoneSliders() {
+    const lab = document.getElementById('bone-label');
+    const spec = POSE_BY_ID[selectedBone];
+    const off = (cfg.poseOffsets || {})[selectedBone] || { x: 0, y: 0, z: 0 };
+    if (!poseEdit) {
+      lab.textContent = 'Turn on Pose figure, then drag a joint. Hands and feet reach; everything else rotates.';
+    } else if (spec) {
+      lab.textContent = spec.ik
+        ? (spec.label + ' — drag to reach, Shift-drag to rotate')
+        : (spec.label + ' — drag to rotate');
+    } else {
+      lab.textContent = 'Select a joint on the figure or from the list.';
+    }
+    const labels = axisLabelsFor(selectedBone);
+    ['x', 'y', 'z'].forEach((k, i) => {
+      document.getElementById('lbl-b' + k).textContent = labels[i];
+      const deg = radToDeg(off[k] || 0);
+      document.getElementById('s-b' + k).value = deg;
+      document.getElementById('v-b' + k).textContent = deg + '°';
+    });
+  }
+  function writeBone(axis, degrees) {
     if (!selectedBone) return;
     cfg.poseOffsets = cfg.poseOffsets || {};
     cfg.poseOffsets[selectedBone] = Object.assign({ x: 0, y: 0, z: 0 }, cfg.poseOffsets[selectedBone]);
-    cfg.poseOffsets[selectedBone][axis] = value;
+    cfg.poseOffsets[selectedBone][axis] = degToRad(degrees);
     if (character) character.setPoseOffsets(cfg.poseOffsets);
   }
   ['x', 'y', 'z'].forEach(axis => {
     const s = document.getElementById('s-b' + axis);
     s.addEventListener('input', () => {
       writeBone(axis, +s.value);
-      document.getElementById('v-b' + axis).textContent = (+s.value).toFixed(2);
+      document.getElementById('v-b' + axis).textContent = Math.round(+s.value) + '°';
     });
     s.addEventListener('change', pushHistory);
   });
-  let poseEditPrev = 'idle';
-  document.getElementById('btn-pose-edit').onclick = () => {
-    poseEdit = !poseEdit;
-    if (poseEdit) { poseEditPrev = anim; anim = 'hold'; }
-    else anim = poseEditPrev || 'idle';
-    applyXray(); refreshSegs();
-  };
+  document.getElementById('btn-pose-edit').onclick = () => setPoseMode(!poseEdit);
   document.getElementById('btn-mirror').onclick = () => {
     const next = {};
     Object.keys(cfg.poseOffsets || {}).forEach(name => {
@@ -935,11 +1206,17 @@
     });
     cfg.poseOffsets = Object.assign({}, cfg.poseOffsets, next);
     if (character) character.setPoseOffsets(cfg.poseOffsets);
+    syncBoneSliders();
     pushHistory();
   };
   document.getElementById('btn-reset-limb').onclick = () => {
     if (!selectedBone || !cfg.poseOffsets) return;
     delete cfg.poseOffsets[selectedBone];
+    if (character) character.setPoseOffsets(cfg.poseOffsets);
+    syncBoneSliders(); pushHistory();
+  };
+  document.getElementById('btn-reset-pose').onclick = () => {
+    cfg.poseOffsets = {};
     if (character) character.setPoseOffsets(cfg.poseOffsets);
     syncBoneSliders(); pushHistory();
   };
@@ -1206,8 +1483,19 @@
     }
     if (typing) return;
     if (e.key === 'r' || e.key === 'R') { xray = !xray; applyXray(); }
+    if (e.key === 'p' || e.key === 'P') { e.preventDefault(); setPoseMode(!poseEdit); }
+    if (e.key === 'x' || e.key === 'X') {
+      if (poseEdit && selectedBone && cfg.poseOffsets) {
+        delete cfg.poseOffsets[selectedBone];
+        if (character) character.setPoseOffsets(cfg.poseOffsets);
+        syncBoneSliders(); pushHistory();
+      }
+    }
     if (e.code === 'Space') { e.preventDefault(); randomizeUnlocked(); }
-    if (e.key === 'Escape') { sheet.classList.remove('on'); hideLibrary(); }
+    if (e.key === 'Escape') {
+      if (poseEdit) setPoseMode(false);
+      sheet.classList.remove('on'); hideLibrary();
+    }
   });
 
   refreshSegs(); syncSliders(); rebuild(); pushHistory();

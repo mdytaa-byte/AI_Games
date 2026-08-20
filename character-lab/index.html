@@ -135,7 +135,17 @@
   .lib-card span{display:block;font-size:9px;color:var(--paper-dim)}
   .hint{position:fixed;bottom:14px;right:18px;font-size:9.5px;letter-spacing:.1em;
     color:var(--line);z-index:4;text-align:right;line-height:1.7}
-  @media (max-width:860px){.hint{display:none}.export-grid{grid-template-columns:1fr}}
+  #pose-hud{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:7;
+    display:none;padding:9px 16px;background:rgba(19,39,67,.94);border:1px solid var(--amber);
+    font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);
+    pointer-events:none;text-align:center;line-height:1.55;max-width:min(520px,92vw)}
+  #pose-hud.on{display:block}
+  body.posing .hint{opacity:0}
+  #pose-axis .row label{min-width:72px}
+  @media (max-width:860px){
+    .hint{display:none}.export-grid{grid-template-columns:1fr}
+    #pose-hud{bottom:auto;top:78px;left:12px;right:12px;transform:none}
+  }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -415,22 +425,30 @@
     </div>
   </details>
 
-  <details class="grp" open>
+  <details class="grp" open id="grp-pose">
     <summary><h2>Pose</h2></summary>
     <div class="grp-body">
+      <div class="ctag">Clip</div>
       <div class="seg" id="anims"></div>
       <div class="row-btns">
-        <button id="btn-pose-edit">Pose editor</button>
-        <button id="btn-mirror">Mirror pose</button>
-        <button id="btn-reset-limb">Reset limb</button>
+        <button id="btn-pose-edit">Pose figure</button>
+        <button id="btn-mirror">Mirror</button>
+        <button id="btn-reset-limb">Reset joint</button>
+        <button id="btn-reset-pose">Reset pose</button>
       </div>
-      <p class="muted" id="bone-label">Click a joint while the pose editor is on.</p>
-      <div class="row"><label>Rotate X</label><span class="val" id="v-bx">0.00</span></div>
-      <input type="range" id="s-bx" min="-3.14" max="3.14" step="0.01" value="0">
-      <div class="row"><label>Rotate Y</label><span class="val" id="v-by">0.00</span></div>
-      <input type="range" id="s-by" min="-3.14" max="3.14" step="0.01" value="0">
-      <div class="row"><label>Rotate Z</label><span class="val" id="v-bz">0.00</span></div>
-      <input type="range" id="s-bz" min="-3.14" max="3.14" step="0.01" value="0">
+      <div class="ctag">Starting pose</div>
+      <div class="seg" id="pose-starts"></div>
+      <div class="ctag">Joint</div>
+      <div class="seg" id="pose-limbs"></div>
+      <p class="muted" id="bone-label">Turn on Pose figure, then drag a joint. Hands and feet reach; everything else rotates.</p>
+      <div id="pose-axis">
+        <div class="row"><label id="lbl-bx">Nod</label><span class="val" id="v-bx">0°</span></div>
+        <input type="range" id="s-bx" min="-180" max="180" step="1" value="0">
+        <div class="row"><label id="lbl-by">Turn</label><span class="val" id="v-by">0°</span></div>
+        <input type="range" id="s-by" min="-180" max="180" step="1" value="0">
+        <div class="row"><label id="lbl-bz">Tilt</label><span class="val" id="v-bz">0°</span></div>
+        <input type="range" id="s-bz" min="-180" max="180" step="1" value="0">
+      </div>
       <div class="ctag">Save pose as</div>
       <input class="field" id="pose-name" placeholder="point-left">
       <div class="row-btns"><button id="btn-save-pose">Save pose</button></div>
@@ -465,7 +483,8 @@
 </div>
 
 <button id="tab">Controls</button>
-<div class="hint">drag to orbit · scroll to zoom<br>Z undo · shift+Z redo · R rig · space randomize</div>
+<div class="hint">drag to orbit · scroll to zoom<br>Z undo · shift+Z redo · R rig · P pose · space randomize</div>
+<div id="pose-hud">Drag a joint to pose · empty drag orbits · Shift rotates hands and feet</div>
 <input type="file" id="file-json" accept="application/json,.json" hidden>
 
 <div id="library" role="dialog" aria-modal="true" aria-labelledby="lib-h">

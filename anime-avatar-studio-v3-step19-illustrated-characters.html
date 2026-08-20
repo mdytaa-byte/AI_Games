@@ -651,7 +651,7 @@ How are you today?</textarea>
       <li>Sleeves keep volume from deltoid to cuff, with a rounded cap where the arm leaves the jacket</li>
       <li>Torso, neck, and limb paths use anatomical tapers, hidden joint roots, and soft end-caps instead of capsule tubes</li>
       <li>Collars, lapels, sailor yokes, cuffs, and pockets are redrawn with cubic construction instead of clip-art polygons</li>
-      <li>Hands use tapered finger silhouettes and a fill-only wrist bridge rather than sausage strokes and washer joints</li>
+      <li>Hands are one palm mass: fingers grow out of a knuckle pad with webbing, not five separate sticks</li>
       <li>Hair is denser: overlapping bangs, undercut framing locks, inner strand edges, and a forehead hairline seam</li>
       <li>The face silhouette uses a multi-point jaw curve so cheeks no longer read as a rounded hexagon</li>
       <li>Shoes, backpacks, scarves, and held props follow the same illustration language instead of rectangles and blobs</li>
@@ -2171,50 +2171,50 @@ function smoothWristJointMarkup(wrist,from,fill,stroke,width=2.15){
   fillMass(g, oval, fill);
   return g;
 }
-// Step 10: high-fidelity articulated hand renderer.
-// Hands are built from a palm, thumb, and four separately posed fingers instead of one mitten-like silhouette.
+// Illustrated hand: palm is the mass. Fingers grow out of one knuckle cluster
+// with webbing in the fill; only valleys are drawn as interior seams.
 function rotateVec(v,deg){
   const a=deg*Math.PI/180,c=Math.cos(a),sn=Math.sin(a);
   return {x:v.x*c-v.y*sn,y:v.x*sn+v.y*c};
 }
 function handPoseSpec(gesture='relaxed'){
   const specs={
-    relaxed:{turn:0,palmL:19,palmW:12.5,fingers:[
-      {b:[10,-5.2],m:[18,-6.2],t:[25,-6.8],w:3.6,tw:2.4},
-      {b:[11,-1.8],m:[20,-2.2],t:[27,-2.1],w:3.9,tw:2.6},
-      {b:[11,1.8],m:[19,2.0],t:[25,2.4],w:3.7,tw:2.5},
-      {b:[10,4.8],m:[17,5.4],t:[22,6.2],w:3.2,tw:2.1}
-    ],thumb:{b:[6,6.2],m:[11,9.4],t:[16,9.2],w:4.0,tw:2.8}},
-    wave:{turn:-8,palmL:20.5,palmW:13.2,fingers:[
-      {b:[10,-6.2],m:[21,-12.5],t:[32,-15.2],w:3.4,tw:2.2},
-      {b:[11,-2.2],m:[24,-5.2],t:[36,-6.0],w:3.7,tw:2.4},
-      {b:[11,1.6],m:[25,1.4],t:[36,2.0],w:3.5,tw:2.3},
-      {b:[10,5.4],m:[22,8.6],t:[32,11.4],w:3.2,tw:2.1}
-    ],thumb:{b:[6,6.8],m:[12,13],t:[18,16],w:3.9,tw:2.7},nails:true},
-    point:{turn:0,palmL:19,palmW:12.5,fingers:[
-      {b:[10,-4.4],m:[24,-4.8],t:[38,-4.4],w:3.5,tw:2.3,extended:true},
-      {b:[11,-1.1],m:[18,1.6],t:[16,6.2],w:3.7,tw:2.5,curled:true},
-      {b:[11,2.2],m:[17,4.4],t:[15,7.2],w:3.5,tw:2.3,curled:true},
-      {b:[10,4.8],m:[15,6.2],t:[13,8.0],w:3.1,tw:2.1,curled:true}
-    ],thumb:{b:[6,6.2],m:[12,8.2],t:[17,5.4],w:3.9,tw:2.7},nails:true},
-    chin:{turn:-18,palmL:16,palmW:12,fingers:[
-      {b:[9,-4.2],m:[14,-5.0],t:[18,-4.6],w:3.2,tw:2.2},
-      {b:[10,-1.2],m:[16,-1.5],t:[20,-1.1],w:3.4,tw:2.3},
-      {b:[10,1.7],m:[15,2.0],t:[19,2.4],w:3.2,tw:2.2},
-      {b:[9,4.3],m:[13,4.7],t:[16,5.2],w:2.9,tw:2.0}
-    ],thumb:{b:[5,5.4],m:[9,8],t:[13,8],w:3.5,tw:2.5}},
-    hip:{turn:42,palmL:17,palmW:12.5,fingers:[
-      {b:[10,-4.8],m:[16,-6.2],t:[21,-7.0],w:3.3,tw:2.2},
-      {b:[11,-1.6],m:[18,-2.1],t:[23,-2.5],w:3.5,tw:2.4},
-      {b:[11,1.7],m:[17,2.2],t:[22,2.9],w:3.3,tw:2.2},
-      {b:[10,4.6],m:[15,5.4],t:[20,6.4],w:3.0,tw:2.0}
-    ],thumb:{b:[5,6.2],m:[10,9],t:[15,9],w:3.6,tw:2.6}},
-    grip:{turn:0,palmL:17,palmW:12,fingers:[
-      {b:[9,-4.6],m:[14,-5.4],t:[15,-1.2],w:3.3,tw:2.2,curled:true},
-      {b:[10,-1.5],m:[16,-1.8],t:[16,1.6],w:3.5,tw:2.4,curled:true},
-      {b:[10,1.6],m:[16,1.8],t:[15,4.4],w:3.3,tw:2.2,curled:true},
-      {b:[9,4.4],m:[14,4.6],t:[13,6.4],w:3.0,tw:2.0,curled:true}
-    ],thumb:{b:[5,6.2],m:[11,7.2],t:[16,3.6],w:3.6,tw:2.6},grip:true}
+    relaxed:{turn:0,palmL:9.4,palmW:19.5,fingers:[
+      {b:[8,-5.2],m:[16,-5.6],t:[23,-5.8],w:6.8,tw:5.2},
+      {b:[9,-1.6],m:[17,-1.6],t:[25,-1.4],w:7.2,tw:5.5},
+      {b:[9,1.8],m:[16.5,2.0],t:[23.5,2.4],w:6.8,tw:5.2},
+      {b:[8,4.8],m:[14.8,5.2],t:[20.5,5.8],w:6.0,tw:4.6}
+    ],thumb:{b:[3.5,7.0],m:[10.5,11.0],t:[16.5,11.4],w:7.0,tw:5.4}},
+    wave:{turn:-5,palmL:9.6,palmW:20.2,fingers:[
+      {b:[8,-5.4],m:[16.5,-6.8],t:[23.5,-7.6],w:6.6,tw:5.1},
+      {b:[9,-1.6],m:[18,-2.2],t:[26,-2.4],w:7.1,tw:5.4},
+      {b:[9,1.8],m:[18,2.2],t:[25.5,2.8],w:6.8,tw:5.2},
+      {b:[8,5.0],m:[16,5.8],t:[22.5,6.6],w:6.0,tw:4.6}
+    ],thumb:{b:[3.5,7.2],m:[10.5,12.0],t:[16.5,13.4],w:6.9,tw:5.3},nails:true},
+    point:{turn:0,palmL:9.2,palmW:19,fingers:[
+      {b:[8,-4.4],m:[21,-4.6],t:[31,-4.2],w:6.5,tw:5.0,extended:true},
+      {b:[9,-0.8],m:[15.5,2.2],t:[13.5,6.6],w:7.0,tw:5.4,curled:true},
+      {b:[9,2.2],m:[15,4.6],t:[13,7.4],w:6.6,tw:5.1,curled:true},
+      {b:[8,4.8],m:[13.5,6.2],t:[11.5,7.8],w:5.8,tw:4.5,curled:true}
+    ],thumb:{b:[3.5,6.8],m:[11.5,9.0],t:[16.5,6.0],w:6.8,tw:5.2},nails:true},
+    chin:{turn:-16,palmL:8.8,palmW:18.5,fingers:[
+      {b:[7.5,-4.4],m:[13.5,-4.8],t:[18.5,-4.6],w:6.2,tw:4.8},
+      {b:[8.5,-1.2],m:[14.5,-1.4],t:[19.5,-1.0],w:6.6,tw:5.1},
+      {b:[8.5,1.6],m:[14,2.0],t:[18.5,2.4],w:6.2,tw:4.8},
+      {b:[7.5,4.2],m:[12.5,4.6],t:[16.5,5.0],w:5.6,tw:4.4}
+    ],thumb:{b:[3,6.2],m:[8.5,8.8],t:[13.5,9.0],w:6.4,tw:5.0}},
+    hip:{turn:40,palmL:9.2,palmW:19,fingers:[
+      {b:[8,-4.6],m:[14.5,-5.4],t:[19.5,-6.0],w:6.3,tw:4.9},
+      {b:[9,-1.4],m:[16,-1.8],t:[21.5,-2.0],w:6.7,tw:5.2},
+      {b:[9,1.6],m:[15.5,2.2],t:[20.5,2.8],w:6.3,tw:4.9},
+      {b:[8,4.4],m:[13.5,5.2],t:[18.5,6.0],w:5.7,tw:4.5}
+    ],thumb:{b:[3,6.6],m:[9.5,9.6],t:[14.5,9.8],w:6.5,tw:5.1}},
+    grip:{turn:0,palmL:9.2,palmW:18.5,fingers:[
+      {b:[7.5,-4.6],m:[12.5,-5.0],t:[13.5,-0.4],w:6.4,tw:5.0,curled:true},
+      {b:[8.5,-1.4],m:[14,-1.6],t:[14.5,2.2],w:6.8,tw:5.3,curled:true},
+      {b:[8.5,1.6],m:[14,2.0],t:[13.5,4.8],w:6.4,tw:5.0,curled:true},
+      {b:[7.5,4.4],m:[12.5,4.8],t:[12,6.6],w:5.7,tw:4.5,curled:true}
+    ],thumb:{b:[3,6.6],m:[10.5,8.0],t:[15.5,4.2],w:6.6,tw:5.1},grip:true}
   };
   return specs[gesture] || specs.relaxed;
 }
@@ -2229,13 +2229,42 @@ function handFrame(wrist,from,gesture,side){
 }
 function palmPath(wrist,frame){
   const {spec,local}=frame,L=spec.palmL,W=spec.palmW;
-  const a=local(-6,-W*.34), b=local(4,-W*.58), c=local(L,-W*.42), d=local(L+1.6,-W*.16), e=local(L+1.6,W*.16), f=local(L,W*.42), g=local(4,W*.58), h=local(-6,W*.34);
+  const a=local(-7.5,-W*.26), b=local(1.6,-W*.60), c=local(L*.58,-W*.70), d=local(L+2.6,-W*.64);
+  const e=local(L+2.6,W*.64), f=local(L*.58,W*.70), g=local(1.6,W*.60), h=local(-7.5,W*.26);
   return `M${a.x.toFixed(1)} ${a.y.toFixed(1)} C${b.x.toFixed(1)} ${b.y.toFixed(1)} ${c.x.toFixed(1)} ${c.y.toFixed(1)} ${d.x.toFixed(1)} ${d.y.toFixed(1)} C${e.x.toFixed(1)} ${e.y.toFixed(1)} ${f.x.toFixed(1)} ${f.y.toFixed(1)} ${g.x.toFixed(1)} ${g.y.toFixed(1)} C${h.x.toFixed(1)} ${h.y.toFixed(1)} ${wrist.x.toFixed(1)} ${wrist.y.toFixed(1)} ${a.x.toFixed(1)} ${a.y.toFixed(1)} Z`;
 }
-function fingerSilhouettePath(p0,p1,p2,w0,w2){
+function knucklePadPath(frame){
+  const {spec,local}=frame, fs=spec.fingers, W=spec.palmW;
+  const p=q=>`${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
+  const index=fs[0], mid=fs[1], ring=fs[2], pinky=fs[fs.length-1];
+  const a=local(3, -W*.62);
+  const b=local(index.b[0]+0.6, index.b[1]-index.w*0.82);
+  const c=local(index.b[0]+9.4, index.b[1]-index.w*0.08);
+  const d=local(mid.b[0]+10.2, mid.b[1]);
+  const e=local(ring.b[0]+9.6, ring.b[1]);
+  const f=local(pinky.b[0]+8.4, pinky.b[1]+pinky.w*0.08);
+  const g=local(pinky.b[0]+0.6, pinky.b[1]+pinky.w*0.82);
+  const h=local(3, W*.62);
+  const i=local(-2, W*.20);
+  const j=local(-2, -W*.20);
+  return `M${p(a)} C${p(b)} ${p(c)} ${p(c)} C${p(d)} ${p(e)} ${p(f)} C${p(g)} ${p(h)} ${p(h)} C${p(i)} ${p(j)} ${p(a)} Z`;
+}
+function thenarPath(frame){
+  const {spec,local}=frame, W=spec.palmW, th=spec.thumb;
+  const p=q=>`${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
+  const a=local(-5, W*.02);
+  const b=local(1.2, W*.64);
+  const c=local(th.m[0]*0.48, th.m[1]*0.86);
+  const d=local(th.b[0]+2.4, th.b[1]*0.38);
+  const e=local(10, W*.08);
+  return `M${p(a)} C${p(b)} ${p(c)} ${p(c)} C${p(d)} ${p(e)} ${p(a)} Z`;
+}
+function fingerEdgePoints(frame,finger){
+  const p0=frame.local(finger.b[0]-5.2,finger.b[1]);
+  const p1=frame.local(finger.m[0],finger.m[1]);
+  const p2=frame.local(finger.t[0],finger.t[1]);
+  const w0=finger.w, w2=finger.tw || finger.w*0.76;
   const d1=norm(vec(p0,p1)), d2=norm(vec(p1,p2));
-  let t=norm({x:d1.x+d2.x,y:d1.y+d2.y});
-  if(!Number.isFinite(t.x)) t=d2;
   const n1={x:-d1.y,y:d1.x}, n2={x:-d2.y,y:d2.x};
   let bn=norm({x:n1.x+n2.x,y:n1.y+n2.y});
   if(!Number.isFinite(bn.x)) bn=n1;
@@ -2246,16 +2275,50 @@ function fingerSilhouettePath(p0,p1,p2,w0,w2){
   const R1={x:p1.x-bn.x*w1/2,y:p1.y-bn.y*w1/2};
   const L2={x:p2.x+n2.x*w2/2,y:p2.y+n2.y*w2/2};
   const R2={x:p2.x-n2.x*w2/2,y:p2.y-n2.y*w2/2};
-  const tip={x:p2.x+d2.x*w2*0.62,y:p2.y+d2.y*w2*0.62};
+  const tip={x:p2.x+d2.x*w2*0.82,y:p2.y+d2.y*w2*0.82};
+  const indexDir={x:-frame.n.x*frame.sideSign,y:-frame.n.y*frame.sideSign};
+  const towardIndex=(pt)=>(pt.x-p0.x)*indexDir.x+(pt.y-p0.y)*indexDir.y;
+  const radial=towardIndex(L0)>towardIndex(R0);
+  return {
+    p0,p1,p2,tip,
+    rad0:radial?L0:R0, rad1:radial?L1:R1, rad2:radial?L2:R2,
+    uln0:radial?R0:L0, uln1:radial?R1:L1, uln2:radial?R2:L2
+  };
+}
+function fingerSilhouettePath(p0,p1,p2,w0,w2){
+  const d1=norm(vec(p0,p1)), d2=norm(vec(p1,p2));
+  const n1={x:-d1.y,y:d1.x}, n2={x:-d2.y,y:d2.x};
+  let bn=norm({x:n1.x+n2.x,y:n1.y+n2.y});
+  if(!Number.isFinite(bn.x)) bn=n1;
+  const w1=(w0+w2)*0.5;
+  const L0={x:p0.x+n1.x*w0/2,y:p0.y+n1.y*w0/2};
+  const R0={x:p0.x-n1.x*w0/2,y:p0.y-n1.y*w0/2};
+  const L1={x:p1.x+bn.x*w1/2,y:p1.y+bn.y*w1/2};
+  const R1={x:p1.x-bn.x*w1/2,y:p1.y-bn.y*w1/2};
+  const L2={x:p2.x+n2.x*w2/2,y:p2.y+n2.y*w2/2};
+  const R2={x:p2.x-n2.x*w2/2,y:p2.y-n2.y*w2/2};
+  const tip={x:p2.x+d2.x*w2*0.82,y:p2.y+d2.y*w2*0.82};
   const p=q=>`${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
   return `M${p(L0)} C${p(L1)} ${p(L2)} ${p(L2)} Q${p(tip)} ${p(R2)} C${p(R1)} ${p(R0)} ${p(R0)} Z`;
 }
-function fingerStrokeMarkup(frame,finger,skinFill,skinStroke,lights,detailStroke,pair){
+function fingerClusterPath(frame){
+  const edges=frame.spec.fingers.map(f=>fingerEdgePoints(frame,f));
+  const p=q=>`${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
+  const first=edges[0], last=edges[edges.length-1];
+  let d=`M${p(first.rad0)} C${p(first.rad1)} ${p(first.rad2)} ${p(first.rad2)} Q${p(first.tip)} ${p(first.uln2)}`;
+  for(let i=1;i<edges.length;i++){
+    const prev=edges[i-1], curr=edges[i];
+    const a=frame.spec.fingers[i-1], b=frame.spec.fingers[i];
+    const web=frame.local((a.b[0]+b.b[0])*0.5+6.8, (a.b[1]+b.b[1])*0.5);
+    d+=` C${p(prev.uln1)} ${p(web)} ${p(web)} C${p(curr.rad1)} ${p(curr.rad2)} ${p(curr.rad2)} Q${p(curr.tip)} ${p(curr.uln2)}`;
+  }
+  const close=frame.local(3.2,0);
+  d+=` C${p(last.uln1)} ${p(last.uln0)} ${p(last.uln0)} C${p(close)} ${p(first.rad0)} ${p(first.rad0)} Z`;
+  return d;
+}
+function fingerOverlayMarkup(frame,finger,lights,detailStroke){
   const g=svgEl('g');
-  const p0=frame.local(finger.b[0]-2.4,finger.b[1]), p1=frame.local(finger.m[0],finger.m[1]), p2=frame.local(finger.t[0],finger.t[1]);
-  const tipW=finger.tw || finger.w*0.64;
-  const d=fingerSilhouettePath(p0,p1,p2,finger.w,tipW);
-  silhouette(pair || g, d, skinFill);
+  const p2=frame.local(finger.t[0],finger.t[1]);
   if(lights){
     const hi=frame.local(finger.m[0]-1.5,finger.m[1]-1.2);
     const ht=frame.local(finger.t[0]-2,finger.t[1]-1.2);
@@ -2266,43 +2329,49 @@ function fingerStrokeMarkup(frame,finger,skinFill,skinStroke,lights,detailStroke
     const n2=frame.local(finger.m[0]+1.2,finger.m[1]);
     g.appendChild(svgEl('path',{d:`M${crease.x.toFixed(1)} ${crease.y.toFixed(1)} L${n2.x.toFixed(1)} ${n2.y.toFixed(1)}`,stroke:detailStroke,'stroke-width':'0.7','stroke-linecap':'round',opacity:'0.42'}));
   }
-  return {g,tip:p2};
+  return g;
 }
 function handMarkup(wrist,from,gesture='relaxed',side='left',skinFill='#f2c7a5',skinStroke='#8c5660',lights=null,lines=null,depthScale=1){
   const g=svgEl('g',{'data-hand':side,'data-hand-gesture':gesture,'data-depth-scale':depthScale.toFixed(3),transform:scaleAround(wrist.x,wrist.y,depthScale,depthScale)});
   const frame=handFrame(wrist,from,gesture,side), spec=frame.spec;
   const detailStroke=lines?lines.skinInner:mixHex('#c78672','#6d3441',0.35);
+  const p=q=>`${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
 
   const pair = contourPair().mount(g);
 
-  const fingerTips=[];
-  spec.fingers.slice().reverse().forEach(f=>{
-    const out=fingerStrokeMarkup(frame,f,skinFill,skinStroke,lights,detailStroke,pair);
-    g.appendChild(out.g); fingerTips.push(out.tip);
-  });
+  silhouette(pair, fingerClusterPath(frame), skinFill);
+  fillMass(pair, knucklePadPath(frame), skinFill);
   silhouette(pair, palmPath(wrist,frame), skinFill);
-  if(lights){
-    const h1=frame.local(3,-spec.palmW*.24), h2=frame.local(spec.palmL*.72,-spec.palmW*.30);
-    g.appendChild(svgEl('path',{d:`M${h1.x.toFixed(1)} ${h1.y.toFixed(1)} Q${h2.x.toFixed(1)} ${h2.y.toFixed(1)} ${frame.local(spec.palmL*.88,-spec.palmW*.14).x.toFixed(1)} ${frame.local(spec.palmL*.88,-spec.palmW*.14).y.toFixed(1)}`,fill:'none',stroke:lights.skin.highlight,'stroke-width':'1.15','stroke-linecap':'round',opacity:'0.28'}));
-  }
+  silhouette(pair, thenarPath(frame), skinFill);
 
   const th=spec.thumb;
-  const t0=frame.local(th.b[0]-1.6,th.b[1]), t1=frame.local(th.m[0],th.m[1]), t2=frame.local(th.t[0],th.t[1]);
-  silhouette(pair, fingerSilhouettePath(t0,t1,t2,th.w,th.tw||th.w*0.7), skinFill);
+  const t0=frame.local(th.b[0]-3.6,th.b[1]*0.62), t1=frame.local(th.m[0],th.m[1]), t2=frame.local(th.t[0],th.t[1]);
+  silhouette(pair, fingerSilhouettePath(t0,t1,t2,th.w,th.tw||th.w*0.76), skinFill);
 
-  // Palm and knuckle creases are deliberately subtle so the hand still reads as clean anime line art.
-  const c1=frame.local(4,1.5), c2=frame.local(10,3.0), c3=frame.local(5,-2.2), c4=frame.local(9,-3.4);
-  g.appendChild(svgEl('path',{d:`M${c1.x.toFixed(1)} ${c1.y.toFixed(1)} Q${c2.x.toFixed(1)} ${c2.y.toFixed(1)} ${frame.local(13,1.2).x.toFixed(1)} ${frame.local(13,1.2).y.toFixed(1)}`,fill:'none',stroke:detailStroke,'stroke-width':'0.75','stroke-linecap':'round',opacity:'0.42'}));
-  g.appendChild(svgEl('path',{d:`M${c3.x.toFixed(1)} ${c3.y.toFixed(1)} Q${c4.x.toFixed(1)} ${c4.y.toFixed(1)} ${frame.local(11,-2.0).x.toFixed(1)} ${frame.local(11,-2.0).y.toFixed(1)}`,fill:'none',stroke:detailStroke,'stroke-width':'0.65','stroke-linecap':'round',opacity:'0.32'}));
+  spec.fingers.forEach(f=>g.appendChild(fingerOverlayMarkup(frame,f,lights,detailStroke)));
+  if(lights){
+    const h1=frame.local(3,-spec.palmW*.26), h2=frame.local(spec.palmL*.70,-spec.palmW*.32);
+    g.appendChild(svgEl('path',{d:`M${p(h1)} Q${p(h2)} ${p(frame.local(spec.palmL*.90,-spec.palmW*.12))}`,fill:'none',stroke:lights.skin.highlight,'stroke-width':'1.15','stroke-linecap':'round',opacity:'0.28'}));
+  }
+
+  for(let i=0;i<spec.fingers.length-1;i++){
+    const a=spec.fingers[i], b=spec.fingers[i+1];
+    const ea=fingerEdgePoints(frame,a), eb=fingerEdgePoints(frame,b);
+    const dip=frame.local((a.b[0]+b.b[0])*0.5+5.6, (a.b[1]+b.b[1])*0.5);
+    interiorStroke(g, `M${p(ea.uln1)} Q${p(dip)} ${p(eb.rad1)}`, {stroke:detailStroke, strokeWidth:1.2, opacity:0.55});
+  }
+
+  const c1=frame.local(5,2.2), c2=frame.local(12.5,3.6), c3=frame.local(6,-2.6), c4=frame.local(11.5,-3.8);
+  interiorStroke(g, `M${p(c1)} Q${p(c2)} ${p(frame.local(16.5,1.5))}`, {stroke:detailStroke, strokeWidth:0.9, opacity:0.40});
+  interiorStroke(g, `M${p(c3)} Q${p(c4)} ${p(frame.local(14.5,-2.4))}`, {stroke:detailStroke, strokeWidth:0.8, opacity:0.32});
 
   if(spec.nails){
     const nailFinger=spec.fingers[1];
     const nt=frame.local(nailFinger.t[0]-2.2,nailFinger.t[1]);
     const na=frame.local(nailFinger.t[0]-5.0,nailFinger.t[1]-1.5), nb=frame.local(nailFinger.t[0]-5.0,nailFinger.t[1]+1.5);
-    g.appendChild(svgEl('path',{d:`M${na.x.toFixed(1)} ${na.y.toFixed(1)} Q${nt.x.toFixed(1)} ${nt.y.toFixed(1)} ${nb.x.toFixed(1)} ${nb.y.toFixed(1)}`,fill:'none',stroke:detailStroke,'stroke-width':'0.65','stroke-linecap':'round',opacity:'0.34'}));
+    interiorStroke(g, `M${p(na)} Q${p(nt)} ${p(nb)}`, {stroke:detailStroke, strokeWidth:0.65, opacity:0.34});
   }
 
-  // Wrist seam cleanup happens last so the hand and forearm read as one continuous drawing.
   g.appendChild(smoothWristJointMarkup(wrist,from,skinFill,skinStroke,2.15));
   return g;
 }
@@ -3093,7 +3162,7 @@ function randomize(){
   renderAvatar();
 }
 function saveStateFile(){
-  const data = {version:3, rendererStep:19, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', silhouetteModel:'teen-proportion-unified-contour-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'articulated-anime-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'unified-outer-contour-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'anatomy-aware-v1', activeVariant, variants};
+  const data = {version:3, rendererStep:19, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', silhouetteModel:'teen-proportion-unified-contour-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'illustrated-palm-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'unified-outer-contour-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'anatomy-aware-v1', activeVariant, variants};
   const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);

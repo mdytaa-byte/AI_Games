@@ -300,6 +300,11 @@
     .tab[data-ch="bass"].active { background: var(--bass); border-color: var(--bass); }
     .tab[data-ch="arp"].active { background: var(--arp); border-color: var(--arp); }
     .tab[data-ch="drums"].active { background: var(--drums); border-color: var(--drums); }
+    .tab[data-sec].active {
+      background: var(--gold);
+      border-color: var(--gold-2);
+      color: #1a1020;
+    }
 
     .roll-wrap {
       overflow: auto;
@@ -351,11 +356,33 @@
       border-color: var(--gold-2);
     }
 
-    .help {
-      color: var(--muted);
+    .chain {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+    }
+
+    .slot {
+      min-width: 28px;
+      border: 2px solid var(--border);
+      background: #12091f;
+      color: var(--gold-2);
+      padding: 4px 7px;
+      cursor: pointer;
       font-size: 11px;
-      line-height: 1.5;
-      margin-top: 8px;
+      letter-spacing: .08em;
+    }
+
+    .slot.b { border-color: #6a2744; color: var(--pink); }
+    .slot.now { background: var(--gold); color: #1a1020; border-color: var(--gold-2); }
+
+    .arrange {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin: 10px 0 6px;
     }
 
     .status {
@@ -475,7 +502,7 @@
         <label class="field">Swing <span class="val" id="swingVal"></span>
           <input id="swing" type="range" min="0" max="40" step="1">
         </label>
-        <p class="help">Mood sets the arrangement recipe. Generate writes a new loop. Mutate keeps drums and harmony, rewrites the lead. Lock a mixer channel to keep it.</p>
+        <p class="help">Mood sets the arrangement recipe. Generate writes A and B, then loops the chain. Mutate keeps drums and harmony, rewrites the lead. Lock a mixer channel to keep it.</p>
         <h2 style="margin-top:14px">Game SFX</h2>
         <div class="sfx" id="sfxPad"></div>
         <p class="help">One-shots for pickups, jumps, menus, and fanfares. Click to audition.</p>
@@ -495,6 +522,17 @@
             <div class="scanlines"></div>
           </div>
         </div>
+        <div class="arrange">
+          <h2 style="margin:0">Arrange</h2>
+          <div class="mini" id="chainPresets"></div>
+          <div class="chain" id="chainSlots"></div>
+          <button class="btn" id="chainAdd" type="button">+ Slot</button>
+          <button class="btn" id="chainDel" type="button">− Slot</button>
+          <span class="mini">
+            <button class="tab" id="secA" data-sec="A" type="button">Edit A</button>
+            <button class="tab" id="secB" data-sec="B" type="button">Edit B</button>
+          </span>
+        </div>
         <div class="roll-head">
           <h2 style="margin:0">Tracker</h2>
           <div class="chan-tabs" id="chanTabs"></div>
@@ -506,7 +544,7 @@
         <div class="roll-wrap">
           <canvas id="pianoRoll" width="1024" height="420"></canvas>
         </div>
-        <p class="help">The stage on the right is a tiny in-game preview — the hero walks while the loop plays. Click empty cells to write notes, click a note to erase it, drag right on a note to lengthen it. <kbd>Space</kbd> plays, <kbd>G</kbd> generates, <kbd>Z</kbd> undoes.</p>
+        <p class="help">A is the verse, B is the chorus. The chain is the loop order. Tracker edits the selected section. The stage walks while the loop plays. Click empty cells to write notes; drag right to lengthen. <kbd>Space</kbd> plays, <kbd>G</kbd> generates, <kbd>Z</kbd> undoes.</p>
       </main>
 
       <aside class="panel">
@@ -592,6 +630,23 @@
       { id: "fanfare", label: "Fanfare" },
       { id: "lose", label: "Game Over" }
     ];
+    const CHAIN_PRESETS = {
+      AABA: ["A", "A", "B", "A"],
+      ABAB: ["A", "B", "A", "B"],
+      AABB: ["A", "A", "B", "B"],
+      AB: ["A", "B"],
+      BA: ["B", "A"]
+    };
+    const MOOD_CHAINS = {
+      overworld: "AABA",
+      battle: "ABAB",
+      town: "AB",
+      dungeon: "AABA",
+      title: "AABA",
+      victory: "AB",
+      mystery: "ABAB",
+      castle: "AABB"
+    };
     const MOODS = {
       overworld: {
         label: "Overworld",
@@ -720,7 +775,13 @@
       stageTag: $("stageTag"),
       roll: $("pianoRoll"),
       sfx: $("sfxPad"),
-      library: $("librarySelect")
+      library: $("librarySelect"),
+      chainSlots: $("chainSlots"),
+      chainPresets: $("chainPresets"),
+      chainAdd: $("chainAdd"),
+      chainDel: $("chainDel"),
+      secA: $("secA"),
+      secB: $("secB")
     };
 
     const state = {
@@ -740,7 +801,8 @@
       history: [],
       sfxGain: null,
       stageX: 64,
-      stageClock: 0
+      stageClock: 0,
+      editSection: "A"
     };
 
     function $(id) { return document.getElementById(id); }
@@ -798,15 +860,70 @@
     }
 
     function songDuration(song, loops = 1) {
-      const steps = song.bars * 16;
+      const steps = chainSteps(song);
       const stepDur = 60 / song.tempo / 4;
       return steps * stepDur * loops;
     }
 
     function stepTime(song, step) {
       const stepDur = 60 / song.tempo / 4;
-      const swung = step % 2 === 1 ? stepDur * (song.swing / 100) : 0;
+      const swung = step % 2 === 1 ? stepDur * (finite(song.swing, 0) / 100) : 0;
       return step * stepDur + swung;
+    }
+
+    function arrangement(song) {
+      const chain = song && song.chain && song.chain.length ? song.chain : ["A"];
+      return chain.map((id) => (id === "B" ? "B" : "A"));
+    }
+
+    function sectionSteps(song) {
+      return Math.max(1, Number(song.bars) || 8) * 16;
+    }
+
+    function chainSteps(song) {
+      return arrangement(song).length * sectionSteps(song);
+    }
+
+    function chainLabel(song) {
+      return arrangement(song).join("");
+    }
+
+    function locateStep(song, globalStep) {
+      const len = sectionSteps(song);
+      const chain = arrangement(song);
+      const total = Math.max(len, chain.length * len);
+      const g = ((globalStep % total) + total) % total;
+      const idx = Math.floor(g / len) % chain.length;
+      return { section: chain[idx], local: g % len, chainIndex: idx, total };
+    }
+
+    function notesOf(song, channel, sectionId) {
+      const id = sectionId || "A";
+      if (song.sections && song.sections[id] && song.sections[id].notes) {
+        return song.sections[id].notes[channel] || [];
+      }
+      return (song.channels[channel] && song.channels[channel].notes) || [];
+    }
+
+    function editNotes(channel) {
+      return notesOf(state.song, channel, state.editSection || "A");
+    }
+
+    function extractNotes(song) {
+      const notes = {};
+      for (const name of CHANNELS) notes[name] = (song.channels[name] && song.channels[name].notes) || [];
+      return notes;
+    }
+
+    function buildChords(bars, scaleName, prog, root) {
+      const chords = [];
+      const scale = SCALES[scaleName];
+      const barsPerChord = bars <= 4 ? 1 : 2;
+      for (let bar = 0; bar < bars; bar++) {
+        const deg = chordQualityDegree(scaleName, prog[Math.floor(bar / barsPerChord) % prog.length]);
+        chords[bar] = diatonicChord(60 + root, scale, deg, 0);
+      }
+      return chords;
     }
 
     function createSongTitle(rng, mood) {
@@ -823,6 +940,24 @@
       return { mute: false, solo: false, lock: false, volume, wave, notes: [] };
     }
 
+    function mixerChannels(energy, recipe) {
+      return {
+        lead: emptyChannel(energy > 75 ? "pulse12" : "pulse25", 0.78),
+        harmony: emptyChannel("pulse50", 0.42),
+        bass: emptyChannel("triangle", 0.7),
+        arp: emptyChannel("pulse12", recipe.arp ? 0.28 : 0.12),
+        drums: emptyChannel("noise", 0.8)
+      };
+    }
+
+    function writeSection(target, chords, scale, rng, energy, root, scaleName, recipe, drumName) {
+      writeDrums(target, DRUM_PATTERNS[drumName], rng, energy);
+      writeBass(target, chords, rng, energy, scaleName);
+      writeLead(target, chords, scale, rng, energy, root);
+      writeHarmony(target, chords, rng, energy);
+      writeArp(target, chords, rng, energy, recipe.arp);
+    }
+
     function generateSong(opts) {
       const mood = opts.mood || "overworld";
       const recipe = MOODS[mood];
@@ -835,19 +970,14 @@
       const tempo = Number(opts.tempo || recipe.tempo);
       const energy = Number(opts.energy != null ? opts.energy : recipe.energy);
       const swing = Number(opts.swing || 0);
-      const prog = rng.pick(recipe.progressions);
-      const drumName = rng.pick(recipe.drums);
-      const pattern = DRUM_PATTERNS[drumName];
-      const steps = bars * 16;
-      const chords = [];
-      const barsPerChord = bars <= 4 ? 1 : 2;
-      for (let bar = 0; bar < bars; bar++) {
-        const deg = chordQualityDegree(scaleName, prog[Math.floor(bar / barsPerChord) % prog.length]);
-        chords[bar] = diatonicChord(60 + root, scale, deg, 0);
-      }
+      const progA = rng.pick(recipe.progressions);
+      const progB = recipe.progressions.find((p) => JSON.stringify(p) !== JSON.stringify(progA)) || rng.pick(recipe.progressions);
+      const drumA = rng.pick(recipe.drums);
+      const drumB = recipe.drums.find((d) => d !== drumA) || drumA;
+      const energyB = clamp(energy + (mood === "battle" ? 8 : 14), 18, 100);
 
       const song = {
-        version: 1,
+        version: 2,
         title: createSongTitle(rng, mood),
         seed: seedStr,
         mood,
@@ -862,23 +992,30 @@
         brightness: opts.brightness != null ? Number(opts.brightness) : (energy > 70 ? 5200 : 3400),
         master: opts.master != null ? Number(opts.master) : 72,
         vibrato: opts.vibrato != null ? Number(opts.vibrato) : (mood === "battle" || mood === "title" ? 16 : 10),
-        channels: {
-          lead: emptyChannel(energy > 75 ? "pulse12" : "pulse25", 0.78),
-          harmony: emptyChannel("pulse50", 0.42),
-          bass: emptyChannel("triangle", 0.7),
-          arp: emptyChannel("pulse12", recipe.arp ? 0.28 : 0.12),
-          drums: emptyChannel("noise", 0.8)
-        }
+        channels: mixerChannels(energy, recipe),
+        sections: { A: { notes: {} }, B: { notes: {} } },
+        chain: (CHAIN_PRESETS[MOOD_CHAINS[mood]] || CHAIN_PRESETS.AABA).slice()
       };
 
-      writeDrums(song, pattern, rng, energy);
-      writeBass(song, chords, rng, energy, scaleName);
-      writeLead(song, chords, scale, rng, energy, root);
-      writeHarmony(song, chords, rng, energy);
-      writeArp(song, chords, rng, energy, recipe.arp);
+      const blockA = { bars, channels: mixerChannels(energy, recipe) };
+      writeSection(blockA, buildChords(bars, scaleName, progA, root), scale, rng, energy, root, scaleName, recipe, drumA);
+      const blockB = { bars, channels: mixerChannels(energyB, recipe) };
+      writeSection(blockB, buildChords(bars, scaleName, progB, root), scale, rng, energyB, root, scaleName, recipe, drumB);
+      song.sections.A.notes = extractNotes(blockA);
+      song.sections.B.notes = extractNotes(blockB);
+
       if (opts.keep && opts.keepFrom) {
+        const prev = normalizeSong(clone(opts.keepFrom));
         for (const ch of opts.keep) {
-          if (opts.keepFrom.channels[ch]) song.channels[ch] = clone(opts.keepFrom.channels[ch]);
+          if (prev.channels[ch]) {
+            song.channels[ch] = clone(prev.channels[ch]);
+            song.channels[ch].notes = [];
+          }
+          for (const sec of ["A", "B"]) {
+            if (prev.sections[sec] && prev.sections[sec].notes[ch]) {
+              song.sections[sec].notes[ch] = clone(prev.sections[sec].notes[ch]);
+            }
+          }
         }
       }
       return song;
@@ -1285,10 +1422,34 @@
       return channel.notes.filter((n) => n.step === step);
     }
 
-    function scheduleStep(song, graph, audio, step, when) {
+    function flattenedSong(song) {
+      const src = normalizeSong(clone(song));
+      const chain = arrangement(src);
+      const len = sectionSteps(src);
+      const flat = clone(src);
       for (const name of CHANNELS) {
-        const ch = song.channels[name];
-        for (const note of notesAtStep(ch, step)) {
+        const notes = [];
+        chain.forEach((sec, i) => {
+          for (const note of notesOf(src, name, sec)) {
+            notes.push({
+              step: note.step + i * len,
+              length: note.length,
+              midi: note.midi,
+              vel: note.vel
+            });
+          }
+        });
+        if (!flat.channels[name]) flat.channels[name] = emptyChannel("square", 0.5);
+        flat.channels[name].notes = notes;
+      }
+      flat.bars = src.bars * chain.length;
+      return flat;
+    }
+
+    function scheduleStep(song, graph, audio, step, when) {
+      const loc = locateStep(song, step);
+      for (const name of CHANNELS) {
+        for (const note of notesOf(song, name, loc.section).filter((n) => n.step === loc.local)) {
           try {
             playChannelNote(audio, graph.channels[name].gain, name, note, song, when);
           } catch (err) {
@@ -1302,7 +1463,7 @@
       if (!state.playing || !state.audio || !state.graph || !state.song) return;
       const ctx = state.audio.ctx;
       const song = state.song;
-      const total = song.bars * 16;
+      const total = chainSteps(song);
       const playId = state.playId;
       while (state.nextTime < ctx.currentTime + 0.12) {
         if (playId !== state.playId) return;
@@ -1411,7 +1572,7 @@
         noise: noiseBuffer(offline)
       };
       const graph = makeGraph(audio, song, offline.destination);
-      const total = song.bars * 16;
+      const total = chainSteps(song);
       for (let loop = 0; loop < loops; loop++) {
         const loopStart = loop * songDuration(song);
         for (let step = 0; step < total; step++) {
@@ -1486,6 +1647,7 @@
     }
 
     function songToMidi(song) {
+      song = flattenedSong(song);
       const ppq = 480;
       const ticks16 = ppq / 4;
       const endTick = song.bars * 16 * ticks16;
@@ -1673,7 +1835,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
     }
 
     async function copyPlayer() {
-      const code = playerSnippet(state.song);
+      const code = playerSnippet(flattenedSong(state.song));
       try {
         await navigator.clipboard.writeText(code);
         toast("Player code copied");
@@ -1688,9 +1850,13 @@ window.BitForgePlay = async function BitForgePlay(song) {
     function transposeSong(song, fromKey, toKey) {
       const delta = toKey - fromKey;
       if (!delta) return;
+      const src = normalizeSong(song);
       for (const name of CHANNELS) {
         if (name === "drums") continue;
-        for (const note of song.channels[name].notes) note.midi += delta;
+        for (const sec of ["A", "B"]) {
+          for (const note of notesOf(src, name, sec)) note.midi += delta;
+        }
+        for (const note of src.channels[name].notes || []) note.midi += delta;
       }
       song.key = toKey;
     }
@@ -1741,12 +1907,49 @@ window.BitForgePlay = async function BitForgePlay(song) {
       ui.vibVal.textContent = ui.vibrato.value + "%";
     }
 
+    function emptyNotes() {
+      const notes = {};
+      for (const name of CHANNELS) notes[name] = [];
+      return notes;
+    }
+
+    function songMetaText(song) {
+      return NOTE_NAMES[song.key] + " " + SCALE_LABELS[song.scale] + " · " + song.tempo + " BPM · " + song.bars + " bars · " + chainLabel(song) + " · seed " + song.seed;
+    }
+
     function normalizeSong(song) {
+      if (!song) return song;
       song.vibrato = finite(song.vibrato, 10);
+      if (!song.channels) song.channels = mixerChannels(50, { arp: true });
       for (const name of CHANNELS) {
-        if (!song.channels[name]) continue;
+        if (!song.channels[name]) song.channels[name] = emptyChannel("square", 0.5);
         if (song.channels[name].lock == null) song.channels[name].lock = false;
+        if (song.channels[name].mute == null) song.channels[name].mute = false;
+        if (song.channels[name].solo == null) song.channels[name].solo = false;
+        if (!song.channels[name].notes) song.channels[name].notes = [];
       }
+      if (!song.sections) {
+        const notes = {};
+        for (const name of CHANNELS) notes[name] = clone(song.channels[name].notes || []);
+        song.sections = { A: { notes }, B: { notes: clone(notes) } };
+        song.chain = ["A", "B"];
+        for (const name of CHANNELS) song.channels[name].notes = [];
+      } else {
+        for (const sec of ["A", "B"]) {
+          if (!song.sections[sec]) song.sections[sec] = { notes: emptyNotes() };
+          if (!song.sections[sec].notes) song.sections[sec].notes = emptyNotes();
+          for (const name of CHANNELS) {
+            if (!song.sections[sec].notes[name]) {
+              song.sections[sec].notes[name] = clone(song.channels[name].notes || []);
+            }
+          }
+        }
+      }
+      if (!song.chain || !song.chain.length) {
+        song.chain = (CHAIN_PRESETS[MOOD_CHAINS[song.mood]] || CHAIN_PRESETS.AABA).slice();
+      }
+      song.chain = song.chain.map((id) => (id === "B" ? "B" : "A"));
+      song.version = song.version || 2;
       return song;
     }
 
@@ -1869,8 +2072,9 @@ window.BitForgePlay = async function BitForgePlay(song) {
       if (state.viewBar >= song.bars) state.viewBar = 0;
       if (!opts.keepForm) applySongToForm(song, opts.skipSeed);
       ui.title.textContent = song.title;
-      ui.meta.textContent = NOTE_NAMES[song.key] + " " + SCALE_LABELS[song.scale] + " · " + song.tempo + " BPM · " + song.bars + " bars · seed " + song.seed;
+      ui.meta.textContent = songMetaText(song);
       renderMixer();
+      renderArrange();
       drawRoll();
       paintStage();
       try { localStorage.setItem("bitforge-song", JSON.stringify(song)); } catch (err) { /* ignore */ }
@@ -1882,21 +2086,23 @@ window.BitForgePlay = async function BitForgePlay(song) {
       if (!form.seed) form.seed = String(Math.floor(Math.random() * 1e9));
       if (!mutate) ui.seed.value = form.seed;
       else form.seed = form.seed + ":m" + Math.floor(Math.random() * 9999);
-      const locked = state.song
-        ? CHANNELS.filter((name) => state.song.channels[name] && state.song.channels[name].lock)
+      const prev = state.song;
+      const locked = prev
+        ? CHANNELS.filter((name) => prev.channels[name] && prev.channels[name].lock)
         : [];
       const keep = mutate ? [...new Set(["drums", "bass", "harmony"].concat(locked))] : locked;
       const song = generateSong(keep.length ? {
         ...form,
         keep,
-        keepFrom: state.song
+        keepFrom: prev
       } : form);
-      if (mutate) {
-        song.title = state.song.title.replace(/ · .+$/, "") + " · VARIANT";
+      if (mutate && prev) {
+        song.title = prev.title.replace(/ · .+$/, "") + " · VARIANT";
         song.seed = ui.seed.value.trim() || song.seed;
+        if (prev.chain && prev.chain.length) song.chain = prev.chain.slice();
       }
-      if (state.song) {
-        for (const name of CHANNELS) song.channels[name].lock = Boolean(state.song.channels[name] && state.song.channels[name].lock);
+      if (prev) {
+        for (const name of CHANNELS) song.channels[name].lock = Boolean(prev.channels[name] && prev.channels[name].lock);
       }
       setSong(song);
       if (state.playing) play();
@@ -2008,6 +2214,62 @@ window.BitForgePlay = async function BitForgePlay(song) {
       }
     }
 
+    function renderChainPresets() {
+      ui.chainPresets.innerHTML = "";
+      for (const name of Object.keys(CHAIN_PRESETS)) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "btn";
+        btn.dataset.chain = name;
+        btn.textContent = name;
+        btn.addEventListener("click", () => {
+          if (!state.song) return;
+          snapshot();
+          state.song.chain = CHAIN_PRESETS[name].slice();
+          renderArrange();
+          ui.meta.textContent = songMetaText(state.song);
+        });
+        ui.chainPresets.appendChild(btn);
+      }
+    }
+
+    function highlightChain() {
+      if (!ui.chainSlots || !state.song) return;
+      const loc = locateStep(state.song, state.step);
+      ui.chainSlots.querySelectorAll(".slot").forEach((el, i) => {
+        el.classList.toggle("now", Boolean(state.playing && i === loc.chainIndex));
+      });
+    }
+
+    function renderArrange() {
+      if (!ui.chainSlots) return;
+      ui.chainSlots.innerHTML = "";
+      const song = state.song;
+      if (!song) return;
+      arrangement(song).forEach((id, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "slot" + (id === "B" ? " b" : "");
+        b.textContent = id;
+        b.addEventListener("click", () => {
+          snapshot();
+          song.chain[i] = song.chain[i] === "A" ? "B" : "A";
+          renderArrange();
+          ui.meta.textContent = songMetaText(song);
+        });
+        ui.chainSlots.appendChild(b);
+      });
+      highlightChain();
+      ui.secA.classList.toggle("active", (state.editSection || "A") === "A");
+      ui.secB.classList.toggle("active", state.editSection === "B");
+    }
+
+    function setEditSection(id) {
+      state.editSection = id === "B" ? "B" : "A";
+      renderArrange();
+      drawRoll();
+    }
+
     function rollLayout() {
       const ch = state.editChannel;
       const cols = 32;
@@ -2020,7 +2282,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
       if (ch === "bass") baseMidi = 36 + state.song.key - 2;
       else if (ch === "harmony") baseMidi = 48 + state.song.key - 2;
       else if (ch === "arp") baseMidi = 72 + state.song.key - 4;
-      const pitched = ch !== "drums" ? state.song.channels[ch].notes : [];
+      const pitched = ch !== "drums" ? editNotes(ch) : [];
       if (pitched.length) {
         const midis = pitched.map((n) => n.midi);
         const mid = Math.floor((Math.min(...midis) + Math.max(...midis)) / 2);
@@ -2051,13 +2313,14 @@ window.BitForgePlay = async function BitForgePlay(song) {
       const canvas = ui.roll;
       const ctx = canvas.getContext("2d");
       const song = state.song;
+      if (!song) return;
       const layout = rollLayout();
       const start = state.viewBar * 16;
       ctx.fillStyle = "#090510";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.font = "11px monospace";
       ctx.fillStyle = "#f0c75e";
-      ctx.fillText("BAR " + (state.viewBar + 1) + " / " + song.bars + "   " + layout.ch.toUpperCase(), 8, 14);
+      ctx.fillText("SEC " + (state.editSection || "A") + "  BAR " + (state.viewBar + 1) + " / " + song.bars + "   " + layout.ch.toUpperCase(), 8, 14);
       for (let row = 0; row < layout.rows; row++) {
         const y = layout.top + row * layout.rh;
         const midi = pitchAtRow(layout, row);
@@ -2066,6 +2329,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
         ctx.fillStyle = "#8a79ad";
         ctx.fillText(layout.ch === "drums" ? DRUM_ROWS[row] : midiName(midi), 6, y + layout.rh * 0.7);
       }
+      const loc = state.playing ? locateStep(song, state.step) : null;
       for (let col = 0; col < layout.cols; col++) {
         const x = layout.left + col * layout.cw;
         const step = start + col;
@@ -2074,14 +2338,14 @@ window.BitForgePlay = async function BitForgePlay(song) {
         ctx.moveTo(x, layout.top);
         ctx.lineTo(x, canvas.height);
         ctx.stroke();
-        if (state.playing && step === state.step) {
+        if (loc && loc.section === (state.editSection || "A") && loc.local === step) {
           ctx.fillStyle = "rgba(255, 107, 157, 0.12)";
           ctx.fillRect(x, layout.top, layout.cw, canvas.height);
         }
       }
-      const channel = song.channels[layout.ch];
+      const notes = editNotes(layout.ch);
       ctx.fillStyle = CHANNEL_COLORS[layout.ch];
-      for (const note of channel.notes) {
+      for (const note of notes) {
         if (note.step + note.length <= start || note.step >= start + layout.cols) continue;
         const row = rowForPitch(layout, note.midi);
         if (row < 0 || row >= layout.rows) continue;
@@ -2108,19 +2372,18 @@ window.BitForgePlay = async function BitForgePlay(song) {
     }
 
     function coveringNote(step, midi) {
-      const ch = state.song.channels[state.editChannel];
-      return ch.notes.find((n) => n.midi === midi && step >= n.step && step < n.step + n.length) || null;
+      return editNotes(state.editChannel).find((n) => n.midi === midi && step >= n.step && step < n.step + n.length) || null;
     }
 
     function toggleNote(step, midi, mode) {
-      const ch = state.song.channels[state.editChannel];
-      const idx = ch.notes.findIndex((n) => n.step === step && n.midi === midi);
+      const notes = editNotes(state.editChannel);
+      const idx = notes.findIndex((n) => n.step === step && n.midi === midi);
       if (mode !== "add" && idx >= 0) {
-        ch.notes.splice(idx, 1);
+        notes.splice(idx, 1);
         return "remove";
       }
       if (mode !== "remove" && idx < 0 && !coveringNote(step, midi)) {
-        addNote(ch, step, 1, midi, 0.85);
+        notes.push({ step, length: 1, midi, vel: 0.85 });
         if (state.audio && state.audio.ctx.state === "running" && state.graph) {
           playChannelNote(state.audio, state.graph.channels[state.editChannel].gain, state.editChannel, { step, length: 1, midi, vel: 0.85 }, state.song, state.audio.ctx.currentTime);
         }
@@ -2275,6 +2538,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
         paintVisualizer();
         paintStage();
         drawRoll();
+        highlightChain();
         if (state.playing) requestDraw();
       });
     }
@@ -2311,9 +2575,9 @@ window.BitForgePlay = async function BitForgePlay(song) {
       window.addEventListener("mouseup", () => {
         if (state.paint && state.paint.mode === "resize" && !state.paint.moved) {
           const note = state.paint.note;
-          const ch = state.song.channels[state.editChannel];
-          const idx = ch.notes.indexOf(note);
-          if (idx >= 0) ch.notes.splice(idx, 1);
+          const notes = editNotes(state.editChannel);
+          const idx = notes.indexOf(note);
+          if (idx >= 0) notes.splice(idx, 1);
           drawRoll();
         }
         state.paint = null;
@@ -2361,6 +2625,23 @@ window.BitForgePlay = async function BitForgePlay(song) {
         state.viewBar = (state.viewBar + 1) % state.song.bars;
         drawRoll();
       });
+      ui.chainAdd.addEventListener("click", () => {
+        if (!state.song) return;
+        snapshot();
+        const last = state.song.chain[state.song.chain.length - 1] || "A";
+        state.song.chain.push(last === "A" ? "B" : "A");
+        renderArrange();
+        ui.meta.textContent = songMetaText(state.song);
+      });
+      ui.chainDel.addEventListener("click", () => {
+        if (!state.song || state.song.chain.length <= 1) return;
+        snapshot();
+        state.song.chain.pop();
+        renderArrange();
+        ui.meta.textContent = songMetaText(state.song);
+      });
+      ui.secA.addEventListener("click", () => setEditSection("A"));
+      ui.secB.addEventListener("click", () => setEditSection("B"));
       ["tempo", "energy", "swing", "echo", "bright", "master", "vibrato"].forEach((id) => {
         $(id).addEventListener("input", () => {
           if (!state.song) return;
@@ -2372,7 +2653,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
           state.song.master = Number(ui.master.value);
           state.song.vibrato = Number(ui.vibrato.value);
           syncLabels();
-          ui.meta.textContent = NOTE_NAMES[state.song.key] + " " + SCALE_LABELS[state.song.scale] + " · " + state.song.tempo + " BPM · " + state.song.bars + " bars · seed " + state.song.seed;
+          ui.meta.textContent = songMetaText(state.song);
           applyLiveMix();
         });
       });
@@ -2428,6 +2709,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
       renderTabs();
       renderSfx();
       renderLibrary();
+      renderChainPresets();
       ui.echo.value = 28;
       ui.bright.value = 3400;
       ui.master.value = 72;
@@ -2478,15 +2760,19 @@ window.BitForgePlay = async function BitForgePlay(song) {
           key: 0,
           scale: MOODS[mood].scales[0]
         });
-        check(mood + ":lead", song.channels.lead.notes.length >= 8, song.channels.lead.notes.length);
-        check(mood + ":bass", song.channels.bass.notes.length >= 8, song.channels.bass.notes.length);
-        check(mood + ":drums", song.channels.drums.notes.length >= 8, song.channels.drums.notes.length);
+        check(mood + ":lead", notesOf(song, "lead", "A").length >= 8, notesOf(song, "lead", "A").length);
+        check(mood + ":leadB", notesOf(song, "lead", "B").length >= 4, notesOf(song, "lead", "B").length);
+        check(mood + ":bass", notesOf(song, "bass", "A").length >= 8, notesOf(song, "bass", "A").length);
+        check(mood + ":drums", notesOf(song, "drums", "A").length >= 8, notesOf(song, "drums", "A").length);
+        check(mood + ":chain", Array.isArray(song.chain) && song.chain.length >= 2, song.chain);
+        const expectDur = song.chain.length * song.bars * 16 * (60 / song.tempo / 4);
         check(mood + ":loop", songDuration(song) > 2 && Number.isFinite(songDuration(song)), songDuration(song));
+        check(mood + ":chain-dur", Math.abs(songDuration(song) - expectDur) < 0.02, { got: songDuration(song), expectDur });
       }
       document.title = "SELFTEST_MOODS";
       const a = generateSong({ mood: "overworld", seed: "same", bars: 8, tempo: 120, energy: 50, key: 0, scale: "major" });
       const b = generateSong({ mood: "overworld", seed: "same", bars: 8, tempo: 120, energy: 50, key: 0, scale: "major" });
-      check("seed-stable", JSON.stringify(a.channels) === JSON.stringify(b.channels));
+      check("seed-stable", JSON.stringify(a.sections) === JSON.stringify(b.sections));
       try {
         const basic = new OfflineAudioContext(1, 8000, 22050);
         const osc = basic.createOscillator();
@@ -2539,7 +2825,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
       try {
         const original = generateSong({ mood: "town", seed: "share-test", bars: 4, tempo: 110, energy: 40, key: 2, scale: "dorian", swing: 4 });
         const round = decodeSong(encodeSong(original));
-        check("share-roundtrip", round.seed === original.seed && round.channels.lead.notes.length === original.channels.lead.notes.length);
+        check("share-roundtrip", round.seed === original.seed && notesOf(round, "lead", "A").length === notesOf(original, "lead", "A").length);
         check("sfx-kit", SFX_KIT.length === 8 && SFX_KIT.every((item) => item.id && item.label));
         check("vibrato-field", Number.isFinite(original.vibrato));
         const midi = songToMidi(original);
@@ -2548,9 +2834,33 @@ window.BitForgePlay = async function BitForgePlay(song) {
         const ntrks = (midi[10] << 8) | midi[11];
         const ppq = (midi[12] << 8) | midi[13];
         const noteOns = midiNoteOnCount(midi);
-        const expected = CHANNELS.reduce((sum, name) => sum + original.channels[name].notes.length, 0);
+        const flat = flattenedSong(original);
+        const expected = CHANNELS.reduce((sum, name) => sum + flat.channels[name].notes.length, 0);
         check("midi-header", magic === "MThd" && format === 1 && ntrks === 6 && ppq === 480, { magic, format, ntrks, ppq });
-        check("midi-notes", noteOns === expected, { noteOns, expected, bytes: midi.length });
+        check("midi-notes", noteOns === expected, { noteOns, expected, bytes: midi.length, chain: original.chain });
+        const migrated = normalizeSong({
+          title: "OLD",
+          seed: "legacy",
+          mood: "town",
+          key: 0,
+          scale: "major",
+          tempo: 120,
+          bars: 4,
+          energy: 50,
+          swing: 0,
+          echo: 20,
+          echoSync: 0.5,
+          brightness: 3000,
+          master: 70,
+          channels: {
+            lead: { mute: false, solo: false, volume: 0.8, wave: "pulse25", notes: [{ step: 0, length: 2, midi: 72, vel: 0.8 }] },
+            harmony: { mute: false, solo: false, volume: 0.4, wave: "pulse50", notes: [] },
+            bass: { mute: false, solo: false, volume: 0.7, wave: "triangle", notes: [{ step: 0, length: 4, midi: 36, vel: 0.9 }] },
+            arp: { mute: false, solo: false, volume: 0.2, wave: "pulse12", notes: [] },
+            drums: { mute: false, solo: false, volume: 0.8, wave: "noise", notes: [{ step: 0, length: 1, midi: 36, vel: 0.9 }] }
+          }
+        });
+        check("migrate-sections", migrated.sections.A.notes.lead.length === 1 && migrated.sections.B.notes.lead.length === 1 && migrated.chain.join("") === "AB");
         paintStage();
         const pix = ui.stage.getContext("2d").getImageData(24, 24, 1, 1).data;
         check("stage-preview", pix[3] > 0, [pix[0], pix[1], pix[2], pix[3]]);

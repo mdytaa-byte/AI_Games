@@ -284,8 +284,18 @@
       .nav-links a:not(.nav-cta) { display: none; }
       .grid, .seasons, .listen, .about { grid-template-columns: 1fr; }
       .about img { height: 280px; }
-      .hero-copy { padding-bottom: 108px; }
-      h1 { font-size: clamp(40px, 12vw, 64px); }
+      .hero-media { background-position: center 12%; }
+      .hero-copy { padding-bottom: 96px; }
+      h1 { font-size: clamp(36px, 11vw, 56px); }
+      .lede { font-size: 16px; margin-bottom: 16px; }
+      .scripture { font-size: 18px; margin-bottom: 22px; }
+      .cta-row .btn { min-width: min(100%, 280px); }
+      .notes { display: none; }
+    }
+    @media (max-width: 520px) {
+      .nav { padding: 14px 16px; }
+      .brand-name { font-size: 12px; letter-spacing: .1em; }
+      .hero { min-height: 100svh; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }

@@ -57,6 +57,7 @@
     .gold-btn:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 2px #5b3916,0 8px 24px #d89f3a32}
     .ghost-btn{color:var(--parchment);background:#181b20;border:1px solid #9e804f88}
     .ghost-btn:hover{background:#24282f;border-color:var(--gold)}
+    button:disabled{opacity:.38;cursor:not-allowed;transform:none!important}
     .game-shell{display:grid;grid-template-columns:minmax(560px,1fr) 340px;gap:22px;max-width:1480px;margin:0 auto;padding:24px;min-height:calc(100vh - 84px)}
     .board-frame{
       position:relative;display:grid;place-items:center;min-height:720px;border:1px solid #9f7e4266;
@@ -82,12 +83,16 @@
     .tile.dark{fill:url(#darkMarble)}
     .tile.keep{stroke-width:2.4}
     .tile.legal{stroke:#ffe08a;stroke-width:2.8;filter:drop-shadow(0 0 8px #eac55a);animation:legalPulse 1.4s ease-in-out infinite;cursor:pointer}
+    .tile.capture-dest{stroke:#e15447;stroke-width:2.8;filter:drop-shadow(0 0 8px #e15447aa)}
+    .tile.storm-dest{stroke:#ffe08a;stroke-width:3.2;filter:drop-shadow(0 0 12px #eac55a)}
+    .tile.leap-mid{stroke:#7eb4e8;stroke-width:2;stroke-dasharray:5 4}
+    .tile.hover-dest{filter:brightness(1.18) drop-shadow(0 0 12px #ffe08a)}
     .tile.ghost{fill:#eac55a55;stroke:#ffe29b}
     .tile.threat{stroke:#e15447;stroke-width:2.2}
     .tile:hover{filter:brightness(1.12)}
     @keyframes legalPulse{50%{stroke:#fff4bb;filter:drop-shadow(0 0 10px #eac55a)}}
     .keep-label{fill:#dcc58e;font:700 12px Outfit,sans-serif;letter-spacing:.12em;text-transform:uppercase;text-anchor:middle;paint-order:stroke;stroke:#090909;stroke-width:3px}
-    #keeps,#ghosts,.piece-art{pointer-events:none}
+    #keeps,#ghosts,#previews,.piece-art{pointer-events:none}
     .piece-hit{pointer-events:auto;cursor:pointer}
     .piece{cursor:pointer;transition:filter var(--ease),transform .35s ease}
     .piece:hover,.piece:focus{filter:brightness(1.18) drop-shadow(0 0 10px currentColor);outline:none}
@@ -115,6 +120,7 @@
     .aspect-btn:hover:not(:disabled){border-color:var(--bright);color:#fff}
     .aspect-btn:disabled{opacity:.35;cursor:not-allowed}
     .aspect-btn.active{border-color:#f0c65c;background:#322615;color:#ffe3a0}
+    .aspect-btn.will-capture{border-color:#e15447;color:#f7c4bf}
     .aspect-symbol{display:block;font-size:18px;margin-bottom:2px}
     .inspect{margin-top:12px;padding-top:12px;border-top:1px solid #ffffff14;font-size:13px;color:#c9bea8;min-height:48px;line-height:1.45}
     .players{display:grid;gap:8px}
@@ -146,6 +152,21 @@
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
     .win-banner{position:absolute;inset:auto 8% 8%;text-align:center;pointer-events:none;z-index:6}
     .win-banner strong{display:block;font-family:Cinzel,Georgia,serif;font-size:28px;color:#f0d796;text-shadow:0 4px 18px #000}
+    .victory-screen{
+      position:fixed;inset:0;z-index:32;display:grid;place-items:center;padding:22px;
+      background:#000b;backdrop-filter:blur(8px);
+    }
+    .victory-panel{
+      width:min(560px,100%);text-align:center;position:relative;
+      background:linear-gradient(145deg,#191c21,#0c0e11);border:1px solid var(--gold);
+      box-shadow:0 28px 90px #000,inset 0 0 0 1px #d3a75225;padding:34px 30px 28px;border-radius:6px;
+    }
+    .victory-panel h2{color:#f0d796;margin:0 0 12px;font-size:clamp(26px,4vw,36px);letter-spacing:.1em}
+    .victory-panel p{color:#d2c6ad;line-height:1.5;margin:0}
+    .victory-recap{list-style:none;padding:0;margin:18px 0 8px;text-align:left}
+    .victory-recap li{padding:9px 4px;border-bottom:1px solid #ffffff14;color:#c9bea8;display:flex;justify-content:space-between;gap:12px}
+    .victory-recap strong{color:#efd99e;font-weight:700}
+    .victory-panel .modal-actions{justify-content:center;margin-top:22px}
     html.skip-title .title-screen{display:none!important}
     .title-screen{
       position:fixed;inset:0;z-index:28;display:grid;place-items:center;align-content:center;
@@ -397,6 +418,7 @@
         <g id="tiles"></g>
         <g id="keeps"></g>
         <g id="ghosts"></g>
+        <g id="previews"></g>
         <g id="pieces"></g>
       </svg>
       <div class="win-banner hidden" id="winBanner"></div>
@@ -429,6 +451,7 @@
           <button class="aspect-btn" data-aspect="sight" type="button"><span class="aspect-symbol">◉</span>Sight</button>
         </div>
         <button class="ghost-btn" id="rotateBtn" type="button" style="width:100%;margin-top:10px">Rotate piece</button>
+        <button class="ghost-btn" id="undoBtn" type="button" style="width:100%;margin-top:8px" disabled title="Retract your last command. In a solo match this also retracts the computer replies.">Take Back</button>
         <div class="inspect" id="inspect">Select a creature to study its reach.</div>
         <label class="toggle-row"><span>Show surrounding pressure</span><input type="checkbox" id="threatToggle" checked></label>
       </section>
@@ -497,6 +520,18 @@
     </div>
   </div>
   <div class="toast" id="toast" role="status"></div>
+  <div class="victory-screen hidden" id="victoryScreen" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
+    <div class="victory-panel">
+      <p class="eyebrow" id="victoryEyebrow">The chamber falls</p>
+      <h2 id="victoryTitle">Azure claims the chamber</h2>
+      <p id="victoryBody"></p>
+      <ul class="victory-recap" id="victoryRecap"></ul>
+      <div class="modal-actions">
+        <button class="ghost-btn" id="victoryTitleBtn" type="button">Title Screen</button>
+        <button class="gold-btn" id="victoryNewBtn" type="button">New Match</button>
+      </div>
+    </div>
+  </div>
 
   <script>
   (()=>{
@@ -511,12 +546,12 @@
       pieces:[],turn:'blue',round:1,selected:null,legal:[],legalMoves:[],
       winner:null,mode:'solo',human:'blue',difficulty:'adept',busy:false,
       logs:[],defeated:new Set(),showThreats:true,prevXY:{},aiSeq:0,silent:false,
-      tutorial:null
+      tutorial:null,undo:null,winHow:null,winKeep:null,hoverId:null
     };
 
     const $=s=>document.querySelector(s);
     const $$=s=>[...document.querySelectorAll(s)];
-    const board=$('#board'), tilesG=$('#tiles'), keepsG=$('#keeps'), piecesG=$('#pieces'), ghostsG=$('#ghosts');
+    const board=$('#board'), tilesG=$('#tiles'), keepsG=$('#keeps'), piecesG=$('#pieces'), ghostsG=$('#ghosts'), previewsG=$('#previews');
 
     const pts={};
     for(let r=0;r<=N;r++) for(let c=0;c<=r;c++){
@@ -633,6 +668,188 @@
         const a=pieceAt(n); if(a&&a.f===f) attackers.add(a);
       }));
       let pressure=0; attackers.forEach(a=>pressure+=pressureValue(a)); return pressure;
+    }
+
+    const clonePiece=p=>({...p, cells:p.cells?[...p.cells]:[p.pos]});
+    const clonePieces=()=>state.pieces.map(clonePiece);
+    function snapshotMatch(){
+      return {
+        pieces:clonePieces(),
+        turn:state.turn,
+        round:state.round,
+        winner:state.winner,
+        logs:[...state.logs],
+        defeated:new Set(state.defeated),
+        winHow:state.winHow,
+        winKeep:state.winKeep
+      };
+    }
+    function rememberUndo(){
+      if(state.silent||state.tutorial||!isHumanTurn()) return;
+      state.undo=snapshotMatch();
+    }
+    function restoreMatch(snap){
+      state.pieces=snap.pieces.map(clonePiece);
+      state.turn=snap.turn;
+      state.round=snap.round;
+      state.winner=snap.winner;
+      state.logs=[...snap.logs];
+      state.defeated=new Set(snap.defeated);
+      state.winHow=snap.winHow;
+      state.winKeep=snap.winKeep;
+      state.selected=null; state.legal=[]; state.legalMoves=[];
+      state.prevXY={}; state.busy=false; state.hoverId=null;
+    }
+    function hideVictory(){
+      const el=$('#victoryScreen');
+      if(el) el.classList.add('hidden');
+    }
+    function showVictory(){
+      if(state.silent||state.tutorial||!state.winner) return;
+      const el=$('#victoryScreen');
+      if(!el) return;
+      el.classList.remove('hidden');
+      const storm=state.winHow==='storm';
+      $('#victoryEyebrow').textContent=storm?'A keep has fallen':'The last banner stands';
+      $('#victoryTitle').textContent=`${NAMES[state.winner]} claims the chamber`;
+      $('#victoryTitle').style.color=COLORS[state.winner];
+      const how=storm
+        ? `${NAMES[state.winner]} storms the ${NAMES[state.winKeep]} Keep.`
+        : `${NAMES[state.winner]} is the last faction standing.`;
+      $('#victoryBody').textContent=`${how} The contest lasted ${state.round} round${state.round===1?'':'s'}.`;
+      $('#victoryRecap').innerHTML=ORDER.map(f=>{
+        let fate;
+        if(f===state.winner) fate='victor';
+        else if(storm&&f===state.winKeep) fate='keep taken';
+        else if(state.defeated.has(f)||!living(f)) fate='eliminated';
+        else fate='still in the field';
+        return `<li><span>${NAMES[f]}</span><strong>${fate}</strong></li>`;
+      }).join('');
+      $('#victoryNewBtn').focus();
+    }
+    function undoMove(){
+      if(!state.undo||state.tutorial||titleOpen()) return false;
+      state.aiSeq++;
+      restoreMatch(state.undo);
+      state.undo=null;
+      hideVictory();
+      log('The last command is taken back.');
+      render();
+      return true;
+    }
+    function leapMids(from,to){
+      if(!from||!to||from===to) return [];
+      return nbr(from).filter(m=>nbr(m).includes(to));
+    }
+    function capturesFrom(p,a){
+      const kill=[], bind=[];
+      let keep=null;
+      const snap=applyTemp(p,a);
+      try{
+        if(a.type!=='aspect'){
+          keep=rivalKeepHit(a.cells,p)||(a.note==='assault'?ORDER.find(f=>f!==p.f&&a.cells.includes(keepAt[f])):null)||null;
+        }
+        if(!keep){
+          state.pieces.filter(e=>e!==p&&e.f!==p.f).forEach(e=>{
+            if(pressureAgainst(e,p.f)>=defenseValue(e)){
+              if(e.type==='gigas') bind.push(e.id);
+              else kill.push(e.id);
+            }
+          });
+        }
+      }finally{ revertTemp(p,snap); }
+      return {kill, bind, keep};
+    }
+    function previewLine(info){
+      const bits=[];
+      if(info.keep) bits.push(`would storm the ${NAMES[info.keep]} Keep`);
+      if(info.kill.length){
+        const names=info.kill.map(id=>{
+          const e=state.pieces.find(x=>x.id===id);
+          return e?`${NAMES[e.f]} ${pieceName(e)}`:id;
+        });
+        bits.push(`would capture ${names.join(', ')}`);
+      }
+      if(info.bind.length) bits.push('would bind the Mage Gigas');
+      return bits.join(' · ');
+    }
+    function paintPreviews(){
+      if(!previewsG) return;
+      previewsG.innerHTML='';
+      $$('.tile').forEach(n=>n.classList.remove('capture-dest','storm-dest','leap-mid','hover-dest'));
+      $$('.aspect-btn').forEach(b=>b.classList.remove('will-capture'));
+      if(!state.selected||state.busy) return;
+      const p=state.pieces.find(x=>x.id===state.selected);
+      if(!p) return;
+      const origin=cells[p.pos]||cells[cellsOf(p)[0]];
+      const hover=state.hoverId;
+      const hoverMoves=hover?state.legalMoves.filter(m=>m.cells.includes(hover)):[];
+      const hoverInfo=hoverMoves.length?capturesFrom(p,hoverMoves[0]):null;
+      state.legalMoves.forEach(m=>{
+        if(m.type==='aspect') return;
+        const info=capturesFrom(p,m);
+        m.cells.forEach(id=>{
+          const n=document.querySelector(`.tile[data-id="${id}"]`);
+          if(!n) return;
+          if(info.keep) n.classList.add('storm-dest');
+          else if(info.kill.length||info.bind.length) n.classList.add('capture-dest');
+        });
+        if(p.type==='mage'&&p.aspect==='sight'&&m.type==='move'&&m.cells[0]&&distance(p.pos,m.cells[0])===2){
+          const dest=cells[m.cells[0]];
+          const mids=leapMids(p.pos,m.cells[0]);
+          const hot=hover===m.cells[0];
+          mids.forEach(mid=>{
+            const mc=cells[mid];
+            const tn=document.querySelector(`.tile[data-id="${mid}"]`);
+            if(tn) tn.classList.add('leap-mid');
+            if(origin&&mc&&dest){
+              previewsG.append(svg('path',{
+                d:`M${origin.cx.toFixed(1)} ${origin.cy.toFixed(1)} L${mc.cx.toFixed(1)} ${mc.cy.toFixed(1)} L${dest.cx.toFixed(1)} ${dest.cy.toFixed(1)}`,
+                fill:'none', stroke:hot?'#ffe08a':'#c9dcff77', 'stroke-width':hot?3.2:1.6,
+                'stroke-dasharray':'8 7', 'stroke-linecap':'round', class:'preview-leap'
+              }));
+            }
+          });
+        }
+      });
+      if(p.type==='mage'){
+        ['strength','swiftness','sight'].forEach(aspect=>{
+          if(aspect===p.aspect) return;
+          const info=capturesFrom(p,{type:'aspect',id:p.id,aspect,cells:cellsOf(p)});
+          if(info.kill.length||info.bind.length){
+            const btn=document.querySelector(`.aspect-btn[data-aspect="${aspect}"]`);
+            if(btn) btn.classList.add('will-capture');
+          }
+        });
+      }
+      if(hover){
+        const n=document.querySelector(`.tile[data-id="${hover}"]`);
+        if(n) n.classList.add('hover-dest');
+      }
+      if(hoverInfo){
+        const mark=(id,color)=>{
+          const e=state.pieces.find(x=>x.id===id); if(!e) return;
+          cellsOf(e).forEach(cid=>{
+            const c=cells[cid]; if(!c) return;
+            previewsG.append(svg('circle',{cx:c.cx,cy:c.cy,r:26,fill:'none',stroke:color,'stroke-width':3,class:'preview-kill'}));
+          });
+        };
+        hoverInfo.kill.forEach(id=>mark(id,'#e15447'));
+        hoverInfo.bind.forEach(id=>mark(id,'#e5bb55'));
+      }
+      if(hoverInfo){
+        const line=previewLine(hoverInfo);
+        const box=$('#inspect');
+        box.textContent=line?`${state.inspectBase||''} This tile ${line}.`:(state.inspectBase||box.textContent);
+      }else if(state.inspectBase){
+        $('#inspect').textContent=state.inspectBase;
+      }
+    }
+    function setHover(id){
+      const next=id||null;
+      if(state.hoverId===next) return;
+      state.hoverId=next;
+      if(!state.silent) paintPreviews();
     }
 
     function rotatePoint(id,pivot,k){
@@ -878,6 +1095,8 @@
         b.classList.toggle('active',sel?.aspect===b.dataset.aspect);
       });
       $('#rotateBtn').disabled=!sel||sel.type==='mage'||!isHumanTurn()||state.busy||!!state.winner||!!state.tutorial||!state.legalMoves.some(m=>m.type==='rotate');
+      const undoBtn=$('#undoBtn');
+      if(undoBtn) undoBtn.disabled=!state.undo||!!state.tutorial;
       if(state.tutorial){
         const step=currentStep();
         $('#instruction').textContent=step?.prompt||step?.body||'Follow the lesson.';
@@ -889,14 +1108,15 @@
         $('#roundLabel').textContent=`◆ Round ${state.round} ◆`;
       }
       $('#inspect').textContent=sel?`${pieceName(sel)} · ${cellsOf(sel).length} space${cellsOf(sel).length>1?'s':''} · ${cap(sel.aspect)} · pressure ${pressureValue(sel)} · armor ${defenseValue(sel)} · ${state.legalMoves.filter(m=>m.type==='move').length} march${state.legalMoves.filter(m=>m.type==='move').length===1?'':'es'}, ${state.legalMoves.filter(m=>m.type==='rotate').length} rotation${state.legalMoves.filter(m=>m.type==='rotate').length===1?'':'s'}.`:'Light tiles are ivory; dark tiles are obsidian. Sight stays on one color. The gate beside each keep is the ordinary path in.';
+      state.inspectBase=$('#inspect').textContent;
       const gigas=state.pieces.find(p=>p.type==='gigas');
       $('#players').innerHTML=ORDER.map(f=>`<div class="player-row ${state.turn===f?'current':''} ${state.defeated.has(f)?'defeated':''}"><i class="faction-dot" style="background:${COLORS[f]};color:${COLORS[f]}"></i><span>${NAMES[f]}${(state.mode==='solo'&&f===state.human)||(state.tutorial&&f==='blue')?' · You':''}</span><span class="piece-count">${state.pieces.filter(p=>p.f===f).length} pieces</span></div>`).join('')+`<div class="player-row"><i class="faction-dot" style="background:linear-gradient(90deg,#e15447,#4e88e1,#f1bc32)"></i><span>Mage Gigas</span><span class="piece-count">${gigas? (gigas.f==='neutral'?'Unbound':NAMES[gigas.f]):'—'}</span></div>`;
       $('#log').innerHTML=state.logs.slice(0,8).map(x=>`<div>${x}</div>`).join('');
       if(state.winner&&!state.tutorial){
-        $('#winBanner').classList.remove('hidden');
-        $('#winBanner').innerHTML=`<strong>${NAMES[state.winner]} claims the chamber</strong>`;
+        $('#winBanner').classList.add('hidden');
       }else $('#winBanner').classList.add('hidden');
       applyTutorialChrome();
+      paintPreviews();
     }
 
     function selectPiece(id){
@@ -962,6 +1182,7 @@
 
     function takeAction(a){
       const p=state.pieces.find(x=>x.id===a.id); if(!p) return;
+      rememberUndo();
       if(a.type==='aspect'){
         p.aspect=a.aspect;
         log(`${NAMES[p.f]} Mage Fowl turns to ${cap(a.aspect)}.`);
@@ -973,6 +1194,8 @@
           const fallen=rival||ORDER.find(f=>a.cells.includes(keepAt[f]));
           log(`${NAMES[p.f]} ${pieceName(p)} storms the ${NAMES[fallen]} Keep and wins!`);
           state.winner=p.f;
+          state.winHow='storm';
+          state.winKeep=fallen;
           if(state.tutorial){ tutorialOnAction(a); render(); return; }
           celebrate(); render(); return;
         }
@@ -1016,7 +1239,13 @@
     function checkEliminations(){
       ORDER.forEach(f=>{if(!living(f)&&!state.defeated.has(f)){state.defeated.add(f);log(`${NAMES[f]} has lost all forces.`);}});
       const alive=ORDER.filter(living);
-      if(alive.length===1){state.winner=alive[0];log(`${NAMES[alive[0]]} is the last faction standing.`);celebrate();}
+      if(alive.length===1){
+        state.winner=alive[0];
+        state.winHow='last';
+        state.winKeep=null;
+        log(`${NAMES[alive[0]]} is the last faction standing.`);
+        celebrate();
+      }
     }
 
     function advanceTurn(){
@@ -1122,6 +1351,8 @@
       state.turn=$('#first').value==='random'?ORDER[Math.floor(Math.random()*3)]:state.human;
       state.round=1; state.selected=null; state.legal=[]; state.legalMoves=[];
       state.winner=null; state.busy=false; state.logs=[]; state.defeated=new Set(); state.prevXY={};
+      state.undo=null; state.winHow=null; state.winKeep=null; state.hoverId=null;
+      hideVictory();
       resetPieces();
       log('The magical torches flare. A new match begins.');
       $('#setupModal').classList.add('hidden');
@@ -1133,7 +1364,10 @@
     function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
     let toastTimer;
     function toast(s){if(state.silent) return; const t=$('#toast');t.textContent=s;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);}
-    function celebrate(){toast(`${NAMES[state.winner]} claims victory!`);}
+    function celebrate(){
+      toast(`${NAMES[state.winner]} claims victory!`);
+      showVictory();
+    }
 
     const TUTORIAL_STEPS=[
       {
@@ -1321,9 +1555,11 @@
 
     function clearTutorialUi(){
       state.tutorial=null;
+      state.undo=null;
       document.body.classList.remove('tutorial-on');
       const card=$('#tutorCard');
       if(card) card.classList.add('hidden');
+      hideVictory();
     }
 
     function endTutorial({toTitle=false, toSetup=false}={}){
@@ -1352,6 +1588,8 @@
       state.selected=null; state.legal=[]; state.legalMoves=[];
       state.winner=null; state.busy=false;
       state.logs=[]; state.defeated=new Set(); state.prevXY={};
+      state.undo=null; state.winHow=null; state.winKeep=null; state.hoverId=null;
+      hideVictory();
       document.body.classList.add('tutorial-on');
       tutorialApplySetup('welcome');
       log('A master of the chamber begins the lesson.');
@@ -1409,6 +1647,7 @@
     }
 
     $('#newBtn').onclick=()=>{
+      hideVictory();
       if(state.tutorial) endTutorial({toSetup:true});
       else $('#setupModal').classList.remove('hidden');
     };
@@ -1430,11 +1669,21 @@
     $('#tacticsBtn').onclick=()=>{$('#threatToggle').checked=!$('#threatToggle').checked; state.showThreats=$('#threatToggle').checked; render();};
     $('#threatToggle').onchange=()=>{state.showThreats=$('#threatToggle').checked; render();};
     $('#rotateBtn').onclick=rotateSelected;
+    $('#undoBtn').onclick=undoMove;
+    $('#victoryTitleBtn').onclick=()=>{hideVictory(); showTitle(true);};
+    $('#victoryNewBtn').onclick=()=>{hideVictory(); $('#setupModal').classList.remove('hidden'); $('#startBtn').focus();};
     $$('.aspect-btn').forEach(b=>b.onclick=()=>changeAspect(b.dataset.aspect));
     [$('#rulesModal'),$('#setupModal')].forEach(m=>m.addEventListener('click',e=>{if(e.target===m&&m.id==='rulesModal') m.classList.add('hidden');}));
     document.addEventListener('keydown',e=>{
       if(e.key==='Escape'){
         $('#rulesModal').classList.add('hidden');
+        return;
+      }
+      if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='Z')){
+        if(!titleOpen()&&$('#setupModal').classList.contains('hidden')&&$('#rulesModal').classList.contains('hidden')){
+          e.preventDefault();
+          undoMove();
+        }
         return;
       }
       if((e.key==='r'||e.key==='R')&&!state.busy&&!titleOpen()&&!state.tutorial) rotateSelected();
@@ -1583,6 +1832,59 @@
       ok(!state.tutorial, 'tutorial clears');
       ok($('#tutorCard').classList.contains('hidden'), 'tutor card hides after lesson');
 
+      state.mode='local'; state.turn='blue'; state.winner=null; state.busy=false; state.defeated=new Set();
+      state.undo=null; state.winHow=null; state.winKeep=null; hideVictory();
+      state.pieces=[
+        {id:'u1',f:'blue',type:'mage',aspect:'strength',pos:'U2-0',cells:['U2-0']},
+        {id:'eFar',f:'red',type:'mage',aspect:'swiftness',pos:'U4-4',cells:['U4-4']},
+        {id:'yFar',f:'yellow',type:'mage',aspect:'sight',pos:'D8-7',cells:['D8-7']}
+      ];
+      selectPiece('u1');
+      const stepDest=legalMovesFor(state.pieces[0]).find(m=>m.type==='move'&&m.cells[0]==='D2-0')?'D2-0':nbr('U2-0')[0];
+      onTile(stepDest);
+      ok(pieceAt(stepDest)?.id==='u1', 'undo setup moved the fowl');
+      ok(!!state.undo, 'take back is armed after a command');
+      ok(undoMove(), 'take back restores the command');
+      ok(pieceAt('U2-0')?.id==='u1' && !pieceAt(stepDest), 'take back returns the fowl');
+      ok(!state.undo, 'take back is single-use');
+
+      state.pieces=[
+        {id:'seer',f:'blue',type:'mage',aspect:'sight',pos:'D3-1',cells:['D3-1']},
+        {id:'eFar2',f:'red',type:'mage',aspect:'swiftness',pos:'U4-4',cells:['U4-4']},
+        {id:'yFar2',f:'yellow',type:'mage',aspect:'sight',pos:'D8-7',cells:['D8-7']}
+      ];
+      state.turn='blue'; state.undo=null;
+      ok(leapMids('D3-1','D2-0').length>=1, 'sight leap has a skipped tile');
+      selectPiece('seer');
+      ok(document.querySelector('.preview-leap'), 'sight leap path is drawn');
+      ok(document.querySelector('.tile.leap-mid'), 'skipped leap tile is marked');
+
+      state.pieces=[
+        {id:'atk',f:'blue',type:'mage',aspect:'strength',pos:'D2-0',cells:['D2-0']},
+        {id:'vic2',f:'red',type:'mage',aspect:'swiftness',pos:'D1-0',cells:['D1-0']},
+        {id:'yFar3',f:'yellow',type:'mage',aspect:'sight',pos:'D8-7',cells:['D8-7']}
+      ];
+      state.turn='blue'; state.undo=null; state.winner=null;
+      selectPiece('atk');
+      const capInfo=capturesFrom(state.pieces[0], {type:'move',id:'atk',cells:['U1-0']});
+      ok(capInfo.kill.includes('vic2'), 'moving beside the gate fowl would capture');
+      ok(document.querySelector('.tile.capture-dest[data-id="U1-0"]'), 'capture destination is marked');
+
+      state.pieces=[
+        {id:'stormer',f:'blue',type:'mage',aspect:'strength',pos:'D1-0',cells:['D1-0']},
+        {id:'eFar3',f:'red',type:'mage',aspect:'swiftness',pos:'U4-4',cells:['U4-4']},
+        {id:'yFar4',f:'yellow',type:'mage',aspect:'sight',pos:'D8-7',cells:['D8-7']}
+      ];
+      state.turn='blue'; state.undo=null; state.winner=null; hideVictory();
+      selectPiece('stormer');
+      onTile('U0-0');
+      ok(state.winner==='blue' && state.winHow==='storm', 'storm sets a keep victory');
+      ok(!$('#victoryScreen').classList.contains('hidden'), 'victory screen opens');
+      ok(($('#victoryTitle').textContent||'').toLowerCase().includes('azure'), 'victory names azure');
+      ok(undoMove(), 'take back after a win is allowed');
+      ok(!state.winner, 'take back clears the winner');
+      ok($('#victoryScreen').classList.contains('hidden'), 'victory screen closes on take back');
+
       resetPieces();
       render();
       const tile=document.querySelector('.tile[data-id="U4-2"]');
@@ -1604,10 +1906,16 @@
     window.Trifecta={
       state, legalMovesFor, takeAction, allActions, selectPiece, onTile, newGame, resetPieces,
       cells, keepAt, cellsOf, pieceAt, nbr, boardInvariant,
-      startTutorial, endTutorial, tutorialAdvance, currentStep, TUTORIAL_STEPS
+      startTutorial, endTutorial, tutorialAdvance, currentStep, TUTORIAL_STEPS,
+      undoMove, capturesFrom, leapMids, showVictory, hideVictory
     };
 
     drawStatic();
+    board.addEventListener('pointermove',e=>{
+      const tile=e.target.closest('.tile');
+      setHover(tile?tile.dataset.id:null);
+    });
+    board.addEventListener('pointerleave',()=>setHover(null));
     resetPieces();
     log('The board awaits your command.');
     render();

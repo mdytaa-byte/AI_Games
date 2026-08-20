@@ -145,6 +145,7 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
   background:var(--tanne);color:var(--kittel);border:none;
   border-radius:999px;padding:.72em 1.25em;font-weight:700;
   box-shadow:0 3px 0 #0E2A25;
+  flex-wrap:wrap;
 }
 .btn:hover{background:var(--tanne-hell)}
 .btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0E2A25}
@@ -183,7 +184,8 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 .modus .m-t{font-family:var(--serif);font-size:1.25rem;font-weight:700;display:block}
 .modus .m-d{font-size:.88rem;color:var(--weich);margin-top:.25rem}
 
-.regeln{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1rem}
+.regeln{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:1rem}
+@media (max-width:960px){.regeln{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:700px){.regeln{grid-template-columns:1fr}}
 .regel h3{font-family:var(--serif);margin:.2rem 0 .25rem;font-size:1.15rem}
 .regel p{margin:0;color:var(--weich);font-size:.92rem}
@@ -270,6 +272,14 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 }
 .tab[aria-selected="true"]{background:var(--tanne);color:var(--kittel);border-color:var(--tanne)}
 .fragen{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.5rem}
+.frage-gruppe{margin:0 0 1.15rem}
+.frage-gruppe:last-child{margin-bottom:0}
+.frage-gruppe h3{
+  font-family:var(--sans);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--moos);margin:0 0 .45rem;font-weight:800;
+}
+.frage-gruppe .fragen{margin:0}
+.btn .en{width:100%;text-align:center;font-weight:500}
 .frage{
   text-align:left;background:var(--kittel);border:2px solid var(--linie);
   border-radius:12px;padding:.7rem .75rem;font:inherit;color:var(--tinte);min-height:52px;
@@ -323,6 +333,17 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
   display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow-y:auto;
 }
 .overlay .karte{width:min(680px,100%);margin:auto}
+
+.warte-karte{text-align:center;max-width:520px;margin:0 auto}
+.ticket{
+  display:inline-block;background:var(--karte);border:3px dashed var(--tanne);
+  border-radius:12px;padding:1.1rem 1.6rem;margin:.6rem 0 1rem;min-width:220px;
+}
+.ticket .nr{font-family:var(--serif);font-size:3.2rem;line-height:1;color:var(--tanne)}
+.ticket .nm{font-weight:700;margin-top:.35rem;min-height:1.4em}
+.warte-reihe{display:flex;justify-content:center;gap:10px;margin:1rem 0;flex-wrap:wrap}
+.stuhl{width:42px;height:36px;border:3px solid var(--tanne);border-radius:6px 6px 2px 2px;background:var(--wand-tief)}
+.stuhl.an{background:var(--messing);border-color:#9a7a2e}
 
 /* language practice */
 .term{
@@ -403,8 +424,8 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
       <div class="karte">
         <p class="eyebrow" lang="de">Deutsch A2–B1 · Gesundheit</p>
         <h2 id="start-h" tabindex="-1" lang="de">Guten Tag, Doktor!</h2>
-        <p class="lede" lang="de">Du übernimmst heute die Sprechstunde in der kleinen Praxis am Markt. Patientinnen und Patienten erzählen dir — manchmal klar, manchmal durcheinander —, was ihnen fehlt. Stell Fragen, untersuche, und wähle am Ende eine Diagnose aus der Liste.</p>
-        <p class="en" lang="en">You are covering clinic hours in the little practice on the market square. Patients tell you different things — sometimes clearly, sometimes in a jumble. Ask questions, examine them, then choose a diagnosis from the list.</p>
+        <p class="lede" lang="de">Du übernimmst heute die Sprechstunde in der kleinen Praxis am Markt. Ruf im Wartezimmer auf — <i lang="de">Nächster bitte</i> —, begrüße, stell Fragen, untersuche. Am Ende wählst du eine Diagnose. Wenn sie nicht stimmt, darfst du nachfragen: die Lösung bleibt geheim.</p>
+        <p class="en" lang="en">You are covering clinic hours in the little practice on the market square. Call the next patient — <i lang="de">Nächster bitte</i> — then greet, ask, and examine. At the end you choose a diagnosis. If it is wrong you may ask more: the answer stays hidden.</p>
         <p class="lede" lang="de" style="margin-bottom:0">Sprich mit <b lang="de">Sie</b> (formell), außer bei Kindern. Wähle, wie du fragst — manche Sätze klingen deutsch, sind aber falsch. Tippe auf Wörter im Gespräch, und auf den Körper, wenn du den Ort meinst.</p>
         <p class="en" lang="en">Use formal <i lang="de">Sie</i> except with children. Choose how to ask — some sentences look German but are wrong. Tap words in the conversation, and tap the body to ask where it hurts.</p>
       </div>
@@ -446,20 +467,51 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
       </div>
       <div class="regeln">
         <div class="regel">
-          <h3 lang="de">1. Fragen</h3>
-          <p lang="de">Wo tut es weh? Seit wann? Fieber? Wähle die richtige deutsche Frage — nicht jede Formulierung stimmt.</p>
-          <p class="en" lang="en">Where does it hurt? Since when? Fever? Pick the correct German question — not every phrasing is right.</p>
+          <h3 lang="de">1. Wartezimmer</h3>
+          <p lang="de">Ruf mit <i lang="de">Nächster bitte</i> auf, dann nimm die Person ins Sprechzimmer.</p>
+          <p class="en" lang="en">Call them with <i lang="de">Nächster bitte</i>, then take them into the consulting room.</p>
         </div>
         <div class="regel">
-          <h3 lang="de">2. Untersuchen</h3>
+          <h3 lang="de">2. Fragen</h3>
+          <p lang="de">Ort, Zeit, Symptome, Hintergrund. Wähle die richtige deutsche Frage — nicht jede Formulierung stimmt.</p>
+          <p class="en" lang="en">Place, time, symptoms, background. Pick the correct German question — not every phrasing is right.</p>
+        </div>
+        <div class="regel">
+          <h3 lang="de">3. Untersuchen</h3>
           <p lang="de">Temperatur, Hals, Lunge, Bauch, Fuß, Augen — nicht jede Untersuchung ist nötig.</p>
           <p class="en" lang="en">Temperature, throat, lungs, abdomen, foot, eyes — not every exam is needed.</p>
         </div>
         <div class="regel">
-          <h3 lang="de">3. Diagnose</h3>
-          <p lang="de">Wähle aus der Liste, dann sag die Diagnose auf Deutsch: <i lang="de">Sie haben eine Erkältung.</i></p>
-          <p class="en" lang="en">Choose from the list, then say the diagnosis in German: <i lang="de">Sie haben eine Erkältung.</i></p>
+          <h3 lang="de">4. Diagnose</h3>
+          <p lang="de">Sag <i lang="de">Sie haben eine Erkältung</i>. Falsch? Frag weiter — die Lösung bleibt geheim, bis du auflöst.</p>
+          <p class="en" lang="en">Say <i lang="de">Sie haben eine Erkältung</i>. Wrong? Ask more — the answer stays hidden until you give up.</p>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WAITING ROOM -->
+  <section class="screen" id="s-warte" lang="de" aria-labelledby="warte-h" aria-hidden="true" inert>
+    <div class="karte warte-karte">
+      <p class="eyebrow" lang="de">Wartezimmer</p>
+      <h2 id="warte-h" tabindex="-1" lang="de">Nächster bitte</h2>
+      <p class="lede" lang="de" id="warte-status">Die nächste Person sitzt noch. Rufen Sie sie auf.</p>
+      <p class="en" lang="en" id="warte-status-en">The next person is still sitting. Call them in.</p>
+      <div class="ticket" id="ticket" lang="de" aria-live="polite">
+        <p class="eyebrow" lang="de" style="margin:0">Nummer</p>
+        <div class="nr" id="ticket-nr" lang="de">01</div>
+        <div class="nm" id="ticket-name" lang="de">—</div>
+      </div>
+      <div class="warte-reihe" id="warte-stuehle" aria-hidden="true"></div>
+      <div class="btn-row" style="justify-content:center">
+        <button type="button" class="btn" id="b-naechster" lang="de">
+          Nächster bitte
+          <span class="en" lang="en">Next, please</span>
+        </button>
+        <button type="button" class="btn btn-kreuz" id="b-sprechzimmer" lang="de" hidden>
+          Ins Sprechzimmer
+          <span class="en" lang="en">Into the consulting room</span>
+        </button>
       </div>
     </div>
   </section>
@@ -510,7 +562,7 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
               <button type="button" class="btn btn-ghost" id="sagen-abbruch" lang="de">Andere Frage</button>
             </div>
           </div>
-          <div id="aktionen" class="fragen" role="tabpanel" lang="de" aria-labelledby="tab-fragen"></div>
+          <div id="aktionen" role="tabpanel" lang="de" aria-labelledby="tab-fragen"></div>
           <p id="diag-pflicht" class="hinweis-fragen" lang="de">Die Diagnose ist frei, sobald du drei Fragen oder Untersuchungen gestellt hast.</p>
           <p class="en" lang="en">You can diagnose after three questions or exams.</p>
           <div class="btn-row">
@@ -566,7 +618,21 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
         <p class="en" id="res-en" lang="en"></p>
         <p lang="de" style="font-weight:700;margin-bottom:.2rem">Wichtige Hinweise</p>
         <ul class="clue-list" id="res-clues" lang="de"></ul>
-        <div class="btn-row">
+        <div class="btn-row" id="retry-reihe" hidden>
+          <button type="button" class="btn" id="b-retry-diag" lang="de">
+            Andere Diagnose
+            <span class="en" lang="en">Try another diagnosis</span>
+          </button>
+          <button type="button" class="btn btn-ghost" id="b-mehr-fragen" lang="de">
+            Mehr fragen
+            <span class="en" lang="en">Ask more questions</span>
+          </button>
+          <button type="button" class="btn btn-ghost" id="b-aufloesen" lang="de">
+            Auflösen
+            <span class="en" lang="en">Reveal the answer</span>
+          </button>
+        </div>
+        <div class="btn-row" id="next-reihe">
           <button type="button" class="btn" id="b-weiter" lang="de">Nächster Patient</button>
         </div>
       </div>
@@ -623,45 +689,52 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 "use strict";
 
 const FRAGEN = [
-  {id:"wo", kurz:"Ort", sie:"Wo tut es Ihnen weh?", du:"Wo tut es dir weh?", en:"Where does it hurt?", gram:"wehtun",
+  {id:"wo", gruppe:"ort", kurz:"Ort", sie:"Wo tut es Ihnen weh?", du:"Wo tut es dir weh?", en:"Where does it hurt?", gram:"wehtun",
     fallen:[
       {sie:"Wo tun Sie weh?", du:"Wo tust du weh?", en:"Where do you hurt?", fb:{de:"Der Körperteil tut weh, nicht die Person. „Wo tut es Ihnen weh?“", en:"The body part hurts, not the person. “Where does it hurt (for you)?”"}},
       {sie:"Ich tue Ihnen den Hals weh?", du:"Ich tue dir den Hals weh?", en:"I hurt your throat?", fb:{de:"wehtun: Der Hals tut MIR weh. Du fügst niemandem Schmerz zu.", en:"wehtun: the throat hurts ME. You’re not inflicting pain."}}
     ]},
-  {id:"was", kurz:"Was fehlt?", sie:"Was fehlt Ihnen genau?", du:"Was fehlt dir genau?", en:"What exactly is wrong?", gram:"fehlen",
+  {id:"was", gruppe:"symptom", kurz:"Was fehlt?", sie:"Was fehlt Ihnen genau?", du:"Was fehlt dir genau?", en:"What exactly is wrong?", gram:"fehlen",
     fallen:[
       {sie:"Was fehlen Sie?", du:"Was fehlst du?", en:"What are you missing?", fb:{de:"„Was fehlt Ihnen?“ ist eine Redewendung — nicht „was fehlen Sie?“", en:"“Was fehlt Ihnen?” is an idiom for “what’s wrong?” — not “what are you missing?”"}},
       {sie:"Was ist falsch mit Sie?", du:"Was ist falsch mit du?", en:"What is wrong with you?", fb:{de:"Auf Deutsch: „Was fehlt Ihnen?“ oder „Was ist los?“ — nicht „falsch mit Sie“.", en:"In German: “Was fehlt Ihnen?” or “Was ist los?” — not “wrong with you.”"}}
     ]},
-  {id:"seit", kurz:"Seit wann?", sie:"Seit wann haben Sie die Beschwerden?", du:"Seit wann hast du die Beschwerden?", en:"How long have you had the symptoms?", gram:"seit",
+  {id:"seit", gruppe:"zeit", kurz:"Seit wann?", sie:"Seit wann haben Sie die Beschwerden?", du:"Seit wann hast du die Beschwerden?", en:"How long have you had the symptoms?", gram:"seit",
     fallen:[
       {sie:"Wie lange sind Sie die Beschwerden?", du:"Wie lange bist du die Beschwerden?", en:"How long are you the symptoms?", fb:{de:"Man HAT Beschwerden, man ist sie nicht. Und die Zeit fragt „seit wann?“", en:"You HAVE symptoms, you aren’t them. Time is “seit wann?”"}},
       {sie:"Seit wann gehen die Schmerzen morgen?", du:"Seit wann gehen die Schmerzen morgen?", en:"Since when are the pains going tomorrow?", fb:{de:"„seit“ schaut zurück: seit gestern, seit zwei Tagen — nicht nach morgen.", en:"“seit” looks backward: since yesterday, for two days — not toward tomorrow."}}
     ]},
-  {id:"staerke", kurz:"Stärke 1–10", sie:"Wie stark sind die Schmerzen — von eins bis zehn?", du:"Wie stark sind die Schmerzen — von eins bis zehn?", en:"How strong is the pain, from one to ten?"},
-  {id:"fieber", kurz:"Fieber", sie:"Haben Sie Fieber?", du:"Hast du Fieber?", en:"Do you have a fever?", gram:"fieber",
+  {id:"staerke", gruppe:"ort", kurz:"Stärke 1–10", sie:"Wie stark sind die Schmerzen — von eins bis zehn?", du:"Wie stark sind die Schmerzen — von eins bis zehn?", en:"How strong is the pain, from one to ten?"},
+  {id:"fieber", gruppe:"symptom", kurz:"Fieber", sie:"Haben Sie Fieber?", du:"Hast du Fieber?", en:"Do you have a fever?", gram:"fieber",
     fallen:[
       {sie:"Sind Sie Fieber?", du:"Bist du Fieber?", en:"Are you a fever?", fb:{de:"Man HAT Fieber — man ist kein Fieber. „Haben Sie Fieber?“", en:"You HAVE a fever — you aren’t one."}},
       {sie:"Hat das Thermometer Fieber?", du:"Hat das Thermometer Fieber?", en:"Does the thermometer have a fever?", fb:{de:"Der Patient hat Fieber, nicht das Thermometer.", en:"The patient has the fever, not the thermometer."}}
     ]},
-  {id:"husten", kurz:"Husten / Nase", sie:"Husten Sie — oder ist die Nase verstopft?", du:"Hustest du — oder ist die Nase verstopft?", en:"Are you coughing — or is your nose blocked?"},
-  {id:"magen", kurz:"Magen", sie:"Haben Sie Magenschmerzen, Durchfall oder Erbrechen?", du:"Hast du Magenschmerzen, Durchfall oder musst du dich übergeben?", en:"Stomach pain, diarrhea, or vomiting?"},
-  {id:"uebel", kurz:"Übelkeit", sie:"Ist Ihnen übel? Tut der Kopf weh?", du:"Ist dir übel? Tut der Kopf weh?", en:"Are you nauseous? Does your head hurt?", gram:"uebel",
+  {id:"husten", gruppe:"symptom", kurz:"Husten / Nase", sie:"Husten Sie — oder ist die Nase verstopft?", du:"Hustest du — oder ist die Nase verstopft?", en:"Are you coughing — or is your nose blocked?"},
+  {id:"magen", gruppe:"symptom", kurz:"Magen", sie:"Haben Sie Magenschmerzen, Durchfall oder Erbrechen?", du:"Hast du Magenschmerzen, Durchfall oder musst du dich übergeben?", en:"Stomach pain, diarrhea, or vomiting?"},
+  {id:"uebel", gruppe:"symptom", kurz:"Übelkeit", sie:"Ist Ihnen übel? Tut der Kopf weh?", du:"Ist dir übel? Tut der Kopf weh?", en:"Are you nauseous? Does your head hurt?", gram:"uebel",
     fallen:[
       {sie:"Sind Sie übel?", du:"Bist du übel?", en:"Are you evil/nauseous?", fb:{de:"„Mir ist übel“ — Dativ. Nicht „ich bin übel“ (das hieße almost “I am nasty”).", en:"“Mir ist übel” uses the dative. “Ich bin übel” means you’re a nasty person."}},
       {sie:"Haben Sie übel den Kopf?", du:"Hast du übel den Kopf?", en:"Do you have nauseously the head?", fb:{de:"Zwei Sätze: „Ist Ihnen übel?“ und „Tut der Kopf weh?“", en:"Two sentences: “Are you nauseous?” and “Does your head hurt?”"}}
     ]},
-  {id:"schlucken", kurz:"Schlucken", sie:"Tut das Schlucken weh?", du:"Tut das Schlucken weh?", en:"Does swallowing hurt?", gram:"wehtun",
+  {id:"schlucken", gruppe:"symptom", kurz:"Schlucken", sie:"Tut das Schlucken weh?", du:"Tut das Schlucken weh?", en:"Does swallowing hurt?", gram:"wehtun",
     fallen:[
       {sie:"Schlucken Sie weh?", du:"Schluckst du weh?", en:"Do you swallow hurt?", fb:{de:"Das Schlucken (die Tätigkeit) tut weh: „Tut das Schlucken weh?“", en:"Swallowing (the action) hurts: “Tut das Schlucken weh?”"}},
       {sie:"Tun Sie den Schlucken weh?", du:"Tust du den Schlucken weh?", en:"Do you hurt the swallowing?", fb:{de:"Wieder wehtun: nicht du tust weh — das Schlucken tut weh.", en:"Again wehtun: you don’t inflict it — swallowing hurts."}}
     ]},
-  {id:"augen", kurz:"Augen / Licht", sie:"Jucken oder tränen die Augen? Stört Sie helles Licht?", du:"Jucken oder tränen die Augen? Stört dich helles Licht?", en:"Do your eyes itch or water? Does bright light bother you?"},
-  {id:"muede", kurz:"Müdigkeit", sie:"Fühlen Sie sich sehr müde oder schlapp?", du:"Fühlst du dich sehr müde oder schlapp?", en:"Do you feel very tired or washed out?"},
-  {id:"schon", kurz:"Vorgeschichte", sie:"Hatten Sie das schon einmal?", du:"Hattest du das schon einmal?", en:"Have you had this before?"},
-  {id:"essen", kurz:"Essen / Unfall", sie:"Haben Sie etwas Besonderes gegessen — oder sich verletzt?", du:"Hast du etwas Besonderes gegessen — oder dich verletzt?", en:"Did you eat anything unusual — or injure yourself?"},
-  {id:"wohin", kurz:"Auslöser", sie:"Wird es draußen, bei Bewegung oder im Hellen schlimmer?", du:"Wird es draußen, beim Sport oder im Hellen schlimmer?", en:"Is it worse outside, with movement, or in bright light?"},
-  {id:"andere", kurz:"Umgebung", sie:"Ist noch jemand in der Familie oder bei der Arbeit krank?", du:"Ist noch jemand in der Familie krank?", en:"Is anyone else in the family or at work ill?"}
+  {id:"augen", gruppe:"symptom", kurz:"Augen / Licht", sie:"Jucken oder tränen die Augen? Stört Sie helles Licht?", du:"Jucken oder tränen die Augen? Stört dich helles Licht?", en:"Do your eyes itch or water? Does bright light bother you?"},
+  {id:"muede", gruppe:"symptom", kurz:"Müdigkeit", sie:"Fühlen Sie sich sehr müde oder schlapp?", du:"Fühlst du dich sehr müde oder schlapp?", en:"Do you feel very tired or washed out?"},
+  {id:"schon", gruppe:"hintergrund", kurz:"Vorgeschichte", sie:"Hatten Sie das schon einmal?", du:"Hattest du das schon einmal?", en:"Have you had this before?"},
+  {id:"essen", gruppe:"hintergrund", kurz:"Essen / Unfall", sie:"Haben Sie etwas Besonderes gegessen — oder sich verletzt?", du:"Hast du etwas Besonderes gegessen — oder dich verletzt?", en:"Did you eat anything unusual — or injure yourself?"},
+  {id:"wohin", gruppe:"hintergrund", kurz:"Auslöser", sie:"Wird es draußen, bei Bewegung oder im Hellen schlimmer?", du:"Wird es draußen, beim Sport oder im Hellen schlimmer?", en:"Is it worse outside, with movement, or in bright light?"},
+  {id:"andere", gruppe:"hintergrund", kurz:"Umgebung", sie:"Ist noch jemand in der Familie oder bei der Arbeit krank?", du:"Ist noch jemand in der Familie krank?", en:"Is anyone else in the family or at work ill?"}
+];
+
+const FRAGE_GRUPPEN = [
+  {id:"ort", de:"Ort", en:"Where"},
+  {id:"zeit", de:"Zeit", en:"When"},
+  {id:"symptom", de:"Symptome", en:"Symptoms"},
+  {id:"hintergrund", de:"Hintergrund", en:"Background"}
 ];
 
 const EXAMS = [
@@ -1130,7 +1203,7 @@ function portraitSVG(p){
 const S = {
   en:false, laut:true, kontrast:false, size:0,
   queue:[], i:0, asked:new Set(), notes:{}, chat:[], results:[], score:0, tab:"fragen",
-  greeted:false, guessId:null, langPts:0
+  greeted:false, guessId:null, langPts:0, diagTries:0, lastSatz:"", called:false
 };
 
 const $ = id => document.getElementById(id);
@@ -1182,20 +1255,39 @@ function fillTerms(container, text){
   }
   container.append(out);
 }
+let speakGen = 0;
 function sagen(de){
+  sagenKette([de]);
+}
+function sagenKette(lines){
+  const parts = (lines || []).filter(Boolean);
   const live = $("ansage");
   live.setAttribute("lang", "de");
   live.textContent = "";
   void live.offsetWidth;
-  live.textContent = de;
-  if(!S.laut || !window.speechSynthesis) return;
+  live.textContent = parts.join(" ");
+  if(!S.laut || !window.speechSynthesis || !parts.length) return;
+  const gen = ++speakGen;
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(de);
-  u.lang = "de-DE";
-  const v = speechSynthesis.getVoices().find(x => /^de/i.test(x.lang));
-  if(v) u.voice = v;
-  u.rate = 0.95;
-  speechSynthesis.speak(u);
+  const queue = parts.slice();
+  const speakNext = () => {
+    if(gen !== speakGen || !queue.length) return;
+    const u = new SpeechSynthesisUtterance(queue.shift());
+    u.lang = "de-DE";
+    const v = speechSynthesis.getVoices().find(x => /^de/i.test(x.lang));
+    if(v) u.voice = v;
+    u.rate = 0.95;
+    let done = false;
+    const next = () => {
+      if(done) return;
+      done = true;
+      speakNext();
+    };
+    u.onend = next;
+    u.onerror = next;
+    speechSynthesis.speak(u);
+  };
+  speakNext();
 }
 function show(id){
   document.querySelectorAll(".screen").forEach(s => {
@@ -1211,30 +1303,62 @@ function setPressed(btn, on){
   btn.setAttribute("aria-pressed", on ? "true" : "false");
 }
 
+const SETTINGS_KEY = "sprechstunde-settings";
+function applySettings(){
+  document.body.classList.toggle("en-an", S.en);
+  setPressed($("b-en"), S.en);
+  $("b-en").setAttribute("aria-label", S.en ? "Englisch ausblenden" : "Englisch einblenden");
+  setPressed($("b-laut"), S.laut);
+  document.documentElement.setAttribute("data-kontrast", S.kontrast?"1":"0");
+  setPressed($("b-kontrast"), S.kontrast);
+  const v = ["","gross","sehr-gross"][S.size] || "";
+  document.documentElement.setAttribute("data-size", v);
+  setPressed($("b-schrift"), S.size>0);
+}
+function saveSettings(){
+  try{
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+      en:S.en, laut:S.laut, kontrast:S.kontrast, size:S.size
+    }));
+  }catch(e){}
+}
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if(!raw) return;
+    const o = JSON.parse(raw);
+    if(typeof o.en === "boolean") S.en = o.en;
+    if(typeof o.laut === "boolean") S.laut = o.laut;
+    if(typeof o.kontrast === "boolean") S.kontrast = o.kontrast;
+    if(typeof o.size === "number" && o.size>=0 && o.size<=2) S.size = o.size;
+  }catch(e){}
+}
+
 /* settings */
 $("b-en").onclick = function(){
   S.en = !S.en;
-  document.body.classList.toggle("en-an", S.en);
-  setPressed(this, S.en);
-  this.setAttribute("aria-label", S.en ? "Englisch ausblenden" : "Englisch einblenden");
+  applySettings();
+  saveSettings();
   if($("s-play").classList.contains("on") && $("sagen-panel").hidden) setTab(S.tab);
 };
 $("b-laut").onclick = function(){
   S.laut = !S.laut;
-  setPressed(this, S.laut);
-  if(!S.laut && window.speechSynthesis) speechSynthesis.cancel();
+  applySettings();
+  saveSettings();
+  if(!S.laut && window.speechSynthesis){ speakGen++; speechSynthesis.cancel(); }
 };
 $("b-kontrast").onclick = function(){
   S.kontrast = !S.kontrast;
-  document.documentElement.setAttribute("data-kontrast", S.kontrast?"1":"0");
-  setPressed(this, S.kontrast);
+  applySettings();
+  saveSettings();
 };
 $("b-schrift").onclick = function(){
   S.size = (S.size+1)%3;
-  const v = ["","gross","sehr-gross"][S.size];
-  document.documentElement.setAttribute("data-size", v);
-  setPressed(this, S.size>0);
+  applySettings();
+  saveSettings();
 };
+loadSettings();
+applySettings();
 
 let lastFocus = null;
 function openWoerter(){
@@ -1285,8 +1409,44 @@ function startShift(n){
   const all = PATIENTEN.slice();
   S.queue = n==="all" ? all : shuffle(all).slice(0, Number(n));
   S.i = 0; S.results = []; S.score = 0; S.langPts = 0;
-  beginConsult();
+  showWarte();
 }
+
+function showWarte(){
+  S.called = false;
+  show("s-warte");
+  const nr = String(S.i+1).padStart(2,"0");
+  $("ticket-nr").textContent = nr;
+  $("ticket-name").textContent = "—";
+  $("ticket").setAttribute("aria-label", "Wartenummer "+nr);
+  $("warte-status").textContent = "Die nächste Person sitzt noch. Rufen Sie sie auf.";
+  $("warte-status-en").textContent = "The next person is still sitting. Call them in.";
+  $("b-naechster").hidden = false;
+  $("b-naechster").disabled = false;
+  $("b-sprechzimmer").hidden = true;
+  const row = $("warte-stuehle");
+  row.innerHTML = "";
+  S.queue.slice(S.i).forEach((_, idx) => {
+    const d = document.createElement("div");
+    d.className = "stuhl" + (idx===0 ? " an" : "");
+    row.appendChild(d);
+  });
+}
+
+function callNext(){
+  const p = patient();
+  S.called = true;
+  $("ticket-name").textContent = p.name;
+  $("ticket").setAttribute("aria-label", "Wartenummer "+$("ticket-nr").textContent+", "+p.name);
+  $("warte-status").textContent = p.name + " kommt nach vorne.";
+  $("warte-status-en").textContent = p.name + " is coming forward.";
+  $("b-naechster").disabled = true;
+  $("b-sprechzimmer").hidden = false;
+  sagen("Nächster bitte. " + p.name + ".");
+  $("b-sprechzimmer").focus();
+}
+$("b-naechster").onclick = callNext;
+$("b-sprechzimmer").onclick = beginConsult;
 
 function beginConsult(){
   S.asked = new Set();
@@ -1295,6 +1455,8 @@ function beginConsult(){
   S.tab = "fragen";
   S.greeted = false;
   S.guessId = null;
+  S.diagTries = 0;
+  S.lastSatz = "";
   $("gram-chip").hidden = true;
   hideSay();
   const p = patient();
@@ -1359,7 +1521,7 @@ function startGreeting(){
       hideSay();
       addChat("a", "Sie", choice.de, choice.en);
       addChat("p", patient().name, patient().eintritt.de, patient().eintritt.en);
-      sagen(patient().eintritt.de);
+      sagenKette([choice.de, patient().eintritt.de]);
       setTab(S.tab);
     }
   });
@@ -1465,6 +1627,7 @@ function setTab(tab){
   const lab = tab==="fragen" ? "tab-fragen" : tab==="untersuchen" ? "tab-exam" : "tab-koerper";
   $("aktionen").setAttribute("aria-labelledby", lab);
   $("aktionen").hidden = false;
+  $("aktionen").classList.toggle("fragen", tab==="untersuchen");
   if(!S.greeted && tab==="fragen"){
     $("tab-hinweis").textContent = "Zuerst begrüßen — Sie oder du, je nach Alter.";
     $("tab-hinweis-en").textContent = "Greet them first — Sie or du, depending on age.";
@@ -1475,17 +1638,32 @@ function setTab(tab){
     $("tab-hinweis").textContent = "Wähle ein Thema, dann die richtige deutsche Frage.";
     $("tab-hinweis-en").textContent = "Pick a topic, then the correct German question.";
     $("aktionen").innerHTML = "";
-    FRAGEN.forEach(f => {
-      const b = document.createElement("button");
-      b.type = "button";
-      b.className = "frage";
-      b.disabled = S.asked.has("q-"+f.id);
-      b.setAttribute("lang", "de");
-      const asked = S.asked.has("q-"+f.id);
-      b.setAttribute("aria-label", (f.kurz||txt(f)) + (asked ? " (bereits gefragt)" : "") + (S.en ? ". " + f.en : ""));
-      b.innerHTML = `<span class="qde" lang="de">${f.kurz||txt(f)}</span><span class="en" lang="en">${f.en}</span>`;
-      b.onclick = () => startFrage(f);
-      $("aktionen").appendChild(b);
+    FRAGE_GRUPPEN.forEach(g => {
+      const list = FRAGEN.filter(f => f.gruppe===g.id);
+      if(!list.length) return;
+      const sec = document.createElement("section");
+      sec.className = "frage-gruppe";
+      sec.setAttribute("aria-labelledby", "fg-"+g.id);
+      const h = document.createElement("h3");
+      h.id = "fg-"+g.id;
+      h.setAttribute("lang", "de");
+      h.innerHTML = `<span lang="de">${g.de}</span><span class="en" lang="en">${g.en}</span>`;
+      const grid = document.createElement("div");
+      grid.className = "fragen";
+      list.forEach(f => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "frage";
+        b.disabled = S.asked.has("q-"+f.id);
+        b.setAttribute("lang", "de");
+        const asked = S.asked.has("q-"+f.id);
+        b.setAttribute("aria-label", (f.kurz||txt(f)) + (asked ? " (bereits gefragt)" : "") + (S.en ? ". " + f.en : ""));
+        b.innerHTML = `<span class="qde" lang="de">${f.kurz||txt(f)}</span><span class="en" lang="en">${f.en}</span>`;
+        b.onclick = () => startFrage(f);
+        grid.appendChild(b);
+      });
+      sec.append(h, grid);
+      $("aktionen").appendChild(sec);
     });
   } else if(tab==="untersuchen"){
     $("tab-hinweis").textContent = "Nicht jede Untersuchung ist nötig. Wähle, was zum Bericht passt.";
@@ -1603,7 +1781,7 @@ function ask(key, frage, antwort, spoken, spokenEn){
   addChat("p", patient().name, antwort.de, antwort.en);
   S.notes[frage.id] = antwort.note;
   renderNotes();
-  sagen(antwort.de);
+  sagenKette([line, antwort.de]);
   if(frage.gram) showGram(frage.gram);
   if(key.startsWith("k-") || key.startsWith("q-wo")) showGram("wehtun");
   hideSay();
@@ -1620,6 +1798,9 @@ $("b-zuruck").onclick = () => { $("diag-sagen").hidden = true; $("diag-grid").hi
 $("b-abbruch").onclick = endShift;
 $("b-weiter").onclick = nextPatient;
 $("b-nochmal").onclick = () => show("s-start");
+$("b-retry-diag").onclick = () => { $("diag-sagen").hidden = true; $("diag-grid").hidden = false; openDiagnose(); };
+$("b-mehr-fragen").onclick = () => show("s-play");
+$("b-aufloesen").onclick = () => judge(S.guessId, S.lastSatz, true);
 
 function openDiagnose(){
   const p = patient();
@@ -1676,6 +1857,7 @@ function pickDiag(d){
         b.classList.add("ok");
         S.langPts += 10;
         showGram("haben");
+        S.lastSatz = c.de;
         setTimeout(() => judge(S.guessId, c.de), 450);
       } else {
         b.classList.add("nein");
@@ -1691,37 +1873,62 @@ function pickDiag(d){
   $("diag-sagen-prompt").focus();
 }
 
-function judge(id, satz){
+function judge(id, satz, giveUp){
   const p = patient();
   const ok = id===p.diagnose;
   const found = p.schluessel.filter(k => S.asked.has("q-"+k) || S.asked.has("e-"+k) || S.asked.has("k-"+k));
-  const pts = (ok ? (70 + found.length*8) : Math.min(20, found.length*4)) + (S.langPts||0);
-  S.score += pts;
   const guessD = DIAGNOSEN.find(d => d.id===id);
   const rightD = DIAGNOSEN.find(d => d.id===p.diagnose);
-  const name = diagLabel(guessD);
+  const name = guessD ? diagLabel(guessD) : "—";
   const right = diagLabel(rightD);
-  S.results.push({name:p.name, guess:name, right, ok, pts});
-  S.langPts = 0;
 
-  show("s-result");
-  const ban = $("res-banner");
-  ban.className = "banner "+(ok?"ok":"nein");
-  ban.textContent = ok ? "Richtige Diagnose!" : `Leider nicht. Richtig ist: ${right}.`;
   $("res-banner").setAttribute("lang", "de");
   $("res-h").setAttribute("lang", "de");
   $("res-text").setAttribute("lang", "de");
   $("res-en").setAttribute("lang", "en");
-  $("res-h").textContent = ok ? `${p.name} hat ${right}.` : `Nicht ${name}.`;
-  const satzRight = p.anrede==="du" ? `Du hast ${rightD.art} ${rightD.de}.` : `Sie haben ${rightD.art} ${rightD.de}.`;
-  $("res-text").textContent = p.begruendung.de + `  (+${pts} Punkte) ` + (satz ? `Sie haben gesagt: ${satz}` : "");
-  $("res-en").textContent = p.begruendung.en + (ok ? "" : " The sentence is: "+satzRight.replace(/^Du hast|^Sie haben/, patient().anrede==="du"?"You have":"You have"));
   $("res-clues").innerHTML = p.schluessel.map(k => {
     const f = FRAGEN.find(x=>x.id===k) || EXAMS.find(x=>x.id===k) || KOERPERTEILE.find(x=>x.id===k);
     const got = found.includes(k);
     const label = f ? (f.kurz || txt(f) || f.de) : k;
     return `<li lang="de"><span aria-hidden="true">${got?"✓":"○"}</span> <span class="sr" lang="de">${got?"gefunden:":"nicht gefragt:"}</span> ${label}</li>`;
   }).join("");
+
+  if(!ok && !giveUp){
+    S.diagTries++;
+    show("s-result");
+    $("rezept").hidden = true;
+    $("retry-reihe").hidden = false;
+    $("next-reihe").hidden = true;
+    const ban = $("res-banner");
+    ban.className = "banner nein";
+    ban.textContent = "Noch nicht.";
+    $("res-h").textContent = `Nicht ${name}.`;
+    $("res-text").textContent = "Schauen Sie nochmal: Fieber? Ort? Seit wann? Die richtige Diagnose bleibt geheim.";
+    $("res-en").textContent = "Not yet. Look again: fever? where? since when? The correct diagnosis stays hidden.";
+    sagen("Noch nicht. Schauen Sie nochmal: Fieber? Ort? Seit wann?");
+    $("b-retry-diag").focus();
+    return;
+  }
+
+  const diagPts = ok
+    ? Math.max(16, 70 - 18*S.diagTries) + found.length*8
+    : Math.min(20, found.length*4);
+  const pts = diagPts + (S.langPts||0);
+  S.score += pts;
+  S.results.push({name:p.name, guess:name, right, ok, pts});
+  S.langPts = 0;
+
+  show("s-result");
+  $("rezept").hidden = false;
+  $("retry-reihe").hidden = true;
+  $("next-reihe").hidden = false;
+  const ban = $("res-banner");
+  ban.className = "banner "+(ok?"ok":"nein");
+  ban.textContent = ok ? "Richtige Diagnose!" : `Leider nicht. Richtig ist: ${right}.`;
+  $("res-h").textContent = ok ? `${p.name} hat ${right}.` : `Nicht ${name}.`;
+  const satzRight = p.anrede==="du" ? `Du hast ${rightD.art} ${rightD.de}.` : `Sie haben ${rightD.art} ${rightD.de}.`;
+  $("res-text").textContent = p.begruendung.de + `  (+${pts} Punkte) ` + (satz ? `Sie haben gesagt: ${satz}` : "");
+  $("res-en").textContent = p.begruendung.en + (ok ? "" : " The sentence is: "+satzRight.replace(/^Du hast|^Sie haben/, "You have"));
   $("rezept").innerHTML = `<div class="rh" lang="de">Praxis Dr. Sommer · Rezept</div>
     <h3 lang="de">${p.name}</h3>
     <p lang="de"><b lang="de">Diagnose:</b> <span lang="de">${satzRight}</span></p>
@@ -1734,7 +1941,7 @@ function judge(id, satz){
 }
 
 function nextPatient(){
-  if(S.i < S.queue.length-1){ S.i++; beginConsult(); }
+  if(S.i < S.queue.length-1){ S.i++; showWarte(); }
   else endShift();
 }
 function endShift(){

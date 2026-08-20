@@ -2179,18 +2179,18 @@ function rotateVec(v,deg){
 }
 function handPoseSpec(gesture='relaxed'){
   const specs={
-    relaxed:{turn:0,palmL:9.4,palmW:19.5,fingers:[
-      {b:[8,-5.2],m:[16,-5.6],t:[23,-5.8],w:6.8,tw:5.2},
-      {b:[9,-1.6],m:[17,-1.6],t:[25,-1.4],w:7.2,tw:5.5},
-      {b:[9,1.8],m:[16.5,2.0],t:[23.5,2.4],w:6.8,tw:5.2},
-      {b:[8,4.8],m:[14.8,5.2],t:[20.5,5.8],w:6.0,tw:4.6}
-    ],thumb:{b:[3.5,7.0],m:[10.5,11.0],t:[16.5,11.4],w:7.0,tw:5.4}},
-    wave:{turn:-5,palmL:9.6,palmW:20.2,fingers:[
-      {b:[8,-5.4],m:[16.5,-6.8],t:[23.5,-7.6],w:6.6,tw:5.1},
-      {b:[9,-1.6],m:[18,-2.2],t:[26,-2.4],w:7.1,tw:5.4},
-      {b:[9,1.8],m:[18,2.2],t:[25.5,2.8],w:6.8,tw:5.2},
-      {b:[8,5.0],m:[16,5.8],t:[22.5,6.6],w:6.0,tw:4.6}
-    ],thumb:{b:[3.5,7.2],m:[10.5,12.0],t:[16.5,13.4],w:6.9,tw:5.3},nails:true},
+    relaxed:{turn:0,palmL:9.4,palmW:20.4,fingers:[
+      {b:[8,-5.6],m:[16.5,-6.4],t:[24,-7.0],w:6.6,tw:5.0},
+      {b:[9,-1.6],m:[17.5,-1.6],t:[26,-1.2],w:7.0,tw:5.3},
+      {b:[9,2.0],m:[17,2.4],t:[24.5,3.2],w:6.6,tw:5.0},
+      {b:[8,5.2],m:[15.2,6.0],t:[21.5,7.0],w:5.8,tw:4.5}
+    ],thumb:{b:[3.5,7.2],m:[10.5,11.2],t:[16.5,11.6],w:7.0,tw:5.4}},
+    wave:{turn:-5,palmL:9.6,palmW:21.0,fingers:[
+      {b:[8,-6.0],m:[17,-9.2],t:[25,-12.4],w:6.2,tw:4.8},
+      {b:[9,-1.8],m:[19,-3.0],t:[28,-3.6],w:6.8,tw:5.2},
+      {b:[9,2.0],m:[19,3.4],t:[27,5.0],w:6.4,tw:5.0},
+      {b:[8,5.6],m:[16.5,8.0],t:[24,10.6],w:5.6,tw:4.4}
+    ],thumb:{b:[3.5,7.4],m:[11,12.4],t:[17,14.0],w:6.8,tw:5.2},nails:true},
     point:{turn:0,palmL:9.2,palmW:19,fingers:[
       {b:[8,-4.4],m:[21,-4.6],t:[31,-4.2],w:6.5,tw:5.0,extended:true},
       {b:[9,-0.8],m:[15.5,2.2],t:[13.5,6.6],w:7.0,tw:5.4,curled:true},
@@ -2309,7 +2309,7 @@ function fingerClusterPath(frame){
   for(let i=1;i<edges.length;i++){
     const prev=edges[i-1], curr=edges[i];
     const a=frame.spec.fingers[i-1], b=frame.spec.fingers[i];
-    const web=frame.local((a.b[0]+b.b[0])*0.5+6.8, (a.b[1]+b.b[1])*0.5);
+    const web=frame.local((a.b[0]+b.b[0])*0.5+5.2, (a.t[1]+b.t[1])*0.22+(a.b[1]+b.b[1])*0.28);
     d+=` C${p(prev.uln1)} ${p(web)} ${p(web)} C${p(curr.rad1)} ${p(curr.rad2)} ${p(curr.rad2)} Q${p(curr.tip)} ${p(curr.uln2)}`;
   }
   const close=frame.local(3.2,0);
@@ -2354,11 +2354,14 @@ function handMarkup(wrist,from,gesture='relaxed',side='left',skinFill='#f2c7a5',
     g.appendChild(svgEl('path',{d:`M${p(h1)} Q${p(h2)} ${p(frame.local(spec.palmL*.90,-spec.palmW*.12))}`,fill:'none',stroke:lights.skin.highlight,'stroke-width':'1.15','stroke-linecap':'round',opacity:'0.28'}));
   }
 
+  const mixPt=(a,b,t)=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t});
   for(let i=0;i<spec.fingers.length-1;i++){
     const a=spec.fingers[i], b=spec.fingers[i+1];
     const ea=fingerEdgePoints(frame,a), eb=fingerEdgePoints(frame,b);
-    const dip=frame.local((a.b[0]+b.b[0])*0.5+5.6, (a.b[1]+b.b[1])*0.5);
-    interiorStroke(g, `M${p(ea.uln1)} Q${p(dip)} ${p(eb.rad1)}`, {stroke:detailStroke, strokeWidth:1.2, opacity:0.55});
+    const start=mixPt(ea.uln2, ea.uln1, 0.18);
+    const end=mixPt(eb.rad2, eb.rad1, 0.18);
+    const dip=frame.local((a.b[0]+b.b[0])*0.5+4.6, (a.t[1]+b.t[1])*0.18+(a.b[1]+b.b[1])*0.32);
+    interiorStroke(g, `M${p(start)} Q${p(dip)} ${p(end)}`, {stroke:detailStroke, strokeWidth:1.25, opacity:0.58});
   }
 
   const c1=frame.local(5,2.2), c2=frame.local(12.5,3.6), c3=frame.local(6,-2.6), c4=frame.local(11.5,-3.8);

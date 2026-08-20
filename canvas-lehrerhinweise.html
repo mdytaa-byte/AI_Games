@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lehrerhinweise — Kleinhausen 3D in Canvas</title>
+<style>
+:root{ --gelb:#F2C230; --tinte:#12141A; --emaille:#EFF1EC; --font-d:"Bahnschrift","Arial Narrow",system-ui,sans-serif; --font-b:"Segoe UI",system-ui,sans-serif; }
+body{margin:0;background:#0b0d12;color:var(--emaille);font-family:var(--font-b);line-height:1.6}
+main{max-width:760px;margin:0 auto;padding:2rem 1.1rem 4rem}
+h1,h2{font-family:var(--font-d);letter-spacing:.05em;text-transform:uppercase}
+h1{color:var(--gelb)}
+a{color:var(--gelb)}
+code,pre{font-family:ui-monospace,Consolas,monospace;background:#1D212B;padding:.15em .4em;border-radius:3px}
+pre{padding:1rem;overflow:auto;white-space:pre-wrap}
+table{width:100%;border-collapse:collapse;margin:1rem 0}
+td,th{text-align:left;padding:.4em .5em;border-bottom:1px solid rgba(239,241,236,.14)}
+th{font-family:var(--font-d);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.note{border-left:4px solid var(--gelb);padding:.7rem 1rem;background:#1D212B;margin:1rem 0}
+</style>
+</head>
+<body>
+<main>
+<p><a href="index.html">← Kleinhausen Deutsch</a></p>
+<h1>Canvas LMS — so kommt 3D in den Kurs</h1>
+<p>Jedes neue Spiel ist eine komplette HTML-Seite: German-first, Englisch-Glossen, Vorlesen, hoher Kontrast, Funkmodus ohne WebGL, Abschlusscode zum Einfügen in eine Aufgabe. Es werden keine Cookies und kein localStorage benutzt.</p>
+
+<h2>Zwei Wege</h2>
+<ol>
+<li><strong>Empfohlen:</strong> GitHub Pages verlinken oder iframen. WebGL und Pointer-Lock funktionieren so am ehesten. Studierende dürfen „in neuem Tab öffnen“.</li>
+<li><strong>Einzeldatei:</strong> Datei aus dem Ordner <code>canvas/</code> als Datei in Canvas hochladen (eine HTML-Datei, Three.js ist schon drin). Manche Schul-iframes blocken WebGL — dann Funkmodus nutzen.</li>
+</ol>
+
+<div class="note">
+Beispiel-iframe (URL nach dem Pages-Deploy anpassen):
+<pre>&lt;iframe
+  src="https://mdytaa-byte.github.io/AI_Games/spiele/cafe-sonnenkorn.html"
+  width="100%" height="720"
+  allow="fullscreen"
+  title="Café Sonnenkorn"&gt;&lt;/iframe&gt;</pre>
+</div>
+
+<h2>Aufgabe in Canvas (Textvorlage)</h2>
+<pre>Spiele das 3D-Deutschspiel bis zum Ende (oder im Funkmodus).
+Gib deinen Namen im Spiel genau so ein wie in Canvas.
+Kopiere den Abschlusscode in dieses Abgabefeld.
+
+Wenn das 3D-Bild nicht lädt: Button „Funkmodus“ — dieselben Aufgaben.</pre>
+
+<h2>Codes</h2>
+<p>Aufbau: <code>PREFIX-AUFGABEN-PROZENT-ANZAHL-PRÜF</code>. Im Spiel: <em>Code prüfen</em> mit demselben Namen.</p>
+<table>
+<thead><tr><th>Spiel</th><th>Prefix</th><th>Einzeldatei</th><th>Seiten-Pfad</th></tr></thead>
+<tbody>
+<tr><td>Café Sonnenkorn</td><td>CAF</td><td>canvas/cafe-sonnenkorn-3d.html</td><td>spiele/cafe-sonnenkorn.html</td></tr>
+<tr><td>Wohnung Mühlgasse</td><td>WOH</td><td>canvas/wohnung-muehlgasse-3d.html</td><td>spiele/wohnung-muehlgasse.html</td></tr>
+<tr><td>Bahnhof</td><td>BHF</td><td>canvas/bahnhof-kleinhausen-3d.html</td><td>spiele/bahnhof-kleinhausen.html</td></tr>
+<tr><td>Arztpraxis</td><td>ARZ</td><td>canvas/arztpraxis-weber-3d.html</td><td>spiele/arztpraxis-weber.html</td></tr>
+<tr><td>Gymnasium</td><td>GYM</td><td>canvas/gymnasium-kleinhausen-3d.html</td><td>spiele/gymnasium-kleinhausen.html</td></tr>
+<tr><td>Stadtfest</td><td>FES</td><td>canvas/stadtfest-kleinhausen-3d.html</td><td>spiele/stadtfest-kleinhausen.html</td></tr>
+<tr><td>Heimatmuseum</td><td>MUS</td><td>canvas/heimatmuseum-kleinhausen-3d.html</td><td>spiele/heimatmuseum-kleinhausen.html</td></tr>
+<tr><td>See &amp; Umwelt</td><td>SEE</td><td>canvas/see-umwelt-3d.html</td><td>spiele/see-umwelt.html</td></tr>
+</tbody>
+</table>
+
+<h2>Punkte</h2>
+<p>Jede Mission hat fünf Aufgaben, je 2 Punkte beim ersten Versuch, 1 Punkt nach Korrektur. Der Code enthält den Prozentwert. Schreiben-Aufgaben (Fest, Museum, See) verlangen Mindestwortzahl und Schlüsselwörter (<code>habe</code>, <code>finde</code>, <code>weil</code>).</p>
+
+<h2>Neu bündeln</h2>
+<pre>python3 scripts/build-canvas.py</pre>
+<p>Erzeugt die Wrapper in <code>spiele/</code> und die Canvas-Einzeldateien in <code>canvas/</code>.</p>
+</main>
+</body>
+</html>

@@ -159,7 +159,10 @@
     t.minFilter = THREE.LinearMipMapLinearFilter;
     t.anisotropy = 4;
     if (THREE.sRGBEncoding && !opts.linear) t.encoding = THREE.sRGBEncoding;
-    if (opts.normal !== false && !opts.clamp) t.userData.normal = normalKarte(c, opts.nstr == null ? 1.7 : opts.nstr);
+    if (opts.normal !== false && !opts.clamp) {
+      t.userData = t.userData || {};
+      t.userData.normal = normalKarte(c, opts.nstr == null ? 1.7 : opts.nstr);
+    }
     return t;
   }
   function tex(draw, size, opts) {
@@ -179,7 +182,8 @@
       n.wrapS = n.wrapT = THREE.RepeatWrapping;
       n.repeat.set(repeat[0], repeat[1]);
       n.needsUpdate = true;
-      m.userData = { normal: n };
+      m.userData = m.userData || {};
+      m.userData.normal = n;
     }
     return m;
   }
@@ -1210,23 +1214,23 @@
     }
     scene.add(new THREE.HemisphereLight(
       cfg.hemiTop || 0xa8c6e0,
-      cfg.hemiBot || (cfg.outdoor ? 0x6e7a52 : 0x8a7060),
-      cfg.hemi || 0.72
+      cfg.hemiBot || (cfg.outdoor ? 0x6e7a52 : 0x7a6a58),
+      cfg.hemi || (cfg.outdoor ? 0.62 : 0.42)
     ));
-    var sun = new THREE.DirectionalLight(cfg.sun || 0xffe8c8, cfg.sunInt || (cfg.outdoor ? 1.55 : 0.95));
+    var sun = new THREE.DirectionalLight(cfg.sun || 0xffe8c8, cfg.sunInt || (cfg.outdoor ? 1.65 : 1.15));
     sun.position.set(cfg.sunX || -8, cfg.sunY || 14, cfg.sunZ || -6);
     sun.castShadow = true;
-    var span = cfg.outdoor ? 28 : 14;
+    var span = cfg.outdoor ? 36 : 16;
     sun.shadow.mapSize.set(1024, 1024);
     sun.shadow.camera.left = -span; sun.shadow.camera.right = span;
     sun.shadow.camera.top = span; sun.shadow.camera.bottom = -span;
     sun.shadow.camera.near = 1; sun.shadow.camera.far = 60;
     sun.shadow.bias = -0.0007; sun.shadow.normalBias = 0.35;
     scene.add(sun); scene.add(sun.target);
-    var fill = new THREE.DirectionalLight(0xcfd8e8, cfg.fillInt || (cfg.outdoor ? 0.7 : 0.38));
+    var fill = new THREE.DirectionalLight(0xcfd8e8, cfg.fillInt || (cfg.outdoor ? 0.55 : 0.2));
     fill.position.set(10, 9, 8);
     scene.add(fill);
-    scene.add(new THREE.AmbientLight(0xfff5ea, cfg.ambient || 0.1));
+    scene.add(new THREE.AmbientLight(0xfff5ea, cfg.ambient || 0.08));
 
     var world = new World(scene);
     state.world = world;
@@ -1234,11 +1238,11 @@
       var skyMat = new THREE.MeshBasicMaterial({ map: KH.tex.himmel(), side: THREE.BackSide, fog: false, depthWrite: false });
       var sky = new THREE.Mesh(new THREE.SphereGeometry(90, 24, 16), skyMat);
       scene.add(sky);
-      var cloudM = new THREE.MeshBasicMaterial({ map: KH.tex.wolke(), transparent: true, opacity: 0.82, depthWrite: false, fog: false });
-      for (var ci = 0; ci < 7; ci++) {
-        var cl = new THREE.Mesh(new THREE.PlaneGeometry(14 + 10 * Math.random(), 6 + 4 * Math.random()), cloudM);
-        cl.position.set(36 * (Math.random() - 0.5), 16 + 8 * Math.random(), 36 * (Math.random() - 0.5));
-        cl.rotation.x = -Math.PI / 2.1;
+      var cloudM = new THREE.MeshBasicMaterial({ map: KH.tex.wolke(), transparent: true, opacity: 0.78, depthWrite: false, fog: false });
+      for (var ci = 0; ci < 8; ci++) {
+        var cl = new THREE.Mesh(new THREE.PlaneGeometry(22 + 16 * Math.random(), 9 + 6 * Math.random()), cloudM);
+        cl.position.set(48 * (Math.random() - 0.5), 20 + 10 * Math.random(), -18 - 14 * Math.random());
+        cl.rotation.x = -Math.PI / 2.4;
         cl.renderOrder = -1;
         scene.add(cl);
       }

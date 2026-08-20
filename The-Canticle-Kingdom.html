@@ -315,7 +315,7 @@
     },
     jorgen: {
       id: "jorgen", name: "Jorgen", color: "#c9a24a",
-      maxHp: 28, maxMp: 20, atk: 7, mag: 11, def: 3, spd: 7,
+      maxHp: 32, maxMp: 22, atk: 8, mag: 11, def: 3, spd: 7,
       bio: "A carpenter-musician of Idar-Oberstein. Weak lungs. A Mozart sonata still stuck on the repeat."
     }
   };
@@ -377,7 +377,7 @@
     dolor: { name: "Doom Acolyte", hp: 44, atk: 13, def: 6, spd: 7, xp: 22, gold: 7, tint: "#5a3048" },
     doom: { name: "The Doom Tone", hp: 160, atk: 17, def: 8, spd: 6, xp: 95, gold: 16, tint: "#2a1020", boss: true },
     many3: { name: "The Many-Named One", hp: 220, atk: 18, def: 8, spd: 10, xp: 120, gold: 0, tint: "#100410", boss: true },
-    edelphus: { name: "Edelphus the Enchanter", hp: 70, atk: 9, def: 4, spd: 8, xp: 36, gold: 8, tint: "#2a1028", boss: true }
+    edelphus: { name: "Edelphus the Enchanter", hp: 48, atk: 7, def: 3, spd: 8, xp: 36, gold: 8, tint: "#2a1028", boss: true }
   };
 
   const QUEST_TEXT = {
@@ -848,7 +848,7 @@ WWWWWWWWWWWWWWWW
       { id: "bowl2", x: 8, y: 1, sprite: "bowl", name: "Breakfast" },
       { id: "closet2", x: 2, y: 4, sprite: "door", name: "Back closet" }
     ],
-    exits: [{ x: 8, y: 6, to: "idar", tx: 7, ty: 8 }]
+    exits: [{ x: 8, y: 6, to: "idar", tx: 7, ty: 7 }]
   });
 
   addMap("kvault", {
@@ -869,7 +869,7 @@ WWWWWWWWWW
   });
 
   addMap("idar", {
-    name: "Idar-Oberstein, 1948", music: "village", start: [7, 8],
+    name: "Idar-Oberstein, 1948", music: "village", start: [7, 7],
     rows: `
 ,,,,,,,,,,,,,,,,,,,,,,,,
 ,,,,TTTT,,,,,,,,TTTT,,,,
@@ -1001,7 +1001,7 @@ mmmmmmmmmmmmmmmmmmmm
     exits: [
       { x: 2, y: 10, to: "mountain", tx: 10, ty: 5 },
       { x: 17, y: 3, to: "prison", tx: 4, ty: 5 },
-      { x: 17, y: 9, to: "wyrmlair", tx: 4, ty: 6 }
+      { x: 17, y: 9, to: "wyrmlair", tx: 4, ty: 5 }
     ],
     encounters: ["ice", "sentry", "lost"]
   });
@@ -1026,7 +1026,7 @@ WWWWWWWWWWWW
   });
 
   addMap("wyrmlair", {
-    name: "Drevinwyrm Shaft", music: "boss", start: [4, 6],
+    name: "Drevinwyrm Shaft", music: "boss", start: [4, 5],
     rows: `
 ################
 #iiiiiiiiiiiiii#
@@ -1189,7 +1189,7 @@ TTTTTTTTTTTTTTTTTTTT
     ],
     exits: [
       { x: 9, y: 11, to: "sansomnia", tx: 16, ty: 11 },
-      { x: 16, y: 7, to: "council", tx: 5, ty: 5 }
+      { x: 13, y: 7, to: "council", tx: 5, ty: 5 }
     ],
     encounters: ["dolor", "shade"]
   });
@@ -1282,7 +1282,7 @@ mmmmmmmmmmmmmmmmmmmm
 `,
     npcs: [
       { id: "homu_npc", x: 9, y: 6, sprite: "homu", name: "Homuchorus" },
-      { id: "anchor_site", x: 6, y: 3, sprite: "orb", name: "Transfer site" }
+      { id: "anchor_site", x: 11, y: 5, sprite: "orb", name: "Transfer site" }
     ],
     exits: [
       { x: 9, y: 8, to: "sanctuary", tx: 11, ty: 4 },
@@ -1458,7 +1458,7 @@ TTTTTTTTTTTTTTTTTTTTTT
       Object.assign(state, {
         map: "jorgen_house", x: 10 * TILE, y: 4 * TILE, dir: "down",
         flags: {}, gold: 2,
-        inventory: { ...blankInv(), porridge: 2 },
+        inventory: { ...blankInv(), porridge: 3 },
         party: [member("jorgen")],
         quest: "karsten_pre", playtime: 0, book: 0
       });
@@ -3980,6 +3980,49 @@ TTTTTTTTTTTTTTTTTTTTTT
       noEnc() { state.flags.no_enc = true; },
       forceWin() { if (battle) { battle.enemies.forEach((e) => e.hp = 0); finishBattle(true); } },
       useItem: useFieldItem,
+      maps: MAPS,
+      clickCine() { if (mode === "cine") { advanceCine(); return true; } return false; },
+      useExitAt(x, y) {
+        const e = currentMap().exits.find((ex) => ex.x === x && ex.y === y);
+        if (!e) return false;
+        state._exitLock = false;
+        useExit(e);
+        return true;
+      },
+      audit() {
+        const issues = [];
+        const key = (x, y) => x + "," + y;
+        Object.values(MAPS).forEach((map) => {
+          const walk = (x, y) => x >= 0 && y >= 0 && x < map.w && y < map.h && !SOLID.has(tileAt(map, x, y));
+          const seen = new Set();
+          const q = [];
+          const add = (x, y) => { const k = key(x, y); if (seen.has(k) || !walk(x, y)) return; seen.add(k); q.push([x, y]); };
+          add(map.start[0], map.start[1]);
+          map.exits.forEach((e) => add(e.x, e.y));
+          map.exits.forEach((e) => {
+            const dest = MAPS[e.to];
+            if (!dest) issues.push(`${map.id}: exit to missing map ${e.to}`);
+            else if (SOLID.has(tileAt(map, e.x, e.y))) issues.push(`${map.id}: exit ${e.x},${e.y} -> ${e.to} stands on solid`);
+          });
+          while (q.length) {
+            const [x, y] = q.shift();
+            add(x + 1, y); add(x - 1, y); add(x, y + 1); add(x, y - 1);
+          }
+          map.npcs.forEach((n) => {
+            if (!sprites[n.sprite]) issues.push(`${map.id}: ${n.id} missing sprite ${n.sprite}`);
+            const here = walk(n.x, n.y) && seen.has(key(n.x, n.y));
+            const near = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => seen.has(key(n.x + dx, n.y + dy)));
+            if (!here && !near) issues.push(`${map.id}: ${n.id} unreachable at ${n.x},${n.y}`);
+          });
+          map.exits.forEach((e) => {
+            if (!seen.has(key(e.x, e.y)) && !walk(e.x, e.y)) issues.push(`${map.id}: exit to ${e.to} unreachable`);
+            const dest = MAPS[e.to];
+            if (dest && SOLID.has(tileAt(dest, e.tx, e.ty))) issues.push(`${map.id}: lands in ${e.to} on solid ${e.tx},${e.ty}`);
+          });
+          if (map.encounters) map.encounters.forEach((id) => { if (!ENEMIES[id]) issues.push(`${map.id}: missing enemy ${id}`); });
+        });
+        return issues;
+      },
       clickDialog() {
         const choice = $("dialogChoices").querySelector("button");
         if (choice) { choice.click(); return "choice"; }

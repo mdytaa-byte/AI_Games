@@ -79,6 +79,9 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
 #end{z-index:28;background:#07060a;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px}
 #end h2{font-family:Georgia,serif;font-size:16px;letter-spacing:.16em;color:var(--gold);margin-bottom:10px}
 #end p{font-size:8px;line-height:1.6;max-width:220px;color:#d8d0b8}
+#choice{position:absolute;left:6px;right:6px;bottom:6px;z-index:13;max-height:152px;overflow:auto;padding:6px 8px 8px}
+#choice .choice{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+#choice .choice button{text-transform:none;letter-spacing:.04em;text-align:left;font-size:7px;padding:3px 5px;border-color:#c8b060}
 </style>
 </head>
 <body>
@@ -88,6 +91,7 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
   <div id="hud" class="hidden"></div>
   <div id="prompt" class="win hidden">Z / SPACE : TALK</div>
   <div id="dialog" class="win hidden"><div class="who" id="dWho"></div><div class="txt" id="dTxt"></div><div class="next">▼</div></div>
+  <div id="choice" class="win hidden"><div class="who" id="cWho"></div><div class="txt" id="cTxt" style="font-size:8px;line-height:1.4;margin-bottom:4px"></div><div class="choice" id="cOpts"></div></div>
   <div id="menuWin" class="win hidden">
     <div>
       <h3>Menu</h3>
@@ -121,11 +125,12 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
   </div>
   <div id="how" class="screen hidden">
     <h2>How to Play</h2>
-    <p>Arrow keys / WASD move. Z, Enter, or Space confirms. X or Esc opens the menu and cancels. In the menu, up and down change pages.</p>
+    <p>Arrow keys / WASD move. Z, Enter, or Space confirms. X or Esc opens the menu and cancels. In the menu, up and down change pages. When a list appears, up and down choose, Z confirms, X leaves.</p>
     <p style="margin-top:8px">You are Xandir, a Watcher sentenced to serve as Destroying Angel until the End of Time. Walk the maps, speak with every soul, and fight when darkness bars the way.</p>
     <p style="margin-top:8px">Ambrosia restores the body. Serche water restores the spirit. Manna is the coin of both Heaven and Nod.</p>
     <p style="margin-top:8px">The tale follows the trilogy: Pompeii and the Fortuna house; Jarom and Clara against Beelzebub; Olympus, Cain, and the All-Seeing Eye.</p>
-    <p style="margin-top:8px">Isda the Whisperer waits in the Cherub Fortress. Speak to her more than once to take the side roads the books remember: Nod, the Forgotten Tower, the Vault of Avarice, London, Blacker Forest, and Nineveh.</p>
+    <p style="margin-top:8px">Isda the Whisperer waits in the Cherub Fortress. Ask her, then choose a road: Nod, the Forgotten Tower, the Vault of Avarice, London, Blacker Forest, or Nineveh.</p>
+    <p style="margin-top:8px">Only four may walk. From the Party page, Z changes who marches. Yearti will wait if the road is already full.</p>
     <button class="back" id="btnHowBack">Back</button>
   </div>
   <div id="end" class="screen hidden">
@@ -159,7 +164,8 @@ const $ = id => document.getElementById(id);
 const els={title:$("title"),how:$("how"),end:$("end"),hud:$("hud"),prompt:$("prompt"),
   dialog:$("dialog"),dWho:$("dWho"),dTxt:$("dTxt"),menu:$("menuWin"),menuTabs:$("menuTabs"),
   menuBody:$("menuBody"),blog:$("blog"),bui:$("battleUI"),cmds:$("cmds"),bp:$("bp"),
-  fade:$("fade"),toast:$("toast"),endTxt:$("endTxt"),viewport:$("viewport")};
+  fade:$("fade"),toast:$("toast"),endTxt:$("endTxt"),viewport:$("viewport"),
+  choice:$("choice"),cWho:$("cWho"),cTxt:$("cTxt"),cOpts:$("cOpts")};
 
 function fit(){
   const s=Math.max(1,Math.floor(Math.min((innerWidth-24)/W,(innerHeight-24)/H)));
@@ -588,6 +594,7 @@ let cam={x:0,y:0};
 let dialogQ=[], dialogI=0, typed=0, typeT=0;
 let menuTab=0, menuSel=0;
 let battle=null;
+let choice=null;
 let anim=0, stepCount=0, lastTime=0;
 let toastT=0;
 let encounterLock=0;
@@ -679,8 +686,29 @@ function blocked(x,y){
 
 function join(id,lv){
   if(!state.heroes[id]) state.heroes[id]=heroInst(id,lv||lead().lv);
-  if(!state.party.includes(id) && state.party.length<4) state.party.push(id);
-  return state.party.includes(id);
+  if(state.party.includes(id)) return true;
+  if(state.party.length<4){ state.party.push(id); return true; }
+  return false;
+}
+function bench(){ return Object.keys(state.heroes).filter(id=>!state.party.includes(id)); }
+function swapInto(newId, outId){
+  if(!state.heroes[newId]) return;
+  if(outId && state.party.includes(outId)){
+    state.party=state.party.filter(p=>p!==outId);
+  } else if(state.party.length>=4){
+    state.party.pop();
+  }
+  if(!state.party.includes(newId) && state.party.length<4) state.party.push(newId);
+  renderHUD();
+}
+function offerSwap(newId){
+  const name=(state.heroes[newId]||HERODEF[newId]||{name:newId}).name;
+  const opts=state.party.map(pid=>{
+    const nm=state.heroes[pid].name;
+    return {label:"Bench "+nm, fn:()=>{ swapInto(newId, pid); toast(name+" joins. "+nm+" waits."); }};
+  });
+  opts.push({label:"Leave "+name+" behind", leave:true, fn:()=>toast(name+" waits at the fortress.")});
+  openChoice(name, name+" would walk, but four already do. Who stays behind?", opts);
 }
 
 function addItem(id,n){ state.items[id]=(state.items[id]||0)+(n||1); }
@@ -745,6 +773,7 @@ function startGame(act){
 }
 
 function warp(mapId,x,y){
+  if(mode==="choice") closeChoice();
   fade(()=>{
     state.map=mapId; state.x=x; state.y=y; state.toX=x; state.toY=y; state.moving=false;
     encounterLock=18;
@@ -756,6 +785,7 @@ function warp(mapId,x,y){
 }
 
 function queueDialog(pages,onDone){
+  if(mode==="choice") closeChoice();
   dialogQ=pages; dialogI=0; typed=0; typeT=0; dialogQ._done=onDone;
   mode="dialog";
   show(els.dialog,true); paintDialog();
@@ -873,11 +903,15 @@ function script(id){
         {n:"Xandir",t:"Absalom. Last person I expected. Never thought I'd find a straight arrow in a mound like this."},
         {n:"Absalom",t:"Yearti is in the cave. He still laughs too loud. The tunnels of Tubal open only if a giant vouches for you."}];
     case "yearti":
-      if(!F.yeartiJoined){F.yeartiJoined=true; join("yearti",lead().lv); return [
-        {n:"Xandir",t:"Hey, Yearti, it's the twenty-first century. They've got medicines for problems like that."},
-        {n:"Yearti",t:"Sneak up? I wouldn't dream of it. Come. Tubal's roads remember the Watchers."},
-        {n:"",t:"Yearti joined the party. The northern tunnels unseal."}
-      ];}
+      if(!F.yeartiJoined){
+        F.yeartiJoined=true;
+        const joined=join("yearti",lead().lv);
+        return after([
+          {n:"Xandir",t:"Hey, Yearti, it's the twenty-first century. They've got medicines for problems like that."},
+          {n:"Yearti",t:"Sneak up? I wouldn't dream of it. Come. Tubal's roads remember the Watchers."},
+          {n:"",t:joined?"Yearti joined the party. The northern tunnels unseal.":"Yearti vouches for you. The northern tunnels unseal. Four already walk."}
+        ], ()=>{ if(!joined) offerSwap("yearti"); });
+      }
       return [{n:"Yearti",t:"Two peaks over from Eden, in the Himalayas. They've got chocolate there. Dangerous things, five-year-olds with that much power—but that's Ridnax's lecture, not mine."}];
     case "jubal":
       if(!hasItem("harp")){
@@ -952,12 +986,16 @@ function script(id){
     case "isda":
       return isdaTalk();
     case "judy2":
-      if(!F.judyJoined){F.judyJoined=true; join("judy",lead().lv); return [
-        {n:"Judy",t:"You remember when I told Eden I'd be her guardian angel? After I finished my last assignment, they agreed."},
-        {n:"Eden",t:"Just out of curiosity, what was your last assignment?"},
-        {n:"Judy",t:"A police officer, a hobo, and the creative application of a wishbone. Don't ask. I'm coming with you."},
-        {n:"",t:"Judy joined the party."}
-      ];}
+      if(!F.judyJoined){
+        F.judyJoined=true;
+        const joined=join("judy",lead().lv);
+        return after([
+          {n:"Judy",t:"You remember when I told Eden I'd be her guardian angel? After I finished my last assignment, they agreed."},
+          {n:"Eden",t:"Just out of curiosity, what was your last assignment?"},
+          {n:"Judy",t:"A police officer, a hobo, and the creative application of a wishbone. Don't ask. I'm coming with you."},
+          {n:"",t:joined?"Judy joined the party.":"Judy is ready. Four already walk."}
+        ], ()=>{ if(!joined) offerSwap("judy"); });
+      }
       return [{n:"Judy",t:"Jennings was elected president, and things are looking bleak. Jertel still looks after my best interests. Try to keep Eden's boy in one piece."}];
     case "jennings":
       if(!F.jenningsDown) return fight(
@@ -982,12 +1020,17 @@ function script(id){
     case "zeus":
       return [{n:"Zeus",t:"Love and lightning. The fields here never stay mown. Your Destroying Angel has been reduced to destroying grass. Fetch him."}];
     case "xandir2":
-      if(!F.xandirJoined){F.xandirJoined=true; join("xandir",lead().lv);
-        state.heroes.xandir.skills=["slash","drink","vesuvius","hurricane"];
-        return [{n:"Xandir",t:"All these years as a destroying angel, and I've been reduced to destroying grass."},
+      if(!F.xandirJoined){
+        F.xandirJoined=true;
+        if(state.heroes.xandir) state.heroes.xandir.skills=["slash","drink","vesuvius","hurricane"];
+        const joined=join("xandir",lead().lv);
+        return after([
+          {n:"Xandir",t:"All these years as a destroying angel, and I've been reduced to destroying grass."},
           {n:"Jarom",t:"If you're trying to sneak up on him, Yearti, you're doing a miserable job. Wait—you're us."},
           {n:"Xandir",t:"The End of Time is late. I'm coming anyway."},
-          {n:"",t:"Xandir joined the party."}];}
+          {n:"",t:joined?"Xandir joined the party.":"Xandir is ready. Four already walk."}
+        ], ()=>{ if(!joined) offerSwap("xandir"); });
+      }
       return [{n:"Xandir",t:"Cain first. Then the Prince who wants a vessel."}];
     case "armor": return takeArmor(0);
     case "armor2": return takeArmor(1);
@@ -1014,18 +1057,28 @@ function script(id){
         const joined=join("yearti",lead().lv);
         state.heroes.xandir && (state.heroes.xandir.skills=["slash","drink","vesuvius","hurricane","seven"]);
         addLore("Druiel's Chain","Forged to hold the Prince of Darkness as he was cast from the Heavens. Eleven links, if you count as Watchers count.");
-        return [{n:"Druiel",t:"A chain? Is there an anchor to go with it?"},
+        return after([{n:"Druiel",t:"A chain? Is there an anchor to go with it?"},
           {n:"Druiel",t:"This is no ordinary chain. It was forged to hold the Prince of Darkness as he was cast from the Heavens. Eleven links, if you count as Watchers count."},
           {n:"Xandir",t:"Then we take it to the Eye."},
-          {n:"",t:joined?"The Binding Chain is yours. Sevenfold is remembered. Yearti finds you in the dark.":"The Binding Chain is yours. Sevenfold is remembered. Yearti is near, but four is a crowd."}];}
+          {n:"",t:joined?"The Binding Chain is yours. Sevenfold is remembered. Yearti finds you in the dark.":"The Binding Chain is yours. Sevenfold is remembered. Yearti is near, but four is a crowd."}],
+          ()=>{ if(!joined && state.heroes.yearti) offerSwap("yearti"); });}
       return [{n:"Druiel",t:"Shut the Eye. Do not look too long into it."}];
     case "lucifer":
       if(!F.luciferDown){
         if(!F.chain) return [{n:"Lucifer",t:"I am an angel of light, Clara. You are also a being of light. Though my light now exceeds yours, I imagine that makes us the same."},{n:"Clara",t:"I'm not the brightest star in the sky. But I know a chain when I need one."},{n:"",t:"Find Druiel in the north of Tartarus."}];
-        return fight(
-          [{n:"Lucifer",t:"Cain, son of Adam, worship me! I am the Son of the Morning!"},{n:"Xandir",t:"The End of Time is a sentence. It is not yours to collect."}],
-          ["lucifer"], ()=>{F.luciferDown=true; ending();}
-        );
+        const links=F.links||0;
+        const begin=()=>startBattle(["lucifer"], ()=>{F.luciferDown=true; ending();});
+        const pages=[{n:"Lucifer",t:"Cain, son of Adam, worship me! I am the Son of the Morning!"},{n:"Xandir",t:"The End of Time is a sentence. It is not yours to collect."}];
+        if(links>=3) return fight(pages, ["lucifer"], ()=>{F.luciferDown=true; ending();});
+        return after(pages.concat([
+          {n:"Clara",t:"The chain looks thin. Druiel said eleven links, if you count as Watchers count."}
+        ]), ()=>openChoice("Clara", "You carry "+links+"/3 extra links. Gather the rest, or face him as you are.", [
+          {label:"Fight him now", fn:begin},
+          {label:"Gather the links first", leave:true, fn:()=>queueDialog([
+            {n:"Clara",t:"I'm not the brightest star in the sky. But I know a chain when I need one."},
+            {n:"",t:"Isda still knows the roads. Ganosh, Infernis, and Wilhelm keep what Druiel lost."}
+          ])}
+        ]));
       }
       return [{n:"",t:"The Eye is shut."}];
     case "westover":
@@ -1192,55 +1245,125 @@ function script(id){
   return [{n:"",t:"..."}];
 }
 
-function shopTalk(){
-  const wares=[{id:"cake",price:20},{id:"water",price:25},{id:"flask",price:40},{id:"feast",price:90},{id:"diamond",price:120}];
-  const w=wares[(state._shop||0)%wares.length];
-  state._shop=(state._shop||0)+1;
-  if(state.manna>=w.price){
-    state.manna-=w.price;
-    state.items[w.id]=(state.items[w.id]||0)+1;
-    return [{n:"Manna Keeper",t:"Manna only. No credit in Heaven or Nod."},{n:"Manna Keeper",t:"Sold "+ITEMS[w.id].name+" for "+w.price+". You have "+state.manna+" manna. Speak again for the next ware."}];
+function shopWares(){
+  return [{id:"cake",price:20},{id:"water",price:25},{id:"flask",price:40},{id:"feast",price:90},{id:"diamond",price:120}];
+}
+function openShop(){
+  const opts=shopWares().map(w=>{
+    const it=ITEMS[w.id];
+    return {label:it.name+" — "+w.price, fn:()=>buyWare(w)};
+  });
+  opts.push({label:"Leave", leave:true, fn:()=>{}});
+  openChoice("Manna Keeper", "Manna only. No credit in Heaven or Nod. You have "+state.manna+".", opts);
+}
+function buyWare(w){
+  if(state.manna<w.price){
+    queueDialog([{n:"Manna Keeper",t:ITEMS[w.id].name+" costs "+w.price+". You have only "+state.manna+" manna."}], ()=>openShop());
+    return;
   }
-  return [{n:"Manna Keeper",t:ITEMS[w.id].name+" costs "+w.price+". You have only "+state.manna+" manna."}];
+  state.manna-=w.price;
+  addItem(w.id);
+  toast("Bought "+ITEMS[w.id].name+".");
+  sfx("ok");
+  openShop();
+}
+function shopTalk(){
+  return after([{n:"Manna Keeper",t:"Manna only. No credit in Heaven or Nod. What will you take?"}], ()=>openShop());
 }
 
 function isdaDests(){
   const f=state.flags, d=[];
-  d.push({name:"the Cherub Fortress",to:"fortress",tx:10,ty:11});
-  if(f.reborn) d.push({name:"the Land of Nod",to:"nod",tx:4,ty:10});
-  if(f.claraJoined) d.push({name:"the Forgotten Tower",to:"tower",tx:5,ty:12});
-  if(f.johannesHint||f.infernisDown||f.thiefMet) d.push({name:"the Vault of Avarice",to:"vault",tx:3,ty:10});
-  if(f.jenningsDown) d.push({name:"London, falling",to:"london",tx:5,ty:11});
+  if(f.reborn) d.push({name:"Land of Nod",to:"nod",tx:4,ty:10});
+  if(f.claraJoined) d.push({name:"Forgotten Tower",to:"tower",tx:5,ty:12});
+  if(f.johannesHint||f.infernisDown||f.thiefMet) d.push({name:"Vault of Avarice",to:"vault",tx:3,ty:10});
+  if(f.jenningsDown) d.push({name:"London Falling",to:"london",tx:5,ty:11});
   if(f.xandirJoined||state.act>=3) d.push({name:"Blacker Forest",to:"blacker",tx:4,ty:8});
-  if(f.londonDone||f.queenMet||f.ganoshDown) d.push({name:"the sands of Nineveh",to:"nineveh",tx:6,ty:10});
+  if(f.londonDone||f.queenMet||f.ganoshDown) d.push({name:"Nineveh Sands",to:"nineveh",tx:6,ty:10});
   return d;
 }
-
+function openIsdaRoads(){
+  const dests=isdaDests();
+  const opts=dests.map(w=>({
+    label:w.name,
+    fn:()=>{
+      if(w.to===state.map) toast("You are already here.");
+      else warp(w.to,w.tx,w.ty);
+    }
+  }));
+  opts.push({label:"Stay", leave:true, fn:()=>{}});
+  openChoice("Isda", dests.length?"Which road shall I whisper?":"No road will open yet. Walk the duty you have.", opts);
+}
 function isdaTalk(){
   const F=state.flags;
   if(!F.isdaMet){
     F.isdaMet=true;
     addLore("The Whisperer","I'm Isda. And I am here because of you. Whisperers don't even have to whisper.");
-    return [
+    return after([
       {n:"Isda",t:"I'm Isda. And I am here because of you."},
       {n:"Xandir",t:"Wait a minute. What's your name? Why didn't I see you before?"},
-      {n:"Isda",t:"I do not usually get the big picture. I'm a Whisperer. Speak again, and I will open a road the Seraphs would rather stay shut."}
-    ];
+      {n:"Isda",t:"I do not usually get the big picture. I'm a Whisperer. Tell me the road, and I will open it."}
+    ], ()=>openIsdaRoads());
   }
-  const d=isdaDests();
-  const w=d[(state._way||0)%d.length];
-  state._way=(state._way||0)+1;
-  return after(
-    [{n:"Isda",t:"Then whisper me something. Do you think the End is really coming?"},
-     {n:"Isda",t:"Even that will pass. I know a road to "+w.name+"."}],
-    ()=>{
-      if(w.to===state.map) toast("You are already here.");
-      else warp(w.to,w.tx,w.ty);
-    }
-  );
+  return after([{n:"Isda",t:"Then whisper me something. I know a few roads the Seraphs would rather stay shut."}], ()=>openIsdaRoads());
+}
+
+function openChoice(who, prompt, opts){
+  if(!opts || !opts.length) return;
+  choice={who:who||" ", prompt:prompt||"", opts, sel:0};
+  mode="choice";
+  show(els.dialog,false);
+  show(els.menu,false);
+  show(els.choice,true);
+  paintChoice();
+  sfx("menu");
+}
+function paintChoice(){
+  if(!choice) return;
+  els.cWho.textContent=choice.who||" ";
+  els.cTxt.textContent=choice.prompt||"";
+  els.cOpts.innerHTML=choice.opts.map((o,i)=>`<button class="${i===choice.sel?"on":""}">${o.label}</button>`).join("");
+}
+function closeChoice(){
+  show(els.choice,false);
+  choice=null;
+  if(mode==="choice") mode="explore";
+}
+function choiceInput(which){
+  if(!choice) return;
+  const n=choice.opts.length;
+  if(which==="up"){ choice.sel=(choice.sel+n-1)%n; paintChoice(); sfx("menu"); return; }
+  if(which==="down"){ choice.sel=(choice.sel+1)%n; paintChoice(); sfx("menu"); return; }
+  if(which==="cancel"){
+    const leave=choice.opts.find(o=>o.leave)||choice.opts[n-1];
+    closeChoice();
+    leave&&leave.fn&&leave.fn();
+    return;
+  }
+  if(which==="ok"){
+    const o=choice.opts[choice.sel];
+    closeChoice();
+    o&&o.fn&&o.fn();
+  }
+}
+
+function openFormation(){
+  const waiting=bench();
+  if(!waiting.length){ toast("No one waits behind."); return; }
+  const opts=state.party.map(pid=>{
+    const nm=state.heroes[pid].name;
+    return {label:"Replace "+nm, fn:()=>{
+      openChoice("Marching order", "Who takes "+nm+"'s place?", waiting.map(bid=>({
+        label:state.heroes[bid].name,
+        fn:()=>{ swapInto(bid, pid); toast(state.heroes[bid].name+" walks. "+nm+" waits."); }
+      })).concat([{label:"Cancel", leave:true, fn:()=>{}}]));
+    }};
+  });
+  opts.push({label:"Keep this four", leave:true, fn:()=>{}});
+  openChoice("Marching order", "Only four may walk. Who sits out?", opts);
 }
 
 function ending(){
+  if(mode==="choice") closeChoice();
   mode="end";
   show(els.bui,false); show(els.blog,false); show(els.dialog,false);
   els.endTxt.innerHTML="The Eye closes. The chain holds. Somewhere in the Himalayas, Eden opens a curtain on snow, and Judy asks if guardian angels are allowed to ski.<br><br>In Nod, Jarom hums a lullaby that is not quite heavenly. Clara is already too large for the cave.<br><br>Xandir looks at his hands—mortal, marked, still his—and does not sheathe the swords.<br><br>The End of Time is not yet written.";
@@ -1287,6 +1410,7 @@ function cloneEnemy(id){
 }
 
 function startBattle(ids,onWin){
+  if(mode==="choice") closeChoice();
   if(mode==="battle" && battle && !battle.over) return;
   show(els.dialog,false); show(els.menu,false); show(els.prompt,false);
   state.party.forEach(id=>{const h=state.heroes[id]; if(h.hp<=0) h.hp=Math.max(1,Math.floor(h.maxHp*0.3)); h.alive=h.hp>0; h.defending=false;});
@@ -1534,6 +1658,11 @@ function paintMenu(){
       const h=state.heroes[id];
       return `<div><b style="color:#e4c56a">${h.name}</b> Lv${h.lv}  ${h.role}<br>HP ${h.hp}/${h.maxHp}  MP ${h.mp}/${h.maxMp}<br>ATK ${h.atk} DEF ${h.def} SPD ${h.spd}</div><br>`;
     }).join("");
+    const waiting=bench();
+    if(waiting.length){
+      b+="<b style='color:#e4c56a'>WAITING</b><br>"+waiting.map(id=>state.heroes[id].name+" — "+state.heroes[id].role).join("<br>");
+      b+="<br><br><span style='color:#e4c56a'>Z : change who walks</span>";
+    }
   } else if(menuTab===1){
     const list=itemList();
     b=list.map((it,i)=>(i===menuSel?"▶ ":"  ")+it.name+" x"+it.n+"<br><span style='color:#aaa'>"+it.desc+"</span>").join("<br><br>")||"Empty pockets.";
@@ -1572,7 +1701,7 @@ function questLog(){
   else q.push("The End of Time is not yet written.");
   let b="<b style='color:#e4c56a'>CURRENT DUTY</b><br>"+q[0]+"<br><br>Act "+state.act+" — "+map().name;
   const s=[];
-  if(F.reborn && !F.isdaMet) s.push("Isda the Whisperer waits in the Fortress.");
+  if(F.reborn && !F.isdaMet) s.push("Isda the Whisperer waits in the Fortress. Ask her which road to take.");
   if(F.sparkDown && !F.westoverMet) s.push("Fortuna: Westover still has an office and a locked door.");
   if(F.sparkDown && !F.thiefMet) s.push("Fortuna: a Den runner wants Death Diamonds.");
   if(F.ashbDown && !F.ganoshDown) s.push("Hell: Ganosh (ruby eye, obsidian eye) still prefers the name Serche.");
@@ -1610,6 +1739,10 @@ function menuInput(which){
   if(which==="down"){menuTab=(menuTab+1)%6; menuSel=0; paintMenu(); sfx("menu");}
   if(which==="cancel") closeMenu();
   if(which==="ok"){
+    if(menuTab===0){
+      if(!bench().length){ toast("No one waits behind."); return; }
+      closeMenu(); openFormation(); return;
+    }
     if(menuTab===4){save(); toast("Chronicle saved."); sfx("ok");}
     if(menuTab===5) closeMenu();
   }
@@ -1781,6 +1914,8 @@ function loop(t){
     typeT+=dt;
     const p=dialogQ[dialogI];
     if(p && typed<(p.t||"").length && typeT>0.018){typed++; typeT=0; paintDialog();}
+  } else if(mode==="choice"){
+    drawWorld();
   } else if(mode==="battle"){
     drawBattleScene();
   } else if(mode==="menu"){
@@ -1794,6 +1929,7 @@ function loop(t){
 function press(which){
   if(mode==="title") return;
   if(mode==="dialog"){ if(which==="ok") {sfx("ok"); advanceDialog();} return; }
+  if(mode==="choice"){ choiceInput(which); return; }
   if(mode==="menu"){ menuInput(which); return; }
   if(mode==="battle"){ heroCommand(which); return; }
   if(mode==="explore"){
@@ -1840,6 +1976,12 @@ $("btnAct3").onclick=()=>startGame(3);
 
 $("btnContinue").disabled=!localStorage.getItem(SAVE);
 els.dialog.addEventListener("click",()=>{ if(mode==="dialog") press("ok"); });
+els.cOpts.addEventListener("click",e=>{
+  if(mode!=="choice"||!choice) return;
+  const btns=[...els.cOpts.querySelectorAll("button")];
+  const i=btns.indexOf(e.target.closest("button"));
+  if(i>=0){ choice.sel=i; choiceInput("ok"); }
+});
 els.cmds.addEventListener("click",e=>{
   if(mode!=="battle") return;
   const btns=[...els.cmds.querySelectorAll("button")];
@@ -1863,13 +2005,16 @@ window.TLA={
       hp:state&&state.party.map(id=>({id,hp:state.heroes[id].hp,lv:state.heroes[id].lv})),
       dialog:mode==="dialog"&&dialogQ[dialogI]?{n:dialogQ[dialogI].n,t:dialogQ[dialogI].t,i:dialogI,len:dialogQ.length}:null,
       battle:battle&&{log:battle.log,over:!!battle.over,menu:battle.menu,ehp:battle.enemies.map(e=>e.hp),hhp:battle.heroes.map(h=>h.hp)},
-      lore:state&&(state.lore||[]).map(l=>l.t)};
+      lore:state&&(state.lore||[]).map(l=>l.t),
+      choice:mode==="choice"&&choice?{who:choice.who,prompt:choice.prompt,sel:choice.sel,opts:choice.opts.map(o=>o.label)}:null};
   },
   warp, startGame,
   flag(k,v){ if(state) state.flags[k]=v; },
   kill(){ if(battle && !battle.over){ battle.enemies.forEach(e=>e.hp=0); nextTurn(); } },
   talk(id){ const pages=script(id); if(pages&&pages.length) queueDialog(pages, pages._done); },
-  mash(){ if(mode==="dialog"){ typed=9999; advanceDialog(); } else if(mode==="battle") this.kill(); }
+  pick(i){ if(mode==="choice"&&choice){ choice.sel=Math.max(0,Math.min(choice.opts.length-1,i|0)); choiceInput("ok"); } },
+  leave(){ if(mode==="choice") choiceInput("cancel"); },
+  mash(){ if(mode==="dialog"){ typed=9999; advanceDialog(); } else if(mode==="choice") this.leave(); else if(mode==="battle") this.kill(); }
 };
 
 requestAnimationFrame(loop);

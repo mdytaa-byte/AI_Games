@@ -423,7 +423,7 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
 #lehrer-dialog{width:min(860px,100%)}
 
 @media print{
-  .skip, header.top, #ansage, #def-card, #woerter-box, .no-print{display:none!important}
+  .skip, header.top, #ansage, #def-card, #woerter-box, #ende-box, .no-print{display:none!important}
   body[data-print="lehrer"] main{display:none!important}
   body[data-print="lehrer"] #lehrer-box{
     display:block!important;position:static;background:none;padding:0;overflow:visible;
@@ -486,7 +486,8 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
     <div class="hero">
       <div class="karte">
         <p class="eyebrow" lang="de">Deutsch A2–B1 · Gesundheit</p>
-        <h2 id="start-h" tabindex="-1" lang="de">Guten Tag, Doktor!</h2>
+        <h2 id="start-h" tabindex="-1" lang="de">Guten Tag, Frau Doktor!</h2>
+        <p class="en" id="start-h-en" lang="en">Good day, Doctor!</p>
         <p class="lede" lang="de">Du übernimmst heute die Sprechstunde in der kleinen Praxis am Markt. Ruf im Wartezimmer auf — <i lang="de">Nächster bitte</i> —, begrüße, stell Fragen, untersuche. Am Ende wählst du eine Diagnose. Wenn sie nicht stimmt, darfst du nachfragen: die Lösung bleibt geheim.</p>
         <p class="en" lang="en">You are covering clinic hours in the little practice on the market square. Call the next patient — <i lang="de">Nächster bitte</i> — then greet, ask, and examine. At the end you choose a diagnosis. If it is wrong you may ask more: the answer stays hidden.</p>
         <p class="lede" lang="de" style="margin-bottom:0">Sprich mit <b lang="de">Sie</b> (formell), außer bei Kindern. Wähle, wie du fragst — manche Sätze klingen deutsch, sind aber falsch. Tippe auf Wörter im Gespräch, und auf den Körper, wenn du den Ort meinst.</p>
@@ -509,7 +510,21 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
       </aside>
     </div>
     <div class="karte">
-      <p class="eyebrow" lang="de">Niveau</p>
+      <p class="eyebrow" lang="de">Wer sind Sie?</p>
+      <h2 lang="de" style="font-size:1.4rem">Ärztin oder Arzt?</h2>
+      <div class="modi zwei" role="radiogroup" lang="de" aria-label="Rolle">
+        <button type="button" class="modus rolle" data-rolle="aerztin" id="r-aerztin" lang="de" aria-pressed="true">
+          <span class="m-t" lang="de">Ärztin</span>
+          <span class="m-d" lang="de">Die Praxis sagt <i lang="de">Frau Doktor</i>.</span>
+          <span class="en" lang="en">The clinic addresses you as <i lang="de">Frau Doktor</i>.</span>
+        </button>
+        <button type="button" class="modus rolle" data-rolle="arzt" id="r-arzt" lang="de" aria-pressed="false">
+          <span class="m-t" lang="de">Arzt</span>
+          <span class="m-d" lang="de">Die Praxis sagt <i lang="de">Herr Doktor</i>.</span>
+          <span class="en" lang="en">The clinic addresses you as <i lang="de">Herr Doktor</i>.</span>
+        </button>
+      </div>
+      <p class="eyebrow" lang="de" style="margin-top:1.2rem">Niveau</p>
       <h2 lang="de" style="font-size:1.4rem">A2 oder B1?</h2>
       <div class="modi zwei" role="radiogroup" lang="de" aria-label="Sprachniveau">
         <button type="button" class="modus niveau" data-level="a2" id="n-a2" lang="de" aria-pressed="true">
@@ -538,8 +553,8 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
         </button>
         <button type="button" class="modus" data-n="all" lang="de">
           <span class="m-t" lang="de">Alle Fälle üben</span>
-          <span class="m-d" lang="de">Alle 9 Patientinnen und Patienten nacheinander.</span>
-          <span class="en" lang="en">All 9 patients, one after another.</span>
+          <span class="m-d" lang="de">Alle 10 Patientinnen und Patienten nacheinander.</span>
+          <span class="en" lang="en">All 10 patients, one after another.</span>
         </button>
       </div>
       <div class="regeln">
@@ -792,6 +807,19 @@ h2{font-family:var(--serif);font-size:1.85rem;line-height:1.15;margin:.1rem 0 .3
   </div>
 </div>
 
+<div class="overlay" id="ende-box" hidden>
+  <div class="karte" id="ende-dialog" role="dialog" aria-labelledby="ende-h" aria-modal="true" lang="de" tabindex="-1" style="max-width:420px">
+    <p class="eyebrow" lang="de">Achtung</p>
+    <h2 id="ende-h" lang="de">Sprechstunde beenden?</h2>
+    <p lang="de">Offene Fälle zählen nicht. Wirklich schließen?</p>
+    <p class="en" lang="en">Open cases will not count. Really close the clinic?</p>
+    <div class="btn-row">
+      <button type="button" class="btn btn-kreuz" id="b-ende-ja" lang="de">Ja, beenden</button>
+      <button type="button" class="btn btn-ghost" id="b-ende-nein" lang="de">Zurück</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
 "use strict";
@@ -878,7 +906,8 @@ const A2_LISTEN = {
   otto:["ruecken","grippe","knoechel","sonne"],
   nina:["mandeln","erkaltung","grippe","heu"],
   yusuf:["vergiftung","magen","grippe","erkaltung"],
-  helga:["grippe","erkaltung","mandeln","migraene"]
+  helga:["grippe","erkaltung","mandeln","migraene"],
+  pia:["sonne","grippe","heu","erkaltung"]
 };
 
 const HINWEIS_LABELS = {
@@ -888,6 +917,179 @@ const HINWEIS_LABELS = {
   essen:"Essen / Unfall", wohin:"Auslöser", andere:"Umgebung",
   temp:"Temperatur", hals:"Hals", lunge:"Lunge", bauch:"Bauch", fuss:"Fuß", augenexam:"Augen-Check",
   kopf:"Kopf", brust:"Brust", ruecken:"Rücken", bein:"Bein", knoechel:"Knöchel"
+};
+const HINWEIS_LABELS_EN = {
+  wo:"Where", was:"What's wrong", seit:"Since when", staerke:"Strength",
+  fieber:"Fever", husten:"Cough / nose", magen:"Stomach", uebel:"Nausea / head",
+  schlucken:"Swallowing", augen:"Eyes / light", muede:"Tiredness", schon:"History",
+  essen:"Food / injury", wohin:"Triggers", andere:"Who else is ill",
+  temp:"Temperature", hals:"Throat", lunge:"Lungs", bauch:"Abdomen", fuss:"Foot", augenexam:"Eye check",
+  kopf:"Head", brust:"Chest", ruecken:"Back", bein:"Leg", knoechel:"Ankle"
+};
+
+const NOTE_EN = {
+  "36,5 °C":"36.5°C",
+  "36,6 °C":"36.6°C",
+  "36,7 °C":"36.7°C",
+  "36,7 °C, schwitzt":"36.7°C, sweating",
+  "36,8 °C, Haut heiß":"36.8°C, skin hot",
+  "37,4 °C":"37.4°C",
+  "37,8 °C":"37.8°C",
+  "38,9 °C":"38.9°C",
+  "39,1 °C":"39.1°C",
+  "7 beim Auftreten":"7 when standing on it",
+  "Attacke: Kopf, Übelkeit, Licht":"attack: head, nausea, light",
+  "Augen jucken":"eyes itch",
+  "Augen jucken und rot":"eyes itch and are red",
+  "Augen o.k.":"eyes o.k.",
+  "Augen rot, wässrig":"eyes red, watery",
+  "Bauch":"stomach",
+  "Bauch o.k.":"stomach o.k.",
+  "Bauch weich":"abdomen soft",
+  "Bauch, um den Nabel":"stomach, around the navel",
+  "Beine o.k.":"legs o.k.",
+  "bekannt, nach Stress":"known, after stress",
+  "besser im Dunkeln":"better in the dark",
+  "Brust o.k.":"chest o.k.",
+  "Druckschmerz Nabel, nicht hart":"tenderness at navel, not hard",
+  "Durchfall und Krämpfe":"diarrhea and cramps",
+  "Durchfall, wenig Appetit, 1× Erbrechen":"diarrhea, little appetite, vomited once",
+  "Erbrechen, beginnender Durchfall":"vomiting, diarrhea starting",
+  "erschöpft":"exhausted",
+  "erschöpft vom Schmerz":"exhausted from the pain",
+  "erst Erbrechen, dann Durchfall":"vomiting first, then diarrhea",
+  "extreme Schwäche":"extreme weakness",
+  "Fieber 38,9":"fever 38.9",
+  "Fieber 39,2":"fever 39.2",
+  "Frau krank, Kind (Nudeln) nicht":"wife ill, child (pasta) not",
+  "früher Hexenschuss":"had a catch in the back before",
+  "früher oft Mandeln":"tonsillitis often as a child",
+  "Fuß o.k.":"foot o.k.",
+  "Gesicht rot":"face red",
+  "Gesicht, Schultern, Arme rot":"face, shoulders, arms red",
+  "Glieder / Kopf":"limbs / head",
+  "Gliederschmerzen, ganzer Körper":"body aches, whole body",
+  "Hals":"throat",
+  "Hals innen o.k., Nacken rot":"throat inside o.k., nape red",
+  "Hals kaum rot":"throat hardly red",
+  "Hals leicht":"throat slight",
+  "Hals leicht rot":"throat slightly red",
+  "Hals leicht rot, keine Beläge":"throat slightly red, no patches",
+  "Hals o.k.":"throat o.k.",
+  "Hals roh, Schlucken o.k.":"throat raw, swallowing o.k.",
+  "Hals stark":"throat severe",
+  "Hals unauffällig":"throat unremarkable",
+  "Hals und Nase":"throat and nose",
+  "Hals, beide Seiten":"throat, both sides",
+  "Haut brennt, denkt Fieber":"skin burns, thinks fever",
+  "Heben / Kartons":"lifting / boxes",
+  "heute Morgen, plötzlich":"this morning, sudden",
+  "heute, vor 2 Stunden":"today, two hours ago",
+  "Husten":"cough",
+  "jedes Frühjahr, Schwester sagt Allergie":"every spring; sister says allergy",
+  "kaum bücken, schwer aufstehen":"can hardly bend, hard to stand up",
+  "kaum Husten, Nase frei":"hardly any cough, nose clear",
+  "kein Fieber":"no fever",
+  "kein gemessones Fieber":"no measured fever",
+  "kein Husten, Nase frei":"no cough, nose clear",
+  "kein klarer Ort":"no clear place",
+  "kein Unfall":"no injury",
+  "kein Unfall, normales Essen":"no injury, normal food",
+  "keine Auslöser":"no triggers",
+  "keine Taubheit":"no numbness",
+  "keine Übelkeit":"no nausea",
+  "kennt Erkältungen":"knows colds",
+  "kennt Grippe":"knows the flu",
+  "kennt Kita-Infekte":"knows daycare bugs",
+  "kennt Sonnenbrand, Hut vergessen":"knows sunburn, forgot the hat",
+  "Kind in der Kita auch krank":"a child at daycare is also ill",
+  "klare Nase, Husten draußen":"clear nose, cough outside",
+  "kneift bei Licht":"squints in the light",
+  "Knie = Stich":"knee = bite",
+  "Knöchel o.k.":"ankles o.k.",
+  "Kollege mit Hut o.k.":"colleague with hat is fine",
+  "Kolleginnen husten auch":"colleagues coughing too",
+  "Kopf leicht":"head slight",
+  "Kopf o.k.":"head o.k.",
+  "Kreuz":"small of the back",
+  "Krämpfe, Bauch nicht hart":"cramps, abdomen not hard",
+  "leichte Müdigkeit":"slight tiredness",
+  "Lichtempfindlichkeit":"light sensitivity",
+  "Lichtempfindlichkeit, kein Jucken":"light sensitivity, no itching",
+  "Lider leicht geschwollen":"lids slightly swollen",
+  "linker Kopf":"left side of head",
+  "linker Kopf, hinter dem Auge":"left side of head, behind the eye",
+  "Lunge frei":"lungs clear",
+  "Lunge noch frei":"lungs still clear",
+  "Magen unauffällig":"stomach unremarkable",
+  "Magen ruhig, etwas schwindelig":"stomach quiet, a bit dizzy",
+  "Magenkrämpfe":"stomach cramps",
+  "Mandeln rot, weiße Beläge":"tonsils red, white patches",
+  "Mann nicht krank":"husband not ill",
+  "Muscheln im Restaurant":"mussels in a restaurant",
+  "Nacken/Schultern rot":"nape/shoulders red",
+  "Nase und Augen":"nose and eyes",
+  "nicht krank-müde":"not ill-tired",
+  "niemand krank":"nobody ill",
+  "niemand sonst":"nobody else",
+  "niemand sonst krank":"nobody else ill",
+  "Niesen, klare Nase, Augen reiben":"sneezing, clear nose, rubbing eyes",
+  "normales Essen":"normal food",
+  "plötzlich schwer krank":"suddenly very ill",
+  "rechter Knöchel":"right ankle",
+  "rechter Knöchel (Knie juckt)":"right ankle (knee itches)",
+  "Rücken o.k.":"back o.k.",
+  "schlapp":"washed out",
+  "schlimmer beim Bücken":"worse when bending",
+  "schlimmer beim Laufen":"worse when walking",
+  "schlimmer draußen / im Laden":"worse outside / in the shop",
+  "schlimmer Sonne / Dusche / Kleidung":"worse in sun / shower / clothes",
+  "Schlucken leicht schmerzhaft":"swallowing slightly painful",
+  "Schlucken o.k.":"swallowing o.k.",
+  "Schlucken sehr schmerzhaft":"swallowing very painful",
+  "Schlucken, Fieber, Nase frei":"swallowing, fever, nose clear",
+  "Schmerz 2/10":"pain 2/10",
+  "Schmerz 3/10":"pain 3/10",
+  "Schmerz 4/10":"pain 4/10",
+  "Schmerz 4–6/10, Berührung":"pain 4–6/10, touch",
+  "Schmerz 5–7/10":"pain 5–7/10",
+  "Schmerz 6/10":"pain 6/10",
+  "Schmerz 7/10":"pain 7/10",
+  "Schmerz 8/10":"pain 8/10",
+  "Schmerz 8–9/10":"pain 8–9/10",
+  "Schmerz 9/10 beim Schlucken":"pain 9/10 when swallowing",
+  "Schnupfen, Halsschmerz, Husten":"runny nose, sore throat, cough",
+  "Schwellung rechts, Stich am Knie":"swelling on the right, bite on the knee",
+  "Schultern rot":"shoulders red",
+  "sehr müde":"very tired",
+  "sehr schlapp":"very washed out",
+  "seit 1 Woche, jedes Frühjahr":"for 1 week, every spring",
+  "seit 2 Tagen, nach Regen":"for 2 days, after rain",
+  "seit 3 Tagen, schlimmer":"for 3 days, getting worse",
+  "seit gestern":"since yesterday",
+  "seit gestern Mittag, plötzlich":"since yesterday midday, sudden",
+  "seit gestern Nachmittag":"since yesterday afternoon",
+  "seit gestern, nach Heben":"since yesterday, after lifting",
+  "seit gestern, nach Sonne":"since yesterday, after sun",
+  "Staubhusten, Nase frei":"dust cough, nose clear",
+  "Streifen an den Beinen":"a strip on the legs",
+  "subjektiv warm":"feels warm",
+  "trockener Husten, laufende Nase":"dry cough, runny nose",
+  "trockener Husten, Nase fast frei":"dry cough, nose almost clear",
+  "umgeknickt, dick und blau":"twisted, fat and blue",
+  "unbestimmt":"vague",
+  "Unfall beim Sport":"sports injury",
+  "unklar":"unclear",
+  "unterer Rücken":"lower back",
+  "vielleicht leichtes Fieber":"maybe a slight fever",
+  "vor 4 Stunden, schlagartig":"4 hours ago, sudden",
+  "zum ersten Mal":"for the first time",
+  "ähnliche Verletzung früher":"similar injury before",
+  "Übelkeit":"nausea",
+  "überall":"everywhere",
+  "fühlt sich heiß, 36,8 °C":"feels hot, 36.8°C",
+  "ganzer Tag Sonne, kein Schatten":"all day in the sun, no shade",
+  "müde vom Arbeiten":"tired from work",
 };
 
 const DEFAULT_A = {
@@ -1014,6 +1216,12 @@ const SCHMERZ = {
     kopf:{de:"Ja, und die Glieder, und der Rücken. Überall.", en:"Yes, and the limbs, and the back. Everywhere.", note:"Glieder / Kopf"},
     brust:{de:"Trockener Husten. Die Brust selbst weniger.", en:"A dry cough. The chest itself less so.", note:"Husten"},
     ruecken:{de:"Die Glieder überall, auch der Rücken. Nicht nur eine Stelle.", en:"The limbs everywhere, including the back. Not just one spot.", note:"überall"}
+  },
+  pia:{
+    kopf:{de:"Das Gesicht brennt. Stirn, Nase, Wangen — rot.", en:"My face is burning. Forehead, nose, cheeks — red.", note:"Gesicht rot"},
+    brust:{de:"Die Schultern und das Dekolleté. Die Bluse tut weh.", en:"The shoulders and the chest. The blouse hurts.", note:"Schultern rot"},
+    ruecken:{de:"Der Nacken und die Schultern hinten. Kein Hexenschuss — die Haut.", en:"The nape and the shoulders at the back. Not a catch in the back — the skin.", note:"Nacken/Schultern rot"},
+    bein:{de:"Unterhalb der Shorts ein Streifen. Sonst die Beine im Schatten.", en:"A strip below the shorts. Otherwise the legs were in the shade.", note:"Streifen an den Beinen"}
   }
 };
 
@@ -1278,6 +1486,36 @@ const PATIENTEN = [
       hals:{de:"Leicht gerötet, keine Beläge. Nicht das Bild einer Mandelentzündung.", en:"Slightly red, no patches. Not the picture of tonsillitis.", note:"Hals leicht rot, keine Beläge"},
       lunge:{de:"Etwas rauer Hustenstoß, aber die Lunge ist noch frei. Beobachten.", en:"A somewhat harsh cough, but the lungs are still clear. Watch this.", note:"Lunge noch frei"}
     })
+  },
+  {
+    id:"pia", name:"Pia Novak", alter:29, rolle:"Gärtnerin", anrede:"sie",
+    haar:"lang", skin:"#E09078", hair:"#C9A44A", shirt:"#E8D38A",
+    eintritt:{de:"Guten Tag. Ich glaube, ich habe Fieber — mir ist so heiß. Die Haut brennt.",
+      en:"Hello. I think I have a fever — I feel so hot. My skin is burning."},
+    schluessel:["wo","fieber","temp","wohin","essen"],
+    diagnose:"sonne",
+    begruendung:{de:"Pia war den ganzen Tag in der Sonne ohne Hut. Gesicht, Schultern und Arme sind rot und schmerzhaft, aber die Temperatur ist normal — ihr ist nur heiß von der Haut. Das ist Sonnenbrand, keine Grippe.",
+      en:"Pia was in the sun all day without a hat. Face, shoulders and arms are red and painful, but her temperature is normal — she only feels hot from the skin. That's sunburn, not the flu."},
+    rezept:{de:"Kühlen, viel trinken, heute keine Sonne. Eine leichte Lotion. Wenn Blasen kommen oder der Schwindel bleibt — wiederkommen. Morgen der Garten nur mit Hut.",
+      en:"Cool the skin, drink plenty, no sun today. A light lotion. If blisters appear or the dizziness stays — come back. Tomorrow: the garden only with a hat."},
+    antworten:A({
+      wo:{de:"Das Gesicht, die Schultern, die Arme. Überall, wo die Sonne war. Die Haut ist rot.", en:"My face, shoulders, arms. Everywhere the sun was. The skin is red.", note:"Gesicht, Schultern, Arme rot"},
+      was:{de:"Die Haut brennt. Mir ist heiß. Ich dachte Fieber. Der Kopf pocht leicht.", en:"The skin burns. I feel hot. I thought it was a fever. My head throbs a little.", note:"Haut brennt, denkt Fieber"},
+      seit:{de:"Gestern im Garten, den ganzen Tag. Heute Nacht hat es angefangen zu brennen.", en:"Yesterday in the garden, all day. Last night it started to burn.", note:"seit gestern, nach Sonne"},
+      staerke:{de:"Wenn ich die Schulter berühre, eine Sechs. Sonst eine Vier. Die Dusche war die Hölle.", en:"When I touch the shoulder, a six. Otherwise a four. The shower was hell.", note:"Schmerz 4–6/10, Berührung"},
+      fieber:{de:"Mir ist heiß! Aber messen? 36,8 zu Hause. Trotzdem fühle ich mich fiebrig.", en:"I feel hot! But I measured 36.8 at home. I still feel feverish.", note:"fühlt sich heiß, 36,8 °C"},
+      magen:{de:"Der Magen ist ruhig. Nur ein bisschen durstig und schwindelig in der Sonne.", en:"The stomach is quiet. Just a bit thirsty and dizzy in the sun.", note:"Magen ruhig, etwas schwindelig"},
+      muede:{de:"Müde ja — ich habe den ganzen Tag gejätet. Nicht krank-müde.", en:"Tired yes — I weeded all day. Not ill-tired.", note:"müde vom Arbeiten"},
+      essen:{de:"Verletzt? Die Sonne hat mich verletzt. Gegessen ein Brot im Garten, ohne Schatten.", en:"Injured? The sun injured me. I ate a sandwich in the garden, with no shade.", note:"ganzer Tag Sonne, kein Schatten"},
+      wohin:{de:"In der Sonne und unter der Dusche schlimmer. Kleidung auf der Haut tut weh. Im Schatten geht es.", en:"Worse in the sun and under the shower. Clothes on the skin hurt. In the shade it's better.", note:"schlimmer Sonne / Dusche / Kleidung"},
+      schon:{de:"Als Kind oft. Dann sage ich immer: Hut. Gestern habe ich den Hut vergessen. Typisch.", en:"Often as a child. Then I always say: a hat. Yesterday I forgot the hat. Typical.", note:"kennt Sonnenbrand, Hut vergessen"},
+      andere:{de:"Der Kollege hatte einen Hut. Der ist braun, nicht rot. Ich bin die Dumme.", en:"My colleague had a hat. He's brown, not red. I'm the silly one.", note:"Kollege mit Hut o.k."}
+    }),
+    untersuchungen:E({
+      temp:{de:"36,8 °C. Kein Fieber — die Haut ist nur heiß.", en:"36.8°C. No fever — the skin is just hot.", note:"36,8 °C, Haut heiß"},
+      hals:{de:"Der Hals innen ist unauffällig. Außen am Nacken: rot.", en:"The throat inside is unremarkable. Outside on the neck: red.", note:"Hals innen o.k., Nacken rot"},
+      augenexam:{de:"Die Augen sind nicht infiziert. Die Lider sind etwas geschwollen von der Sonne.", en:"The eyes aren't infected. The lids are a bit swollen from the sun.", note:"Lider leicht geschwollen"}
+    })
   }
 ];
 
@@ -1332,7 +1570,7 @@ function portraitSVG(p){
 
 /* ---------- state ---------- */
 const S = {
-  en:false, laut:true, kontrast:false, size:0, level:"a2",
+  en:false, laut:true, kontrast:false, size:0, level:"a2", rolle:"aerztin",
   queue:[], i:0, asked:new Set(), notes:{}, chat:[], results:[], score:0, tab:"fragen",
   greeted:false, guessId:null, langPts:0, diagTries:0, lastSatz:"", called:false
 };
@@ -1348,6 +1586,25 @@ function clueLabel(k){
   if(HINWEIS_LABELS[k]) return HINWEIS_LABELS[k];
   const f = FRAGEN.find(x=>x.id===k) || EXAMS.find(x=>x.id===k) || KOERPERTEILE.find(x=>x.id===k);
   return f ? (f.kurz || f.de || txt(f)) : k;
+}
+function clueLabelEn(k){
+  if(HINWEIS_LABELS_EN[k]) return HINWEIS_LABELS_EN[k];
+  const f = FRAGEN.find(x=>x.id===k) || EXAMS.find(x=>x.id===k) || KOERPERTEILE.find(x=>x.id===k);
+  return f ? (f.en || clueLabel(k)) : k;
+}
+function noteEnOf(a){
+  if(!a) return "";
+  if(a.noteEn) return a.noteEn;
+  if(a.note && NOTE_EN[a.note]) return NOTE_EN[a.note];
+  return a.en || a.note || "";
+}
+function doctorChatName(){
+  return S.rolle==="arzt" ? "Arzt" : "Ärztin";
+}
+function applyRolle(){
+  const arzt = S.rolle==="arzt";
+  $("start-h").textContent = arzt ? "Guten Tag, Herr Doktor!" : "Guten Tag, Frau Doktor!";
+  document.querySelectorAll(".rolle").forEach(b => setPressed(b, b.dataset.rolle===S.rolle));
 }
 function isA2Hint(id){
   return S.level==="a2" && patient() && patient().schluessel.includes(id);
@@ -1465,11 +1722,12 @@ function applySettings(){
   document.documentElement.setAttribute("data-size", v);
   setPressed($("b-schrift"), S.size>0);
   document.querySelectorAll(".niveau").forEach(b => setPressed(b, b.dataset.level===S.level));
+  applyRolle();
 }
 function saveSettings(){
   try{
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-      en:S.en, laut:S.laut, kontrast:S.kontrast, size:S.size, level:S.level
+      en:S.en, laut:S.laut, kontrast:S.kontrast, size:S.size, level:S.level, rolle:S.rolle
     }));
   }catch(e){}
 }
@@ -1483,6 +1741,7 @@ function loadSettings(){
     if(typeof o.kontrast === "boolean") S.kontrast = o.kontrast;
     if(typeof o.size === "number" && o.size>=0 && o.size<=2) S.size = o.size;
     if(o.level==="a2" || o.level==="b1") S.level = o.level;
+    if(o.rolle==="arzt" || o.rolle==="aerztin") S.rolle = o.rolle;
   }catch(e){}
 }
 
@@ -1514,6 +1773,13 @@ applySettings();
 document.querySelectorAll(".niveau").forEach(btn => {
   btn.onclick = () => {
     S.level = btn.dataset.level==="b1" ? "b1" : "a2";
+    applySettings();
+    saveSettings();
+  };
+});
+document.querySelectorAll(".rolle").forEach(btn => {
+  btn.onclick = () => {
+    S.rolle = btn.dataset.rolle==="arzt" ? "arzt" : "aerztin";
     applySettings();
     saveSettings();
   };
@@ -1576,9 +1842,30 @@ function printNow(mode){
 $("b-lehrer-druck").onclick = () => printNow("lehrer");
 $("b-druck").onclick = () => printNow("rezept");
 
+function openEndeConfirm(){
+  if(!$("woerter-box").hidden) closeWoerter();
+  if(!$("lehrer-box").hidden) closeLehrer();
+  lastFocus = document.activeElement;
+  $("ende-box").hidden = false;
+  $("inhalt").inert = true;
+  document.querySelector("header.top").inert = true;
+  $("b-ende-nein").focus();
+}
+function closeEndeConfirm(){
+  $("ende-box").hidden = true;
+  $("inhalt").inert = false;
+  document.querySelector("header.top").inert = false;
+  (lastFocus || $("b-abbruch")).focus();
+}
+$("b-ende-nein").onclick = closeEndeConfirm;
+$("b-ende-ja").onclick = () => { closeEndeConfirm(); endShift(); };
+$("ende-box").addEventListener("click", e => { if(e.target.id==="ende-box") closeEndeConfirm(); });
+$("ende-box").addEventListener("keydown", e => trapTab(e, "ende-box"));
+
 document.addEventListener("keydown", e => {
   if(e.key==="Escape" && !$("woerter-box").hidden) closeWoerter();
   if(e.key==="Escape" && !$("lehrer-box").hidden) closeLehrer();
+  if(e.key==="Escape" && !$("ende-box").hidden) closeEndeConfirm();
   if(e.key==="Escape" && !$("def-card").hidden) closeDef();
 });
 
@@ -1709,7 +1996,7 @@ function startGreeting(){
     onOk(choice){
       S.greeted = true;
       hideSay();
-      addChat("a", "Sie", choice.de, choice.en);
+      addChat("a", doctorChatName(), choice.de, choice.en);
       addChat("p", patient().name, patient().eintritt.de, patient().eintritt.en);
       sagenKette([choice.de, patient().eintritt.de]);
       setTab(S.tab);
@@ -1764,7 +2051,7 @@ function addChat(who, name, de, en){
   const wer = document.createElement("div");
   wer.className = "wer";
   wer.setAttribute("lang", "de");
-  wer.textContent = who==="a" ? "Sie" : name;
+  wer.textContent = who==="a" ? doctorChatName() : name;
   const b = document.createElement("button");
   b.type = "button";
   b.className = "speak";
@@ -1795,7 +2082,12 @@ function renderNotes(){
     $("notizen").innerHTML = `<dd class="leer" lang="de">Noch leer — stell Fragen.</dd><dd class="en" lang="en">Still empty — ask questions.</dd>`;
     return;
   }
-  $("notizen").innerHTML = keys.map(k => `<dt lang="de">${clueLabel(k)}</dt><dd lang="de">${S.notes[k]}</dd>`).join("");
+  $("notizen").innerHTML = keys.map(k => {
+    const n = S.notes[k];
+    const de = n && typeof n==="object" ? n.de : n;
+    const en = n && typeof n==="object" ? n.en : (NOTE_EN[n]||"");
+    return `<dt lang="de">${clueLabel(k)}</dt><dt class="en" lang="en">${clueLabelEn(k)}</dt><dd lang="de">${de||""}</dd><dd class="en" lang="en">${en||""}</dd>`;
+  }).join("");
 }
 
 function setTab(tab){
@@ -1970,9 +2262,9 @@ function ask(key, frage, antwort, spoken, spokenEn){
   if(S.asked.has(key) || !antwort) return;
   S.asked.add(key);
   const line = spoken || txt(frage);
-  addChat("a", "Sie", line, spokenEn || frage.en);
+  addChat("a", doctorChatName(), line, spokenEn || frage.en);
   addChat("p", patient().name, antwort.de, antwort.en);
-  S.notes[frage.id] = antwort.note;
+  S.notes[frage.id] = {de: antwort.note, en: noteEnOf(antwort)};
   renderNotes();
   sagenKette([line, antwort.de]);
   if(frage.gram) showGram(frage.gram);
@@ -1988,7 +2280,7 @@ function ask(key, frage, antwort, spoken, spokenEn){
 
 $("b-diagnose").onclick = openDiagnose;
 $("b-zuruck").onclick = () => { $("diag-sagen").hidden = true; $("diag-grid").hidden = false; show("s-play"); };
-$("b-abbruch").onclick = endShift;
+$("b-abbruch").onclick = openEndeConfirm;
 $("b-weiter").onclick = nextPatient;
 $("b-nochmal").onclick = () => show("s-start");
 $("b-retry-diag").onclick = () => { $("diag-sagen").hidden = true; $("diag-grid").hidden = false; openDiagnose(); };

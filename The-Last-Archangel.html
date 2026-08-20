@@ -82,6 +82,14 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
 #choice{position:absolute;left:6px;right:6px;bottom:6px;z-index:13;max-height:152px;overflow:auto;padding:6px 8px 8px}
 #choice .choice{display:flex;flex-direction:column;gap:2px;margin-top:4px}
 #choice .choice button{text-transform:none;letter-spacing:.04em;text-align:left;font-size:7px;padding:3px 5px;border-color:#c8b060}
+#card{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
+  background:#07060acc;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .28s,visibility .28s}
+#card.show{opacity:1;visibility:visible}
+#card .plate{background:#f7f4ec;color:#111;border:3px solid #8a6a28;box-shadow:0 0 0 1px #c8b070,4px 4px 0 #0008;
+  width:196px;padding:12px 10px 14px;text-align:center}
+#card .act{font-size:6px;letter-spacing:.16em;text-transform:uppercase;color:#6a5018;margin-bottom:7px}
+#card h2{font-family:Georgia,"Palatino Linotype",serif;font-size:12px;letter-spacing:.12em;font-weight:400;line-height:1.2;margin:0 0 7px}
+#card .sub{font-size:7px;color:#444;line-height:1.45;letter-spacing:.04em}
 </style>
 </head>
 <body>
@@ -105,6 +113,7 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
     <div class="partybox win" id="bp"></div>
   </div>
   <div id="toast" class="win"></div>
+  <div id="card"><div class="plate"><div class="act" id="cardAct"></div><h2 id="cardTitle"></h2><div class="sub" id="cardSub"></div></div></div>
   <div id="title" class="screen">
     <h1>THE LAST<br>ARCHANGEL</h1>
     <div class="sub">The Last Archangel · Book II: The Last Kingdom · Book III: The Last Dawn</div>
@@ -131,6 +140,7 @@ canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-re
     <p style="margin-top:8px">The tale follows the trilogy: Pompeii and the Fortuna house; Jarom and Clara against Beelzebub; Olympus, Cain, and the All-Seeing Eye.</p>
     <p style="margin-top:8px">Isda the Whisperer waits in the Cherub Fortress. Ask her, then choose a road: Nod, the Forgotten Tower, the Vault of Avarice, London, Blacker Forest, or Nineveh.</p>
     <p style="margin-top:8px">Only four may walk. From the Party page, Z changes who marches. Yearti will wait if the road is already full.</p>
+    <p style="margin-top:8px">A chapter card names each place as the books do. Bosses keep their own silhouettes: Ganosh’s mismatched eyes, Lucifer as light, the Tree of Death as a counterfeit tree.</p>
     <button class="back" id="btnHowBack">Back</button>
   </div>
   <div id="end" class="screen hidden">
@@ -165,7 +175,8 @@ const els={title:$("title"),how:$("how"),end:$("end"),hud:$("hud"),prompt:$("pro
   dialog:$("dialog"),dWho:$("dWho"),dTxt:$("dTxt"),menu:$("menuWin"),menuTabs:$("menuTabs"),
   menuBody:$("menuBody"),blog:$("blog"),bui:$("battleUI"),cmds:$("cmds"),bp:$("bp"),
   fade:$("fade"),toast:$("toast"),endTxt:$("endTxt"),viewport:$("viewport"),
-  choice:$("choice"),cWho:$("cWho"),cTxt:$("cTxt"),cOpts:$("cOpts")};
+  choice:$("choice"),cWho:$("cWho"),cTxt:$("cTxt"),cOpts:$("cOpts"),
+  card:$("card"),cardAct:$("cardAct"),cardTitle:$("cardTitle"),cardSub:$("cardSub")};
 
 function fit(){
   const s=Math.max(1,Math.floor(Math.min((innerWidth-24)/W,(innerHeight-24)/H)));
@@ -367,7 +378,7 @@ M("tunnels","Tubal's Tunnels",["wretch","ach","wretch"],0.08,{floor:"#3a3428",wa
 #.##.#####.########.#####.##
 #@.........................#
 ############################
-`,{npcs:[{id:"jubal",x:14,y:1,spr:"giant",name:"Jubal"},{id:"tubal",x:24,y:8,spr:"giant",name:"Tubal"},{id:"dusteater",x:24,y:15,spr:"boss",name:"Dusteater"}],
+`,{npcs:[{id:"jubal",x:14,y:1,spr:"jubal",name:"Jubal"},{id:"tubal",x:24,y:8,spr:"giant",name:"Tubal"},{id:"dusteater",x:24,y:15,spr:"boss",name:"Dusteater"}],
   warps:[{x:1,y:17,to:"forest",tx:3,ty:8},{x:26,y:1,to:"hell",tx:2,ty:13,need:"dusteaterDown"}]});
 
 M("hell","A Cold Day in Hell",["flame","pool","ach"],0.07,{floor:"#4a2020",wall:"#2a1010",dec:"#c04020",bg:"#180808"},`
@@ -386,7 +397,7 @@ M("hell","A Cold Day in Hell",["flame","pool","ach"],0.07,{floor:"#4a2020",wall:
 #......................#
 #@.....................#
 ########################
-`,{npcs:[{id:"tobias",x:11,y:4,spr:"tobias",name:"Tobias"},{id:"johannes",x:18,y:7,spr:"old",name:"Johannes"},{id:"ganosh",x:11,y:3,spr:"giant",name:"Ganosh"},{id:"spark",x:6,y:11,spr:"boss",name:"Sparkslinger"},{id:"ashb",x:20,y:11,spr:"boss",name:"Ashbreather"}],
+`,{npcs:[{id:"tobias",x:11,y:4,spr:"tobias",name:"Tobias"},{id:"johannes",x:18,y:7,spr:"old",name:"Johannes"},{id:"ganosh",x:11,y:3,spr:"ganosh",name:"Ganosh"},{id:"spark",x:6,y:11,spr:"boss",name:"Sparkslinger"},{id:"ashb",x:20,y:11,spr:"boss",name:"Ashbreather"}],
   warps:[{x:1,y:13,to:"tunnels",tx:25,ty:1},{x:22,y:13,to:"fortress",tx:10,ty:11,need:"reborn"}]});
 
 M("fortress","The Cherub Fortress",[],0,{floor:"#d8d0b0",wall:"#a09060",dec:"#f0e080",bg:"#4868a0"},`
@@ -403,7 +414,7 @@ M("fortress","The Cherub Fortress",[],0,{floor:"#d8d0b0",wall:"#a09060",dec:"#f0
 #....H...@....H......#
 #....................#
 ######################
-`,{npcs:[{id:"clara",x:8,y:6,spr:"clara",name:"Clara"},{id:"shop",x:16,y:5,spr:"human",name:"Manna Keeper"},{id:"judy2",x:4,y:9,spr:"judy",name:"Judy"},{id:"rest",x:16,y:9,spr:"seraph",name:"Cherub Healer"},{id:"isda",x:12,y:7,spr:"judy",name:"Isda"}],
+`,{npcs:[{id:"clara",x:8,y:6,spr:"clara",name:"Clara"},{id:"shop",x:16,y:5,spr:"human",name:"Manna Keeper"},{id:"judy2",x:4,y:9,spr:"judy",name:"Judy"},{id:"rest",x:16,y:9,spr:"seraph",name:"Cherub Healer"},{id:"isda",x:12,y:7,spr:"isda",name:"Isda"}],
   warps:[{x:1,y:6,to:"rome",tx:2,ty:8,need:"claraJoined"},{x:20,y:6,to:"olympus",tx:20,ty:9,need:"jenningsDown"},{x:10,y:1,to:"cainhall",tx:9,ty:10,need:"armor3"}]});
 
 M("rome","Rome Away from Rome",["legion","horse","legion"],0.07,{floor:"#b09070",wall:"#704030",dec:"#c04020",bg:"#402010"},`
@@ -549,7 +560,7 @@ M("london","London Falling",["imp","horse","legion"],0.07,{floor:"#3a3a48",wall:
 #............@...........#
 #BBBBBB##BBBBBB##BBBBBBBB#
 ##########################
-`,{npcs:[{id:"queen",x:18,y:6,spr:"judy",name:"Queen of Light"},{id:"beelzebub",x:8,y:7,spr:"boss",name:"Beelzebub"}],
+`,{npcs:[{id:"queen",x:18,y:6,spr:"queen",name:"Queen of Light"},{id:"beelzebub",x:8,y:7,spr:"boss",name:"Beelzebub"}],
   warps:[{x:1,y:11,to:"fortress",tx:10,ty:11}]});
 
 M("blacker","Blacker Forest",["thorn","wretch","snake"],0.07,{floor:"#1a2a18",wall:"#0c180c",dec:"#244028",bg:"#081008"},`
@@ -597,7 +608,29 @@ let battle=null;
 let choice=null;
 let anim=0, stepCount=0, lastTime=0;
 let toastT=0;
+let cardT=0;
 let encounterLock=0;
+
+const CARDS={
+  heaven:{act:"I · The Last Archangel", title:"Court of Light", sub:"The Sentence"},
+  pompeii:{act:"I · The Last Archangel", title:"Pompeii", sub:"79 A.D."},
+  nyc:{act:"I · The Last Archangel", title:"New York", sub:"A rooftop, 2012"},
+  fortuna:{act:"I · The Last Archangel", title:"Fortuna House", sub:"Midnight is gone"},
+  forest:{act:"I · The Last Archangel", title:"The Giant Wood", sub:"Even the straightest arrows fall"},
+  tunnels:{act:"I · The Last Archangel", title:"Tubal's Tunnels", sub:"Master Mahan's roads"},
+  hell:{act:"I · The Last Archangel", title:"A Cold Day in Hell", sub:"Tea with Tobias"},
+  fortress:{act:"II · The Last Kingdom", title:"The Cherub Fortress", sub:"Confirmed, Big Halo"},
+  rome:{act:"II · The Last Kingdom", title:"Rome Away from Rome", sub:"Weeping, wailing, gnashing of teeth"},
+  olympus:{act:"II · The Last Kingdom", title:"Olympus Mons", sub:"Love and lightning, 2020"},
+  cainhall:{act:"III · The Last Dawn", title:"Throne of Master Mahan", sub:"The first act, if you will"},
+  tartarus:{act:"III · The Last Dawn", title:"Tartarus", sub:"The All-Seeing Eye"},
+  nod:{act:"III · The Last Dawn", title:"The Land of Nod", sub:"A lullaby that is not quite heavenly"},
+  tower:{act:"II · The Last Kingdom", title:"The Forgotten Tower", sub:"The Mark of Cain"},
+  vault:{act:"II · The Last Kingdom", title:"Vault of Avarice", sub:"For where your treasure is"},
+  london:{act:"III · The Last Dawn", title:"London Falling", sub:"Queen of Light"},
+  blacker:{act:"III · The Last Dawn", title:"Blacker Forest", sub:"Wilhelm and Jakob"},
+  nineveh:{act:"III · The Last Dawn", title:"Nineveh Sands", sub:"The last Tree of Death"}
+};
 
 function heroInst(id,lv){
   const d=HERODEF[id];
@@ -726,6 +759,16 @@ function giveLink(){
 }
 
 function toast(msg){els.toast.textContent=msg; els.toast.classList.add("show"); toastT=2.2;}
+function hideCard(){ cardT=0; if(els.card) els.card.classList.remove("show"); }
+function showCard(mapId){
+  const c=CARDS[mapId];
+  if(!c||!els.card){ toast(MAPS[mapId]?MAPS[mapId].name:mapId); return; }
+  els.cardAct.textContent=c.act;
+  els.cardTitle.textContent=c.title;
+  els.cardSub.textContent=c.sub;
+  els.card.classList.add("show");
+  cardT=1.85;
+}
 function fade(fn){
   els.fade.classList.add("on");
   setTimeout(()=>{fn&&fn(); setTimeout(()=>els.fade.classList.remove("on"),80);},280);
@@ -768,17 +811,20 @@ function startGame(act){
   } else {
     mode="explore";
     toast(act===2?"Act II — The Last Kingdom":"Act III — The Last Dawn");
+    showCard(state.map);
   }
   renderHUD();
 }
 
 function warp(mapId,x,y){
   if(mode==="choice") closeChoice();
+  const same=state && state.map===mapId;
   fade(()=>{
     state.map=mapId; state.x=x; state.y=y; state.toX=x; state.toY=y; state.moving=false;
     encounterLock=18;
     mode="explore";
-    toast(MAPS[mapId].name);
+    if(same) toast(MAPS[mapId].name);
+    else showCard(mapId);
     renderHUD();
     save();
   });
@@ -1364,6 +1410,7 @@ function openFormation(){
 
 function ending(){
   if(mode==="choice") closeChoice();
+  hideCard();
   mode="end";
   show(els.bui,false); show(els.blog,false); show(els.dialog,false);
   els.endTxt.innerHTML="The Eye closes. The chain holds. Somewhere in the Himalayas, Eden opens a curtain on snow, and Judy asks if guardian angels are allowed to ski.<br><br>In Nod, Jarom hums a lullaby that is not quite heavenly. Clara is already too large for the cave.<br><br>Xandir looks at his hands—mortal, marked, still his—and does not sheathe the swords.<br><br>The End of Time is not yet written.";
@@ -1411,6 +1458,7 @@ function cloneEnemy(id){
 
 function startBattle(ids,onWin){
   if(mode==="choice") closeChoice();
+  hideCard();
   if(mode==="battle" && battle && !battle.over) return;
   show(els.dialog,false); show(els.menu,false); show(els.prompt,false);
   state.party.forEach(id=>{const h=state.heroes[id]; if(h.hp<=0) h.hp=Math.max(1,Math.floor(h.maxHp*0.3)); h.alive=h.hp>0; h.defending=false;});
@@ -1777,8 +1825,140 @@ function renderHUD(){
 
 function px(x,y){return {x:x*TS-cam.x, y:y*TS-cam.y};}
 
+function r(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+
+function drawFoe(sid, x, y, big){
+  ctx.save();
+  ctx.translate(Math.round(x), Math.round(y));
+  if(big) ctx.scale(1.45,1.45);
+  const flicker=anim%30<15;
+  switch(sid){
+    case "lucifer":
+      r(1,6,3,8,flicker?"#fff8c8":"#e8d898"); r(12,6,3,8,flicker?"#fff8c8":"#e8d898");
+      r(4,2,8,16,"#f4ead0"); r(5,0,6,4,"#fff8e0"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(7,8,2,6,"#e4c56a"); r(5,18,6,2,"#d8c890");
+      break;
+    case "ganosh":
+      r(2,3,12,14,"#3a6840"); r(4,0,8,5,"#a05028"); r(3,4,10,5,"#e0b080");
+      r(5,6,2,2,"#c01818"); r(9,6,2,2,"#101018"); r(5,16,3,4,"#2a4030"); r(9,16,3,4,"#2a4030");
+      break;
+    case "spark":
+      r(4,2,8,12,flicker?"#e07030":"#c05018"); r(5,0,6,4,"#e8c8a0");
+      r(6,3,2,2,"#202020"); r(9,3,2,2,"#202020"); r(3,6,2,6,"#f0a040"); r(11,6,2,6,"#f0a040");
+      r(5,14,3,6,"#3a2820"); r(9,14,3,6,"#3a2820");
+      break;
+    case "ashb":
+      r(3,4,10,12,"#6a4038"); r(5,1,6,5,"#c8a090"); r(4,0,8,3,"#4a3030");
+      r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020"); r(7,8,3,5,flicker?"#c04020":"#802010");
+      r(5,16,3,4,"#3a2020"); r(9,16,3,4,"#3a2020");
+      break;
+    case "vesuvius":
+      r(2,10,12,8,"#6a4030"); r(4,6,8,6,"#8a5040"); r(6,2,4,6,"#5a3028");
+      r(7,0,2,4,flicker?"#f07020":"#c04018"); r(5,1,2,3,"#e06020"); r(9,1,2,3,"#e06020");
+      break;
+    case "dusteater":
+      r(1,8,14,10,"#8a7a50"); r(3,4,10,8,"#6a5a40"); r(5,2,6,4,"#5a4a38");
+      r(6,6,2,2,"#201808"); r(9,6,2,2,"#201808"); r(4,14,3,4,"#4a4030"); r(9,14,3,4,"#4a4030");
+      break;
+    case "jennings":
+      r(4,2,8,6,"#e0c0a0"); r(5,0,6,3,"#2a2a38"); r(3,7,10,8,"#304878");
+      r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020"); r(7,8,2,2,flicker?"#48d080":"#d04048");
+      r(5,15,3,5,"#203050"); r(9,15,3,5,"#203050"); r(2,8,2,2,"#385828"); r(12,10,2,2,"#385828");
+      break;
+    case "ares":
+      r(3,1,10,5,"#a03030"); r(5,4,6,4,"#e0b090"); r(2,8,12,8,"#802828");
+      r(6,6,2,2,"#202020"); r(9,6,2,2,"#202020"); r(14,2,2,14,"#c8b060"); r(13,1,4,3,"#e4c56a");
+      r(4,16,3,4,"#501818"); r(9,16,3,4,"#501818");
+      break;
+    case "cain":
+      r(3,3,10,14,"#403028"); r(5,0,6,5,"#c8a070"); r(4,1,8,3,"#2a2018");
+      r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020"); r(7,6,2,3,"#c04040");
+      r(4,16,3,4,"#2a2018"); r(9,16,3,4,"#2a2018");
+      break;
+    case "ridnax":
+      r(5,6,6,10,"#602848"); r(6,3,4,5,"#e0b0a0"); r(5,2,6,3,"#401828");
+      r(6,5,2,2,"#202020"); r(9,5,2,2,"#202020"); r(7,8,2,4,"#a04060");
+      r(5,16,3,4,"#301020"); r(8,16,3,4,"#301020");
+      break;
+    case "infernis":
+      r(4,8,8,10,"#a04828"); r(5,5,6,5,"#c07050"); r(6,2,4,4,"#8a3820");
+      r(6,6,2,2,"#202020"); r(9,6,2,2,"#202020"); r(5,10,6,2,"#e4c56a");
+      r(3,12,3,6,"#6a3020"); r(10,12,3,6,"#6a3020");
+      break;
+    case "beelzebub":
+      r(4,4,8,12,"#304820"); r(5,1,6,5,"#4a6830"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(2,3,3,3,flicker?"#203010":"#385828"); r(11,6,3,3,"#203010"); r(1,10,3,2,"#385828"); r(13,12,2,2,"#203010");
+      r(5,16,3,4,"#203018"); r(9,16,3,4,"#203018");
+      break;
+    case "azazel":
+      r(1,5,3,8,"#a090c0"); r(12,5,3,8,"#a090c0"); r(4,3,8,14,"#7060a0");
+      r(5,0,6,4,"#e8d0b0"); r(6,3,2,2,"#202020"); r(9,3,2,2,"#202020");
+      r(5,16,3,4,"#403860"); r(9,16,3,4,"#403860");
+      break;
+    case "tree":
+      r(7,10,2,10,"#2a2010"); r(2,2,12,10,"#203818"); r(4,0,8,4,"#142410");
+      r(1,6,3,3,"#387040"); r(12,8,3,3,"#387040"); r(6,4,2,2,flicker?"#58a040":"#306028");
+      break;
+    case "war":
+      r(3,2,10,6,"#a03030"); r(4,6,8,8,"#802020"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(13,4,2,12,"#c8b060"); r(4,14,3,6,"#501818"); r(9,14,3,6,"#501818");
+      break;
+    case "famine":
+      r(5,2,6,5,"#e0d0b0"); r(4,7,8,8,"#706040"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(6,10,4,2,"#c8b090"); r(5,15,3,5,"#504830"); r(9,15,3,5,"#504830");
+      break;
+    case "pest":
+      r(4,2,8,6,"#90b070"); r(3,7,10,8,"#387048"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(2,8,2,2,"#58a040"); r(12,10,2,2,"#58a040"); r(5,15,3,5,"#284030"); r(9,15,3,5,"#284030");
+      break;
+    case "jubal":
+      r(3,3,10,12,"#6a5038"); r(4,0,8,5,"#c8a070"); r(6,3,2,2,"#202020"); r(9,3,2,2,"#202020");
+      r(11,6,5,8,"#c8a040"); r(12,5,3,2,"#e4c56a"); r(4,15,3,5,"#403020"); r(8,15,3,5,"#403020");
+      break;
+    case "isda":
+      r(1,6,3,7,"#e8f0ff"); r(12,6,3,7,"#e8f0ff"); r(4,3,8,12,"#d8d0e8");
+      r(5,0,6,4,"#e0c0a0"); r(5,1,6,2,"#f8f0ff"); r(6,3,2,2,"#202020"); r(9,3,2,2,"#202020");
+      r(5,15,3,5,"#8880a0"); r(9,15,3,5,"#8880a0");
+      break;
+    case "queen":
+      r(3,2,10,4,"#e4c56a"); r(5,4,6,4,"#e0c0a0"); r(3,8,10,8,"#f8f0d8");
+      r(6,6,2,2,"#202020"); r(9,6,2,2,"#202020"); r(7,0,2,3,"#fff8c0");
+      r(5,16,3,4,"#c8b060"); r(9,16,3,4,"#c8b060");
+      break;
+    case "eye":
+      r(2,6,12,8,"#a0d0e0"); r(4,4,8,12,"#c8e8f0"); r(6,8,4,4,flicker?"#d04048":"#202020"); r(7,9,2,2,"#fff");
+      break;
+    case "snake":
+      r(2,12,12,4,"#387040"); r(8,6,6,8,"#387040"); r(10,3,4,5,"#4a8848"); r(11,4,2,2,"#202020");
+      break;
+    case "suit":
+      r(4,2,8,5,"#e0c0a0"); r(3,6,10,9,"#304060"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(5,15,3,5,"#203040"); r(9,15,3,5,"#203040"); r(11,8,3,4,"#2a2418");
+      break;
+    default:{
+      const pal=(ENEMIES[sid]&&ENEMIES[sid].pal)||"#886868";
+      r(4,2,8,14,pal); r(5,0,6,4,pal); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(5,16,3,4,pal); r(8,16,3,4,pal);
+    }
+  }
+  ctx.restore();
+}
+
+const UNIQUE_FOE=new Set(["lucifer","ganosh","spark","ashb","vesuvius","dusteater","jennings","ares","cain","ridnax",
+  "infernis","beelzebub","azazel","tree","war","famine","pest","jubal","isda","queen","eye","snake","suit","prince","horsemen","ashb"]);
+
+function foeIdFor(n){
+  if(n.id==="prince"||n.spr==="lucifer") return "lucifer";
+  if(n.id==="horsemen") return "war";
+  if(n.id==="ashb") return "ashb";
+  if(UNIQUE_FOE.has(n.id)) return n.id;
+  if(UNIQUE_FOE.has(n.spr)) return n.spr;
+  return null;
+}
+
 function drawTile(t,sx,sy){
   const pal=map().palette;
+  const mid=state.map;
   ctx.fillStyle=pal.floor;
   if(t===",") ctx.fillStyle="#3a6a38";
   if(t==="=") ctx.fillStyle="#8a7a58";
@@ -1787,19 +1967,42 @@ function drawTile(t,sx,sy){
   if(t==="~") ctx.fillStyle=anim%50<25?"#2050a0":"#3070c0";
   if(t==="#") ctx.fillStyle=pal.wall;
   if(t==="T") ctx.fillStyle="#1a3a18";
-  if(t==="B") ctx.fillStyle="#3a3048";
+  if(t==="B") ctx.fillStyle=mid==="pompeii"?"#8a5040":"#3a3048";
   if(t==="H") ctx.fillStyle="#6a4030";
   if(t==="C") ctx.fillStyle="#4a3820";
   if(t==="P") ctx.fillStyle=pal.wall;
   if(t==="+") ctx.fillStyle=pal.dec;
   ctx.fillRect(sx,sy,TS,TS);
-  if(t==="T"){ctx.fillStyle="#2a6a28"; ctx.fillRect(sx+3,sy+1,10,9); ctx.fillStyle="#5a3820"; ctx.fillRect(sx+7,sy+9,2,7);}
-  if(t==="B"){ctx.fillStyle="#8898c0"; ctx.fillRect(sx+4,sy+4,3,3); ctx.fillRect(sx+9,sy+4,3,3);}
+  if(t==="." && (mid==="nineveh"||mid==="hell")){
+    ctx.fillStyle=mid==="hell"?"#2a101088":"#d8c08055";
+    ctx.fillRect(sx+3,sy+5,2,2); ctx.fillRect(sx+10,sy+11,2,2);
+  }
+  if(t==="T"){
+    ctx.fillStyle=mid==="blacker"?"#1a4020":"#2a6a28";
+    ctx.fillRect(sx+2,sy,12,10); ctx.fillRect(sx+4,sy-2,8,6);
+    ctx.fillStyle="#5a3820"; ctx.fillRect(sx+7,sy+9,2,7);
+  }
+  if(t==="B"){
+    ctx.fillStyle=mid==="nyc"?(anim%80<40?"#e4c56a":"#8898c0"):"#8898c0";
+    ctx.fillRect(sx+4,sy+4,3,3); ctx.fillRect(sx+9,sy+4,3,3);
+    if(mid==="london"||mid==="nyc"){ ctx.fillStyle="#8898c0"; ctx.fillRect(sx+4,sy+9,3,3); ctx.fillRect(sx+9,sy+9,3,3); }
+    if(mid==="pompeii"){ ctx.fillStyle="#c07040"; ctx.fillRect(sx,sy,TS,3); }
+  }
   if(t==="H"){ctx.fillStyle="#c07040"; ctx.fillRect(sx,sy,TS,3);}
-  if(t==="+"){ctx.fillStyle="#fff8c8"; ctx.fillRect(sx+6,sy+2,4,12); ctx.globalAlpha=.45; ctx.fillRect(sx+4,sy-6,8,8); ctx.globalAlpha=1;}
+  if(t==="+"){
+    if(mid==="tartarus"){
+      ctx.fillStyle="#c8e8f0"; ctx.fillRect(sx+3,sy+3,10,10);
+      ctx.fillStyle=anim%40<20?"#d04048":"#202040"; ctx.fillRect(sx+6,sy+6,4,4);
+      ctx.fillStyle="#fff"; ctx.fillRect(sx+7,sy+7,2,2);
+    } else {
+      ctx.fillStyle="#fff8c8"; ctx.fillRect(sx+6,sy+2,4,12);
+      ctx.globalAlpha=.45; ctx.fillRect(sx+4,sy-6,8,8); ctx.globalAlpha=1;
+    }
+  }
   if(t==="#"){ctx.fillStyle="#0003"; ctx.fillRect(sx,sy+TS-3,TS,3);}
   if(t==="C"){ctx.fillStyle="#2a2010"; ctx.fillRect(sx+4,sy+2,8,12);}
   if(t==="@"){ctx.fillStyle="#c8b060"; ctx.fillRect(sx+6,sy+6,4,4);}
+  if(t==="^"){ ctx.fillStyle="#f8e08088"; ctx.fillRect(sx+6,sy+2,4,6); }
 }
 
 function drawActor(ax,ay,who,dir,frame){
@@ -1810,19 +2013,25 @@ function drawActor(ax,ay,who,dir,frame){
     ctx.globalAlpha=.7; ctx.fillStyle=pal.wing;
     ctx.fillRect(x+1,y+6,3,6); ctx.fillRect(x+12,y+6,3,6); ctx.globalAlpha=1;
   }
-  if(who==="jarom"){ctx.fillStyle=pal.acc; ctx.fillRect(x+4,y-1,8,2); ctx.fillRect(x+3,y,2,2); ctx.fillRect(x+11,y,2,2);}
+  if(who==="jarom"){ctx.fillStyle=pal.acc; ctx.fillRect(x+4,y-2,8,3); ctx.fillRect(x+3,y,2,2); ctx.fillRect(x+11,y,2,2);}
   ctx.fillStyle=pal.pants; ctx.fillRect(x+4,y+11,3,5); ctx.fillRect(x+9,y+11,3,5);
   if(frame) ctx.fillRect(x+(dir==="left"?3:4),y+11,3,5);
   ctx.fillStyle=pal.shirt; ctx.fillRect(x+3,y+7,10,5);
   ctx.fillStyle=pal.skin; ctx.fillRect(x+5,y+2,6,5);
   ctx.fillStyle=pal.hair;
   ctx.fillRect(x+4,y,8,3);
-  if(who==="clara"){ctx.fillRect(x+3,y,10,4); ctx.fillStyle=pal.shirt; ctx.fillRect(x+2,y+7,12,6);}
+  if(who==="clara"){ctx.fillRect(x+2,y-1,12,5); ctx.fillStyle=pal.shirt; ctx.fillRect(x+1,y+6,14,8);}
   if(who==="yearti"){ctx.fillStyle="#f4f4f4"; ctx.fillRect(x+2,y+1,12,12); ctx.fillStyle="#202020"; ctx.fillRect(x+5,y+4,2,2); ctx.fillRect(x+9,y+4,2,2);}
   if(dir==="left"){ctx.fillStyle="#202020"; ctx.fillRect(x+5,y+4,2,2);}
   else if(dir==="right"){ctx.fillStyle="#202020"; ctx.fillRect(x+9,y+4,2,2);}
   else {ctx.fillStyle="#202020"; ctx.fillRect(x+6,y+4,2,2); ctx.fillRect(x+9,y+4,2,2);}
-  if(who==="xandir"){ctx.fillStyle="#1a1a1a"; ctx.fillRect(x+(dir==="left"?1:12),y+8,3,1);}
+  if(who==="xandir"){
+    ctx.fillStyle="#1a1a1a"; ctx.fillRect(x+(dir==="left"?1:12),y+8,3,1); ctx.fillRect(x+(dir==="left"?1:12),y+10,3,1);
+    if(state&&state.flags&&state.flags.reborn){
+      ctx.fillStyle="#6a6a78";
+      ctx.fillRect(x+5,y+8,2,2); ctx.fillRect(x+9,y+8,2,2); ctx.fillRect(x+7,y+10,2,2); ctx.fillRect(x+5,y+12,2,2); ctx.fillRect(x+9,y+12,2,2);
+    }
+  }
 }
 
 function npcPal(spr){
@@ -1855,7 +2064,12 @@ function drawWorld(){
         ctx.fillStyle=n.spr==="chest"?"#8a6030":"#fff8c0";
         ctx.fillRect(p.x+4,p.y+4,8,10);
         if(n.spr==="pillar"){ctx.globalAlpha=.35; ctx.fillStyle="#ffffc0"; ctx.fillRect(p.x+2,p.y-10,12,14); ctx.globalAlpha=1;}
-      } else drawActor(p.x,p.y,npcPal(n.spr),"down",0);
+        if(n.spr==="chest"){ ctx.fillStyle="#e4c56a"; ctx.fillRect(p.x+6,p.y+6,4,2); }
+      } else {
+        const fid=foeIdFor(n);
+        if(fid) drawFoe(fid, p.x, p.y, false);
+        else drawActor(p.x,p.y,npcPal(n.spr),"down",0);
+      }
     }});
   });
   sprs.push({y:pyp, draw:()=>{
@@ -1863,22 +2077,34 @@ function drawWorld(){
     drawActor(p.x,p.y,state.party[0],state.facing, (state.moving&&anim%12<6)?1:0);
   }});
   sprs.sort((a,b)=>a.y-b.y).forEach(s=>s.draw());
-  ctx.fillStyle="#f8f0d8"; ctx.font="8px monospace"; ctx.fillText(m.name,6,12);
+  ctx.fillStyle="#0008"; ctx.fillRect(4,3,118,12);
+  ctx.fillStyle="#e4c56a"; ctx.font="8px monospace"; ctx.fillText(m.name,8,12);
+}
+
+function battleBg(){
+  const id=state.map;
+  if(id==="pompeii"||id==="hell"){ ctx.fillStyle="#180808"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#4a1810"; ctx.fillRect(0,110,W,114); r(40,20,8,40,anim%40<20?"#c04018":"#802010"); r(200,10,6,50,"#c04018"); }
+  else if(id==="olympus"){ ctx.fillStyle="#88c8f0"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#3a6a38"; ctx.fillRect(0,110,W,114); r(20,80,40,30,"#c8b060"); r(190,70,36,40,"#c8b060"); }
+  else if(id==="tartarus"||id==="cainhall"){ ctx.fillStyle="#080814"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#1a1830"; ctx.fillRect(0,110,W,114); r(108,18,40,40,"#c8e8f044"); r(120,30,16,16,anim%40<20?"#d04048":"#202040"); }
+  else if(id==="rome"||id==="london"){ ctx.fillStyle="#201018"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#402010"; ctx.fillRect(0,110,W,114); r(10,40,30,70,"#3a3048"); r(210,50,28,60,"#3a3048"); }
+  else if(id==="nineveh"){ ctx.fillStyle="#c8a060"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#b89050"; ctx.fillRect(0,110,W,114); }
+  else if(id==="forest"||id==="blacker"){ ctx.fillStyle="#0c180c"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#1a2a18"; ctx.fillRect(0,110,W,114); r(16,20,12,90,"#143018"); r(220,30,14,80,"#143018"); }
+  else { ctx.fillStyle="#100818"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#2a1040"; ctx.fillRect(0,120,W,104); }
+  ctx.fillStyle="#e4c56a"; ctx.fillRect(0,118,W,2);
 }
 
 function drawBattleScene(){
-  ctx.fillStyle="#100818"; ctx.fillRect(0,0,W,H);
-  ctx.fillStyle="#2a1040"; ctx.fillRect(0,120,W,104);
-  ctx.fillStyle="#e4c56a"; ctx.fillRect(0,118,W,2);
+  battleBg();
+  const n=battle.enemies.filter(e=>e.hp>0).length;
   battle.enemies.forEach((e,i)=>{
     if(e.hp<=0) return;
-    const x=150+i*28, y=48+(i%2)*18;
-    if(battle.menu==="target"&&battle.target===i && anim%20<12){ctx.strokeStyle="#e4c56a"; ctx.strokeRect(x-2,y-2,20,24);}
-    ctx.fillStyle=e.pal||"#a06060";
-    ctx.fillRect(x,y,16,20);
-    ctx.fillStyle="#f8f0d8"; ctx.font="6px monospace"; ctx.fillText(e.name.slice(0,10),x-8,y-4);
-    ctx.fillStyle="#000"; ctx.fillRect(x,y+21,16,2);
-    ctx.fillStyle="#d04048"; ctx.fillRect(x,y+21,Math.max(1,16*e.hp/e.maxHp),2);
+    const big=!!e.boss && n<=2;
+    const x=big?148:150+i*28, y=big?32:48+(i%2)*18;
+    if(battle.menu==="target"&&battle.target===i && anim%20<12){ctx.strokeStyle="#e4c56a"; ctx.strokeRect(x-3,y-3,big?26:22,big?34:26);}
+    drawFoe(e.sid, x, y, big);
+    ctx.fillStyle="#f8f0d8"; ctx.font="6px monospace"; ctx.fillText(e.name.slice(0,12),x-4,y-4);
+    ctx.fillStyle="#000"; ctx.fillRect(x,y+(big?30:22),16,2);
+    ctx.fillStyle="#d04048"; ctx.fillRect(x,y+(big?30:22),Math.max(1,16*e.hp/e.maxHp),2);
   });
   battle.heroes.forEach((h,i)=>{
     const x=24, y=40+i*22;
@@ -1894,6 +2120,7 @@ function drawBattleScene(){
 function loop(t){
   const dt=Math.min(0.05,(t-(lastTime||t))/1000); lastTime=t; anim++;
   if(toastT>0){toastT-=dt; if(toastT<=0) els.toast.classList.remove("show");}
+  if(cardT>0){cardT-=dt; if(cardT<=0) hideCard();}
   if(mode==="explore"){
     if(state.moving){
       state.t+=dt*6.5;
@@ -2006,7 +2233,8 @@ window.TLA={
       dialog:mode==="dialog"&&dialogQ[dialogI]?{n:dialogQ[dialogI].n,t:dialogQ[dialogI].t,i:dialogI,len:dialogQ.length}:null,
       battle:battle&&{log:battle.log,over:!!battle.over,menu:battle.menu,ehp:battle.enemies.map(e=>e.hp),hhp:battle.heroes.map(h=>h.hp)},
       lore:state&&(state.lore||[]).map(l=>l.t),
-      choice:mode==="choice"&&choice?{who:choice.who,prompt:choice.prompt,sel:choice.sel,opts:choice.opts.map(o=>o.label)}:null};
+      choice:mode==="choice"&&choice?{who:choice.who,prompt:choice.prompt,sel:choice.sel,opts:choice.opts.map(o=>o.label)}:null,
+      card:cardT>0&&state?state.map:null};
   },
   warp, startGame,
   flag(k,v){ if(state) state.flags[k]=v; },

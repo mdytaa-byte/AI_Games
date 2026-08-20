@@ -104,7 +104,7 @@
 <body>
   <div id="wrap">
     <div id="stage">
-      <canvas id="game" width="256" height="224"></canvas>
+      <canvas id="game" width="256" height="224" tabindex="0"></canvas>
       <div id="hud"></div>
       <div id="goal"></div>
       <div id="dialog"><div class="who"></div><div class="txt"></div><div class="next">▼</div></div>
@@ -297,13 +297,13 @@ const MAPS = {
   attic: gridFrom([
     "##############",
     "#++++..TTTT..#",
-    "#++++..T..T..#",
-    "#......T.Y.T.#",
-    "#..CC........#",
+    "#++++........#",
+    "#......Y.....#",
     "#............#",
-    "#......SSSS..#",
-    "#......S..S..#",
-    "#......S..D..#",
+    "#............#",
+    "#SSS.........#",
+    "#S.S.........#",
+    "#S.D.........#",
     "##############"
   ]),
   street: gridFrom([
@@ -333,10 +333,10 @@ const MAPS = {
   ]),
   library: gridFrom([
     "##################",
-    "#TTTT..TTTT..TTTT#",
-    "#T..T..T..T..T..T#",
-    "#T..T..T.Y.T..T..#",
-    "#TTTT..TTTT..TTTT#",
+    "#TTTT........TTTT#",
+    "#T..T........T..T#",
+    "#T..T...Y....T..T#",
+    "#TTTT........TTTT#",
     "#................#",
     "#....SSSS........#",
     "#....S..S........#",
@@ -592,6 +592,7 @@ function nextLine() {
     dialogEl.classList.remove("show");
     typeFull = typing = "";
     const cb = dialogCb; dialogCb = null;
+    if (mode === "card") mode = "explore";
     if (cb) cb();
     return;
   }
@@ -939,16 +940,22 @@ function spawnFx(color) {
   fx.push({ c: SPECTRUM.hex[color] || "#fff", t: 18, x: W * 0.62, y: 90 });
 }
 
+function isHot(ch) {
+  return !!ch && "YTROGBVUDC*SH+".includes(ch);
+}
 function interact() {
   if (mode !== "explore") return;
+  const cx = Math.floor((state.x + 8) / TS);
+  const cy = Math.floor((state.y + 8) / TS);
   const dx = state.dir === "left" ? -1 : state.dir === "right" ? 1 : 0;
   const dy = state.dir === "up" ? -1 : state.dir === "down" ? 1 : 0;
-  const tx = Math.floor((state.x + 8) / TS) + dx;
-  const ty = Math.floor((state.y + 8) / TS) + dy;
-  const here = tileAt(state.x + 8, state.y + 8);
-  const face = curMap().grid[ty] && curMap().grid[ty][tx];
-  const t = face || here;
-  handleTile(t, tx, ty);
+  const spots = [[cx + dx, cy + dy], [cx, cy], [cx, cy - 1], [cx, cy + 1], [cx - 1, cy], [cx + 1, cy]];
+  for (const [tx, ty] of spots) {
+    const row = curMap().grid[ty];
+    const t = row && row[tx];
+    if (isHot(t)) { handleTile(t, tx, ty); return; }
+  }
+  say("", "Nothing humming here.");
 }
 
 function unlock(color, lines, then) {
@@ -1202,6 +1209,7 @@ function startNew() {
   loadChapter(0);
   renderHud();
   ensureAudio();
+  canvas.focus();
 }
 
 function startContinue() {
@@ -1330,7 +1338,8 @@ function tick(t) {
     }
     renderDialog();
   }
-  if (mode === "explore" && !dialogEl.classList.contains("show")) {
+  if ((mode === "explore" || mode === "card") && !dialogEl.classList.contains("show")) {
+    if (mode === "card") mode = "explore";
     let vx = 0, vy = 0;
     if (keys.left || keys.a) vx = -1;
     if (keys.right || keys.d) vx = 1;
@@ -1367,8 +1376,12 @@ function confirm() {
 }
 
 function keyOn(k, down) {
-  const map = { arrowleft: "left", arrowright: "right", arrowup: "up", arrowdown: "down" };
-  const id = map[k] || k;
+  const raw = String(k || "").toLowerCase();
+  const map = {
+    arrowleft: "left", arrowright: "right", arrowup: "up", arrowdown: "down",
+    left: "left", right: "right", up: "up", down: "down"
+  };
+  const id = map[raw] || raw;
   if (down) keys[id] = true; else keys[id] = false;
   if (!down) return;
   if (id === "z" || id === " " || id === "enter" || id === "ok") confirm();
@@ -1379,10 +1392,16 @@ function keyOn(k, down) {
 }
 
 window.addEventListener("keydown", (e) => {
-  keyOn(e.key.toLowerCase(), true);
-  if (["arrowup","arrowdown","arrowleft","arrowright"," ","z","x"].includes(e.key.toLowerCase()) || e.key === " ") e.preventDefault();
+  keyOn(e.key, true);
+  if (e.code && e.code.startsWith("Arrow")) keyOn(e.code, true);
+  const k = String(e.key || "").toLowerCase();
+  if (["arrowup","arrowdown","arrowleft","arrowright"," ","z","x"].includes(k) || k === " ") e.preventDefault();
 });
-window.addEventListener("keyup", (e) => keyOn(e.key.toLowerCase(), false));
+window.addEventListener("keyup", (e) => {
+  keyOn(e.key, false);
+  if (e.code && e.code.startsWith("Arrow")) keyOn(e.code, false);
+});
+stage.addEventListener("pointerdown", () => canvas.focus());
 document.querySelectorAll("#mobile b[data-k]").forEach((b) => {
   const k = b.dataset.k;
   const go = (d) => (e) => { e.preventDefault(); keyOn(k, d); };
@@ -1429,6 +1448,12 @@ document.getElementById("btnAgain").onclick = goTitle;
 
 window.WANDAFUL_SPECTRUM = SPECTRUM;
 window.WANDAFUL_FOES = FOES;
+window.WANDAFUL = {
+  get mode() { return mode; },
+  get state() { return state; },
+  get battle() { return battle; },
+  SPECTRUM, startNew, interact, keyOn, nextLine, startBattle, castColor, battleAct, handleTile
+};
 
 goTitle();
 requestAnimationFrame(tick);

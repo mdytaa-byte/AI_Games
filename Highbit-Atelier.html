@@ -271,7 +271,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     <h2>Build once. Import anywhere.</h2>
     <p>Highbit draws true pixel art at 128×192 — large enough for eyelid tension, iris catchlights, and mouth shapes, small enough to drop into a game as a sprite. Faces also render as 96×96 portraits for dialogue.</p>
     <div class="grid-2">
-      <div class="card"><strong>Customize</strong><small>Swap body, face, hair, outfit, and extras. Colors generate a five-stop shade ramp automatically.</small></div>
+      <div class="card"><strong>Customize</strong><small>Swap body, face, hair, outfit, extras, and handheld props. Colors generate a five-stop shade ramp automatically.</small></div>
       <div class="card"><strong>Game kits</strong><small>Start from Traditional dress, Fantasy, Wild West, Futuristic, and more — then tailor for the lesson.</small></div>
       <div class="card"><strong>Perform</strong><small>Fourteen expressions and directional poses, including a four-frame walk cycle.</small></div>
       <div class="card"><strong>Paint</strong><small>The paint layer lets you add unique pixels on top of the generated sprite.</small></div>
@@ -285,7 +285,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
 <div class="modal-bg hidden" id="libModal" role="dialog" aria-modal="true">
   <div class="modal">
     <h2>Game kits & library</h2>
-    <p>Pick a genre for the kind of game or lesson you’re making. Traditional looks are classroom starting points inspired by folk dress — built from this atelier’s tops, skirts, and extras — so you can recolor them for Japanese, Chinese, Korean, French, German, Spanish, and other culture units. Saves stay in this browser.</p>
+    <p>Pick a genre for the kind of game or lesson you’re making. Traditional looks are classroom starting points inspired by folk dress — built from this atelier’s tops, skirts, extras, and handheld props — so you can recolor them for Japanese, Chinese, Korean, French, German, Spanish, and other culture units. Saves stay in this browser.</p>
     <div class="genre-tabs" id="genreTabs"></div>
     <div style="display:flex;gap:8px;margin:10px 0;flex-wrap:wrap">
       <button class="btn mint" id="btnSaveLib">Save current</button>
@@ -336,7 +336,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     {id:"face", ico:"02", title:"Face", lead:"Features with enough pixels for nuance."},
     {id:"hair", ico:"03", title:"Hair", lead:"Volume in back, fringe in front."},
     {id:"outfit", ico:"04", title:"Outfit", lead:"Top, bottom, shoes — separate ramps."},
-    {id:"extra", ico:"05", title:"Extras", lead:"Glasses, hats, jewelry, packs."},
+    {id:"extra", ico:"05", title:"Extras", lead:"Hats, jewelry, and handheld props."},
     {id:"paint", ico:"06", title:"Paint", lead:"Free pixels on top of the sprite."}
   ];
 
@@ -380,7 +380,8 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   const TOPS = ["tee","tank","hoodie","shirt","sweater","jacket","vest","tunic","armor"];
   const BOTTOMS = ["pants","jeans","shorts","skirt","cargo"];
   const SHOES = ["none","sneakers","boots","loafers","sandals"];
-  const EXTRAS = ["none","glasses","round-glasses","earrings","scarf","cap","beanie","headband","necklace","backpack"];
+  const EXTRAS = ["none","glasses","round-glasses","earrings","scarf","cap","beanie","headband","necklace","backpack","conical-hat"];
+  const PROPS = ["none","fan","umbrella","lantern","flower","basket","scroll","tambourine","flute","staff"];
   const FACES = ["oval","round","square","heart"];
   const EYE_SHAPES = ["round","almond","lidded","sharp"];
   const BROWS = ["soft","arched","straight","thick","short"];
@@ -1605,6 +1606,124 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
         pix.fillRect((b.cx+7)|0, (b.shY+6)|0, 8, 6, ac.d);
       }
     }
+    if(x==="conical-hat"){
+      const peak=hy-r-11;
+      for(let i=0;i<18;i++){
+        const w=3+i*0.95;
+        pix.hline((hx-w)|0, (hx+w)|0, (peak+i)|0, i<4?ac.h:i>14?ac.d:ac.m);
+      }
+      pix.ellipse(hx, hy-r+7, r+7, 3.2, ac.d);
+      pix.set((hx-2)|0, (peak+6)|0, ac.l);
+    }
+  }
+
+  function holdHand(b){
+    if(b.dir==="w") return b.lHand;
+    return b.rHand;
+  }
+
+  function drawProps(pix, ch, b){
+    const kind=ch.prop||"none";
+    if(kind==="none") return;
+    const ac=ramp(ch.accColor||"#c9a227");
+    const wood=ramp("#6b5344");
+    const leaf=ramp("#2d5a45");
+    const dir=b.dir;
+    const hand=holdHand(b);
+    const hx=hand.x, hy=hand.y;
+    const out=dir==="w"?-1:1;
+
+    if(kind==="fan"){
+      const ox=hx+out*2, oy=hy-2;
+      for(let i=0;i<=6;i++){
+        const deg=-52+i*17.5;
+        const tip=ang(ox, oy, deg, 15);
+        pix.capsule(ox, oy, tip.x, tip.y, 1.55, i%2?ac.m:ac.l, ac.d);
+      }
+      for(let i=0;i<=6;i++){
+        const deg=-52+i*17.5;
+        const tip=ang(ox, oy, deg, 15);
+        pix.capsule(ox, oy, tip.x, tip.y, 0.55, wood.d);
+      }
+      pix.circle(ox, oy, 1.8, wood.m);
+      pix.set((ox)|0, (oy-1)|0, wood.l);
+    }
+
+    if(kind==="umbrella"){
+      const top=ang(hx, hy, out>0?28:-28, 22);
+      pix.capsule(hx, hy, top.x, top.y, 0.95, wood.m, wood.d);
+      pix.ellipse(top.x, top.y+3, 13, 6.2, ac.m);
+      pix.ellipse(top.x-out*2, top.y+1, 8, 3.4, ac.l);
+      pix.ellipse(top.x, top.y+6, 11, 2.4, ac.d);
+      pix.circle(top.x, top.y-3, 1.5, wood.h);
+      pix.circle(hx, hy, 1.4, wood.l);
+    }
+
+    if(kind==="lantern"){
+      const cx=hx+out*3, cy=hy-16;
+      pix.capsule(hx, hy, cx, cy+8, 0.7, wood.m, wood.d);
+      pix.ellipse(cx, cy, 6.5, 8.5, ac.m);
+      pix.ellipse(cx-1, cy-2, 3.5, 4, ac.l);
+      pix.hline((cx-5)|0, (cx+5)|0, (cy-7)|0, wood.d);
+      pix.hline((cx-5)|0, (cx+5)|0, (cy+7)|0, wood.d);
+      pix.fillRect((cx-1)|0, (cy-9)|0, 3, 3, wood.m);
+      pix.set(cx|0, cy|0, ac.h);
+    }
+
+    if(kind==="flower"){
+      const fx=hx+out*3, fy=hy-14;
+      pix.capsule(hx, hy, fx, fy+3, 0.8, leaf.m, leaf.d);
+      pix.ellipse(fx-4, fy+1, 3.2, 2.4, leaf.l);
+      pix.ellipse(fx, fy, 5.2, 4.4, ac.m);
+      pix.ellipse(fx-3, fy-1, 2.6, 2.4, ac.l);
+      pix.ellipse(fx+3, fy, 2.4, 2.2, ac.d);
+      pix.circle(fx, fy, 1.7, ac.h);
+    }
+
+    if(kind==="basket"){
+      const cx=hx+out*6, cy=hy+3;
+      pix.ellipse(cx, cy+2, 9, 6.2, wood.m);
+      pix.ellipse(cx, cy, 7.5, 3.2, wood.d);
+      pix.ellipse(cx, cy-1, 5, 1.8, ac.l);
+      pix.capsule(cx-7, cy-1, cx, cy-11, 0.9, wood.l, wood.d);
+      pix.capsule(cx+7, cy-1, cx, cy-11, 0.9, wood.l, wood.d);
+    }
+
+    if(kind==="scroll"){
+      const cx=hx+out*4, cy=hy-6;
+      pix.fillRect((cx-2)|0, (cy-10)|0, 6, 18, ac.l);
+      pix.hline((cx-1)|0, (cx+3)|0, (cy-4)|0, ac.m);
+      pix.hline((cx-1)|0, (cx+2)|0, (cy+2)|0, ac.m);
+      pix.ellipse(cx+1, cy-10, 3.4, 2.3, wood.m);
+      pix.ellipse(cx+1, cy+8, 3.4, 2.3, wood.d);
+      pix.set((cx+1)|0, (cy-10)|0, wood.l);
+    }
+
+    if(kind==="tambourine"){
+      const cx=hx+out*7, cy=hy-3;
+      pix.ellipse(cx, cy, 8.5, 8.5, ac.m);
+      pix.ellipse(cx, cy, 5.2, 5.2, wood.d);
+      pix.ellipse(cx-1, cy-1, 3.4, 3.2, ac.l);
+      [[-6,-4],[6,-3],[-5,5],[7,4],[-8,1],[8,0]].forEach(([dx,dy])=>{
+        pix.fillRect((cx+dx)|0, (cy+dy)|0, 3, 2, wood.h);
+      });
+    }
+
+    if(kind==="flute"){
+      const x0=hx-out*6, y0=hy-1, x1=hx+out*12, y1=hy-5;
+      pix.capsule(x0, y0, x1, y1, 1.7, wood.m, wood.l);
+      pix.circle(x1, y1, 1.3, wood.d);
+      for(let i=0;i<4;i++){
+        const t=.25+i*.16;
+        pix.set((x0+(x1-x0)*t)|0, (y0+(y1-y0)*t-1)|0, wood.s);
+      }
+    }
+
+    if(kind==="staff"){
+      pix.capsule(hx+out*2, hy-6, hx+out*3, hy+42, 1.15, wood.m, wood.d);
+      pix.circle(hx+out*2, hy-7, 2.1, wood.l);
+      pix.ellipse(hx+out*3, hy+42, 2.4, 1.4, wood.s);
+    }
   }
 
 
@@ -1667,6 +1786,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     if(dir==="e"||dir==="w") arm(nearArm);
     else { arm("l"); arm("r"); }
     drawExtras(pix,c,b);
+    drawProps(pix,c,b);
     pix.innerShade();
     pix.outline([16,14,18]);
     drawPaint(pix,c);
@@ -1712,6 +1832,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       shoeColor:"#3a2a22",
       extra:"none",
       accColor:"#c9a227",
+      prop:"none",
       paint:{}
     };
   }
@@ -1809,7 +1930,8 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       top:["shirt","vest","tunic","sweater","jacket"],
       bottom:["skirt","pants","shorts"],
       shoes:["loafers","sandals","boots"],
-      extra:["scarf","earrings","necklace","cap","headband","none"],
+      extra:["scarf","earrings","necklace","cap","headband","conical-hat","none"],
+      prop:["none","fan","umbrella","lantern","flower","basket","scroll","tambourine","flute","staff"],
       hairStyle:["bun","braids","long","wavy","crop","bob"],
       topColor:["#d8d2c8","#7a2e2e","#2d5a45","#c9a227","#3d2a58","#c45a2a","#2b4c7e","#6b5344","#8aa0b8","#1a1a1d"],
       bottomColor:["#7a2e2e","#2d5a45","#1f2430","#2b4c7e","#3d2a58","#c9a227","#3a2a22","#d8d2c8","#1a1a1d"],
@@ -1855,46 +1977,46 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     {genre:"modern", role:"Coach", name:"Bram Forge", bodyType:"athletic", skin:"#8d5524", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tee", topColor:"#c45a2a", bottom:"shorts", bottomColor:"#1f2430", shoes:"sneakers", shoeColor:"#1a1a1d", extra:"none", eyeColor:"#5a3a22", browStyle:"thick", expression:"determined"},
     {genre:"modern", role:"Neighbor", name:"Orrin Marsh", bodyType:"sturdy", skin:"#6d3b22", hairStyle:"afro", hairColor:"#1a1210", bangs:false, top:"tee", topColor:"#2d5a45", bottom:"jeans", bottomColor:"#1f2430", shoes:"sandals", shoeColor:"#6b5344", extra:"none", eyeColor:"#3a6b4a", expression:"grin", mouth:"full"},
 
-    {genre:"traditional", role:"Dirndl · Bavaria", name:"Lena Huber", bodyType:"average", skin:"#f0d0b0", hairStyle:"bun", hairColor:"#4a2a14", bangs:true, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#2d5a45", shoes:"loafers", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#3a6b4a", expression:"smile", faceShape:"oval"},
-    {genre:"traditional", role:"Tracht · Alps", name:"Andreas Berger", bodyType:"sturdy", skin:"#e4b894", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"vest", topColor:"#6b5344", bottom:"shorts", bottomColor:"#3a2a22", shoes:"loafers", shoeColor:"#6b5344", extra:"none", eyeColor:"#5a3a22", browStyle:"thick", expression:"grin", mouth:"full"},
-    {genre:"traditional", role:"Dirndl · Austria", name:"Greta Vogel", bodyType:"slim", skin:"#f6e0c8", hairStyle:"braids", hairColor:"#8a4a1c", bangs:true, top:"shirt", topColor:"#fff6ea", bottom:"skirt", bottomColor:"#7a2e2e", shoes:"loafers", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#2a4a7a", expression:"smile"},
-    {genre:"traditional", role:"Flamenco · Andalusia", name:"Carmen Ruiz", bodyType:"slim", skin:"#d9a06a", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"loafers", shoeColor:"#1a1a1d", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"proud", faceShape:"heart"},
+    {genre:"traditional", role:"Dirndl · Bavaria", name:"Lena Huber", bodyType:"average", skin:"#f0d0b0", hairStyle:"bun", hairColor:"#4a2a14", bangs:true, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#2d5a45", shoes:"loafers", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#3a6b4a", expression:"smile", faceShape:"oval", prop:"flower"},
+    {genre:"traditional", role:"Tracht · Alps", name:"Andreas Berger", bodyType:"sturdy", skin:"#e4b894", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"vest", topColor:"#6b5344", bottom:"shorts", bottomColor:"#3a2a22", shoes:"loafers", shoeColor:"#6b5344", extra:"none", eyeColor:"#5a3a22", browStyle:"thick", expression:"grin", mouth:"full", prop:"staff"},
+    {genre:"traditional", role:"Dirndl · Austria", name:"Greta Vogel", bodyType:"slim", skin:"#f6e0c8", hairStyle:"braids", hairColor:"#8a4a1c", bangs:true, top:"shirt", topColor:"#fff6ea", bottom:"skirt", bottomColor:"#7a2e2e", shoes:"loafers", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#2a4a7a", expression:"smile", prop:"basket"},
+    {genre:"traditional", role:"Flamenco · Andalusia", name:"Carmen Ruiz", bodyType:"slim", skin:"#d9a06a", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"loafers", shoeColor:"#1a1a1d", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"proud", faceShape:"heart", prop:"fan"},
     {genre:"traditional", role:"Charro · Mexico", name:"Mateo Herrera", bodyType:"athletic", skin:"#c68654", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"jacket", topColor:"#1a1a1d", bottom:"pants", bottomColor:"#1a1a1d", shoes:"boots", shoeColor:"#1a1a1d", extra:"cap", accColor:"#c9a227", eyeColor:"#5a3a22", browStyle:"straight", expression:"determined"},
-    {genre:"traditional", role:"Folklórico · Mexico", name:"Lupita Santos", bodyType:"average", skin:"#b56b3d", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#c45a2a", shoes:"loafers", shoeColor:"#7a2e2e", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile"},
-    {genre:"traditional", role:"Andean · Andes", name:"Inti Quispe", bodyType:"average", skin:"#8d5524", hairStyle:"braids", hairColor:"#1a1210", bangs:false, top:"sweater", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"loafers", shoeColor:"#3a2a22", extra:"cap", accColor:"#1a1a1d", eyeColor:"#3a6b4a", expression:"neutral"},
+    {genre:"traditional", role:"Folklórico · Mexico", name:"Lupita Santos", bodyType:"average", skin:"#b56b3d", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#c45a2a", shoes:"loafers", shoeColor:"#7a2e2e", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile", prop:"flower"},
+    {genre:"traditional", role:"Andean · Andes", name:"Inti Quispe", bodyType:"average", skin:"#8d5524", hairStyle:"braids", hairColor:"#1a1210", bangs:false, top:"sweater", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"loafers", shoeColor:"#3a2a22", extra:"cap", accColor:"#1a1a1d", eyeColor:"#3a6b4a", expression:"neutral", prop:"flute"},
     {genre:"traditional", role:"Gaucho · Argentina", name:"Valentina Rocha", bodyType:"athletic", skin:"#e4b894", hairStyle:"wavy", hairColor:"#4a2a14", bangs:true, top:"shirt", topColor:"#d8d2c8", bottom:"pants", bottomColor:"#1f2430", shoes:"boots", shoeColor:"#3a2a22", extra:"scarf", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"smirk"},
     {genre:"traditional", role:"Guayabera · Caribbean", name:"Diego Morel", bodyType:"average", skin:"#6d3b22", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"shirt", topColor:"#d8d2c8", bottom:"pants", bottomColor:"#4a5560", shoes:"loafers", shoeColor:"#3a2a22", extra:"none", eyeColor:"#3a6b4a", expression:"smile"},
-    {genre:"traditional", role:"Kimono · Japan", name:"Yuki Tanaka", bodyType:"slim", skin:"#f0d0b0", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"sandals", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"neutral", faceShape:"oval"},
-    {genre:"traditional", role:"Hakama · Japan", name:"Kenji Nakamura", bodyType:"athletic", skin:"#e4b894", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#1f2430", bottom:"pants", bottomColor:"#1a1a1d", shoes:"sandals", shoeColor:"#3a2a22", extra:"none", eyeColor:"#5a3a22", browStyle:"straight", expression:"neutral"},
-    {genre:"traditional", role:"Yukata · Japan", name:"Aiko Suzuki", bodyType:"slim", skin:"#f6e0c8", hairStyle:"bun", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#2b4c7e", bottom:"skirt", bottomColor:"#1f2430", shoes:"sandals", shoeColor:"#3a2a22", extra:"none", eyeColor:"#2a4a7a", expression:"smile"},
-    {genre:"traditional", role:"Happi · Japan", name:"Haruto Mori", bodyType:"average", skin:"#d9a06a", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"jacket", topColor:"#c45a2a", bottom:"pants", bottomColor:"#1f2430", shoes:"sandals", shoeColor:"#6b5344", extra:"headband", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"grin"},
-    {genre:"traditional", role:"Furisode · Japan", name:"Mei Fujiwara", bodyType:"slim", skin:"#f0d0b0", hairStyle:"long", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#3d2a58", bottom:"skirt", bottomColor:"#c9a227", shoes:"sandals", shoeColor:"#3a2a22", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"proud", faceShape:"heart"},
-    {genre:"traditional", role:"Hanbok · Korea", name:"Min-seo Park", bodyType:"slim", skin:"#f6e0c8", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#8aa0b8", bottom:"skirt", bottomColor:"#3d2a58", shoes:"loafers", shoeColor:"#d8d2c8", extra:"none", eyeColor:"#5a3a22", expression:"smile"},
+    {genre:"traditional", role:"Kimono · Japan", name:"Yuki Tanaka", bodyType:"slim", skin:"#f0d0b0", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"sandals", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"neutral", faceShape:"oval", prop:"fan"},
+    {genre:"traditional", role:"Hakama · Japan", name:"Kenji Nakamura", bodyType:"athletic", skin:"#e4b894", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#1f2430", bottom:"pants", bottomColor:"#1a1a1d", shoes:"sandals", shoeColor:"#3a2a22", extra:"none", accColor:"#d8d2c8", eyeColor:"#5a3a22", browStyle:"straight", expression:"neutral", prop:"fan"},
+    {genre:"traditional", role:"Yukata · Japan", name:"Aiko Suzuki", bodyType:"slim", skin:"#f6e0c8", hairStyle:"bun", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#2b4c7e", bottom:"skirt", bottomColor:"#1f2430", shoes:"sandals", shoeColor:"#3a2a22", extra:"none", accColor:"#8aa0b8", eyeColor:"#2a4a7a", expression:"smile", prop:"umbrella"},
+    {genre:"traditional", role:"Happi · Japan", name:"Haruto Mori", bodyType:"average", skin:"#d9a06a", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"jacket", topColor:"#c45a2a", bottom:"pants", bottomColor:"#1f2430", shoes:"sandals", shoeColor:"#6b5344", extra:"headband", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"grin", prop:"lantern"},
+    {genre:"traditional", role:"Furisode · Japan", name:"Mei Fujiwara", bodyType:"slim", skin:"#f0d0b0", hairStyle:"long", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#3d2a58", bottom:"skirt", bottomColor:"#c9a227", shoes:"sandals", shoeColor:"#3a2a22", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"proud", faceShape:"heart", prop:"fan"},
+    {genre:"traditional", role:"Hanbok · Korea", name:"Min-seo Park", bodyType:"slim", skin:"#f6e0c8", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#8aa0b8", bottom:"skirt", bottomColor:"#3d2a58", shoes:"loafers", shoeColor:"#d8d2c8", extra:"none", eyeColor:"#5a3a22", expression:"smile", prop:"fan"},
     {genre:"traditional", role:"Jeogori · Korea", name:"Ji-hoon Kim", bodyType:"athletic", skin:"#e4b894", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"vest", topColor:"#d8d2c8", bottom:"pants", bottomColor:"#d8d2c8", shoes:"loafers", shoeColor:"#3a2a22", extra:"none", eyeColor:"#5a3a22", browStyle:"straight", expression:"neutral"},
-    {genre:"traditional", role:"Wonsam · Korea", name:"Hae-won Lee", bodyType:"average", skin:"#f0d0b0", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#c9a227", shoes:"loafers", shoeColor:"#d8d2c8", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"proud"},
+    {genre:"traditional", role:"Wonsam · Korea", name:"Hae-won Lee", bodyType:"average", skin:"#f0d0b0", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#c9a227", shoes:"loafers", shoeColor:"#d8d2c8", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"proud", prop:"flower"},
     {genre:"traditional", role:"Durumagi · Korea", name:"Seo-jun Choi", bodyType:"average", skin:"#d9a06a", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"jacket", topColor:"#3d2a58", bottom:"pants", bottomColor:"#1f2430", shoes:"loafers", shoeColor:"#3a2a22", extra:"none", eyeColor:"#2a4a7a", expression:"neutral"},
-    {genre:"traditional", role:"Saekdong · Korea", name:"Yoon-ah Jung", bodyType:"slim", skin:"#f6e0c8", hairStyle:"braids", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#c45a2a", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"loafers", shoeColor:"#d8d2c8", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart"},
-    {genre:"traditional", role:"Qipao · China", name:"Wei Chen", bodyType:"average", skin:"#d9a06a", hairStyle:"bob", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#c9a227", shoes:"loafers", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"proud"},
+    {genre:"traditional", role:"Saekdong · Korea", name:"Yoon-ah Jung", bodyType:"slim", skin:"#f6e0c8", hairStyle:"braids", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#c45a2a", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"loafers", shoeColor:"#d8d2c8", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart", prop:"flower"},
+    {genre:"traditional", role:"Qipao · China", name:"Wei Chen", bodyType:"average", skin:"#d9a06a", hairStyle:"bob", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#c9a227", shoes:"loafers", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"proud", prop:"fan"},
     {genre:"traditional", role:"Tangzhuang · China", name:"Li Wei", bodyType:"athletic", skin:"#e4b894", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"jacket", topColor:"#1a1a1d", bottom:"pants", bottomColor:"#1f2430", shoes:"loafers", shoeColor:"#1a1a1d", extra:"none", eyeColor:"#5a3a22", browStyle:"straight", expression:"determined"},
-    {genre:"traditional", role:"Hanfu · China", name:"Mei Ling Zhou", bodyType:"slim", skin:"#f0d0b0", hairStyle:"long", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#7a2e2e", shoes:"sandals", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"neutral", faceShape:"oval"},
-    {genre:"traditional", role:"Changshan · China", name:"Jun Zhang", bodyType:"average", skin:"#d9a06a", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#2b4c7e", bottom:"pants", bottomColor:"#1f2430", shoes:"loafers", shoeColor:"#3a2a22", extra:"none", eyeColor:"#2a4a7a", expression:"thinking"},
-    {genre:"traditional", role:"Wedding qipao · China", name:"Xiao Yu", bodyType:"slim", skin:"#f6e0c8", hairStyle:"bun", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#7a2e2e", shoes:"loafers", shoeColor:"#c9a227", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart"},
-    {genre:"traditional", role:"Boubou · West Africa", name:"Amina Diallo", bodyType:"average", skin:"#6d3b22", hairStyle:"braids", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#c9a227", bottom:"pants", bottomColor:"#2d5a45", shoes:"sandals", shoeColor:"#6b5344", extra:"earrings", accColor:"#c9a227", eyeColor:"#3a6b4a", expression:"smile"},
+    {genre:"traditional", role:"Hanfu · China", name:"Mei Ling Zhou", bodyType:"slim", skin:"#f0d0b0", hairStyle:"long", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#7a2e2e", shoes:"sandals", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"neutral", faceShape:"oval", prop:"umbrella"},
+    {genre:"traditional", role:"Changshan · China", name:"Jun Zhang", bodyType:"average", skin:"#d9a06a", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#2b4c7e", bottom:"pants", bottomColor:"#1f2430", shoes:"loafers", shoeColor:"#3a2a22", extra:"none", eyeColor:"#2a4a7a", expression:"thinking", prop:"scroll"},
+    {genre:"traditional", role:"Wedding qipao · China", name:"Xiao Yu", bodyType:"slim", skin:"#f6e0c8", hairStyle:"bun", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#7a2e2e", shoes:"loafers", shoeColor:"#c9a227", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart", prop:"flower"},
+    {genre:"traditional", role:"Boubou · West Africa", name:"Amina Diallo", bodyType:"average", skin:"#6d3b22", hairStyle:"braids", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#c9a227", bottom:"pants", bottomColor:"#2d5a45", shoes:"sandals", shoeColor:"#6b5344", extra:"earrings", accColor:"#c9a227", eyeColor:"#3a6b4a", expression:"smile", prop:"fan"},
     {genre:"traditional", role:"Kente · Ghana", name:"Kwame Mensah", bodyType:"athletic", skin:"#4a2714", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#c45a2a", bottom:"pants", bottomColor:"#2d5a45", shoes:"sandals", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", browStyle:"thick", expression:"proud"},
-    {genre:"traditional", role:"Sari · India", name:"Priya Sharma", bodyType:"slim", skin:"#c68654", hairStyle:"long", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#3d2a58", bottom:"skirt", bottomColor:"#c9a227", shoes:"sandals", shoeColor:"#c9a227", extra:"scarf", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart"},
+    {genre:"traditional", role:"Sari · India", name:"Priya Sharma", bodyType:"slim", skin:"#c68654", hairStyle:"long", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#3d2a58", bottom:"skirt", bottomColor:"#c9a227", shoes:"sandals", shoeColor:"#c9a227", extra:"scarf", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart", prop:"flower"},
     {genre:"traditional", role:"Thobe · Levant", name:"Omar Haddad", bodyType:"average", skin:"#d9a06a", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#d8d2c8", bottom:"pants", bottomColor:"#d8d2c8", shoes:"loafers", shoeColor:"#3a2a22", extra:"scarf", accColor:"#2d5a45", eyeColor:"#5a3a22", expression:"neutral"},
     {genre:"traditional", role:"Kilt · Scotland", name:"Eilidh MacLeod", bodyType:"athletic", skin:"#f0d0b0", hairStyle:"wavy", hairColor:"#8a4a1c", bangs:true, top:"vest", topColor:"#1f2430", bottom:"skirt", bottomColor:"#2d5a45", shoes:"loafers", shoeColor:"#3a2a22", extra:"none", eyeColor:"#3a6b4a", expression:"smile"},
-    {genre:"traditional", role:"Breton · Brittany", name:"Anne Le Gall", bodyType:"average", skin:"#f6e0c8", hairStyle:"bob", hairColor:"#1a1210", bangs:true, top:"sweater", topColor:"#2b4c7e", bottom:"pants", bottomColor:"#d8d2c8", shoes:"loafers", shoeColor:"#1a1a1d", extra:"cap", accColor:"#2b4c7e", eyeColor:"#2a4a7a", expression:"neutral"},
-    {genre:"traditional", role:"Breton · Finistère", name:"Yannig Le Braz", bodyType:"sturdy", skin:"#e4b894", hairStyle:"crop", hairColor:"#4a2a14", bangs:false, top:"vest", topColor:"#1a1a1d", bottom:"pants", bottomColor:"#1f2430", shoes:"loafers", shoeColor:"#1a1a1d", extra:"cap", accColor:"#1a1a1d", eyeColor:"#5a3a22", browStyle:"thick", expression:"grin"},
-    {genre:"traditional", role:"Alsatian · Alsace", name:"Elise Meyer", bodyType:"average", skin:"#f0d0b0", hairStyle:"braids", hairColor:"#8a4a1c", bangs:true, top:"vest", topColor:"#1a1a1d", bottom:"skirt", bottomColor:"#7a2e2e", shoes:"loafers", shoeColor:"#3a2a22", extra:"scarf", accColor:"#d8d2c8", eyeColor:"#2a4a7a", expression:"smile"},
-    {genre:"traditional", role:"Provençal · Provence", name:"Camille Roux", bodyType:"slim", skin:"#e4b894", hairStyle:"bun", hairColor:"#4a2a14", bangs:true, top:"tunic", topColor:"#c45a2a", bottom:"skirt", bottomColor:"#c9a227", shoes:"sandals", shoeColor:"#6b5344", extra:"scarf", accColor:"#2d5a45", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart"},
+    {genre:"traditional", role:"Breton · Brittany", name:"Anne Le Gall", bodyType:"average", skin:"#f6e0c8", hairStyle:"bob", hairColor:"#1a1210", bangs:true, top:"sweater", topColor:"#2b4c7e", bottom:"pants", bottomColor:"#d8d2c8", shoes:"loafers", shoeColor:"#1a1a1d", extra:"cap", accColor:"#2b4c7e", eyeColor:"#2a4a7a", expression:"neutral", prop:"basket"},
+    {genre:"traditional", role:"Breton · Finistère", name:"Yannig Le Braz", bodyType:"sturdy", skin:"#e4b894", hairStyle:"crop", hairColor:"#4a2a14", bangs:false, top:"vest", topColor:"#1a1a1d", bottom:"pants", bottomColor:"#1f2430", shoes:"loafers", shoeColor:"#1a1a1d", extra:"cap", accColor:"#1a1a1d", eyeColor:"#5a3a22", browStyle:"thick", expression:"grin", prop:"staff"},
+    {genre:"traditional", role:"Alsatian · Alsace", name:"Elise Meyer", bodyType:"average", skin:"#f0d0b0", hairStyle:"braids", hairColor:"#8a4a1c", bangs:true, top:"vest", topColor:"#1a1a1d", bottom:"skirt", bottomColor:"#7a2e2e", shoes:"loafers", shoeColor:"#3a2a22", extra:"scarf", accColor:"#d8d2c8", eyeColor:"#2a4a7a", expression:"smile", prop:"flower"},
+    {genre:"traditional", role:"Provençal · Provence", name:"Camille Roux", bodyType:"slim", skin:"#e4b894", hairStyle:"bun", hairColor:"#4a2a14", bangs:true, top:"tunic", topColor:"#c45a2a", bottom:"skirt", bottomColor:"#c9a227", shoes:"sandals", shoeColor:"#6b5344", extra:"scarf", accColor:"#2d5a45", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart", prop:"basket"},
     {genre:"traditional", role:"Basque · Pays Basque", name:"Iker Etcheverry", bodyType:"athletic", skin:"#d9a06a", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"shirt", topColor:"#d8d2c8", bottom:"pants", bottomColor:"#1a1a1d", shoes:"loafers", shoeColor:"#1a1a1d", extra:"scarf", accColor:"#7a2e2e", eyeColor:"#5a3a22", browStyle:"straight", expression:"determined"},
-    {genre:"traditional", role:"Arlésienne · Arles", name:"Mireille Calvet", bodyType:"average", skin:"#f6e0c8", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"loafers", shoeColor:"#3a2a22", extra:"earrings", accColor:"#c9a227", eyeColor:"#2a4a7a", expression:"proud"},
-    {genre:"traditional", role:"Tarantella · Italy", name:"Giulia Rossi", bodyType:"slim", skin:"#e4b894", hairStyle:"bun", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#2d5a45", shoes:"loafers", shoeColor:"#3a2a22", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart"},
-    {genre:"traditional", role:"Festa Junina · Brazil", name:"Camila Souza", bodyType:"average", skin:"#c68654", hairStyle:"braids", hairColor:"#1a1210", bangs:true, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#c45a2a", shoes:"sandals", shoeColor:"#6b5344", extra:"scarf", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"grin"},
-    {genre:"traditional", role:"Áo dài · Vietnam", name:"Linh Nguyen", bodyType:"slim", skin:"#f0d0b0", hairStyle:"long", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"pants", bottomColor:"#d8d2c8", shoes:"sandals", shoeColor:"#3a2a22", extra:"none", eyeColor:"#5a3a22", expression:"neutral", faceShape:"oval"},
-    {genre:"traditional", role:"Sarafan · Russia", name:"Anya Petrova", bodyType:"average", skin:"#f6e0c8", hairStyle:"braids", hairColor:"#8a4a1c", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"loafers", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#2a4a7a", expression:"smile"},
-    {genre:"traditional", role:"Island folk · Greece", name:"Eleni Papadopoulos", bodyType:"average", skin:"#e4b894", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"vest", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"sandals", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile"}
+    {genre:"traditional", role:"Arlésienne · Arles", name:"Mireille Calvet", bodyType:"average", skin:"#f6e0c8", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"loafers", shoeColor:"#3a2a22", extra:"earrings", accColor:"#c9a227", eyeColor:"#2a4a7a", expression:"proud", prop:"umbrella"},
+    {genre:"traditional", role:"Tarantella · Italy", name:"Giulia Rossi", bodyType:"slim", skin:"#e4b894", hairStyle:"bun", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#2d5a45", shoes:"loafers", shoeColor:"#3a2a22", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart", prop:"tambourine"},
+    {genre:"traditional", role:"Festa Junina · Brazil", name:"Camila Souza", bodyType:"average", skin:"#c68654", hairStyle:"braids", hairColor:"#1a1210", bangs:true, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#c45a2a", shoes:"sandals", shoeColor:"#6b5344", extra:"scarf", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"grin", prop:"lantern"},
+    {genre:"traditional", role:"Áo dài · Vietnam", name:"Linh Nguyen", bodyType:"slim", skin:"#f0d0b0", hairStyle:"long", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"pants", bottomColor:"#d8d2c8", shoes:"sandals", shoeColor:"#3a2a22", extra:"conical-hat", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"neutral", faceShape:"oval", prop:"umbrella"},
+    {genre:"traditional", role:"Sarafan · Russia", name:"Anya Petrova", bodyType:"average", skin:"#f6e0c8", hairStyle:"braids", hairColor:"#8a4a1c", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"loafers", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#2a4a7a", expression:"smile", prop:"flower"},
+    {genre:"traditional", role:"Island folk · Greece", name:"Eleni Papadopoulos", bodyType:"average", skin:"#e4b894", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"vest", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"sandals", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile", prop:"flower"}
   ];
 
   function presetChar(p){
@@ -1905,7 +2027,8 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       browStyle:p.browStyle||"soft", mouth:p.mouth||"medium", expression:p.expression||"neutral",
       hairStyle:p.hairStyle, hairColor:p.hairColor, bangs:!!p.bangs,
       top:p.top, topColor:p.topColor, bottom:p.bottom, bottomColor:p.bottomColor,
-      shoes:p.shoes, shoeColor:p.shoeColor, extra:p.extra||"none", accColor:p.accColor||"#c9a227"
+      shoes:p.shoes, shoeColor:p.shoeColor, extra:p.extra||"none", accColor:p.accColor||"#c9a227",
+      prop:p.prop||"none"
     });
   }
 
@@ -2070,6 +2193,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     }
     if(ui.layer==="extra"){
       choices("Accessory","extra",EXTRAS);
+      choices("Prop","prop",PROPS);
       colors("Accent","accColor",CLOTH.concat(["#c9a227","#e8e6e1","#4fb89c"]));
     }
     if(ui.layer==="paint"){
@@ -2205,6 +2329,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       shoes:randFrom(kit.shoes),
       shoeColor:randFrom(CLOTH),
       extra:randFrom(kit.extra),
+      prop:kit.prop?randFrom(kit.prop):(base.prop||"none"),
       eyeColor:randFrom(kit.eyeColor),
       eyeShape:randFrom(EYE_SHAPES),
       faceShape:randFrom(FACES),

@@ -302,7 +302,7 @@ body.no-en .steps .tr{display:none}
       <p>Lauf durch den Supermarkt, nimm, was auf dem Zettel steht, und bezahle an der Kasse.</p>
     </div>
     <ol class="steps">
-      <li><span class="n">1</span><span><b>WASD</b> gehen, Maus umschauen. Den <b>Zettel</b> siehst du im Wagen — oder halte <b>Q</b>, um ihn hochzunehmen.<span class="tr">Walk with WASD. Your list sits in the cart — hold Q to lift it.</span></span></li>
+      <li><span class="n">1</span><span><b>WASD</b> gehen, Maus umschauen. Den <b>Zettel</b> siehst du im Wagen — oder halte <b>Q</b>, um ihn hochzunehmen. Der Markt hat Geräusche (Leiste: <b>Ton</b>).<span class="tr">Walk with WASD. Your list sits in the cart — hold Q to lift it. The store has a soundscape (toolbar: Sound).</span></span></li>
       <li><span class="n">2</span><span>Ziel auf ein Produkt und drücke <b>E</b> — es hebt sich, der Artikel (<i>die Milch</i>) sitzt darauf, dann fällt es in den Wagen. Falsches bleibt im Regal.<span class="tr">Aim and press E: the pack lifts, the German article sits on it, then it drops into the cart. Wrong items stay on the shelf.</span></span></li>
       <li><span class="n">3</span><span>An der <b>Bäckerei</b> und der <b>Fleischtheke</b> bestellst du: <i>Ich hätte gern …</i><span class="tr">At the bakery and meat counter you order with “Ich hätte gern…”</span></span></li>
       <li><span class="n">4</span><span>Alles da? Geh zur <b>Kasse</b> und sprich mit der Kassiererin.<span class="tr">Then check out and talk to the cashier.</span></span></li>
@@ -494,6 +494,7 @@ const player = {x:0, y:1.64, z:9.4, yaw:0, pitch:0.08, r:0.34, walk:0, moving:fa
 const keys = {};
 const held = {up:false, down:false, left:false, right:false, zettel:false};
 let soundOn = true, actx = null;
+const AM = { started:false, master:null, duck:null, beds:{}, hums:[], nextFx:0, footHigh:false, doorNear:false, cartTick:0, lfo:0 };
 let renderer, scene, camera, clock;
 let colliders = [];
 let targets = [];
@@ -508,24 +509,194 @@ let lookObj = null;
 let reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let _camHold = null, _basket = null;
 
+function ensureAudio(){
+  try{
+    if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if(actx.state === "suspended") actx.resume();
+    if(AM.started || !actx) return actx;
+    const master = actx.createGain(); master.gain.value = soundOn ? 1 : 0;
+    const duck = actx.createGain(); duck.gain.value = 1;
+    duck.connect(master); master.connect(actx.destination);
+    AM.master = master; AM.duck = duck;
+    AM.bufs = { brown: noiseBuf(2.2, "brown"), pink: noiseBuf(2.2, "pink"), white: noiseBuf(1.4, "white") };
+    AM.beds.room = loopBed(AM.bufs.brown, "lowpass", 420, 0.7);
+    AM.beds.crowd = loopBed(AM.bufs.pink, "bandpass", 1100, 0.55);
+    AM.beds.fridge = loopBed(AM.bufs.white, "lowpass", 280, 0.9);
+    AM.beds.bakery = loopBed(AM.bufs.pink, "lowpass", 900, 0.8);
+    AM.beds.meat = loopBed(AM.bufs.brown, "lowpass", 240, 0.9);
+    AM.beds.checkout = loopBed(AM.bufs.white, "bandpass", 2400, 0.7);
+    AM.beds.produce = loopBed(AM.bufs.pink, "highpass", 900, 0.5);
+    AM.beds.outside = loopBed(AM.bufs.pink, "highpass", 1800, 0.4);
+    AM.beds.cart = loopBed(AM.bufs.white, "bandpass", 1600, 1.4);
+    AM.hums = [humTone(48, 0.7), humTone(96, 0.35), humTone(147, 0.12)];
+    AM.started = true;
+    return actx;
+  }catch(e){ return null; }
+}
+function noiseBuf(sec, color){
+  const rate = actx.sampleRate, n = Math.floor(sec * rate);
+  const buf = actx.createBuffer(1, n, rate), d = buf.getChannelData(0);
+  let last = 0, b0 = 0, b1 = 0, b2 = 0;
+  for(let i=0;i<n;i++){
+    const w = Math.random()*2 - 1;
+    if(color === "brown"){ last = (last + 0.02*w) / 1.02; d[i] = last * 3.2; }
+    else if(color === "pink"){
+      b0 = 0.997 * b0 + w * 0.029; b1 = 0.985 * b1 + w * 0.07; b2 = 0.95 * b2 + w * 0.16;
+      d[i] = (b0 + b1 + b2 + w * 0.18) * 0.55;
+    } else d[i] = w;
+  }
+  return buf;
+}
+function loopBed(buf, filter, freq, q){
+  const src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
+  const f = actx.createBiquadFilter(); f.type = filter; f.frequency.value = freq; f.Q.value = q || 1;
+  const p = actx.createStereoPanner();
+  const g = actx.createGain(); g.gain.value = 0;
+  src.connect(f); f.connect(p); p.connect(g); g.connect(AM.duck);
+  src.start();
+  return {src, f, p, g};
+}
+function humTone(freq, max){
+  const o = actx.createOscillator(); o.type = "sine"; o.frequency.value = freq;
+  const g = actx.createGain(); g.gain.value = 0;
+  o.connect(g); g.connect(AM.duck); o.start();
+  return {o, g, max: max || 1};
+}
+function applyMute(){
+  if(AM.master){
+    const t = actx.currentTime;
+    AM.master.gain.cancelScheduledValues(t);
+    AM.master.gain.setTargetAtTime(soundOn ? 1 : 0, t, 0.04);
+  }
+  if(!soundOn && window.speechSynthesis) speechSynthesis.cancel();
+}
+function setBed(name, vol, pan){
+  const b = AM.beds[name]; if(!b) return;
+  const t = actx.currentTime;
+  b.g.gain.setTargetAtTime(Math.max(0, vol), t, 0.18);
+  if(b.p && typeof pan === "number") b.p.pan.setTargetAtTime(Math.max(-1, Math.min(1, pan)), t, 0.18);
+}
+function earPan(x, z){
+  const rx = Math.cos(player.yaw), rz = Math.sin(player.yaw);
+  const dx = x - player.x, dz = z - player.z;
+  const dist = Math.hypot(dx, dz) || 1;
+  return Math.max(-1, Math.min(1, (dx*rx + dz*rz) / dist));
+}
+function prox(x, z, r){
+  const d = Math.hypot(player.x - x, player.z - z);
+  return Math.max(0, 1 - d / r);
+}
+function noiseBurst(opt){
+  if(!soundOn) return;
+  try{
+    ensureAudio(); if(!AM.started || !AM.bufs) return;
+    const t = actx.currentTime;
+    const src = actx.createBufferSource();
+    src.buffer = (AM.bufs && AM.bufs[opt.color || "white"]) || AM.bufs.white;
+    src.loop = true;
+    const f = actx.createBiquadFilter();
+    f.type = opt.filter || "bandpass";
+    f.frequency.value = opt.freq || 800;
+    f.Q.value = opt.q || 1.2;
+    if(opt.sweep) f.frequency.exponentialRampToValueAtTime(opt.sweep, t + (opt.dur || 0.18));
+    const p = actx.createStereoPanner(); p.pan.value = opt.pan || 0;
+    const g = actx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(opt.vol || 0.08, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + (opt.dur || 0.18));
+    src.connect(f); f.connect(p); p.connect(g); g.connect(AM.duck);
+    src.start(t); src.stop(t + (opt.dur || 0.18) + 0.02);
+  }catch(e){}
+}
 function beep(freq, dur, type, vol){
   if(!soundOn) return;
   try{
-    if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    ensureAudio();
     const o = actx.createOscillator(), g = actx.createGain();
     o.type = type || "square"; o.frequency.value = freq;
     g.gain.value = vol || 0.05;
     g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
-    o.connect(g); g.connect(actx.destination);
+    o.connect(g); g.connect(AM.duck || actx.destination);
     o.start(); o.stop(actx.currentTime + dur);
   }catch(e){}
 }
-const sndScan  = () => beep(1180, .09, "square", .05);
+const sndScan  = () => { beep(1180, .07, "square", .045); noiseBurst({freq:3200, q:4, dur:0.06, vol:0.04, filter:"highpass"}); };
 const sndRight = () => { beep(660,.09,"triangle",.07); setTimeout(()=>beep(990,.14,"triangle",.07),90); };
 const sndWrong = () => beep(150, .22, "sawtooth", .05);
-const sndDoor  = () => beep(420, .12, "sine", .04);
-const sndGrab  = () => { beep(380,.07,"sine",.04); setTimeout(()=>beep(520,.09,"sine",.035),70); };
-const sndPaper = () => beep(240, .05, "triangle", .03);
+function sndDoor(){ noiseBurst({freq:280, sweep:1600, dur:0.28, vol:0.07, filter:"lowpass", color:"pink", q:0.6}); beep(420, .1, "sine", .025); }
+function sndAutoDoor(opening){
+  noiseBurst({freq: opening ? 220 : 1400, sweep: opening ? 1800 : 180, dur:0.55, vol:0.09, filter:"bandpass", color:"pink", q:0.7});
+}
+function sndGrab(it){
+  const sh = it && it.shape;
+  if(sh === "bottle"){ beep(920,.05,"sine",.03); noiseBurst({freq:2400, dur:0.12, vol:0.06, filter:"bandpass", q:3.5}); }
+  else if(sh === "sphere" || sh === "banana" || sh === "cuke" || sh === "cone"){ noiseBurst({freq:220, dur:0.14, vol:0.07, filter:"lowpass", color:"brown"}); }
+  else { noiseBurst({freq:1400, dur:0.16, vol:0.055, filter:"bandpass", color:"pink", q:0.8}); beep(380,.07,"sine",.02); }
+}
+function sndDrop(){ noiseBurst({freq:380, dur:0.16, vol:0.07, filter:"bandpass", color:"white", q:1.6}); beep(240,.05,"triangle",.02); }
+function sndPaper(){ noiseBurst({freq:2100, dur:0.11, vol:0.05, filter:"highpass", color:"pink", q:0.7}); }
+function sndStep(pan){ noiseBurst({freq:190, dur:0.07, vol:0.045, filter:"lowpass", color:"brown", pan: pan || 0, q:0.8}); }
+function sndChime(){
+  if(!soundOn) return;
+  beep(880, .18, "sine", .05);
+  setTimeout(() => beep(659, .28, "sine", .045), 160);
+}
+
+function updateSoundscape(dt){
+  if(!soundOn) return;
+  try{ ensureAudio(); }catch(e){ return; }
+  if(!AM.started) return;
+  if(!S.running){
+    ["room","crowd","fridge","bakery","meat","checkout","produce","outside","cart"].forEach(n => setBed(n, 0));
+    AM.hums.forEach(h => h.g.gain.setTargetAtTime(0, actx.currentTime, 0.1));
+    return;
+  }
+  if(S.catalog){
+    setBed("room", 0.03, 0);
+    ["crowd","fridge","bakery","meat","checkout","produce","outside","cart"].forEach(n => setBed(n, 0));
+    AM.hums.forEach(h => h.g.gain.setTargetAtTime(0, actx.currentTime, 0.1));
+    return;
+  }
+  const inside = player.z < 11.6;
+  const out = Math.max(0, (player.z - 10.2) / 3.5);
+  AM.duck.gain.setTargetAtTime(overlayOpen() ? 0.38 : 1, actx.currentTime, 0.08);
+  setBed("room", inside ? 0.055 : 0.02, 0);
+  setBed("crowd", inside ? 0.028 + 0.02 * (1 - Math.abs(player.x)/14) : 0, 0);
+  const fr = Math.max(prox(8.4, 1.4, 7.5), prox(8.4, -6.2, 6.5), prox(-1.6, -1.2, 4.5));
+  setBed("fridge", 0.015 + fr * 0.09, earPan(8.4, -1));
+  AM.hums.forEach(h => h.g.gain.setTargetAtTime(fr * 0.018 * h.max, actx.currentTime, 0.2));
+  const bk = prox(-8.2, -9.0, 6.2);
+  setBed("bakery", bk * 0.07, earPan(-8.2, -9));
+  setBed("meat", prox(0.2, -9.0, 5.5) * 0.055, earPan(0.2, -9));
+  const ck = prox(-5.0, 8.2, 7);
+  setBed("checkout", ck * 0.05, earPan(-5, 8.2));
+  setBed("produce", prox(-10.2, 1.2, 6) * 0.045, earPan(-10.2, 1.2));
+  setBed("outside", out * 0.04, 0);
+  const move = player.moving ? 1 : 0;
+  setBed("cart", move * (0.018 + Math.min(8, S.cart.length) * 0.004), 0.22);
+  AM.lfo += dt;
+  if(player.moving){
+    const step = Math.sin(player.walk * 9.5);
+    const high = step > 0.78;
+    if(high && !AM.footHigh) sndStep(step > 0 ? 0.12 : -0.12);
+    AM.footHigh = high;
+    AM.cartTick += dt;
+    if(AM.cartTick > 0.11){
+      AM.cartTick = 0;
+      noiseBurst({freq:900 + Math.random()*800, dur:0.045, vol:0.02 + Math.min(6, S.cart.length)*0.003, filter:"highpass", pan:0.25});
+    }
+  } else { AM.footHigh = false; AM.cartTick = 0; }
+  const now = performance.now();
+  if(now > AM.nextFx && !overlayOpen()){
+    AM.nextFx = now + 2800 + Math.random()*7000;
+    const roll = Math.random();
+    if(ck > 0.25 && roll < 0.45) sndScan();
+    else if(bk > 0.3 && roll < 0.7) noiseBurst({freq:1800, dur:0.09, vol:0.035, filter:"bandpass", q:2.4, pan:earPan(-8.2,-9)});
+    else if(fr > 0.35 && roll < 0.85) noiseBurst({freq:90, dur:0.35, vol:0.04, filter:"lowpass", color:"brown", pan:earPan(8.4,1.4)});
+    else noiseBurst({freq:700, dur:0.2, vol:0.03, filter:"bandpass", color:"pink", pan:(Math.random()*2-1)*0.6});
+  }
+  void dt;
+}
 
 function speak(text){
   if(!CONFIG.speak || !soundOn || !window.speechSynthesis) return;
@@ -1105,10 +1276,11 @@ function startShake(mesh){
 }
 
 function startGrab(it, mesh){
-  if(!mesh){ restockCart(); return; }
-  if(reduced){ restockCart(); return; }
+  if(!mesh || reduced){
+    sndGrab(it); restockCart(); sndDrop(); return;
+  }
   cancelGrab();
-  sndGrab();
+  sndGrab(it);
   const start = new THREE.Vector3();
   mesh.getWorldPosition(start);
   mesh.visible = false;
@@ -1135,6 +1307,7 @@ function finishGrab(){
   if(grab.mesh) grab.mesh.visible = true;
   grab = null;
   showGrabWord("");
+  sndDrop();
   restockCart();
   peekZettel();
 }
@@ -1886,10 +2059,12 @@ function raycast(){
 
 function updateDoors(){
   const near = Math.abs(player.x) < 2.4 && player.z > 9.6;
-  const t = near ? 1.55 : 0.88;
+  if(S.running && near !== AM.doorNear){
+    AM.doorNear = near;
+    sndAutoDoor(near);
+  }
   doors[0].position.x += ((near ? -1.7 : -0.88) - doors[0].position.x) * 0.12;
   doors[1].position.x += ((near ?  1.7 :  0.88) - doors[1].position.x) * 0.12;
-  void t;
 }
 
 function updateCamera(dt){
@@ -2024,7 +2199,8 @@ function updatePA(now){
   const el = document.getElementById("pa");
   el.innerHTML = "📢 <b>Durchsage</b> — " + msg;
   el.style.display = "block";
-  speak(msg);
+  sndChime();
+  setTimeout(() => speak(msg), 420);
   setTimeout(() => { el.style.display = "none"; }, 7000);
 }
 
@@ -2036,6 +2212,7 @@ function loop(){
   updateNPCs(dt);
   updateGrab(dt);
   updateCamera(dt);
+  updateSoundscape(dt);
   updateHUD();
   drawMinimap();
   if(S.running) updatePA(performance.now());
@@ -2325,6 +2502,8 @@ function newGame(){
   buildList(); renderList(); restockCart();
   S.running = true;
   nextPA = performance.now() + 14000;
+  AM.nextFx = performance.now() + 2500;
+  ensureAudio();
 }
 
 /* ---------- Input ---------- */
@@ -2402,6 +2581,7 @@ document.getElementById("btnTips").addEventListener("click", e => {
 });
 document.getElementById("btnSound").addEventListener("click", e => {
   soundOn = !soundOn; e.currentTarget.setAttribute("aria-pressed", soundOn);
+  ensureAudio(); applyMute();
 });
 document.getElementById("btnSpeak").addEventListener("click", e => {
   CONFIG.speak = !CONFIG.speak; e.currentTarget.setAttribute("aria-pressed", CONFIG.speak);

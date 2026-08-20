@@ -297,7 +297,7 @@ body.no-en .steps .tr{display:none}
 <div class="veil on" id="veilStart">
   <div class="panel start">
     <div class="hero">
-      <div class="kick">Deutsch üben · A1–A2 · Kleinhausen</div>
+      <div class="kick">Deutsch üben · A1–A2 · Samstag in Kleinhausen</div>
       <h1>Einkaufen im <em>3D-Markt</em></h1>
       <p>Lauf durch den Supermarkt, nimm, was auf dem Zettel steht, und bezahle an der Kasse.</p>
     </div>
@@ -305,7 +305,7 @@ body.no-en .steps .tr{display:none}
       <li><span class="n">1</span><span><b>WASD</b> gehen, Maus umschauen. Den <b>Zettel</b> siehst du im Wagen — oder halte <b>Q</b>, um ihn hochzunehmen. Der Markt hat Geräusche (Leiste: <b>Ton</b>).<span class="tr">Walk with WASD. Your list sits in the cart — hold Q to lift it. The store has a soundscape (toolbar: Sound).</span></span></li>
       <li><span class="n">2</span><span>Ziel auf ein Produkt und drücke <b>E</b> — es hebt sich, der Artikel (<i>die Milch</i>) sitzt darauf, dann fällt es in den Wagen. Falsches bleibt im Regal.<span class="tr">Aim and press E: the pack lifts, the German article sits on it, then it drops into the cart. Wrong items stay on the shelf.</span></span></li>
       <li><span class="n">3</span><span>An der <b>Bäckerei</b> und der <b>Fleischtheke</b> bestellst du: <i>Ich hätte gern …</i><span class="tr">At the bakery and meat counter you order with “Ich hätte gern…”</span></span></li>
-      <li><span class="n">4</span><span>Alles da? Geh zur <b>Kasse</b> und sprich mit der Kassiererin.<span class="tr">Then check out and talk to the cashier.</span></span></li>
+      <li><span class="n">4</span><span>Alles da? Geh zur <b>Kasse 3</b> — Samstag ist Schlange. Mit anderen sagst du <i>Entschuldigung</i>.<span class="tr">Then check out at till 3. Saturday is busy — say Entschuldigung to other shoppers.</span></span></li>
     </ol>
     <div class="diffs" role="group" aria-label="Schwierigkeit">
       <button class="diff" data-n="4" id="d4"><b>Kurz</b><span>4 Artikel</span></button>
@@ -1071,19 +1071,24 @@ function faceTex(opt){
   return t;
 }
 function person(opt){
+  opt = opt || {};
   const g = new THREE.Group();
   const skinC = opt.skin || 0xf0c9a0;
   const skin = M({color: skinC, roughness:0.7});
   const shirt = M({color: opt.shirt || 0x1C6EC7, roughness:0.55});
   const pants = M({color: opt.pants || 0x2E3A4C, roughness:0.7});
   const hairC = M({color: opt.hair || 0x3B2A1C, roughness:0.8});
-  g.add(cyl(0.055, 0.44, pants, -0.09, 0.22, 0, 8));
-  g.add(cyl(0.055, 0.44, pants,  0.09, 0.22, 0, 8));
+  const legL = cyl(0.055, 0.44, pants, -0.09, 0.22, 0, 8);
+  const legR = cyl(0.055, 0.44, pants,  0.09, 0.22, 0, 8);
+  g.add(legL); g.add(legR);
+  g.userData.legL = legL; g.userData.legR = legR;
   g.add(box(0.16, 0.06, 0.28, M({color:0x1a1a1a}), -0.09, 0.02, 0.02));
   g.add(box(0.16, 0.06, 0.28, M({color:0x1a1a1a}),  0.09, 0.02, 0.02));
   g.add(box(0.38, 0.54, 0.24, shirt, 0, 0.7, 0));
-  g.add(cyl(0.045, 0.42, shirt, -0.24, 0.62, 0, 8));
-  g.add(cyl(0.045, 0.42, shirt,  0.24, 0.62, 0, 8));
+  const armL = cyl(0.045, 0.42, shirt, -0.24, 0.62, 0, 8);
+  const armR = cyl(0.045, 0.42, shirt,  0.24, 0.62, 0, 8);
+  g.add(armL); g.add(armR);
+  g.userData.armL = armL; g.userData.armR = armR;
   g.add(sph(0.045, skin, -0.24, 0.4, 0, 8));
   g.add(sph(0.045, skin,  0.24, 0.4, 0, 8));
   g.add(sph(0.145, skin, 0, 1.08, 0, 16));
@@ -1094,15 +1099,56 @@ function person(opt){
     g.add(box(0.32, 0.42, 0.04, M({color:0xf4f1ea, roughness:0.65}), 0, 0.64, 0.14));
     g.add(box(0.18, 0.04, 0.005, M({color:0xDA3633}), 0, 0.78, 0.165));
   }
+  if(opt.vest){
+    g.add(box(0.4, 0.5, 0.27, M({color:0xFFD23F, roughness:0.5}), 0, 0.7, 0.01));
+    g.add(box(0.16, 0.04, 0.01, M({color:0x151C26}), 0, 0.82, 0.15));
+  }
+  if(opt.glasses){
+    const gl = M({color:0x222, metalness:0.4, roughness:0.3});
+    g.add(box(0.07, 0.03, 0.02, gl, -0.05, 1.1, 0.14));
+    g.add(box(0.07, 0.03, 0.02, gl,  0.05, 1.1, 0.14));
+    g.add(box(0.04, 0.01, 0.01, gl, 0, 1.1, 0.14));
+  }
   if(opt.kind==="kasse"){
     g.add(box(0.32, 0.06, 0.22, M({color:0xDA3633}), 0, 0.96, 0));
     g.add(box(0.1, 0.06, 0.01, M({color:0xFFD23F}), 0.14, 0.78, 0.13));
   }
-  g.scale.setScalar(1.48);
+  if(opt.mop){
+    const mop = new THREE.Group();
+    mop.add(cyl(0.012, 1.15, M({color:0x8d6e42}), 0, 0.55, 0, 6));
+    mop.add(box(0.22, 0.04, 0.08, M({color:0x888}), 0, 0.02, 0.04));
+    mop.position.set(0.28, 0, 0.12);
+    mop.rotation.z = -0.35;
+    g.add(mop); g.userData.mop = mop;
+  }
+  g.scale.setScalar(opt.child ? 1.02 : 1.48);
   g.userData.kind = opt.kind || "npc";
+  g.userData.role = opt.role || (opt.kind === "npc" ? "shopper" : opt.kind);
   g.userData.sec = opt.sec;
+  g.userData.vest = !!opt.vest;
+  g.userData.child = !!opt.child;
   return g;
 }
+
+const NPC_LINES = {
+  shopper: [
+    {de:"Entschuldigung!", en:"Excuse me!"},
+    {de:"Guten Tag!", en:"Hello!"},
+    {de:"Nach Ihnen, bitte.", en:"After you."}
+  ],
+  staff: [
+    {de:"Kann ich Ihnen helfen?", en:"Can I help you?"},
+    {de:"Die Kasse drei ist offen.", en:"Till three is open."}
+  ],
+  child: [
+    {de:"Mama, Schokolade!", en:"Mum, chocolate!"},
+    {de:"Darf ich ein Brötchen?", en:"May I have a roll?"}
+  ],
+  queue: [
+    {de:"Ich warte schon.", en:"I've been waiting."},
+    {de:"Nach Ihnen!", en:"After you!"}
+  ]
+};
 
 function hangingSign(sec, x, y, z, rot){
   const g = new THREE.Group();
@@ -1941,34 +1987,232 @@ function buildProps(){
   plant.add(cyl(0.12, 0.22, M({color:0xc0392b}), 0, 0.11, 0, 8));
   plant.add(sph(0.28, M({color:0x2d6a4f, roughness:0.8}), 0, 0.42, 0, 10));
   plant.position.set(-12.6, 0, 9.8); scene.add(plant);
+  const sat = canvasTex(512, 256, (g,W,H) => {
+    g.fillStyle = "#DA3633"; g.fillRect(0,0,W,H);
+    g.fillStyle = "#FFD23F";
+    g.font = "700 48px Arial Narrow, Arial, sans-serif"; g.textAlign = "center";
+    g.fillText("SAMSTAG", W/2, 92);
+    g.fillStyle = "#fff"; g.font = "700 28px Arial";
+    g.fillText("Geöffnet bis 20 Uhr", W/2, 150);
+    g.font = "18px Arial"; g.fillText("Kasse 3  ·  Bitte anstellen", W/2, 198);
+  });
+  sat.wrapS = sat.wrapT = THREE.ClampToEdgeWrapping;
+  const satSign = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 1.05), new THREE.MeshStandardMaterial({map:sat, roughness:0.45}));
+  satSign.position.set(4.6, 2.15, 12.02); scene.add(satSign);
+}
+
+function stockNpcCart(cart){
+  const hold = cart.userData.hold;
+  while(hold.children.length) hold.remove(hold.children[0]);
+  const n = 2 + (Math.random() > 0.5 ? 1 : 0);
+  for(let i=0;i<n;i++){
+    const it = ITEMS[(i * 11 + 4) % ITEMS.length];
+    const m = productMesh(it, 0.5);
+    m.userData.kind = "deco";
+    m.position.set((i%3-1)*0.09, Math.floor(i/3)*0.07, (i%2)*0.06);
+    hold.add(m);
+  }
+}
+
+function addNpc(spec){
+  const p = person(spec.look);
+  p.position.set(spec.x, 0, spec.z);
+  if(spec.rot) p.rotation.y = spec.rot;
+  scene.add(p);
+  if(spec.kind !== "kasse" && spec.kind !== "counter") targets.push(p);
+  const rec = {
+    obj: p,
+    mode: spec.mode || "walk",
+    path: spec.path || null,
+    seg: spec.seg || 0,
+    t: spec.t || 0,
+    speed: spec.speed || 0.9,
+    wait: spec.wait || 0,
+    walk: Math.random() * 10,
+    follow: spec.follow || null,
+    off: spec.off || 0.5,
+    face: spec.face || 0,
+    cart: null
+  };
+  if(spec.cart){
+    const c = makeCart();
+    c.userData.grip.visible = true;
+    c.scale.setScalar(0.7);
+    stockNpcCart(c);
+    scene.add(c);
+    rec.cart = c;
+  }
+  npcs.push(rec);
+  return rec;
 }
 
 function spawnNPCs(){
-  const paths = [
-    [{x:-8,z:6},{x:-8,z:-6},{x:4,z:-6},{x:4,z:6}],
-    [{x:5.5,z:5},{x:5.5,z:-7},{x:-3,z:-7},{x:-3,z:5}],
-    [{x:-11,z:5},{x:-7,z:5},{x:-7,z:-5},{x:-11,z:-5}]
-  ];
-  const shirts = [0xDA3633, 0x2F9E44, 0x6741C6];
-  paths.forEach((path, i) => {
-    const p = person({shirt: shirts[i], hair: i===1?0x1a1a1a:0x6b4423, kind:"npc"});
-    p.position.set(path[0].x, 0, path[0].z);
-    scene.add(p);
-    npcs.push({obj:p, path, seg:0, t:0, speed:0.85 + i*0.1});
+  npcs = [];
+  const L = (shirt, hair, extra) => Object.assign({kind:"npc", role:"shopper", shirt, hair, pants: extra && extra.pants || 0x2E3A4C}, extra || {});
+  addNpc({
+    look: L(0xDA3633, 0x3B2A1C), cart:true, speed:0.95,
+    x:-8, z:6, path:[{x:-8,z:6},{x:-8,z:-6},{x:3.2,z:-6},{x:3.2,z:6}]
   });
+  addNpc({
+    look: L(0x1C6EC7, 0x1a1a1a, {glasses:true, pants:0x3a3a3a}), cart:true, speed:0.78,
+    x:6.2, z:4.5, path:[{x:6.2,z:4.5},{x:6.2,z:-7.2},{x:4.4,z:-7.2},{x:4.4,z:4.5}]
+  });
+  addNpc({
+    look: L(0x2F9E44, 0x6b4423), cart:true, speed:1.05,
+    x:-3.6, z:3.4, path:[{x:-3.6,z:3.4},{x:-3.6,z:-5.5},{x:-1.8,z:-5.5},{x:-1.8,z:3.4}]
+  });
+  const parent = addNpc({
+    look: L(0x6741C6, 0x4a3020, {skin:0xe8b896}), cart:true, speed:0.88,
+    x:-11, z:4.2, path:[{x:-11,z:4.2},{x:-11,z:-2.4},{x:-7.4,z:-2.4},{x:-7.4,z:4.2}]
+  });
+  addNpc({
+    look: {kind:"npc", role:"child", child:true, shirt:0xFFD23F, hair:0x6b4423, pants:0x1C6EC7},
+    mode:"follow", follow:parent, off:0.55, x:-11, z:4.7, speed:1.1
+  });
+  addNpc({
+    look: L(0xf4d03f, 0x5A3E28, {skin:0xc68642}), speed:0.82,
+    x:-10, z:7.2, path:[{x:-10,z:7.2},{x:5.5,z:7.2},{x:5.5,z:5.4},{x:-10,z:5.4}]
+  });
+  addNpc({
+    look: L(0xe67e22, 0x2a1a10, {glasses:true}), mode:"idle", x:-10.4, z:1.6, face: Math.PI * 0.6, wait:99
+  });
+  addNpc({
+    look: L(0x8e44ad, 0x3B2A1C), mode:"idle", x:-8.0, z:-8.15, face: Math.PI, wait:99
+  });
+  addNpc({
+    look: {kind:"npc", role:"queue", shirt:0x2c3e50, hair:0x1a1a1a, pants:0x444}, mode:"idle",
+    x:-5.05, z:9.55, face: Math.PI, wait:99
+  });
+  addNpc({
+    look: {kind:"npc", role:"queue", shirt:0xc0392b, hair:0x6b4423, skin:0xd4a574}, mode:"idle",
+    x:-4.7, z:10.35, face: Math.PI, wait:99
+  });
+  addNpc({
+    look: L(0x7f8c8d, 0x888, {glasses:true, pants:0x555}), mode:"idle",
+    x:-8.55, z:9.7, face: Math.PI, wait:99
+  });
+  addNpc({
+    look: {kind:"npc", role:"staff", vest:true, mop:true, shirt:0x2B3340, hair:0x4a3020, pants:0x2B3340},
+    mode:"mop", speed:0.55, x:1.6, z:9.4,
+    path:[{x:1.6,z:9.4},{x:0.4,z:9.8},{x:2.2,z:10.1},{x:1.6,z:9.4}]
+  });
+  addNpc({
+    look: {kind:"npc", role:"staff", vest:true, shirt:0x2B3340, hair:0x1a1a1a, pants:0x2B3340},
+    speed:0.7, x:-5.6, z:2.4,
+    path:[{x:-5.6,z:2.4},{x:-5.6,z:-3.8},{x:-5.0,z:-3.8},{x:-5.0,z:2.4}]
+  });
+}
+
+function showNpcBubble(obj, text){
+  if(obj.userData.bubble) obj.remove(obj.userData.bubble);
+  const spr = wordSprite(text);
+  spr.position.set(0, 1.32, 0.12);
+  spr.scale.set(0.9, 0.25, 1);
+  obj.add(spr);
+  obj.userData.bubble = spr;
+  obj.userData.bubbleUntil = performance.now() + 2400;
+}
+
+function greetNpc(obj){
+  const role = obj.userData.role || "shopper";
+  let line;
+  if(role === "staff"){
+    const m = missing();
+    if(m.length){
+      const sec = secById[byId[m[0].id].sec];
+      line = {de:"Die " + sec.de + " finden Sie dort drüben.", en: sec.en + " is over that way."};
+    } else line = NPC_LINES.staff[1];
+  } else {
+    const pool = NPC_LINES[role] || NPC_LINES.shopper;
+    line = pool[Math.floor(Math.random() * pool.length)];
+  }
+  speak(line.de);
+  toast("<b>" + line.de + "</b><span class=\"tr\">" + line.en + "</span>", "", 2800);
+  showNpcBubble(obj, line.de.length > 22 ? line.de.split(" ").slice(0, 3).join(" ") + "…" : line.de);
+}
+
+function updateNpcPose(n, moving, yaw){
+  n.walk += moving ? 0.11 : 0.02;
+  const swing = moving && !reduced ? Math.sin(n.walk * 7.2) * 0.42 : 0;
+  const ud = n.obj.userData;
+  if(ud.legL) ud.legL.rotation.x = swing;
+  if(ud.legR) ud.legR.rotation.x = -swing;
+  if(ud.armL) ud.armL.rotation.x = -swing * 0.7;
+  if(ud.armR) ud.armR.rotation.x = swing * 0.7;
+  if(typeof yaw === "number") n.obj.rotation.y = yaw;
+  n.obj.position.y = reduced || !moving ? 0 : Math.abs(Math.sin(n.walk * 7.2)) * 0.025;
+  if(n.cart){
+    const fy = n.obj.rotation.y;
+    n.cart.position.set(n.obj.position.x + Math.sin(fy)*0.72, 0, n.obj.position.z + Math.cos(fy)*0.72);
+    n.cart.rotation.y = fy;
+    n.cart.visible = true;
+  }
+  if(ud.bubble && ud.bubbleUntil && performance.now() > ud.bubbleUntil){
+    n.obj.remove(ud.bubble); ud.bubble = null;
+  }
 }
 
 function updateNPCs(dt){
   npcs.forEach(n => {
-    const a = n.path[n.seg], b = n.path[(n.seg+1)%n.path.length];
-    const dx = b.x-a.x, dz = b.z-a.z, dist = Math.hypot(dx,dz) || 1;
+    if(n.wait > 0 && n.mode !== "idle") n.wait -= dt;
+    if(n.wait > 0 && n.mode === "mop"){
+      updateNpcPose(n, false, n.obj.rotation.y);
+      if(n.obj.userData.mop) n.obj.userData.mop.rotation.z = -0.4 + Math.sin(performance.now()/140) * 0.35;
+      return;
+    }
+    if(n.obj.userData.bubble && n.obj.userData.bubbleUntil && performance.now() > n.obj.userData.bubbleUntil){
+      n.obj.remove(n.obj.userData.bubble); n.obj.userData.bubble = null;
+    }
+    if(n.mode === "follow" && n.follow && n.follow.obj){
+      const f = n.follow.obj;
+      const fy = f.rotation.y;
+      const tx = f.position.x - Math.sin(fy) * n.off;
+      const tz = f.position.z - Math.cos(fy) * n.off;
+      const dx = tx - n.obj.position.x, dz = tz - n.obj.position.z;
+      const dist = Math.hypot(dx, dz);
+      const moving = dist > 0.12;
+      if(moving){
+        const step = Math.min(1, n.speed * dt / Math.max(dist, 0.001));
+        n.obj.position.x += dx * step;
+        n.obj.position.z += dz * step;
+      }
+      if(Math.hypot(n.obj.position.x - player.x, n.obj.position.z - player.z) < 0.95){
+        n.obj.position.x -= Math.sin(player.yaw) * 0.04;
+        n.obj.position.z += Math.cos(player.yaw) * 0.04;
+      }
+      updateNpcPose(n, moving, dist > 0.08 ? Math.atan2(dx, dz) : fy);
+      return;
+    }
+    if(n.mode === "idle"){
+      n.obj.rotation.y = n.face || 0;
+      n.obj.rotation.y += Math.sin(performance.now()/900 + n.walk) * 0.04;
+      updateNpcPose(n, false, n.obj.rotation.y);
+      return;
+    }
+    if(n.mode === "browse"){
+      updateNpcPose(n, false, n.obj.rotation.y);
+      if(n.wait <= 0) n.mode = "walk";
+      return;
+    }
+    if(!n.path || n.path.length < 2){ updateNpcPose(n, false); return; }
+    const a = n.path[n.seg], b = n.path[(n.seg + 1) % n.path.length];
+    const dx = b.x - a.x, dz = b.z - a.z, dist = Math.hypot(dx, dz) || 1;
+    const nx = a.x + dx * n.t, nz = a.z + dz * n.t;
+    if(Math.hypot(nx - player.x, nz - player.z) < 1.15){
+      updateNpcPose(n, false, Math.atan2(player.x - n.obj.position.x, player.z - n.obj.position.z));
+      return;
+    }
     n.t += n.speed * dt / dist;
-    if(n.t >= 1){ n.t = 0; n.seg = (n.seg+1)%n.path.length; }
-    const x = a.x + (b.x-a.x)*n.t, z = a.z + (b.z-a.z)*n.t;
-    if(Math.hypot(x-player.x, z-player.z) < 1.1) return;
-    n.obj.position.x = x; n.obj.position.z = z;
-    n.obj.rotation.y = Math.atan2(b.x-a.x, b.z-a.z);
-    n.obj.position.y = reduced ? 0 : Math.abs(Math.sin(performance.now()/180 + n.seg))*0.02;
+    if(n.t >= 1){
+      n.t = 0;
+      n.seg = (n.seg + 1) % n.path.length;
+      if(n.mode === "mop") n.wait = 0.8;
+      else if(Math.random() < 0.35){ n.mode = "browse"; n.wait = 1.1 + Math.random() * 2.2; }
+    }
+    n.obj.position.x = a.x + (b.x - a.x) * Math.min(1, n.t);
+    n.obj.position.z = a.z + (b.z - a.z) * Math.min(1, n.t);
+    updateNpcPose(n, true, Math.atan2(dx, dz));
+    if(n.obj.userData.mop) n.obj.userData.mop.rotation.z = -0.35 + Math.sin(n.walk * 6) * 0.25;
   });
 }
 
@@ -2052,7 +2296,7 @@ function raycast(){
     if(h.distance > 3.4) continue;
     let o = h.object;
     while(o && !o.userData.kind) o = o.parent;
-    if(o && o.userData.kind && o.userData.kind !== "deco" && o.userData.kind !== "npc") return o;
+    if(o && o.userData.kind && o.userData.kind !== "deco") return o;
   }
   return null;
 }
@@ -2129,6 +2373,11 @@ function drawMinimap(){
   c.fillStyle = "#151C26";
   c.beginPath();
   c.arc(sx(player.x), sz(player.z), 5, 0, 7); c.fill();
+  c.fillStyle = "#5A6472";
+  npcs.forEach(n => {
+    if(!n.obj) return;
+    c.beginPath(); c.arc(sx(n.obj.position.x), sz(n.obj.position.z), 2.4, 0, 7); c.fill();
+  });
   c.strokeStyle = "#FFD23F"; c.beginPath();
   c.moveTo(sx(player.x), sz(player.z));
   c.lineTo(sx(player.x + Math.sin(player.yaw)*1.6), sz(player.z - Math.cos(player.yaw)*1.6));
@@ -2161,6 +2410,9 @@ function updateHUD(){
       label = "E  ·  an der " + sec.de + " bestellen";
     } else if(lookObj.userData.kind === "kasse"){
       label = listDone() ? "E  ·  bezahlen" : "E  ·  zur Kasse (Zettel unvollständig)";
+    } else if(lookObj.userData.kind === "npc"){
+      const role = lookObj.userData.role;
+      label = role === "staff" ? "E  ·  Mitarbeiter fragen" : role === "child" ? "E  ·  Hallo sagen" : "E  ·  Entschuldigung";
     }
     pr.textContent = label; pr.classList.add("show");
   } else {
@@ -2230,6 +2482,7 @@ function interact(){
   if(lookObj && lookObj.userData.kind === "item"){ pickItem(byId[lookObj.userData.itemId], lookObj); return; }
   if(lookObj && lookObj.userData.kind === "counter"){ openCounter(secById[lookObj.userData.sec]); return; }
   if(lookObj && lookObj.userData.kind === "kasse"){ openKasse(); return; }
+  if(lookObj && lookObj.userData.kind === "npc"){ greetNpc(lookObj); return; }
   const z = nearestZone();
   if(!z) return;
   if(z.type === "kasse") openKasse();

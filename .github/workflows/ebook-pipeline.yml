@@ -1,0 +1,26 @@
+name: Ebook pipeline tests
+
+on:
+  push:
+    paths:
+      - "ebooks/**"
+      - ".github/workflows/ebook-pipeline.yml"
+  pull_request:
+    paths:
+      - "ebooks/**"
+      - ".github/workflows/ebook-pipeline.yml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python dependencies
+        run: python3 -m pip install -r ebooks/requirements.txt
+      - name: Install pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+      - name: Run ebook tests
+        run: python3 -m pytest ebooks/tests -q

@@ -644,13 +644,13 @@ How are you today?</textarea>
       <h2>What improved in v3 — Step 19?</h2>
       <button class="close" data-close>✕</button>
     </div>
-    <p>Step 19 rebuilds the character silhouettes so they read as illustrated school-anime figures instead of assembled polygons. Masses share one outer ink contour, and the default teen proportion is a fuller torso and sleeve against a smaller hair globe — not a bobblehead on tapering tubes.</p>
+    <p>Step 19 rebuilds the character silhouettes so they read as illustrated school-anime figures instead of assembled polygons. Masses share one outer ink contour. The default teen proportion is a fuller torso and sleeve against a smaller hair globe, and each outfit cuts a different outer shape instead of sitting as a sticker on one body.</p>
     <ul>
       <li>Hair, face, sleeve, torso, and hand no longer each stroke themselves, so overlaps are not double-outlined</li>
       <li>Head and hair scale sit smaller against broader shoulders, so the jacket — not the hair mass — reads as the widest form</li>
       <li>Sleeves keep volume from deltoid to cuff, with a rounded cap where the arm leaves the jacket</li>
       <li>Torso, neck, and limb paths use anatomical tapers, hidden joint roots, and soft end-caps instead of capsule tubes</li>
-      <li>Collars, lapels, sailor yokes, cuffs, and pockets are redrawn with cubic construction instead of clip-art polygons</li>
+      <li>Clothes reshape the outer contour: blazer V and peaked shoulders, sailor collar flaps, gakuran stand collar, cardigan hem, t-shirt length, apron, and yukata drape — not one body with decals on top</li>
       <li>Hands are one palm mass: fingers grow out of a knuckle pad with webbing, not five separate sticks</li>
       <li>Hair is denser: overlapping bangs, undercut framing locks, inner strand edges, and a forehead hairline seam</li>
       <li>The face silhouette uses a multi-point jaw curve so cheeks no longer read as a rounded hexagon</li>
@@ -1578,10 +1578,12 @@ function buildLightingDefs(parent, s, pal, hairDataObj){
   defs.appendChild(hairClip);
 
   const torsoClip=svgEl('clipPath',{id:'torsoLightClip'});
+  const gp=garmentProfile(s);
   if(s.outfit==='festival'){
-    torsoClip.appendChild(svgEl('path',{d:'M145 308 C171 290 190 282 210 282 C230 282 249 290 275 308 C286 390 292 498 298 664 C270 683 240 692 210 693 C180 692 150 683 122 664 C128 498 134 390 145 308 Z'}));
+    torsoClip.appendChild(svgEl('path',{d:festivalRobePath()}));
   } else {
-    torsoClip.appendChild(svgEl('path',{d:torsoPath(s.gender,garmentProfile(s).fit)}));
+    torsoClip.appendChild(svgEl('path',{d:torsoPath(s.gender,gp)}));
+    garmentSilhouetteExtras(gp).forEach(d=>torsoClip.appendChild(svgEl('path',{d})));
   }
   defs.appendChild(torsoClip);
 
@@ -2450,36 +2452,123 @@ function foldMarksAtJoint(joint,a,c,color,width=1.25,scale=1){
 }
 function sleeveSpec(profile){
   if(profile.sleeve==='short') return {where:'upper',t:.58,endWidth:30,upperWidth:42,elbowWidth:34};
-  if(profile.sleeve==='threeQuarter') return {where:'forearm',t:.48,endWidth:24,upperWidth:42,elbowWidth:32};
-  if(profile.sleeve==='kimono') return {where:'forearm',t:.86,endWidth:38,upperWidth:48,elbowWidth:54};
+  if(profile.sleeve==='threeQuarter') return {where:'forearm',t:.48,endWidth:24,upperWidth:40,elbowWidth:30};
+  if(profile.sleeve==='kimono') return {where:'forearm',t:.88,endWidth:56,upperWidth:58,elbowWidth:66};
+  if(profile.kind==='school-cardigan') return {where:'forearm',t:.82,endWidth:26,upperWidth:50,elbowWidth:38};
+  if(profile.kind==='school-gakuran') return {where:'forearm',t:.84,endWidth:24,upperWidth:42,elbowWidth:32};
+  if(profile.kind==='school-sailor') return {where:'forearm',t:.80,endWidth:24,upperWidth:46,elbowWidth:36};
+  if(profile.kind==='casual') return {where:'upper',t:.58,endWidth:30,upperWidth:42,elbowWidth:34};
   return {where:'forearm',t:.82,endWidth:22,upperWidth:44,elbowWidth:33};
 }
 
-function torsoPath(gender, fit='structured'){
-  const feminine = gender === 'feminine';
-  const fits = {
-    structured:{shoulder:134, chest:144, waist:166, hem:152},
-    fitted:{shoulder:138, chest:142, waist:172, hem:150},
-    relaxed:{shoulder:132, chest:142, waist:160, hem:149}
+function garmentCut(kind, gender){
+  const fem = gender==='feminine' ? 1 : 0;
+  const cuts = {
+    'school-blazer': {sl:126+fem*2, sy:294, chest:138+fem, wl:168+fem*6, wy:400, hl:146+fem*2, hy:472, neck:'v', vy:370},
+    'school-sailor': {sl:138+fem, sy:306, chest:148+fem, wl:158+fem*4, wy:408, hl:150+fem, hy:452, neck:'crew'},
+    'school-gakuran': {sl:130+fem, sy:300, chest:136, wl:140+fem*2, wy:404, hl:134+fem, hy:476, neck:'closed'},
+    'school-cardigan': {sl:122+fem*2, sy:304, chest:136+fem, wl:158+fem*6, wy:404, hl:140+fem*2, hy:506, neck:'v', vy:352},
+    'teacher': {sl:132+fem, sy:294, chest:140+fem, wl:176+fem*4, wy:398, hl:148+fem, hy:490, neck:'v', vy:380},
+    'casual': {sl:136+fem, sy:300, chest:146+fem, wl:156+fem*4, wy:392, hl:150+fem, hy:430, neck:'crew'},
+    'server': {sl:136+fem, sy:298, chest:142+fem, wl:172+fem*4, wy:396, hl:152+fem, hy:448, neck:'crew'},
+    'station': {sl:128+fem, sy:298, chest:138, wl:144+fem*2, wy:400, hl:140+fem, hy:474, neck:'closed'}
   };
-  const f = fits[fit] || fits.structured;
-  const shoulderL = f.shoulder + (feminine ? 3 : 0);
-  const shoulderR = 420 - shoulderL;
-  const chestL = f.chest + (feminine ? 2 : 0);
-  const chestR = 420 - chestL;
-  const waistL = f.waist + (feminine ? 6 : 0);
-  const waistR = 420 - waistL;
-  const hemL = f.hem + (feminine ? 3 : 0);
-  const hemR = 420 - hemL;
-  return `M${shoulderL} 298
-    C${shoulderL+8} 282 186 270 210 270
-    C234 270 ${shoulderR-8} 282 ${shoulderR} 298
-    C${shoulderR+8} 328 ${chestR+2} 356 ${waistR} 398
-    C${waistR-1} 424 ${hemR-1} 446 ${hemR} 460
-    C248 470 228 474 210 474
-    C192 474 172 470 ${hemL} 460
-    C${hemL+1} 446 ${waistL+1} 424 ${waistL} 398
-    C${chestL-2} 356 ${shoulderL-8} 328 ${shoulderL} 298 Z`;
+  return cuts[kind] || cuts['school-blazer'];
+}
+
+function torsoBodyPath(c){
+  const sl=c.sl, sr=420-c.sl, hl=c.hl, hr=420-c.hl, wl=c.wl, wr=420-c.wl, cl=c.chest, cr=420-c.chest;
+  const right = `C${sr+10} ${c.sy+34} ${cr+4} 356 ${wr} ${c.wy}
+    C${wr+2} ${c.wy+26} ${hr+2} ${c.hy-18} ${hr} ${c.hy}
+    C250 ${c.hy+10} 228 ${c.hy+14} 210 ${c.hy+14}
+    C192 ${c.hy+14} 170 ${c.hy+10} ${hl} ${c.hy}
+    C${hl-2} ${c.hy-18} ${wl-2} ${c.wy+26} ${wl} ${c.wy}
+    C${cl-4} 356 ${sl-10} ${c.sy+34} ${sl} ${c.sy} Z`;
+  if(c.neck==='v'){
+    return `M${sl} ${c.sy}
+      C${sl-12} ${c.sy-18} 176 266 194 286
+      C188 318 198 346 210 ${c.vy}
+      C222 346 232 318 226 286
+      C244 266 ${sr+12} ${c.sy-18} ${sr} ${c.sy}
+      ${right}`;
+  }
+  if(c.neck==='crew'){
+    return `M${sl} ${c.sy}
+      C${sl+10} ${c.sy-16} 174 ${c.sy-2} 188 ${c.sy+16}
+      C198 ${c.sy+28} 210 ${c.sy+32} 222 ${c.sy+16}
+      C246 ${c.sy-2} ${sr-10} ${c.sy-16} ${sr} ${c.sy}
+      ${right}`;
+  }
+  return `M${sl} ${c.sy}
+    C${sl+6} ${c.sy-20} 186 ${c.sy-30} 210 ${c.sy-30}
+    C234 ${c.sy-30} ${sr-6} ${c.sy-20} ${sr} ${c.sy}
+    ${right}`;
+}
+
+function torsoPath(gender, profileOrFit='structured'){
+  const profile = typeof profileOrFit === 'string'
+    ? {fit:profileOrFit, kind: profileOrFit==='fitted' ? 'teacher' : profileOrFit==='relaxed' ? 'casual' : 'school-blazer'}
+    : (profileOrFit || {kind:'school-blazer'});
+  return torsoBodyPath(garmentCut(profile.kind, gender));
+}
+
+function shirtPeekPath(profile){
+  const k=profile.kind;
+  if(k==='school-blazer' || k==='teacher'){
+    return 'M188 272 C210 264 232 272 230 288 C226 326 220 352 210 376 C200 352 194 326 190 288 Z';
+  }
+  if(k==='school-cardigan'){
+    return 'M186 290 C210 306 234 290 232 306 C226 328 218 342 210 354 C202 342 194 328 188 306 Z';
+  }
+  return null;
+}
+
+function sailorCollarPath(){
+  return 'M108 288 C126 252 168 242 210 256 C252 242 294 252 312 288 C302 318 274 346 210 332 C146 346 118 318 108 288 Z';
+}
+
+function standCollarPath(kind){
+  if(kind==='station') return 'M178 264 C196 250 224 250 242 264 C244 282 238 300 210 306 C182 300 176 282 178 264 Z';
+  return 'M182 258 C196 246 224 246 238 258 C240 276 234 294 210 300 C186 294 180 276 182 258 Z';
+}
+
+function stationEpaulettePaths(){
+  return [
+    'M114 294 C118 276 140 280 146 300 C138 310 124 312 114 294 Z',
+    'M306 294 C302 276 280 280 274 300 C282 310 296 312 306 294 Z'
+  ];
+}
+
+function apronMassPath(){
+  return 'M186 304 C198 322 210 332 210 332 C210 332 222 322 234 304 C250 328 262 372 266 418 C272 468 274 508 268 522 C246 538 226 544 210 544 C194 544 174 538 152 522 C146 508 148 468 154 418 C158 372 170 328 186 304 Z';
+}
+
+function festivalRobePath(){
+  return 'M132 304 C164 284 188 276 210 276 C232 276 256 284 288 304 C302 392 308 508 314 662 C278 686 242 696 210 697 C178 696 142 686 106 662 C112 508 118 392 132 304 Z';
+}
+
+function kimonoEriPath(){
+  return 'M186 268 C194 262 202 260 210 260 C218 260 226 262 234 268 L234 328 C226 334 218 337 210 337 C202 337 194 334 186 328 Z';
+}
+
+function garmentSilhouetteExtras(profile){
+  const k=profile.kind, extras=[];
+  if(k==='school-sailor') extras.push(sailorCollarPath());
+  if(k==='school-gakuran') extras.push(standCollarPath(k));
+  if(k==='station') extras.push(standCollarPath(k), ...stationEpaulettePaths());
+  if(k==='server') extras.push(apronMassPath());
+  return extras;
+}
+
+function kimonoSleeveDrapePath(shoulder, elbow, cuff, side, elS, cuffS){
+  const t=jointTangent(shoulder,elbow,cuff), n={x:-t.y,y:t.x};
+  const drape=side==='left'?1:-1;
+  const p=q=>`${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
+  const e0={x:elbow.x+n.x*16*drape*elS, y:elbow.y+n.y*16*drape*elS};
+  const e1={x:elbow.x+n.x*52*drape*elS+t.x*10, y:elbow.y+n.y*52*drape*elS+t.y*10};
+  const c1={x:cuff.x+n.x*50*drape*cuffS+t.x*14, y:cuff.y+n.y*50*drape*cuffS+t.y*14};
+  const c0={x:cuff.x+n.x*14*drape*cuffS, y:cuff.y+n.y*14*drape*cuffS};
+  return `M${p(e0)} C${p({x:e0.x+n.x*18*drape,y:e0.y+n.y*18*drape})} ${p(e1)} ${p(e1)} C${p({x:(e1.x+c1.x)/2+t.x*8,y:(e1.y+c1.y)/2+t.y*8})} ${p(c1)} ${p(c1)} C${p({x:c1.x-n.x*10*drape,y:c1.y-n.y*10*drape})} ${p(c0)} ${p(c0)} Z`;
 }
 
 function neckPath(){
@@ -2575,6 +2664,9 @@ function armMarkup(side, rig, s, pal, lights, lines, profile, pair=null){
     const skinStart=toward(cuff,elbow,6), skinS=jointDepthScale(skinStart);
     silhouette(mass, limbSegmentPath(skinStart,wrist,20*skinS,16*wrS,side==='left'?1:-1), skinFill);
     silhouette(mass, smoothBentLimbPath(buriedShoulder,elbow,cuff,spec.upperWidth*shS,spec.elbowWidth*elS,spec.endWidth*cuffS), sleeveFill);
+    if(profile.sleeve==='kimono'){
+      silhouette(mass, kimonoSleeveDrapePath(shoulder,elbow,cuff,side,elS,cuffS), sleeveFill);
+    }
   }
   if(profile.sleeve!=='kimono'){
     const deltoidW=spec.upperWidth*0.58*shS;
@@ -2604,9 +2696,18 @@ function armMarkup(side, rig, s, pal, lights, lines, profile, pair=null){
   return g;
 }
 
+function skirtPath(profile){
+  if(profile && profile.kind==='school-sailor'){
+    return 'M154 438 C176 444 194 448 210 448 C226 448 244 444 266 438 C274 478 282 510 278 522 C258 536 232 542 210 542 C188 542 162 536 142 522 C138 510 146 478 154 438 Z';
+  }
+  if(profile && profile.kind==='school-cardigan'){
+    return 'M160 448 C178 454 194 458 210 458 C226 458 242 454 260 448 C272 478 288 518 288 536 C268 552 238 560 210 560 C182 560 152 552 132 536 C132 518 148 478 160 448 Z';
+  }
+  return 'M158 442 C176 448 193 452 210 452 C227 452 244 448 262 442 C272 470 286 508 286 528 C268 542 240 548 210 548 C180 548 152 542 134 528 C134 508 148 470 158 442 Z';
+}
 function skirtMarkup(s, pal, lights, lines, profile, pair=null, xform=null){
   const g=svgEl('g',{'data-garment':'skirt'});
-  const d='M158 442 C176 448 193 452 210 452 C227 452 244 448 262 442 C272 470 286 508 286 528 C268 542 240 548 210 548 C180 548 152 542 134 528 C134 508 148 470 158 442 Z';
+  const d=skirtPath(profile);
   silhouette(pair || g, d, lights.lowerFill, xform ? { transform: xform } : {});
   g.appendChild(svgEl('path',{d:'M157 444 C178 450 193 452 210 452 C227 452 242 450 263 444 C264 452 250 460 210 462 C170 460 156 452 157 444 Z',fill:lights.accent.shadow,opacity:'0.32'}));
   [161,181,199,221,239,259].forEach((x,i)=>{
@@ -2688,57 +2789,49 @@ function outfitTorsoDetails(parent,s,pal,lights,lines,profile){
   const detail=svgEl('g',{'data-garment-details':k});
   const fine=lines.weights.interior;
   if(k==='school-blazer'){
-    detail.appendChild(svgEl('path',{d:'M168 298 C176 292 186 300 194 312 C198 328 196 352 192 372 C186 368 178 352 172 332 C168 318 166 306 168 298 Z',fill:mixHex(pal.top,'#ffffff',0.18),stroke:lines.top,'stroke-width':'1.55','stroke-linejoin':'round'}));
-    detail.appendChild(svgEl('path',{d:'M252 298 C244 292 234 300 226 312 C222 328 224 352 228 372 C234 368 242 352 248 332 C252 318 254 306 252 298 Z',fill:mixHex(pal.top,'#ffffff',0.18),stroke:lines.top,'stroke-width':'1.55','stroke-linejoin':'round'}));
-    detail.appendChild(svgEl('path',{d:'M194 312 Q198 340 192 372',fill:'none',stroke:mixHex(lines.top,'#111827',0.18),'stroke-width':'1.15','stroke-linecap':'round',opacity:'0.7'}));
-    detail.appendChild(svgEl('path',{d:'M226 312 Q222 340 228 372',fill:'none',stroke:mixHex(lines.top,'#111827',0.18),'stroke-width':'1.15','stroke-linecap':'round',opacity:'0.7'}));
-    detail.appendChild(svgEl('path',{d:'M192 292 C198 286 210 284 222 286 C228 292 226 304 222 318 C216 312 204 312 198 318 C194 304 190 296 192 292 Z',fill:'#f7f8fb',stroke:lines.trim,'stroke-width':'1.05'}));
+    interiorStroke(detail,'M194 312 Q198 340 192 372',{stroke:mixHex(lines.top,'#111827',0.18),strokeWidth:1.15,opacity:0.7});
+    interiorStroke(detail,'M226 312 Q222 340 228 372',{stroke:mixHex(lines.top,'#111827',0.18),strokeWidth:1.15,opacity:0.7});
     detail.appendChild(svgEl('path',{d:'M198 318 Q210 308 222 318 C221 328 216 334 210 332 C204 334 199 328 198 318 Z',fill:'#f7f8fb',stroke:lines.trim,'stroke-width':'0.95'}));
     detail.appendChild(svgEl('path',{d:'M206 316 C212 314 216 318 214 328 C216 352 218 372 210 390 C202 372 204 352 206 328 C204 318 208 316 206 316 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1.0'}));
     detail.appendChild(svgEl('path',{d:'M204 316 Q210 310 216 316',fill:'none',stroke:lines.accent,'stroke-width':'1.05'}));
     [353,389,425].forEach(y=>detail.appendChild(svgEl('circle',{cx:211,cy:y,r:2.4,fill:pal.trim,stroke:lines.trim,'stroke-width':'.55'})));
-    detail.appendChild(svgEl('path',{d:'M236 348 C248 344 260 348 262 354 C260 372 248 376 236 372 C234 364 234 356 236 348 Z',fill:'none',stroke:lines.top,'stroke-width':'1.15'}));
+    interiorStroke(detail,'M236 348 C248 344 260 348 262 354 C260 372 248 376 236 372 C234 364 234 356 236 348 Z',{stroke:lines.top,strokeWidth:1.15,opacity:0.85});
   } else if(k==='school-gakuran'){
-    detail.appendChild(svgEl('path',{d:'M182 292 C196 286 224 286 238 292 C240 304 236 316 210 322 C184 316 180 304 182 292 Z',fill:mixHex(pal.top,'#111827',0.12),stroke:lines.top,'stroke-width':'1.5'}));
     detail.appendChild(svgEl('path',{d:'M205 324 C208 324 215 324 215 328 C215 360 214 420 214 448 C214 452 206 452 206 448 C206 420 205 360 205 328 Z',fill:mixHex(pal.top,'#111827',0.08),stroke:lines.top,'stroke-width':'1.05'}));
     [332,365,398,431].forEach(y=>detail.appendChild(svgEl('circle',{cx:210,cy:y,r:3.0,fill:'#d3ae52',stroke:'#8d6f2f','stroke-width':'.75'})));
-    detail.appendChild(svgEl('path',{d:'M176 318 C192 328 228 328 244 318',fill:'none',stroke:mixHex(lines.top,'#ffffff',0.10),'stroke-width':'1.0',opacity:'0.5'}));
+    interiorStroke(detail,'M176 318 C192 328 228 328 244 318',{stroke:mixHex(lines.top,'#ffffff',0.10),strokeWidth:1.0,opacity:0.5});
   } else if(k==='school-sailor'){
-    detail.appendChild(svgEl('path',{d:'M162 298 C170 286 188 282 210 292 C232 282 250 286 258 298 C252 318 238 338 210 328 C182 338 168 318 162 298 Z',fill:mixHex(pal.top,'#111827',0.08),stroke:lines.top,'stroke-width':'1.5','stroke-linejoin':'round'}));
-    detail.appendChild(svgEl('path',{d:'M176 304 C190 298 230 298 244 304',fill:'none',stroke:pal.trim,'stroke-width':'3.0','stroke-linecap':'round'}));
-    detail.appendChild(svgEl('path',{d:'M180 312 C192 306 228 306 240 312',fill:'none',stroke:lines.trim,'stroke-width':'1.05'}));
+    interiorStroke(detail,'M176 304 C190 298 230 298 244 304',{stroke:pal.trim,strokeWidth:3.0,opacity:0.95});
+    interiorStroke(detail,'M180 312 C192 306 228 306 240 312',{stroke:lines.trim,strokeWidth:1.05,opacity:0.9});
     detail.appendChild(svgEl('path',{d:'M204 330 C210 326 216 330 214 338 C210 342 206 338 204 330 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1'}));
     detail.appendChild(svgEl('path',{d:'M206 338 C198 352 188 372 192 396 C198 388 206 368 208 348',fill:'none',stroke:lines.accent,'stroke-width':'3.2','stroke-linecap':'round'}));
     detail.appendChild(svgEl('path',{d:'M214 338 C222 352 232 372 228 396 C222 388 214 368 212 348',fill:'none',stroke:lines.accent,'stroke-width':'3.2','stroke-linecap':'round'}));
   } else if(k==='school-cardigan'){
-    detail.appendChild(svgEl('path',{d:'M186 300 C198 318 210 336 210 336 C210 336 222 318 234 300 C228 296 210 308 210 308 C210 308 192 296 186 300 Z',fill:'#f5f7fb',stroke:lines.trim,'stroke-width':'1.1','stroke-linejoin':'round'}));
-    detail.appendChild(svgEl('path',{d:'M174 298 C188 318 204 340 210 348 C216 340 232 318 246 298',fill:'none',stroke:mixHex(lines.top,'#ffffff',0.22),'stroke-width':'4.6','stroke-linecap':'round'}));
-    detail.appendChild(svgEl('path',{d:'M207 348 C209 348 213 348 213 352 C213 390 212 430 212 450 C212 454 208 454 208 450 C208 430 207 390 207 352 Z',fill:'none',stroke:lines.top,'stroke-width':'1.05'}));
+    interiorStroke(detail,'M174 298 C188 318 204 340 210 348 C216 340 232 318 246 298',{stroke:mixHex(lines.top,'#ffffff',0.22),strokeWidth:4.6,opacity:0.85});
+    interiorStroke(detail,'M207 348 C209 348 213 348 213 352 C213 390 212 430 212 450 C212 454 208 454 208 450 C208 430 207 390 207 352 Z',{stroke:lines.top,strokeWidth:1.05,opacity:0.85});
     [360,383,406,429].forEach(y=>detail.appendChild(svgEl('circle',{cx:210,cy:y,r:2.2,fill:pal.trim,stroke:lines.trim,'stroke-width':'.5'})));
-    detail.appendChild(svgEl('path',{d:'M158 444 C178 452 210 456 252 452 C260 448 258 442 250 440 C230 446 190 446 162 440 C156 442 156 444 158 444 Z',fill:'none',stroke:mixHex(lines.top,'#ffffff',0.18),'stroke-width':'2.6'}));
+    interiorStroke(detail,'M158 452 C178 460 210 464 252 460',{stroke:mixHex(lines.top,'#ffffff',0.18),strokeWidth:2.6,opacity:0.8});
   } else if(k==='teacher'){
-    detail.appendChild(svgEl('path',{d:'M172 298 C180 292 188 300 196 312 C200 328 198 354 194 376 C188 370 180 352 174 332 C170 318 168 306 172 298 Z',fill:mixHex(pal.top,'#ffffff',0.16),stroke:lines.top,'stroke-width':'1.45'}));
-    detail.appendChild(svgEl('path',{d:'M248 298 C240 292 232 300 224 312 C220 328 222 354 226 376 C232 370 240 352 246 332 C250 318 252 306 248 298 Z',fill:mixHex(pal.top,'#ffffff',0.16),stroke:lines.top,'stroke-width':'1.45'}));
+    interiorStroke(detail,'M196 312 Q200 340 194 376',{stroke:mixHex(lines.top,'#111827',0.18),strokeWidth:1.15,opacity:0.7});
+    interiorStroke(detail,'M224 312 Q220 340 226 376',{stroke:mixHex(lines.top,'#111827',0.18),strokeWidth:1.15,opacity:0.7});
     detail.appendChild(svgEl('path',{d:'M196 294 C204 288 216 288 224 294 C222 306 218 318 210 314 C202 318 198 306 196 294 Z',fill:'#f8f8f6',stroke:lines.trim,'stroke-width':'1.0'}));
     detail.appendChild(svgEl('path',{d:'M206 314 C212 312 216 318 214 330 C216 356 218 384 210 402 C202 384 204 356 206 330 C204 318 208 314 206 314 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1'}));
-    detail.appendChild(svgEl('path',{d:'M236 348 C248 344 260 348 262 354 C260 370 248 374 236 370 C234 362 234 354 236 348 Z',fill:'none',stroke:lines.top,'stroke-width':'1.1'}));
+    interiorStroke(detail,'M236 348 C248 344 260 348 262 354 C260 370 248 374 236 370 C234 362 234 354 236 348 Z',{stroke:lines.top,strokeWidth:1.1,opacity:0.85});
   } else if(k==='casual'){
-    detail.appendChild(svgEl('path',{d:'M177 298 Q210 323 243 298',stroke:lines.trim,'stroke-width':'1.6',fill:'none'}));
-    detail.appendChild(svgEl('path',{d:'M161 323 Q174 318 184 314',stroke:mixHex(lines.top,'#ffffff',0.12),'stroke-width':'1.0',fill:'none',opacity:'.5'}));
-    detail.appendChild(svgEl('path',{d:'M234 348 C246 344 258 348 260 356 C258 372 246 376 234 370 C232 362 232 354 234 348 Z',fill:'none',stroke:lines.top,'stroke-width':'1.0'}));
-    detail.appendChild(svgEl('path',{d:'M156 446 C180 454 210 456 264 446',fill:'none',stroke:mixHex(lines.top,'#ffffff',0.14),'stroke-width':'1.25'}));
+    interiorStroke(detail,'M177 308 Q210 328 243 308',{stroke:lines.trim,strokeWidth:1.6,opacity:0.9});
+    interiorStroke(detail,'M161 323 Q174 318 184 314',{stroke:mixHex(lines.top,'#ffffff',0.12),strokeWidth:1.0,opacity:0.5});
+    interiorStroke(detail,'M234 348 C246 344 258 348 260 356 C258 372 246 376 234 370 C232 362 232 354 234 348 Z',{stroke:lines.top,strokeWidth:1.0,opacity:0.85});
+    interiorStroke(detail,'M156 428 C180 436 210 438 264 428',{stroke:mixHex(lines.top,'#ffffff',0.14),strokeWidth:1.25,opacity:0.85});
   } else if(k==='server'){
     detail.appendChild(svgEl('path',{d:'M186 296 C198 310 210 324 210 324 C210 324 222 310 234 296 C226 292 210 304 210 304 C210 304 194 292 186 296 Z',fill:'#fbfaf6',stroke:lines.trim,'stroke-width':'1.1'}));
-    detail.appendChild(svgEl('path',{d:'M178 332 C198 324 222 324 242 332 C248 360 250 400 246 438 C230 448 190 448 174 438 C170 400 172 360 178 332 Z',fill:pal.trim,stroke:lines.trim,'stroke-width':'1.2'}));
-    detail.appendChild(svgEl('path',{d:'M176 350 Q210 360 244 350',fill:'none',stroke:mixHex(lines.trim,'#ffffff',0.25),'stroke-width':'1.0'}));
-    detail.appendChild(svgEl('path',{d:'M190 388 C210 382 230 388 232 400 C230 418 210 424 190 418 C188 406 188 396 190 388 Z',fill:'none',stroke:lines.trim,'stroke-width':'1.0'}));
-    detail.appendChild(svgEl('path',{d:'M166 436 C190 446 230 446 254 436',fill:'none',stroke:lines.accent,'stroke-width':'2.6','stroke-linecap':'round'}));
+    interiorStroke(detail,'M176 350 Q210 360 244 350',{stroke:mixHex(lines.trim,'#ffffff',0.25),strokeWidth:1.0,opacity:0.85});
+    interiorStroke(detail,'M190 388 C210 382 230 388 232 400 C230 418 210 424 190 418 C188 406 188 396 190 388 Z',{stroke:lines.trim,strokeWidth:1.0,opacity:0.85});
+    interiorStroke(detail,'M166 508 C190 518 230 518 254 508',{stroke:lines.accent,strokeWidth:2.6,opacity:0.9});
   } else if(k==='station'){
-    detail.appendChild(svgEl('path',{d:'M182 294 C198 288 222 288 238 294 C240 308 236 320 210 326 C184 320 180 308 182 294 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1.15'}));
-    detail.appendChild(svgEl('path',{d:'M174 330 C196 340 224 340 246 330',fill:'none',stroke:pal.trim,'stroke-width':'2.8','stroke-linecap':'round'}));
-    detail.appendChild(svgEl('path',{d:'M207 333 C209 333 213 333 213 337 C213 380 212 430 212 450 C212 454 208 454 208 450 C208 430 207 380 207 337 Z',fill:'none',stroke:lines.top,'stroke-width':'1.05'}));
-    detail.appendChild(svgEl('path',{d:'M170 349 C182 343 194 347 196 356 C194 370 182 374 172 370 C168 362 168 354 170 349 Z',fill:'none',stroke:lines.top,'stroke-width':'1.0'}));
-    detail.appendChild(svgEl('path',{d:'M224 349 C236 343 248 347 250 356 C248 370 236 374 226 370 C222 362 222 354 224 349 Z',fill:'none',stroke:lines.top,'stroke-width':'1.0'}));
+    interiorStroke(detail,'M174 330 C196 340 224 340 246 330',{stroke:pal.trim,strokeWidth:2.8,opacity:0.95});
+    interiorStroke(detail,'M207 333 C209 333 213 333 213 337 C213 380 212 430 212 450 C212 454 208 454 208 450 C208 430 207 380 207 337 Z',{stroke:lines.top,strokeWidth:1.05,opacity:0.85});
+    interiorStroke(detail,'M170 349 C182 343 194 347 196 356 C194 370 182 374 172 370 C168 362 168 354 170 349 Z',{stroke:lines.top,strokeWidth:1.0,opacity:0.85});
+    interiorStroke(detail,'M224 349 C236 343 248 347 250 356 C248 370 236 374 226 370 C222 362 222 354 224 349 Z',{stroke:lines.top,strokeWidth:1.0,opacity:0.85});
     detail.appendChild(svgEl('path',{d:'M238 306 C248 304 256 308 256 316 C256 322 254 330 254 328 C254 334 246 338 238 336 C232 334 232 312 238 306 Z',fill:'#f3e4ad',stroke:lines.accent,'stroke-width':'.8'}));
   }
   detail.appendChild(svgEl('path',{d:'M165 409 Q183 402 197 410',stroke:mixHex(lines.top,'#111827',0.08),'stroke-width':fine,fill:'none','stroke-linecap':'round',opacity:'.42'}));
@@ -2925,7 +3018,7 @@ function renderAvatar(){
   });
 
   if(s.outfit === 'festival'){
-    silhouette(stack.layerCore,'M145 308 C171 290 190 282 210 282 C230 282 249 290 275 308 C286 390 292 498 298 664 C270 683 240 692 210 693 C180 692 150 683 122 664 C128 498 134 390 145 308 Z',lights.topFill);
+    silhouette(stack.layerCore, festivalRobePath(), lights.topFill);
     silhouette(stack.layerBack,'M151 654 C161 650 177 651 187 656 C191 661 191 667 186 671 L148 671 C143 667 145 660 151 654 Z','#463a34');
     silhouette(stack.layerBack,'M269 654 C259 650 243 651 233 656 C229 661 229 667 234 671 L272 671 C277 667 275 660 269 654 Z','#463a34');
   } else {
@@ -2934,7 +3027,13 @@ function renderAvatar(){
 
   silhouette(stack.layerCore, neckPath(), lights.skinFill, { transform: torsoXform });
   if(s.outfit!=='festival'){
-    silhouette(stack.layerCore, torsoPath(s.gender,profile.fit), lights.topFill, { transform: torsoXform });
+    const peek=shirtPeekPath(profile);
+    if(peek) fillMass(stack.layerCore, peek, '#f7f8fb', { transform: torsoXform });
+    silhouette(stack.layerCore, torsoPath(s.gender,profile), lights.topFill, { transform: torsoXform });
+    garmentSilhouetteExtras(profile).forEach(d=>{
+      const fill = profile.kind==='server' && d===apronMassPath() ? pal.trim : lights.topFill;
+      silhouette(stack.layerCore, d, fill, { transform: torsoXform });
+    });
   }
   nearArms.forEach(side=>nearLimbLayer.appendChild(armMarkup(side, rig, s, pal, lights, lines, profile, stack.layerNear)));
 
@@ -2948,9 +3047,9 @@ function renderAvatar(){
     outfitTorsoDetails(torsoGroup,s,pal,lights,lines,profile);
     torsoGroup.appendChild(torsoCastShadowMarkup(s,rig,pal,profile));
   } else {
-    coreDetailLayer.appendChild(svgEl('path',{d:'M122 664 C150 678 180 686 210 686 C240 686 270 678 298 664',fill:'none',stroke:lines.top,'stroke-width':'1.2',opacity:'0.55'}));
+    coreDetailLayer.appendChild(svgEl('path',{d:'M106 662 C142 680 176 690 210 691 C244 690 278 680 314 662',fill:'none',stroke:lines.top,'stroke-width':'1.2',opacity:'0.55'}));
     fillMass(coreDetailLayer,'M173 314 C188 303 199 298 210 298 C221 298 232 303 247 314 C250 430 251 548 250 664 C238 680 224 687 210 689 C196 687 182 680 170 664 C169 548 170 430 173 314 Z','#e6d2a6',{opacity:'0.15'});
-    coreDetailLayer.appendChild(svgEl('path',{d:'M186 270 C194 265 202 263 210 263 C218 263 226 265 234 270 L234 326 C226 332 218 335 210 335 C202 335 194 332 186 326 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':String(CONTOUR.interior),'stroke-linejoin':'round'}));
+    silhouette(stack.layerCore, kimonoEriPath(), lights.accentFill);
     festivalGarmentDetails(coreDetailLayer,pal,lights,lines);
   }
 
@@ -3165,7 +3264,7 @@ function randomize(){
   renderAvatar();
 }
 function saveStateFile(){
-  const data = {version:3, rendererStep:19, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', silhouetteModel:'teen-proportion-unified-contour-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'illustrated-palm-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'unified-outer-contour-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'anatomy-aware-v1', activeVariant, variants};
+  const data = {version:3, rendererStep:19, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', silhouetteModel:'teen-proportion-unified-contour-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'illustrated-palm-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'unified-outer-contour-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'garment-silhouette-v1', activeVariant, variants};
   const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);

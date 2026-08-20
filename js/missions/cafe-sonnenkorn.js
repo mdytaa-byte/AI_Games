@@ -14,9 +14,12 @@ KH.start({
     { de: 'Setze dich an einen Tisch.', en: 'Sit at a table.' },
     { de: 'Sprich mit Lena an der Theke — höflich, bitte.', en: 'Talk to Lena at the counter — be polite.' }
   ],
-  spawn: { x: 0, z: 2.6, yaw: 0 },
+  spawn: { x: 0.2, z: 2.4, yaw: 0 },
   bounds: { minX: -6.2, maxX: 6.2, minZ: -4.6, maxZ: 5.6 },
-  sky: 0xcfe3ef,
+  sky: 0xcfe0d4,
+  fogColor: 0xd9cbb0,
+  fogNear: 10,
+  fogFar: 26,
   vocab: [
     { de: 'die Speisekarte', en: 'the menu' },
     { de: 'die Theke', en: 'the counter' },
@@ -28,27 +31,64 @@ KH.start({
     { de: 'Das macht … Euro', en: 'That comes to … euros' }
   ],
   build: function (w) {
-    w.room({ id: 'cafe', x: 0, z: 0, w: 12, d: 10, h: 3.15, wall: 0xe8d9c4, floor: 0x7a5136, ceil: 0xf7f1e3,
+    w.room({ id: 'cafe', x: 0, z: 0, w: 12, d: 10, h: 3.2, wallHex: '#efe4d0',
+      wallMap: KH.tex.tapete('#efe4d0', 'rgba(139,30,30,.2)'),
       doors: [{ wall: 's', width: 1.6, offset: 0 }],
-      windows: [{ wall: 'n', offset: -2.2 }, { wall: 'n', offset: 2.2 }, { wall: 'e', offset: 0 }] });
-    KH.furn.counter(w, 0, -3.6, 6.5, 0.85);
-    w.box(1.4, 1.1, 0.5, { x: 3.2, y: 1.65, z: -3.55, color: 0x8B1E1E, collide: false });
-    w.label('Kuchen', { x: 3.2, y: 2.35, z: -3.2, scale: 0.9 });
-    w.box(0.9, 0.7, 0.5, { x: -3.0, y: 1.5, z: -3.55, color: 0x6B4423, collide: false });
-    w.npc({ id: 'lena', x: 0.2, z: -2.7, name: 'Lena', color: 0x8B1E1E, hair: 0x3a2214, facing: 0 });
-    w.plane(1.8, 1.2, { x: -4.6, y: 1.7, z: -0.2, ry: Math.PI / 2, color: 0xf7f1e3 });
-    w.label('Speisekarte', { x: -4.3, y: 2.45, z: -0.2, scale: 1.15 });
-    w.hotspot({ id: 'karte', x: -4.0, z: -0.2, r: 1.3, label: 'Speisekarte' });
-    [[-2.4, 1.6], [1.8, 1.8], [3.4, 1.2], [-2.2, 3.2]].forEach(function (p) {
-      KH.furn.table(w, p[0], p[1]);
-      KH.furn.chair(w, p[0], p[1] + 0.7, 0);
+      windows: [{ wall: 'n', offset: -2.4, flowers: true }, { wall: 'n', offset: 2.4, flowers: true }, { wall: 'e', offset: 0.2, flowers: true }] });
+    KH.furn.rug(w, 0, 2.2, 2.2, 1.3, 0x6B2D5B);
+    KH.furn.counter(w, 0, -3.55, 6.6, 0.9);
+    w.npc({ id: 'lena', x: 0.15, z: -2.65, name: 'Lena', color: 0x8B1E1E, hair: 0x5a3218, facing: 0, apron: true });
+    /* pastry case */
+    w.box(1.55, 0.08, 0.55, { x: 2.55, y: 1.12, z: -3.45, color: 0xeff8ff, collide: false, transparent: true, opacity: 0.35 });
+    w.box(1.55, 0.9, 0.08, { x: 2.55, y: 1.55, z: -3.18, color: 0xeff8ff, collide: false, transparent: true, opacity: 0.25 });
+    KH.furn.pastry(w, 2.2, 1.18, -3.5, 0xc9a227);
+    KH.furn.pastry(w, 2.5, 1.18, -3.5, 0x8B1E1E);
+    KH.furn.pastry(w, 2.8, 1.18, -3.42, 0xe8dcc8);
+    w.label('Kuchen', { x: 2.55, y: 2.05, z: -3.15, scale: 0.8 });
+    /* espresso + jars */
+    w.box(0.55, 0.45, 0.4, { x: -2.4, y: 1.28, z: -3.45, color: 0x2a2a2a, collide: false });
+    w.cyl(0.08, 0.2, { x: -2.4, y: 1.58, z: -3.35, color: 0x1a1a1a, collide: false, seg: 8 });
+    KH.furn.jar(w, -1.55, 1.18, -3.45, 0x8B1E1E);
+    KH.furn.jar(w, -1.35, 1.18, -3.45, 0x3E8E4E);
+    KH.furn.jar(w, -1.15, 1.18, -3.5, 0xc9a227);
+    w.pendant(-2.4, -2.2);
+    w.pendant(0, -2.2);
+    w.pendant(2.5, -2.2);
+    [[-2.5, 1.55, true], [1.7, 1.7, false], [3.35, 1.15, true], [-2.15, 3.15, false]].forEach(function (p) {
+      KH.furn.table(w, p[0], p[1], { check: p[2] });
+      KH.furn.chair(w, p[0], p[1] + 0.62, 0);
+      w.pendant(p[0], p[1]);
     });
-    w.hotspot({ id: 'tisch', x: -2.4, z: 1.6, r: 1.2, label: 'ein Tisch' });
-    KH.furn.plant(w, 5.1, 4.0);
-    KH.furn.plant(w, -5.1, 4.0);
-    w.box(0.08, 2.2, 1.2, { x: 0, y: 1.1, z: 5.05, color: 0x6B4423, collide: false });
-    w.label('Café Sonnenkorn', { x: 0, y: 2.55, z: 4.4, scale: 1.6 });
-    w.hotspot({ id: 'kasse', x: 2.1, z: -2.5, r: 1.2, label: 'die Kasse' });
+    KH.furn.paper(w, -2.35, 0.82, 1.62);
+    KH.furn.shelf(w, -5.35, 2.4);
+    KH.furn.clock(w, 0, 2.35, -4.82);
+    KH.furn.coat(w, 4.9, 1.2, 3.2);
+    w.hotspot({ id: 'tisch', x: -2.5, z: 1.55, r: 1.2, label: 'ein Tisch' });
+    w.hotspot({ id: 'karte', x: -4.05, z: -0.15, r: 1.3, label: 'Speisekarte' });
+    w.hotspot({ id: 'kasse', x: 2.05, z: -2.45, r: 1.2, label: 'die Kasse' });
+    w.poster(function (g, W, H) {
+      g.fillStyle = '#f7f1e3'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#8B1E1E'; g.fillRect(0, 0, W, 70);
+      g.fillStyle = '#f7f1e3'; g.font = 'bold 36px Georgia'; g.textAlign = 'center';
+      g.fillText('Speisekarte', W / 2, 48);
+      g.fillStyle = '#3a2414'; g.font = '28px Georgia'; g.textAlign = 'left';
+      var lines = ['Kaffee ………… 2,20 €', 'Tee ……………… 1,80 €', 'Brötchen …… 1,50 €', 'Kuchen ……… 2,30 €', 'Apfelschorle  2,00 €'];
+      lines.forEach(function (ln, i) { g.fillText(ln, 36, 130 + i * 72); });
+    }, { x: -5.72, y: 1.7, z: -0.15, ry: Math.PI / 2, w: 1.05, h: 1.4 });
+    w.poster(function (g, W, H) {
+      g.fillStyle = '#1a4a28'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#f7f1e3'; g.font = 'italic 32px Georgia'; g.textAlign = 'center';
+      g.fillText('Heute', W / 2, 80);
+      g.font = 'bold 40px Georgia';
+      g.fillText('Kirschkuchen', W / 2, 200);
+      g.font = '28px Georgia'; g.fillText('mit Sahne', W / 2, 280);
+    }, { x: 5.72, y: 1.75, z: 1.2, ry: -Math.PI / 2, w: 0.85, h: 1.1 });
+    KH.furn.plant(w, 5.15, 4.05);
+    KH.furn.plant(w, -5.15, 4.05);
+    w.box(0.08, 2.15, 1.15, { x: 0, y: 1.1, z: 4.92, map: KH.tex.holz(), collide: false });
+    w.label('Café Sonnenkorn', { x: 0, y: 2.45, z: 4.35, scale: 1.45 });
+    /* coat hooks */
+    w.box(0.7, 0.06, 0.06, { x: 4.9, y: 1.5, z: 3.2, color: 0x5a3a22, collide: false });
   },
   tasks: [
     {

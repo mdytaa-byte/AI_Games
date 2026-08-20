@@ -13,10 +13,13 @@ KH.start({
     { de: 'Automat → Anzeigetafel → Gleis 3.', en: 'Machine → departure board → platform 3.' },
     { de: 'Trennbare Verben: abfahren, ankommen, umsteigen.', en: 'Separable verbs: depart, arrive, change trains.' }
   ],
-  spawn: { x: 0, z: 6.2, yaw: 0 },
+  spawn: { x: 0, z: 5.8, yaw: 0 },
   bounds: { minX: -10, maxX: 10, minZ: -12, maxZ: 9 },
-  sky: 0x8aa8b8,
-  fogFar: 50,
+  sky: 0x9bb8c8,
+  outdoor: true,
+  fogColor: 0xb8c4c8,
+  fogNear: 16,
+  fogFar: 48,
   vocab: [
     { de: 'die Fahrkarte', en: 'the ticket' },
     { de: 'der Fahrkartenautomat', en: 'ticket machine' },
@@ -28,32 +31,44 @@ KH.start({
     { de: 'Gleis 3', en: 'platform 3' }
   ],
   build: function (w) {
-    w.box(22, 0.08, 24, { x: 0, y: 0.02, z: -1, color: 0x6d7178, collide: false, map: KH.tex.putz('#6d7178') });
-    /* hall */
-    w.room({ id: 'halle', x: 0, z: 4, w: 14, d: 10, h: 4.2, wall: 0xc5d0d6, floor: 0x8a9098, ceil: 0xe8eef2,
+    w.box(24, 0.08, 26, { x: 0, y: 0.02, z: -1, map: KH.tex.pflaster(), repeat: [12, 12], collide: false });
+    w.room({ id: 'halle', x: 0, z: 4, w: 14, d: 10, h: 4.2, wallHex: '#d5dee4',
+      floorMap: KH.tex.pflaster(),
       doors: [{ wall: 'n', width: 3.2 }, { wall: 's', width: 2.4 }],
-      windows: [{ wall: 'e', offset: -2 }, { wall: 'e', offset: 2 }, { wall: 'w', offset: 0 }] });
-    w.box(1.1, 1.8, 0.6, { x: -4.2, y: 0.9, z: 5.5, color: 0x123E77, collideR: 0.7 });
-    w.label('Automat', { x: -4.2, y: 2.15, z: 5.5, scale: 1 });
+      windows: [{ wall: 'e', offset: -2, flowers: false }, { wall: 'e', offset: 2, flowers: false }, { wall: 'w', offset: 0, flowers: false }] });
+    w.box(1.05, 1.75, 0.55, { x: -4.2, y: 0.9, z: 5.5, color: 0x123E77, collideR: 0.7 });
+    w.box(0.85, 0.35, 0.12, { x: -4.2, y: 1.45, z: 5.22, color: 0x1a1a1a, collide: false });
+    w.label('Automat', { x: -4.2, y: 2.12, z: 5.5, scale: 0.85 });
     w.hotspot({ id: 'automat', x: -4.2, z: 5.5, r: 1.3, label: 'Fahrkartenautomat' });
-    w.box(3.2, 1.6, 0.12, { x: 3.4, y: 1.8, z: 0.2, color: 0x12141A, collide: false });
-    w.label('München  14:22  Gl. 3', { x: 3.4, y: 2.55, z: 0.5, scale: 1.5 });
+    w.box(3.4, 1.7, 0.1, { x: 3.4, y: 1.85, z: 0.15, color: 0x12141A, collide: false });
+    w.poster(function (g, W, H) {
+      g.fillStyle = '#111'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#F2C230'; g.font = 'bold 36px sans-serif'; g.textAlign = 'left';
+      g.fillText('Abfahrt', 24, 50);
+      g.fillStyle = '#eff1ec'; g.font = '28px sans-serif';
+      g.fillText('München    14:22   Gl. 3', 24, 130);
+      g.fillText('Ulm            14:40   Gl. 2', 24, 190);
+      g.fillText('Augsburg  15:05   Gl. 4', 24, 250);
+    }, { x: 3.4, y: 1.85, z: 0.28, w: 2.4, h: 1.35, cw: 640, ch: 360 });
     w.hotspot({ id: 'tafel', x: 3.4, z: 1.0, r: 1.4, label: 'Anzeigetafel' });
-    w.npc({ id: 'schaffner', x: 1.2, z: 6.2, name: 'Schaffner', color: 0x123E77, hair: 0x1a1a1a, facing: Math.PI });
-    /* platforms outdoors north */
-    w.box(18, 0.2, 8, { x: 0, y: 0.08, z: -7, color: 0x4a4e54, collide: false });
-    w.box(18, 0.15, 1.2, { x: 0, y: 0.12, z: -10.5, color: 0x333333, collide: false });
-    w.box(4, 2.4, 0.12, { x: -6, y: 1.3, z: -4.2, color: 0xF2C230, collide: false });
-    w.label('Gleis 2', { x: -6, y: 2.0, z: -3.8, scale: 1.1 });
-    w.box(4, 2.4, 0.12, { x: 0, y: 1.3, z: -4.2, color: 0xF2C230, collide: false });
-    w.label('Gleis 3', { x: 0, y: 2.0, z: -3.8, scale: 1.1 });
+    w.npc({ id: 'schaffner', x: 1.2, z: 6.15, name: 'Schaffner', color: 0x123E77, hair: 0x1a1a1a, facing: Math.PI });
+    KH.furn.bench(w, -3, 2.4);
+    KH.furn.bench(w, 5.4, 2.4);
+    KH.furn.plant(w, 6.1, 7.4);
+    KH.furn.clock(w, 0, 3.15, 8.85);
+    w.pendant(-3, 4, 3.9);
+    w.pendant(3, 4, 3.9);
+    w.box(18, 0.18, 8, { x: 0, y: 0.08, z: -7, color: 0x5a5e64, collide: false });
+    w.box(18, 0.05, 0.22, { x: 0, y: 0.2, z: -3.9, color: 0xF2C230, collide: false });
+    w.box(18, 0.15, 1.15, { x: 0, y: 0.12, z: -10.5, color: 0x2a2a2a, collide: false });
+    [-6, 0, 6].forEach(function (gx, i) {
+      w.box(2.2, 2.1, 0.1, { x: gx, y: 1.2, z: -4.15, color: 0xF2C230, collide: false });
+      w.label('Gleis ' + (i + 2), { x: gx, y: 1.95, z: -3.75, scale: 0.9 });
+    });
     w.hotspot({ id: 'gleis3', x: 0, z: -6.2, r: 1.6, label: 'Gleis 3' });
-    w.box(4, 2.4, 0.12, { x: 6, y: 1.3, z: -4.2, color: 0xF2C230, collide: false });
-    w.label('Gleis 4', { x: 6, y: 2.0, z: -3.8, scale: 1.1 });
-    w.box(5.5, 1.4, 1.4, { x: 0, y: 0.85, z: -9.5, color: 0xc0392b, collideR: 1.4 });
-    w.label('RE 72', { x: 0, y: 1.8, z: -9.5, scale: 1 });
-    KH.furn.bench(w, -3, 2.5);
-    KH.furn.plant(w, 6.2, 7.5);
+    w.box(6.2, 1.55, 1.45, { x: 0, y: 0.9, z: -9.45, color: 0xb13228, collideR: 1.5 });
+    w.box(5.6, 0.55, 0.08, { x: 0, y: 1.35, z: -8.7, color: 0xcfe3ef, collide: false, transparent: true, opacity: 0.45 });
+    w.label('RE 72', { x: 0, y: 1.85, z: -9.45, scale: 0.9 });
   },
   tasks: [
     {

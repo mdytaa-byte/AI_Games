@@ -13,10 +13,13 @@ KH.start({
     { de: 'Steg → Bäume → Enten → Recyclingstation.', en: 'Pier → trees → ducks → recycling station.' },
     { de: 'weil + Verb am Ende; deshalb + normale Stellung.', en: 'weil sends the verb to the end; deshalb does not.' }
   ],
-  spawn: { x: 0, z: 6.5, yaw: 0 },
+  spawn: { x: 0, z: 6.2, yaw: 0 },
   bounds: { minX: -14, maxX: 14, minZ: -14, maxZ: 10 },
   sky: 0x7eb6d9,
-  fogFar: 60,
+  outdoor: true,
+  fogFar: 62,
+  fogNear: 18,
+  sunInt: 0.62,
   vocab: [
     { de: 'der See', en: 'the lake' },
     { de: 'der Steg', en: 'the pier' },
@@ -27,32 +30,57 @@ KH.start({
     { de: 'weil / deshalb', en: 'because / therefore' }
   ],
   build: function (w) {
-    w.box(32, 0.08, 18, { x: 0, y: 0.02, z: 4, color: 0x4E8B5C, collide: false, map: KH.tex.gras() });
-    w.box(32, 0.05, 16, { x: 0, y: 0.01, z: -10, color: 0x2A63A8, collide: false, map: KH.tex.wasser() });
-    /* keep player out of deep water */
+    w.box(34, 0.08, 18, { x: 0, y: 0.02, z: 4, map: KH.tex.gras(), repeat: [16, 8], collide: false });
+    var water = w.box(34, 0.04, 16, { x: 0, y: 0.01, z: -10, map: KH.tex.wasser(), repeat: [8, 4], collide: false, transparent: true, opacity: 0.92 });
+    w.tickers.push(function (now) {
+      if (water && water.material && water.material.map) {
+        water.material.map.offset.x = Math.sin(now * 0.00035) * 0.04;
+        water.material.map.offset.y = (now * 0.00004) % 1;
+      }
+    });
     w.obstacles.push({ kind: 'circ', x: 0, z: -10, r: 7.5 });
-    w.box(8, 0.12, 1.4, { x: 0, y: 0.12, z: -2.2, color: 0x6B4423, collide: false });
-    w.hotspot({ id: 'steg', x: 0, z: -1.6, r: 1.5, label: 'der Steg' });
-    KH.furn.tree(w, -6, 5);
-    KH.furn.tree(w, -8, 2);
-    KH.furn.tree(w, 7, 4);
-    KH.furn.tree(w, 9, 1);
-    w.hotspot({ id: 'baum', x: -6, z: 5, r: 1.5, label: 'ein Baum' });
-    w.cyl(0.18, 0.2, { x: 3.2, y: 0.15, z: -0.8, color: 0x3a2a10, collide: false });
-    w.cyl(0.22, 0.12, { x: 3.5, y: 0.22, z: -0.5, color: 0xc9a227, collide: false });
-    w.hotspot({ id: 'ente', x: 3.4, z: -0.6, r: 1.3, label: 'die Ente' });
-    w.box(1.2, 0.9, 0.4, { x: -3, y: 0.5, z: 0.2, color: 0x6a8f4e, collideR: 0.5 });
-    w.label('Schilf', { x: -3, y: 1.3, z: 0.2, scale: 0.8 });
+    var wood = KH.tex.holz();
+    w.box(8.2, 0.1, 1.45, { x: 0, y: 0.12, z: -2.15, map: wood, repeat: [6, 1], collide: false });
+    w.box(0.08, 0.55, 1.45, { x: -4.05, y: 0.4, z: -2.15, map: wood, collide: false });
+    w.box(0.08, 0.55, 1.45, { x: 4.05, y: 0.4, z: -2.15, map: wood, collide: false });
+    w.hotspot({ id: 'steg', x: 0, z: -1.55, r: 1.5, label: 'der Steg' });
+    KH.furn.tree(w, -6.2, 5.1);
+    KH.furn.tree(w, -8.4, 1.8);
+    KH.furn.tree(w, 7.2, 4.1);
+    KH.furn.tree(w, 9.4, 0.8);
+    KH.furn.tree(w, -10.2, 6.4);
+    KH.furn.tree(w, 11.2, 5.6);
+    w.hotspot({ id: 'baum', x: -6.2, z: 5.1, r: 1.5, label: 'ein Baum' });
+    /* ducks */
+    [[3.3, -0.55], [2.6, -0.95], [4.1, -0.2]].forEach(function (d) {
+      w.cyl(0.16, 0.14, { x: d[0], y: 0.12, z: d[1], color: 0xc9a227, collide: false, seg: 8 });
+      w.cyl(0.07, 0.1, { x: d[0] + 0.14, y: 0.22, z: d[1] + 0.1, color: 0x3a2a10, collide: false, seg: 6 });
+    });
+    w.hotspot({ id: 'ente', x: 3.4, z: -0.5, r: 1.3, label: 'die Ente' });
+    [-3.4, -2.6, -3.0].forEach(function (rx, i) {
+      w.cyl(0.07, 0.85 + i * 0.12, { x: rx, y: 0.45, z: 0.15 + i * 0.2, color: 0x4E8B5C, r2: 0.02, collide: false, seg: 6 });
+    });
+    w.label('Schilf', { x: -3.1, y: 1.25, z: 0.25, scale: 0.7 });
     KH.furn.bin(w, 6, 7.2, 0x2A63A8, 'Glas');
     KH.furn.bin(w, 7.4, 7.2, 0xF2C230, 'Papier');
     KH.furn.bin(w, 8.8, 7.2, 0x888888, 'Plastik');
     KH.furn.bin(w, 10.2, 7.2, 0x3E8E4E, 'Bio');
     w.hotspot({ id: 'muell', x: 8, z: 7.2, r: 2.2, label: 'Recycling' });
-    w.box(1.8, 1.6, 0.1, { x: -8, y: 1.1, z: 7.5, color: 0x123E77, collide: false });
-    w.label('Umweltschutz', { x: -8, y: 2.1, z: 7.5, scale: 1.1 });
-    w.hotspot({ id: 'schild', x: -8, z: 6.6, r: 1.3, label: 'Infotafel' });
+    w.poster(function (g, W, H) {
+      g.fillStyle = '#123E77'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#F2C230'; g.font = 'bold 34px sans-serif'; g.textAlign = 'center';
+      g.fillText('Umweltschutz', W / 2, 70);
+      g.fillStyle = '#eff1ec'; g.font = '24px Georgia';
+      g.fillText('Bitte den See', W / 2, 160);
+      g.fillText('sauber halten.', W / 2, 210);
+    }, { x: -8, y: 1.45, z: 7.35, w: 1.2, h: 1.5 });
+    w.hotspot({ id: 'schild', x: -8, z: 6.55, r: 1.3, label: 'Infotafel' });
     KH.furn.bench(w, 0, 4);
-    w.npc({ id: 'ranger', x: -1.2, z: 6.5, name: 'Frau Sowinski', color: 0x3E8E4E, hair: 0x4a3018, facing: Math.PI });
+    KH.furn.rug(w, 1.6, 3.2, 1.6, 1.1, 0xc45c4a);
+    w.box(0.35, 0.22, 0.28, { x: 1.85, y: 0.18, z: 3.05, map: KH.tex.holz(), collide: false });
+    KH.furn.jar(w, 1.55, 0.22, 3.15, 0x2A63A8);
+    KH.furn.paper(w, 1.4, 0.08, 3.35);
+    w.npc({ id: 'ranger', x: -1.2, z: 6.4, name: 'Frau Sowinski', color: 0x3E8E4E, hair: 0x4a3018, facing: Math.PI });
   },
   tasks: [
     {

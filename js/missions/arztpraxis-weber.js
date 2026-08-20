@@ -16,6 +16,9 @@ KH.start({
   spawn: { x: 0.8, z: 5.4, yaw: 0 },
   bounds: { minX: -7, maxX: 7, minZ: -7.2, maxZ: 7.2 },
   sky: 0xdce8e4,
+  fogColor: 0xd8e0dc,
+  fogNear: 10,
+  fogFar: 22,
   vocab: [
     { de: 'die Rezeption', en: 'reception' },
     { de: 'der Termin', en: 'the appointment' },
@@ -26,28 +29,47 @@ KH.start({
     { de: 'das Rezept', en: 'the prescription' }
   ],
   build: function (w) {
-    w.room({ id: 'empfang', x: 0, z: 4.2, w: 8, d: 6, h: 3.1, wall: 0xe8f0ee, floor: 0xd5ddd8,
-      doors: [{ wall: 's', width: 1.5 }, { wall: 'n', width: 1.4 }, { wall: 'e', width: 1.3 }] });
+    w.room({ id: 'empfang', x: 0, z: 4.2, w: 8, d: 6, h: 3.1, wallHex: '#e8f0ee',
+      floorMap: KH.tex.fliesen('#eef3f0', '#d5ddd8'),
+      doors: [{ wall: 's', width: 1.5 }, { wall: 'n', width: 1.4 }, { wall: 'e', width: 1.3 }],
+      windows: [{ wall: 's', offset: 2.2, flowers: true }] });
     KH.furn.counter(w, -1.6, 2.0, 3.2, 0.7);
     w.npc({ id: 'rezeption', x: -1.6, z: 1.35, name: 'Frau Novak', color: 0x3E8E4E, hair: 0x2a1a10, facing: 0 });
-    w.label('Rezeption', { x: -1.6, y: 2.5, z: 2.0, scale: 1 });
-    KH.furn.plant(w, 3.2, 6.2);
-    /* waiting east */
-    w.room({ id: 'warte', x: 5.0, z: 4.2, w: 5.2, d: 6, h: 3.1, wall: 0xf4efe6, floor: 0xc4b49a,
-      doors: [{ wall: 'w', width: 1.3 }] });
-    KH.furn.sofa(w, 5.2, 3.4);
-    KH.furn.chair(w, 6.4, 5.4, Math.PI);
-    w.hotspot({ id: 'warte', x: 5.2, z: 3.4, r: 1.3, label: 'Wartezimmer' });
-    w.label('Wartezimmer', { x: 5.0, y: 2.55, z: 4.2, scale: 1 });
-    /* exam north */
-    w.room({ id: 'zimmer', x: 0, z: -2.6, w: 8, d: 6.4, h: 3.1, wall: 0xe6eef5, floor: 0xb9c4cc,
+    w.label('Rezeption', { x: -1.6, y: 2.42, z: 2.0, scale: 0.9 });
+    KH.furn.plant(w, 3.15, 6.15);
+    KH.furn.clock(w, -3.1, 2.45, 1.32);
+    w.pendant(-1.6, 3.2, 2.9);
+    w.box(0.35, 0.28, 0.28, { x: -0.5, y: 1.2, z: 2.0, color: 0x1a1a1a, collide: false });
+    KH.furn.paper(w, 5.4, 0.08, 4.2);
+    KH.furn.paper(w, 5.55, 0.09, 4.35);
+    w.room({ id: 'warte', x: 5.0, z: 4.2, w: 5.2, d: 6, h: 3.1, wallHex: '#f4efe6',
+      doors: [{ wall: 'w', width: 1.3 }],
+      windows: [{ wall: 'e', offset: 0 }] });
+    KH.furn.sofa(w, 5.2, 3.35);
+    KH.furn.chair(w, 6.35, 5.35, Math.PI);
+    KH.furn.rug(w, 5.1, 4.0, 2.4, 1.5, 0x8a9e8c);
+    w.hotspot({ id: 'warte', x: 5.2, z: 3.35, r: 1.3, label: 'Wartezimmer' });
+    w.label('Wartezimmer', { x: 5.0, y: 2.5, z: 4.2, scale: 0.9 });
+    w.pendant(5.0, 4.2, 2.9);
+    w.room({ id: 'zimmer', x: 0, z: -2.6, w: 8, d: 6.4, h: 3.1, wallHex: '#e6eef5',
+      floorMap: KH.tex.fliesen('#e8eef2', '#c5d0d8'),
       doors: [{ wall: 's', width: 1.4 }] });
-    w.box(2.2, 0.7, 0.9, { x: -1.5, y: 0.5, z: -3.8, color: 0xeff1ec, collideR: 0.95 });
-    w.npc({ id: 'arzt', x: 1.2, z: -2.2, name: 'Dr. Weber', color: 0x123E77, hair: 0x888888, facing: Math.PI });
-    w.box(0.15, 1.6, 0.5, { x: 3.2, y: 1.1, z: -4.6, color: 0xC25B4A, collide: false });
-    w.label('Körper', { x: 3.2, y: 2.1, z: -4.2, scale: 0.9 });
+    w.box(2.25, 0.62, 0.88, { x: -1.5, y: 0.48, z: -3.75, color: 0xeff1ec, collideR: 0.95 });
+    w.box(2.2, 0.04, 0.85, { x: -1.5, y: 0.82, z: -3.75, color: 0xf7f1e3, collide: false });
+    w.npc({ id: 'arzt', x: 1.15, z: -2.15, name: 'Dr. Weber', color: 0x123E77, hair: 0x888888, facing: Math.PI });
+    w.poster(function (g, W, H) {
+      g.fillStyle = '#f4ead4'; g.fillRect(0, 0, W, H);
+      g.strokeStyle = '#8B1E1E'; g.lineWidth = 4;
+      g.beginPath(); g.arc(W / 2, 90, 50, 0, Math.PI * 2); g.stroke();
+      g.fillStyle = '#3a2414'; g.font = '24px Georgia'; g.textAlign = 'center';
+      g.fillText('Kopf', W / 2, 160);
+      g.fillText('Hals', W / 2, 250);
+      g.fillText('Bauch', W / 2, 340);
+    }, { x: 3.2, y: 1.65, z: -5.35, w: 0.85, h: 1.2 });
     w.hotspot({ id: 'koerper', x: 3.2, z: -4.0, r: 1.2, label: 'Körperbild' });
-    w.label('Behandlungszimmer', { x: 0, y: 2.7, z: -5.2, scale: 1.2 });
+    w.label('Behandlungszimmer', { x: 0, y: 2.65, z: -5.15, scale: 1.05 });
+    w.pendant(0, -2.6, 2.9);
+    KH.furn.plant(w, -3.2, -0.5);
   },
   tasks: [
     {

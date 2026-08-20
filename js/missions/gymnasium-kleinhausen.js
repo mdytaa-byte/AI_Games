@@ -16,6 +16,9 @@ KH.start({
   spawn: { x: 0, z: 7.2, yaw: 0 },
   bounds: { minX: -9, maxX: 9, minZ: -8, maxZ: 9 },
   sky: 0xb9d0c8,
+  fogColor: 0xd4cbb8,
+  fogNear: 11,
+  fogFar: 28,
   vocab: [
     { de: 'der Stundenplan', en: 'the timetable' },
     { de: 'das Klassenzimmer', en: 'the classroom' },
@@ -26,29 +29,42 @@ KH.start({
     { de: 'um acht Uhr', en: 'at eight o’clock' }
   ],
   build: function (w) {
-    w.room({ id: 'gang', x: 0, z: 6, w: 12, d: 6, h: 3.3, wall: 0xe8e0d0, floor: 0x8a8f7c,
-      doors: [{ wall: 's', width: 1.6 }, { wall: 'n', width: 1.8 }, { wall: 'w', width: 1.4 }] });
-    w.plane(1.8, 1.3, { x: 4.4, y: 1.7, z: 3.2, color: 0xf7f1e3 });
-    w.label('Stundenplan', { x: 4.4, y: 2.5, z: 3.4, scale: 1.15 });
-    w.hotspot({ id: 'plan', x: 4.2, z: 3.6, r: 1.3, label: 'Stundenplan' });
-    w.label('Raum 12 →', { x: -4.5, y: 2.2, z: 6, scale: 1 });
-    KH.furn.plant(w, 5.4, 8.2);
-    /* classroom west */
-    w.room({ id: 'kl12', x: -6.4, z: 0.6, w: 8, d: 9, h: 3.3, wall: 0xf2efe6, floor: 0xc4a574,
-      doors: [{ wall: 'e', width: 1.4 }] });
-    KH.furn.board(w, -6.4, 1.85, -3.5, 0, 0x1a4a28);
-    w.hotspot({ id: 'tafel', x: -6.4, z: -3.1, r: 1.4, label: 'die Tafel' });
-    KH.furn.desk(w, -6.4, -1.6);
-    w.npc({ id: 'vogel', x: -5.2, z: -1.5, name: 'Frau Vogel', color: 0x6B2D5B, hair: 0x3b2a18, facing: 0 });
+    w.room({ id: 'gang', x: 0, z: 6, w: 12, d: 6, h: 3.3, wallHex: '#ebe3d4',
+      doors: [{ wall: 's', width: 1.6 }, { wall: 'n', width: 1.8 }, { wall: 'w', width: 1.4 }],
+      windows: [{ wall: 'e', offset: 0, flowers: false }] });
+    w.poster(function (g, W, H) {
+      g.fillStyle = '#f7f1e3'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#123E77'; g.font = 'bold 28px sans-serif'; g.textAlign = 'center';
+      g.fillText('Stundenplan', W / 2, 48);
+      g.fillStyle = '#3a2414'; g.font = '22px sans-serif'; g.textAlign = 'left';
+      g.fillText('Mo  8:00  Deutsch  R12', 28, 120);
+      g.fillText('Mo  8:55  Mathe    R12', 28, 175);
+      g.fillText('Mo  9:50  Sport    Halle', 28, 230);
+    }, { x: 4.4, y: 1.7, z: 3.15, w: 1.15, h: 1.35 });
+    w.hotspot({ id: 'plan', x: 4.2, z: 3.55, r: 1.3, label: 'Stundenplan' });
+    w.label('Raum 12 →', { x: -4.5, y: 2.15, z: 6, scale: 0.9 });
+    KH.furn.plant(w, 5.35, 8.15);
+    KH.furn.clock(w, -2.4, 2.45, 3.18);
+    w.box(0.45, 1.5, 0.4, { x: 3.2, y: 0.75, z: 7.6, color: 0x8B1E1E, collide: false });
+    w.box(0.45, 1.5, 0.4, { x: 3.75, y: 0.75, z: 7.6, color: 0x123E77, collide: false });
+    w.box(0.45, 1.5, 0.4, { x: 4.3, y: 0.75, z: 7.6, color: 0xF2C230, collide: false });
+    w.room({ id: 'kl12', x: -6.4, z: 0.6, w: 8, d: 9, h: 3.3, wallHex: '#f4efe6',
+      doors: [{ wall: 'e', width: 1.4 }],
+      windows: [{ wall: 'w', offset: -2, flowers: false }, { wall: 'w', offset: 2, flowers: false }] });
+    KH.furn.board(w, -6.4, 1.85, -3.45, 0, 0x1a4a28);
+    w.hotspot({ id: 'tafel', x: -6.4, z: -3.05, r: 1.4, label: 'die Tafel' });
+    KH.furn.desk(w, -6.4, -1.55);
+    w.npc({ id: 'vogel', x: -5.2, z: -1.45, name: 'Frau Vogel', color: 0x6B2D5B, hair: 0x3b2a18, facing: 0 });
     [[-8.2, 1.2], [-4.6, 1.2], [-8.2, 3.0], [-4.6, 3.0], [-8.2, 4.8], [-4.6, 4.8]].forEach(function (p) {
       KH.furn.desk(w, p[0], p[1]);
-      KH.furn.chair(w, p[0], p[1] + 0.65);
+      KH.furn.chair(w, p[0], p[1] + 0.62);
     });
-    w.box(0.35, 0.5, 0.28, { x: -4.6, y: 0.9, z: 1.2, color: 0x123E77, collide: false });
+    w.box(0.38, 0.48, 0.26, { x: -4.6, y: 0.88, z: 1.2, color: 0x123E77, collide: false });
     w.hotspot({ id: 'rucksack', x: -4.6, z: 1.2, r: 1.1, label: 'der Rucksack' });
-    w.label('Klassenzimmer 12', { x: -6.4, y: 2.9, z: 0.6, scale: 1.3 });
-    /* courtyard north */
-    w.box(16, 0.06, 8, { x: 0, y: 0.02, z: -5.5, color: 0x4E8B5C, collide: false, map: KH.tex.gras() });
+    w.label('Klassenzimmer 12', { x: -6.4, y: 2.85, z: 0.6, scale: 1.15 });
+    w.pendant(-6.4, 0.6, 3.05);
+    w.pendant(-6.4, 3.2, 3.05);
+    w.box(16, 0.06, 8, { x: 0, y: 0.02, z: -5.5, map: KH.tex.gras(), repeat: [8, 4], collide: false });
     KH.furn.tree(w, 3, -6.5);
     KH.furn.bench(w, -2, -6.2);
   },

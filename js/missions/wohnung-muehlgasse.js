@@ -13,9 +13,12 @@ KH.start({
     { de: 'Geh von Raum zu Raum. Drücke E am gelben Ring.', en: 'Walk room to room. Press E at a yellow ring.' },
     { de: 'Achte auf Wechselpräpositionen: auf + Dativ (wo?), in + Dativ, neben, an.', en: 'Watch two-way prepositions: auf + dative (location), in, neben, an.' }
   ],
-  spawn: { x: 0, z: 7.4, yaw: 0 },
+  spawn: { x: 0, z: 7.2, yaw: 0 },
   bounds: { minX: -7.5, maxX: 7.5, minZ: -8.5, maxZ: 9.2 },
-  sky: 0xe8dcc8,
+  sky: 0xe4d4b8,
+  fogColor: 0xe6d5b8,
+  fogNear: 9,
+  fogFar: 24,
   vocab: [
     { de: 'das Sofa', en: 'the sofa' },
     { de: 'der Tisch', en: 'the table' },
@@ -27,41 +30,62 @@ KH.start({
     { de: 'neben dem Sofa', en: 'next to the sofa' }
   ],
   build: function (w) {
-    /* hallway */
-    w.room({ id: 'flur', x: 0, z: 7, w: 4, d: 4.5, h: 3, wall: 0xe4d5c0, floor: 0xc4a574,
+    w.room({ id: 'flur', x: 0, z: 7, w: 4, d: 4.5, h: 2.95, wallHex: '#efe6d6',
       doors: [{ wall: 's', width: 1.4 }, { wall: 'n', width: 1.4 }, { wall: 'w', width: 1.3 }, { wall: 'e', width: 1.3 }] });
-    w.label('Flur', { x: 0, y: 2.6, z: 7, scale: 1 });
-    KH.furn.plant(w, 1.4, 8.5);
-    /* living */
-    w.room({ id: 'wohn', x: 0, z: 1.2, w: 8, d: 6.2, h: 3, wall: 0xd9e0d4, floor: 0x8b5a2b,
-      doors: [{ wall: 's', width: 1.4 }] });
-    KH.furn.sofa(w, -1.6, 0.4);
-    KH.furn.table(w, 0.6, 0.6);
-    KH.furn.lamp(w, 2.4, 2.4);
-    w.hotspot({ id: 'sofa', x: -1.6, z: 0.4, r: 1.3, label: 'das Sofa' });
-    w.hotspot({ id: 'tisch', x: 0.6, z: 0.6, r: 1.15, label: 'der Tisch' });
-    w.label('Wohnzimmer', { x: 0, y: 2.7, z: -1.4, scale: 1.2 });
-    /* kitchen west */
-    w.room({ id: 'kueche', x: -5.2, z: 7, w: 5.2, d: 4.5, h: 3, wall: 0xf0e6d8, floor: 0xc8c4bc,
-      doors: [{ wall: 'e', width: 1.3 }] });
-    w.box(2.4, 1.0, 0.7, { x: -6.4, y: 0.5, z: 5.6, color: 0xeff1ec, collideR: 0.9 });
-    w.box(0.7, 1.7, 0.7, { x: -3.7, y: 0.85, z: 5.5, color: 0x9aa3a8, collideR: 0.55 });
-    w.hotspot({ id: 'kuehl', x: -3.7, z: 5.5, r: 1.2, label: 'der Kühlschrank' });
-    w.label('Küche', { x: -5.2, y: 2.6, z: 7, scale: 1 });
-    /* bedroom east */
-    w.room({ id: 'schlaf', x: 5.2, z: 7, w: 5.2, d: 4.5, h: 3, wall: 0xe4d0e0, floor: 0x7a5136,
-      doors: [{ wall: 'w', width: 1.3 }] });
-    KH.furn.bed(w, 5.6, 6.6);
-    w.box(0.5, 0.55, 0.4, { x: 6.8, y: 0.32, z: 8.3, color: 0x6B4423, collideR: 0.35 });
-    w.hotspot({ id: 'bett', x: 5.6, z: 6.6, r: 1.3, label: 'das Bett' });
-    w.label('Schlafzimmer', { x: 5.2, y: 2.6, z: 7, scale: 1 });
-    /* bath south of living? put south */
-    w.room({ id: 'bad', x: 0, z: -4.4, w: 4.2, d: 3.6, h: 3, wall: 0xd7e4ea, floor: 0xe8eef0,
+    w.label('Flur', { x: 0, y: 2.55, z: 7, scale: 0.85 });
+    KH.furn.plant(w, 1.35, 8.4);
+    w.box(0.5, 0.9, 0.22, { x: -1.3, y: 0.9, z: 8.5, map: KH.tex.holz(), collide: false });
+    w.room({ id: 'wohn', x: 0, z: 1.2, w: 8, d: 6.2, h: 2.95, wallHex: '#dce6d8',
+      wallMap: KH.tex.tapete('#dce6d8', 'rgba(70,110,80,.2)'),
+      doors: [{ wall: 's', width: 1.4 }],
+      windows: [{ wall: 'n', offset: -1.6 }, { wall: 'n', offset: 1.6 }] });
+    KH.furn.rug(w, -0.2, 0.5, 3.2, 2.0, 0x6a3a32);
+    KH.furn.sofa(w, -1.7, 0.35);
+    KH.furn.table(w, 0.7, 0.55, { check: false });
+    KH.furn.paper(w, 0.85, 0.82, 0.62);
+    KH.furn.lamp(w, 2.45, 2.35);
+    KH.furn.shelf(w, -3.45, -0.85);
+    KH.furn.clock(w, 0, 2.25, -1.75);
+    w.pendant(0.2, 1.0, 2.7);
+    w.hotspot({ id: 'sofa', x: -1.7, z: 0.35, r: 1.3, label: 'das Sofa' });
+    w.hotspot({ id: 'tisch', x: 0.7, z: 0.55, r: 1.15, label: 'der Tisch' });
+    w.label('Wohnzimmer', { x: 0, y: 2.62, z: -1.35, scale: 1.05 });
+    w.poster(function (g, W, H) {
+      g.fillStyle = '#8aa8c0'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#e8dcc0'; g.fillRect(0, H * 0.55, W, H * 0.45);
+      g.fillStyle = '#f2c230'; g.beginPath(); g.arc(W * 0.7, H * 0.28, 40, 0, Math.PI * 2); g.fill();
+    }, { x: 3.72, y: 1.7, z: 0.4, ry: -Math.PI / 2, w: 0.7, h: 0.9 });
+    w.room({ id: 'kueche', x: -5.2, z: 7, w: 5.2, d: 4.5, h: 2.95, wallHex: '#f3e6d8',
+      floorMap: KH.tex.fliesen('#f4f1ea', '#d8c8b4'),
+      doors: [{ wall: 'e', width: 1.3 }],
+      windows: [{ wall: 'w', offset: 0 }] });
+    w.box(2.5, 0.95, 0.68, { x: -6.45, y: 0.48, z: 5.55, map: KH.tex.holz(), collideR: 0.9 });
+    w.box(0.72, 1.75, 0.68, { x: -3.65, y: 0.88, z: 5.5, color: 0xc5ccd0, collideR: 0.55 });
+    w.box(0.5, 0.08, 0.5, { x: -6.1, y: 1.02, z: 5.5, color: 0xeff1ec, collide: false });
+    w.cyl(0.08, 0.12, { x: -5.7, y: 1.08, z: 5.45, color: 0xc45c4a, collide: false, seg: 8 });
+    KH.furn.jar(w, -6.45, 1.12, 5.48, 0x3E8E4E);
+    KH.furn.jar(w, -6.25, 1.12, 5.52, 0xc9a227);
+    w.hotspot({ id: 'kuehl', x: -3.65, z: 5.5, r: 1.2, label: 'der Kühlschrank' });
+    w.label('Küche', { x: -5.2, y: 2.5, z: 7, scale: 0.85 });
+    w.pendant(-5.2, 6.6, 2.7);
+    w.room({ id: 'schlaf', x: 5.2, z: 7, w: 5.2, d: 4.5, h: 2.95, wallHex: '#ead4e0',
+      wallMap: KH.tex.tapete('#ead4e0', 'rgba(110,50,90,.18)'),
+      doors: [{ wall: 'w', width: 1.3 }],
+      windows: [{ wall: 'e', offset: 0.2 }] });
+    KH.furn.bed(w, 5.55, 6.55);
+    w.box(0.48, 0.52, 0.38, { x: 6.85, y: 0.3, z: 8.25, map: KH.tex.holz(), collideR: 0.32 });
+    w.cyl(0.07, 0.28, { x: 6.85, y: 0.72, z: 8.25, color: 0xf7f1e3, collide: false, emissive: 0x332200, seg: 8 });
+    w.lamps.push({ x: 6.85, y: 0.85, z: 8.25, color: 0xffe2b0, int: 0.35, dist: 3 });
+    w.hotspot({ id: 'bett', x: 5.55, z: 6.55, r: 1.3, label: 'das Bett' });
+    w.label('Schlafzimmer', { x: 5.2, y: 2.5, z: 7, scale: 0.85 });
+    w.room({ id: 'bad', x: 0, z: -4.4, w: 4.2, d: 3.6, h: 2.95, wallHex: '#d7e4ea',
+      floorMap: KH.tex.fliesen('#eef3f5', '#c5d4dc'),
       doors: [{ wall: 'n', width: 1.2 }] });
-    w.box(0.8, 0.55, 0.45, { x: -1.1, y: 0.35, z: -5.3, color: 0xeff1ec, collideR: 0.45 });
-    w.cyl(0.32, 0.45, { x: 1.0, z: -5.2, color: 0xeff1ec, collideR: 0.4 });
-    w.hotspot({ id: 'bad', x: -1.1, z: -5.3, r: 1.2, label: 'das Waschbecken' });
-    w.label('Bad', { x: 0, y: 2.5, z: -4.4, scale: 0.9 });
+    w.box(0.85, 0.52, 0.42, { x: -1.15, y: 0.32, z: -5.25, color: 0xeff1ec, collideR: 0.45 });
+    w.cyl(0.3, 0.42, { x: 1.0, z: -5.15, color: 0xeff1ec, collideR: 0.38, seg: 12 });
+    w.box(0.5, 0.7, 0.04, { x: -1.15, y: 1.35, z: -5.55, color: 0xc5d8e4, collide: false, transparent: true, opacity: 0.4 });
+    w.hotspot({ id: 'bad', x: -1.15, z: -5.25, r: 1.2, label: 'das Waschbecken' });
+    w.label('Bad', { x: 0, y: 2.42, z: -4.4, scale: 0.75 });
   },
   tasks: [
     {

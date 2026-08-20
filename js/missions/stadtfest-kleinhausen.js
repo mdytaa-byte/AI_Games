@@ -13,10 +13,12 @@ KH.start({
     { de: 'Vier Stände: Bratwurst, Karussell, Bühne, Info.', en: 'Four booths: sausage, carousel, stage, info.' },
     { de: 'Perfekt: ich habe … gegessen / gehört / getanzt.', en: 'Perfect tense: I have eaten / heard / danced.' }
   ],
-  spawn: { x: 0, z: 7.2, yaw: 0 },
+  spawn: { x: 0, z: 7.4, yaw: 0 },
   bounds: { minX: -12, maxX: 12, minZ: -12, maxZ: 10 },
   sky: 0x8ec4e8,
-  fogFar: 55,
+  outdoor: true,
+  fogFar: 58,
+  fogNear: 18,
   vocab: [
     { de: 'das Stadtfest', en: 'town festival' },
     { de: 'die Bratwurst', en: 'bratwurst' },
@@ -27,27 +29,52 @@ KH.start({
     { de: 'die Tradition', en: 'tradition' }
   ],
   build: function (w) {
-    w.box(28, 0.08, 28, { x: 0, y: 0.02, z: -1, color: 0x6a8f4e, collide: false, map: KH.tex.gras() });
-    /* stalls */
-    function stall(x, z, col, title, id) {
-      w.box(3.2, 2.2, 2.0, { x: x, y: 1.1, z: z, color: col, collideR: 1.5 });
-      w.box(3.4, 0.08, 2.2, { x: x, y: 2.28, z: z, color: 0xF2C230, collide: false });
-      w.label(title, { x: x, y: 2.55, z: z, scale: 1.1 });
-      w.hotspot({ id: id, x: x, z: z + 1.4, r: 1.4, label: title });
+    w.box(30, 0.08, 30, { x: 0, y: 0.02, z: -1, map: KH.tex.gras(), repeat: [14, 14], collide: false });
+    w.box(8, 0.04, 10, { x: 0, y: 0.05, z: 1, map: KH.tex.pflaster(), repeat: [4, 5], collide: false });
+    KH.furn.stall(w, -5, 2, 0x8B1E1E, 'Bratwurst', '#8B1E1E', '#F2C230');
+    KH.furn.stall(w, 5, 2, 0x2A63A8, 'Karussell', '#2A63A8', '#F2C230');
+    KH.furn.stall(w, -5, -5, 0x6B2D5B, 'Bühne / Musik', '#6B2D5B', '#e8dcc8');
+    KH.furn.stall(w, 5, -5, 0x3E8E4E, 'Info-Stand', '#3E8E4E', '#F2C230');
+    w.hotspot({ id: 'wurst', x: -5, z: 3.4, r: 1.45, label: 'Bratwurst' });
+    w.hotspot({ id: 'karussell', x: 5, z: 3.4, r: 1.45, label: 'Karussell-Kasse' });
+    w.hotspot({ id: 'buehne', x: -5, z: -3.6, r: 1.45, label: 'Bühne / Musik' });
+    w.hotspot({ id: 'info', x: 5, z: -3.6, r: 1.45, label: 'Info-Stand' });
+    w.npc({ id: 'metzger', x: -5, z: 3.45, name: 'Herr Kern', color: 0x8B1E1E, hair: 0x222222, facing: 0, apron: true });
+    /* carousel */
+    var car = new THREE.Group();
+    function mcol(c) { return new THREE.MeshLambertMaterial({ color: c }); }
+    var base = new THREE.Mesh(new THREE.CylinderGeometry(1.7, 1.85, 0.35, 16), mcol(0xC25B4A));
+    base.position.y = 0.2;
+    var pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.2, 8), mcol(0xF2C230));
+    pole.position.y = 1.3;
+    var roof = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 2.0, 0.45, 12), mcol(0x8B1E1E));
+    roof.position.y = 2.35;
+    car.add(base, pole, roof);
+    car.position.set(5, 0, 5.7);
+    w.scene.add(car);
+    w.obstacles.push({ kind: 'circ', x: 5, z: 5.7, r: 1.6 });
+    w.tickers.push(function (now) { car.rotation.y = now * 0.0006; });
+    KH.furn.tree(w, -9.2, -8);
+    KH.furn.tree(w, 9.2, -8);
+    KH.furn.tree(w, -9.2, 6.2);
+    KH.furn.bench(w, 0, -0.8);
+    KH.furn.bench(w, -1.6, 6.6);
+    KH.furn.bench(w, 1.6, 6.6);
+    w.label('Kleinhausener Stadtfest', { x: 0, y: 3.15, z: 6.4, scale: 1.9 });
+    /* bunting */
+    for (var i = -4; i <= 4; i++) {
+      w.box(0.18, 0.22, 0.04, { x: i * 0.7, y: 2.7, z: 5.4, color: i % 2 ? 0xF2C230 : 0x8B1E1E, collide: false });
     }
-    stall(-5, 2, 0x8B1E1E, 'Bratwurst', 'wurst');
-    stall(5, 2, 0x2A63A8, 'Karussell-Kasse', 'karussell');
-    stall(-5, -5, 0x6B2D5B, 'Bühne / Musik', 'buehne');
-    stall(5, -5, 0x3E8E4E, 'Info-Stand', 'info');
-    w.cyl(1.8, 0.4, { x: 5, y: 0.5, z: 5.5, color: 0xC25B4A, collideR: 1.5 });
-    w.cyl(0.12, 2.2, { x: 5, y: 1.4, z: 5.5, color: 0xF2C230, collide: false });
-    w.npc({ id: 'metzger', x: -5, z: 3.5, name: 'Herr Kern', color: 0x8B1E1E, hair: 0x222, facing: 0 });
-    KH.furn.tree(w, -9, -8);
-    KH.furn.tree(w, 9, -8);
-    KH.furn.tree(w, -9, 6);
-    KH.furn.bench(w, 0, -1);
-    w.label('Kleinhausener Stadtfest', { x: 0, y: 3.2, z: 6, scale: 2.1 });
-    w.box(0.3, 4, 0.3, { x: -10, y: 2, z: 8.5, color: 0xF2C230, collideR: 0.3 });
+    /* lanterns along the path */
+    [-3.2, -1.1, 1.1, 3.2].forEach(function (lx) {
+      w.cyl(0.04, 1.6, { x: lx, z: 0.4, color: 0x3a2a18, collide: false, seg: 6 });
+      w.cyl(0.12, 0.16, { x: lx, y: 1.7, z: 0.4, color: 0xf2c230, collide: false, emissive: 0x442200, seg: 8 });
+      w.lamps.push({ x: lx, y: 1.7, z: 0.4, color: 0xffd9a0, int: 0.28, dist: 4 });
+    });
+    KH.furn.pastry(w, -5.15, 1.12, 2.35, 0xc45c4a);
+    KH.furn.pastry(w, -4.85, 1.12, 2.4, 0xc9a227);
+    w.lamps.push({ x: -5, y: 2.4, z: 2, color: 0xffd9a0, int: 0.4, dist: 6 });
+    w.lamps.push({ x: 5, y: 2.4, z: 2, color: 0xffd9a0, int: 0.4, dist: 6 });
   },
   tasks: [
     {

@@ -16,6 +16,9 @@ KH.start({
   spawn: { x: 0, z: 4.2, yaw: 0 },
   bounds: { minX: -8, maxX: 8, minZ: -7, maxZ: 7.2 },
   sky: 0xcfc4b0,
+  fogColor: 0xddd0b8,
+  fogNear: 10,
+  fogFar: 26,
   vocab: [
     { de: 'das Exponat', en: 'the exhibit' },
     { de: 'das Fachwerkhaus', en: 'timber-framed house' },
@@ -26,26 +29,37 @@ KH.start({
     { de: 'ein altes …', en: 'an old … (neuter)' }
   ],
   build: function (w) {
-    w.room({ id: 'saal', x: 0, z: 0, w: 14, d: 12, h: 4, wall: 0xe6dcc8, floor: 0x6B4423, ceil: 0xf4ead4,
+    w.room({ id: 'saal', x: 0, z: 0, w: 14, d: 12, h: 4.1, wallHex: '#e9dcc6',
+      wallMap: KH.tex.tapete('#e9dcc6', 'rgba(110,70,40,.18)'),
       doors: [{ wall: 's', width: 1.8 }],
-      windows: [{ wall: 'n', offset: -3 }, { wall: 'n', offset: 3 }] });
+      windows: [{ wall: 'n', offset: -3, flowers: false }, { wall: 'n', offset: 3, flowers: false }] });
+    KH.furn.rug(w, 0, 0, 4.5, 6.5, 0x6a3a32);
     KH.furn.exhibit(w, -4.2, -2.5, 0x8B5A2B);
-    w.label('Fachwerk', { x: -4.2, y: 2.0, z: -2.5, scale: 1 });
+    w.label('Fachwerk', { x: -4.2, y: 1.95, z: -2.5, scale: 0.85 });
     w.hotspot({ id: 'fachwerk', x: -4.2, z: -1.5, r: 1.3, label: 'Fachwerkhaus' });
     KH.furn.exhibit(w, 4.2, -2.5, 0x2A63A8);
-    w.label('Tracht', { x: 4.2, y: 2.0, z: -2.5, scale: 1 });
+    w.label('Tracht', { x: 4.2, y: 1.95, z: -2.5, scale: 0.85 });
     w.hotspot({ id: 'tracht', x: 4.2, z: -1.5, r: 1.3, label: 'Tracht' });
     KH.furn.exhibit(w, -4.2, 2.8, 0xC25B4A);
-    w.label('Straßenbahn', { x: -4.2, y: 2.0, z: 2.8, scale: 1 });
-    w.hotspot({ id: 'tram', x: -4.2, z: 3.6, r: 1.3, label: 'alte Straßenbahn' });
-    w.box(2.2, 1.6, 0.12, { x: 4.0, y: 1.6, z: 3.4, color: 0x3a4a6a, collide: false });
-    w.box(1.6, 1.1, 0.05, { x: 4.0, y: 1.6, z: 3.48, color: 0x6a8cae, collide: false });
-    w.label('Gemälde', { x: 4.0, y: 2.55, z: 3.4, scale: 1 });
-    w.hotspot({ id: 'bild', x: 4.0, z: 2.6, r: 1.3, label: 'Gemälde' });
-    w.npc({ id: 'guide', x: 0, z: -3.8, name: 'Herr Otto', color: 0x4a4038, hair: 0xcccccc, facing: 0 });
-    KH.furn.plant(w, 6.2, 5.2);
-    KH.furn.plant(w, -6.2, 5.2);
-    w.label('Heimatmuseum', { x: 0, y: 3.4, z: 0, scale: 1.8 });
+    w.label('Straßenbahn', { x: -4.2, y: 1.95, z: 2.8, scale: 0.85 });
+    w.hotspot({ id: 'tram', x: -4.2, z: 3.55, r: 1.3, label: 'alte Straßenbahn' });
+    w.poster(function (g, W, H) {
+      g.fillStyle = '#6a8cae'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#e8dcc0'; g.fillRect(0, H * 0.58, W, H * 0.42);
+      g.fillStyle = '#8B1E1E'; g.fillRect(W * 0.3, H * 0.4, W * 0.4, H * 0.22);
+      g.fillStyle = '#F2C230'; g.beginPath(); g.arc(W * 0.22, H * 0.22, 36, 0, Math.PI * 2); g.fill();
+    }, { x: 4.0, y: 1.7, z: 5.55, w: 1.5, h: 1.15 });
+    w.hotspot({ id: 'bild', x: 4.0, z: 2.55, r: 1.3, label: 'Gemälde' });
+    w.npc({ id: 'guide', x: 0, z: -3.75, name: 'Herr Otto', color: 0x4a4038, hair: 0xcccccc, facing: 0 });
+    KH.furn.plant(w, 6.15, 5.15);
+    KH.furn.plant(w, -6.15, 5.15);
+    KH.furn.bench(w, 0, 0.4);
+    KH.furn.clock(w, 0, 3.05, -5.82);
+    w.label('Heimatmuseum', { x: 0, y: 3.35, z: 0, scale: 1.55 });
+    w.pendant(-4.2, -2.5, 3.7);
+    w.pendant(4.2, -2.5, 3.7);
+    w.pendant(-4.2, 2.8, 3.7);
+    w.pendant(4.0, 3.2, 3.7);
   },
   tasks: [
     {

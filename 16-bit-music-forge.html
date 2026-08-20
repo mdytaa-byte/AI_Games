@@ -356,6 +356,30 @@
       padding: 0 4px;
       color: var(--gold-2);
     }
+
+    .sfx {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .chip {
+      border: 2px solid var(--border);
+      background: #140c28;
+      color: var(--ink);
+      padding: 6px 7px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-size: 10px;
+    }
+
+    .chip:hover { border-color: var(--cyan); color: var(--cyan); }
+
+    .song-title[contenteditable] { outline: none; cursor: text; }
+    .song-title:focus { box-shadow: inset 0 -3px 0 var(--gold); }
+
+    .library { display: grid; gap: 6px; }
   </style>
 </head>
 <body>
@@ -386,6 +410,8 @@
         <button class="btn" id="wavBtn" type="button">Export WAV</button>
         <button class="btn" id="jsonBtn" type="button">Save JSON</button>
         <button class="btn" id="copyBtn" type="button">Copy Player</button>
+        <button class="btn" id="linkBtn" type="button">Copy Link</button>
+        <button class="btn" id="undoBtn" type="button">Undo</button>
       </div>
     </header>
 
@@ -420,11 +446,14 @@
         <label class="field">Swing <span class="val" id="swingVal"></span>
           <input id="swing" type="range" min="0" max="40" step="1">
         </label>
-        <p class="help">Mood sets the arrangement recipe. Generate writes a new loop. Mutate keeps drums and harmony, rewrites the lead.</p>
+        <p class="help">Mood sets the arrangement recipe. Generate writes a new loop. Mutate keeps drums and harmony, rewrites the lead. Lock a mixer channel to keep it.</p>
+        <h2 style="margin-top:14px">Game SFX</h2>
+        <div class="sfx" id="sfxPad"></div>
+        <p class="help">One-shots for pickups, jumps, menus, and fanfares. Click to audition.</p>
       </aside>
 
       <main class="panel">
-        <div class="song-title" id="songTitle">AURORA PLAINS</div>
+        <div class="song-title" id="songTitle" contenteditable="true" spellcheck="false" title="Click to rename">AURORA PLAINS</div>
         <div class="meta" id="songMeta">C major · 132 BPM · 8 bars</div>
         <div class="viz-wrap">
           <canvas id="wave" width="900" height="92"></canvas>
@@ -441,7 +470,7 @@
         <div class="roll-wrap">
           <canvas id="pianoRoll" width="1024" height="420"></canvas>
         </div>
-        <p class="help">Click a cell to write or erase a note. Drag across the grid to paint. Drums rows are kick, snare, hat, open, tom. <kbd>Space</kbd> plays, <kbd>G</kbd> generates.</p>
+        <p class="help">Click empty cells to write notes, click a note to erase it, drag right on a note to lengthen it. <kbd>Space</kbd> plays, <kbd>G</kbd> generates, <kbd>Z</kbd> undoes.</p>
       </main>
 
       <aside class="panel">
@@ -465,6 +494,18 @@
         <label class="field">Master <span class="val" id="masterVal"></span>
           <input id="master" type="range" min="0" max="100" step="1">
         </label>
+        <label class="field">Vibrato <span class="val" id="vibVal"></span>
+          <input id="vibrato" type="range" min="0" max="40" step="1">
+        </label>
+        <h2 style="margin-top:14px">Cartridge Rack</h2>
+        <div class="library">
+          <select id="librarySelect"></select>
+          <div class="mini">
+            <button class="btn good" id="saveLibBtn" type="button">Save</button>
+            <button class="btn" id="loadLibBtn" type="button">Load</button>
+            <button class="btn" id="delLibBtn" type="button">Delete</button>
+          </div>
+        </div>
         <label class="field">Load JSON
           <input id="loadJson" type="file" accept="application/json,.json">
         </label>
@@ -505,6 +546,16 @@
       drums: "#f0c75e"
     };
     const WAVES = ["pulse12", "pulse25", "pulse50", "triangle", "detuned", "square"];
+    const SFX_KIT = [
+      { id: "coin", label: "Coin" },
+      { id: "jump", label: "Jump" },
+      { id: "hit", label: "Hit" },
+      { id: "select", label: "Select" },
+      { id: "heal", label: "Heal" },
+      { id: "power", label: "Power" },
+      { id: "fanfare", label: "Fanfare" },
+      { id: "lose", label: "Game Over" }
+    ];
     const MOODS = {
       overworld: {
         label: "Overworld",
@@ -619,6 +670,8 @@
       brightVal: $("brightVal"),
       master: $("master"),
       masterVal: $("masterVal"),
+      vibrato: $("vibrato"),
+      vibVal: $("vibVal"),
       title: $("songTitle"),
       meta: $("songMeta"),
       status: $("status"),
@@ -627,7 +680,9 @@
       play: $("playBtn"),
       toast: $("toast"),
       wave: $("wave"),
-      roll: $("pianoRoll")
+      roll: $("pianoRoll"),
+      sfx: $("sfxPad"),
+      library: $("librarySelect")
     };
 
     const state = {
@@ -643,7 +698,9 @@
       step: 0,
       nextTime: 0,
       paint: null,
-      raf: 0
+      raf: 0,
+      history: [],
+      sfxGain: null
     };
 
     function $(id) { return document.getElementById(id); }
@@ -716,8 +773,14 @@
       return (rng.pick(NAME_A) + " " + rng.pick(NAME_B) + " · " + MOODS[mood].label).toUpperCase();
     }
 
+    function clone(value) {
+      return typeof structuredClone === "function"
+        ? structuredClone(value)
+        : JSON.parse(JSON.stringify(value));
+    }
+
     function emptyChannel(wave, volume) {
-      return { mute: false, solo: false, volume, wave, notes: [] };
+      return { mute: false, solo: false, lock: false, volume, wave, notes: [] };
     }
 
     function generateSong(opts) {
@@ -758,6 +821,7 @@
         echoSync: Number(opts.echoSync || 0.5),
         brightness: opts.brightness != null ? Number(opts.brightness) : (energy > 70 ? 5200 : 3400),
         master: opts.master != null ? Number(opts.master) : 72,
+        vibrato: opts.vibrato != null ? Number(opts.vibrato) : (mood === "battle" || mood === "title" ? 16 : 10),
         channels: {
           lead: emptyChannel(energy > 75 ? "pulse12" : "pulse25", 0.78),
           harmony: emptyChannel("pulse50", 0.42),
@@ -773,10 +837,9 @@
       writeHarmony(song, chords, rng, energy);
       writeArp(song, chords, rng, energy, recipe.arp);
       if (opts.keep && opts.keepFrom) {
-        const clone = typeof structuredClone === "function"
-          ? structuredClone
-          : (value) => JSON.parse(JSON.stringify(value));
-        for (const ch of opts.keep) song.channels[ch] = clone(opts.keepFrom.channels[ch]);
+        for (const ch of opts.keep) {
+          if (opts.keepFrom.channels[ch]) song.channels[ch] = clone(opts.keepFrom.channels[ch]);
+        }
       }
       return song;
     }
@@ -955,7 +1018,7 @@
       return state.audio;
     }
 
-    function makeGraph(audio, song, destination) {
+    function makeGraph(audio, song, destination, opts = {}) {
       const ctx = audio.ctx;
       const master = ctx.createGain();
       const filter = ctx.createBiquadFilter();
@@ -982,13 +1045,19 @@
       }
       filter.connect(dry);
       dry.connect(comp);
-      delay.connect(feedback);
-      feedback.connect(delay);
-      delay.connect(wet);
-      wet.connect(comp);
+      if (!opts.simple) {
+        delay.connect(feedback);
+        feedback.connect(delay);
+        delay.connect(wet);
+        wet.connect(comp);
+      }
       comp.connect(master);
-      master.connect(analyser);
-      analyser.connect(destination || ctx.destination);
+      if (opts.simple) {
+        master.connect(destination || ctx.destination);
+      } else {
+        master.connect(analyser);
+        analyser.connect(destination || ctx.destination);
+      }
       applyMix(channels, master, filter, delay, feedback, wet, dry, song);
       return { master, filter, delay, feedback, wet, dry, analyser, channels, comp };
     }
@@ -1064,6 +1133,19 @@
           applyWave(osc, audio, wave);
           osc.frequency.setValueAtTime(freq, start);
           if (freq2) osc.frequency.exponentialRampToValueAtTime(freq2, start + dur * 0.7);
+          else if (spec.vib) {
+            const depth = freq * (clamp(finite(spec.vib, 0), 0, 40) / 100) * 0.045;
+            const end = start + dur;
+            let t = start + 0.06;
+            let up = true;
+            let hops = 0;
+            while (t < end && hops < 24) {
+              osc.frequency.linearRampToValueAtTime(up ? freq + depth : Math.max(20, freq - depth), t);
+              up = !up;
+              t += 0.08;
+              hops += 1;
+            }
+          }
           if (spec.detune && i === 1) osc.detune.value = finite(spec.detune, 0);
           osc.connect(gain);
           osc.start(start);
@@ -1100,6 +1182,40 @@
       }
     }
 
+    async function playSfx(id) {
+      const audio = ensureAudio();
+      if (audio.ctx.state === "suspended") await audio.ctx.resume();
+      if (!state.sfxGain) {
+        state.sfxGain = audio.ctx.createGain();
+        state.sfxGain.gain.value = 0.55;
+        state.sfxGain.connect(audio.ctx.destination);
+      }
+      const dest = state.sfxGain;
+      const t = audio.ctx.currentTime + 0.01;
+      const blip = (midi, when, dur, wave, amp) => startVoice(audio, dest, {
+        kind: "tone", wave: wave || "pulse25", freq: midiToFreq(midi), dur, vel: 0.95, amp: amp || 0.55, a: 0.004, d: 0.03, s: 0.35, r: 0.05
+      }, when);
+      if (id === "coin") {
+        blip(83, t, 0.07, "pulse25", 0.5);
+        blip(88, t + 0.07, 0.16, "pulse25", 0.55);
+      } else if (id === "jump") {
+        startVoice(audio, dest, { kind: "tone", wave: "triangle", freq: 180, freq2: 520, dur: 0.16, vel: 0.9, amp: 0.7, a: 0.004, d: 0.04, s: 0.25, r: 0.06 }, t);
+      } else if (id === "hit") {
+        startVoice(audio, dest, { kind: "noise", filter: "bandpass", freq: 1400, dur: 0.12, vel: 0.95, amp: 0.7, a: 0.001, d: 0.04, s: 0.15, r: 0.06 }, t);
+        startVoice(audio, dest, { kind: "tone", wave: "triangle", freq: 220, freq2: 70, dur: 0.14, vel: 0.9, amp: 0.55, a: 0.002, d: 0.04, s: 0.2, r: 0.05 }, t);
+      } else if (id === "select") {
+        blip(76, t, 0.05, "pulse12", 0.4);
+      } else if (id === "heal") {
+        [72, 76, 79, 84].forEach((midi, i) => blip(midi, t + i * 0.08, 0.12, "pulse50", 0.42));
+      } else if (id === "power") {
+        [60, 64, 67, 72, 76].forEach((midi, i) => blip(midi, t + i * 0.05, 0.1, "pulse12", 0.45));
+      } else if (id === "fanfare") {
+        [[72, 0], [76, 0.12], [79, 0.24], [84, 0.36]].forEach(([midi, off]) => blip(midi, t + off, off === 0.36 ? 0.35 : 0.14, "pulse25", 0.5));
+      } else if (id === "lose") {
+        [67, 63, 60, 55].forEach((midi, i) => blip(midi, t + i * 0.18, i === 3 ? 0.45 : 0.2, "triangle", 0.6));
+      }
+    }
+
     function playChannelNote(audio, dest, channel, note, song, when) {
       const stepDur = 60 / Math.max(40, finite(song.tempo, 120)) / 4;
       const dur = Math.max(0.03, finite(note.length, 1) * stepDur * 0.92);
@@ -1119,7 +1235,8 @@
         a: channel === "arp" ? 0.004 : 0.01,
         d: 0.05,
         s: channel === "bass" ? 0.8 : 0.45,
-        r: channel === "lead" ? 0.1 : 0.06
+        r: channel === "lead" ? 0.1 : 0.06,
+        vib: channel === "lead" ? finite(song.vibrato, 0) : channel === "arp" ? finite(song.vibrato, 0) * 0.35 : 0
       };
       startVoice(audio, dest, spec, when);
     }
@@ -1394,7 +1511,8 @@ window.BitForgePlay = async function BitForgePlay(song) {
         echo: Number(ui.echo.value),
         echoSync: Number(ui.echoSync.value),
         brightness: Number(ui.bright.value),
-        master: Number(ui.master.value)
+        master: Number(ui.master.value),
+        vibrato: Number(ui.vibrato.value)
       };
     }
 
@@ -1411,6 +1529,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
       ui.echoSync.value = String(song.echoSync);
       ui.bright.value = song.brightness;
       ui.master.value = song.master;
+      ui.vibrato.value = finite(song.vibrato, 10);
       syncLabels();
       highlightMood();
     }
@@ -1422,10 +1541,134 @@ window.BitForgePlay = async function BitForgePlay(song) {
       ui.echoVal.textContent = ui.echo.value + "%";
       ui.brightVal.textContent = Math.round(ui.bright.value / 100) / 10 + " kHz";
       ui.masterVal.textContent = ui.master.value + "%";
+      ui.vibVal.textContent = ui.vibrato.value + "%";
+    }
+
+    function normalizeSong(song) {
+      song.vibrato = finite(song.vibrato, 10);
+      for (const name of CHANNELS) {
+        if (!song.channels[name]) continue;
+        if (song.channels[name].lock == null) song.channels[name].lock = false;
+      }
+      return song;
+    }
+
+    function snapshot() {
+      if (!state.song) return;
+      state.history.push(clone(state.song));
+      if (state.history.length > 40) state.history.shift();
+    }
+
+    function undo() {
+      const prev = state.history.pop();
+      if (!prev) {
+        toast("Nothing to undo");
+        return;
+      }
+      setSong(normalizeSong(prev), { skipSeed: false });
+      if (state.playing) play();
+      setStatus("Undid last change.");
+    }
+
+    function getLibrary() {
+      try { return JSON.parse(localStorage.getItem("bitforge-library") || "[]"); }
+      catch (err) { return []; }
+    }
+
+    function setLibrary(list) {
+      localStorage.setItem("bitforge-library", JSON.stringify(list.slice(0, 24)));
+    }
+
+    function renderLibrary() {
+      const list = getLibrary();
+      const current = ui.library.value;
+      ui.library.innerHTML = list.length
+        ? list.map((item) => `<option value="${item.id}">${item.title}</option>`).join("")
+        : '<option value="">(empty rack)</option>';
+      if (current && list.some((item) => item.id === current)) ui.library.value = current;
+    }
+
+    function saveToLibrary() {
+      if (!state.song) return;
+      const list = getLibrary();
+      const id = Date.now().toString(36);
+      list.unshift({ id, title: state.song.title, savedAt: Date.now(), song: clone(state.song) });
+      setLibrary(list);
+      renderLibrary();
+      ui.library.value = id;
+      toast("Saved to cartridge rack");
+    }
+
+    function loadFromLibrary() {
+      const item = getLibrary().find((entry) => entry.id === ui.library.value);
+      if (!item) {
+        toast("Rack is empty");
+        return;
+      }
+      snapshot();
+      setSong(normalizeSong(clone(item.song)));
+      if (state.playing) play();
+      setStatus("Loaded " + item.title);
+    }
+
+    function deleteFromLibrary() {
+      const id = ui.library.value;
+      const list = getLibrary().filter((entry) => entry.id !== id);
+      setLibrary(list);
+      renderLibrary();
+      toast("Removed from rack");
+    }
+
+    function encodeSong(song) {
+      return btoa(unescape(encodeURIComponent(JSON.stringify(song))))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/g, "");
+    }
+
+    function decodeSong(token) {
+      const pad = token.length % 4 === 0 ? "" : "=".repeat(4 - (token.length % 4));
+      const b64 = token.replace(/-/g, "+").replace(/_/g, "/") + pad;
+      return JSON.parse(decodeURIComponent(escape(atob(b64))));
+    }
+
+    function recipeToken(song) {
+      return [song.mood, song.seed, song.key, song.scale, song.tempo, song.bars, song.energy, song.swing].join("~");
+    }
+
+    function songFromRecipe(token) {
+      const [mood, seed, key, scale, tempo, bars, energy, swing] = token.split("~");
+      return generateSong({ mood, seed, key: Number(key), scale, tempo: Number(tempo), bars: Number(bars), energy: Number(energy), swing: Number(swing) });
+    }
+
+    async function copyLink() {
+      const encoded = encodeSong(state.song);
+      const useRecipe = encoded.length > 7000;
+      const hash = useRecipe ? "r=" + encodeURIComponent(recipeToken(state.song)) : "s=" + encoded;
+      const url = `${location.origin}${location.pathname}${location.search}#${hash}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast(useRecipe ? "Link copied (recipe)" : "Link copied");
+      } catch (err) {
+        toast("Copy failed — URL is in the address bar");
+      }
+      history.replaceState(null, "", "#" + hash);
+    }
+
+    function loadFromHash() {
+      const raw = location.hash.replace(/^#/, "");
+      if (!raw) return null;
+      try {
+        if (raw.startsWith("s=")) return normalizeSong(decodeSong(raw.slice(2)));
+        if (raw.startsWith("r=")) return songFromRecipe(decodeURIComponent(raw.slice(2)));
+      } catch (err) {
+        return null;
+      }
+      return null;
     }
 
     function setSong(song, opts = {}) {
-      state.song = song;
+      state.song = normalizeSong(song);
       if (state.viewBar >= song.bars) state.viewBar = 0;
       if (!opts.keepForm) applySongToForm(song, opts.skipSeed);
       ui.title.textContent = song.title;
@@ -1436,18 +1679,26 @@ window.BitForgePlay = async function BitForgePlay(song) {
     }
 
     function generate(mutate) {
+      snapshot();
       const form = currentForm();
       if (!form.seed) form.seed = String(Math.floor(Math.random() * 1e9));
       if (!mutate) ui.seed.value = form.seed;
       else form.seed = form.seed + ":m" + Math.floor(Math.random() * 9999);
-      const song = generateSong(mutate ? {
+      const locked = state.song
+        ? CHANNELS.filter((name) => state.song.channels[name] && state.song.channels[name].lock)
+        : [];
+      const keep = mutate ? [...new Set(["drums", "bass", "harmony"].concat(locked))] : locked;
+      const song = generateSong(keep.length ? {
         ...form,
-        keep: ["drums", "bass", "harmony"],
+        keep,
         keepFrom: state.song
       } : form);
       if (mutate) {
         song.title = state.song.title.replace(/ · .+$/, "") + " · VARIANT";
         song.seed = ui.seed.value.trim() || song.seed;
+      }
+      if (state.song) {
+        for (const name of CHANNELS) song.channels[name].lock = Boolean(state.song.channels[name] && state.song.channels[name].lock);
       }
       setSong(song);
       if (state.playing) play();
@@ -1490,6 +1741,18 @@ window.BitForgePlay = async function BitForgePlay(song) {
       }
     }
 
+    function renderSfx() {
+      ui.sfx.innerHTML = "";
+      for (const item of SFX_KIT) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chip";
+        btn.textContent = item.label;
+        btn.addEventListener("click", () => playSfx(item.id).catch((err) => setStatus(String(err.message || err))));
+        ui.sfx.appendChild(btn);
+      }
+    }
+
     function renderSelects() {
       ui.key.innerHTML = NOTE_NAMES.map((n, i) => `<option value="${i}">${n}</option>`).join("");
       ui.scale.innerHTML = Object.entries(SCALE_LABELS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
@@ -1523,6 +1786,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
             <span class="mini">
               <button class="btn mute ${ch.mute ? "on" : ""}" type="button">Mute</button>
               <button class="btn solo ${ch.solo ? "on" : ""}" type="button">Solo</button>
+              <button class="btn lock ${ch.lock ? "on" : ""}" type="button">Lock</button>
             </span>
           </div>
           <label class="field">Volume <span class="val">${Math.round(ch.volume * 100)}%</span>
@@ -1534,6 +1798,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
         `;
         wrap.querySelector(".mute").addEventListener("click", () => { ch.mute = !ch.mute; renderMixer(); applyLiveMix(); });
         wrap.querySelector(".solo").addEventListener("click", () => { ch.solo = !ch.solo; renderMixer(); applyLiveMix(); });
+        wrap.querySelector(".lock").addEventListener("click", () => { ch.lock = !ch.lock; renderMixer(); });
         wrap.querySelector(".vol").addEventListener("input", (e) => {
           ch.volume = Number(e.target.value) / 100;
           wrap.querySelector(".val").textContent = e.target.value + "%";
@@ -1644,6 +1909,11 @@ window.BitForgePlay = async function BitForgePlay(song) {
       return { step: state.viewBar * 16 + col, midi: pitchAtRow(layout, row), row, col };
     }
 
+    function coveringNote(step, midi) {
+      const ch = state.song.channels[state.editChannel];
+      return ch.notes.find((n) => n.midi === midi && step >= n.step && step < n.step + n.length) || null;
+    }
+
     function toggleNote(step, midi, mode) {
       const ch = state.song.channels[state.editChannel];
       const idx = ch.notes.findIndex((n) => n.step === step && n.midi === midi);
@@ -1651,7 +1921,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
         ch.notes.splice(idx, 1);
         return "remove";
       }
-      if (mode !== "remove" && idx < 0) {
+      if (mode !== "remove" && idx < 0 && !coveringNote(step, midi)) {
         addNote(ch, step, 1, midi, 0.85);
         if (state.audio && state.audio.ctx.state === "running" && state.graph) {
           playChannelNote(state.audio, state.graph.channels[state.editChannel].gain, state.editChannel, { step, length: 1, midi, vel: 0.85 }, state.song, state.audio.ctx.currentTime);
@@ -1712,17 +1982,41 @@ window.BitForgePlay = async function BitForgePlay(song) {
       ui.roll.addEventListener("mousedown", (event) => {
         const cell = cellFromEvent(event);
         if (!cell) return;
-        state.paint = toggleNote(cell.step, cell.midi);
+        snapshot();
+        const existing = coveringNote(cell.step, cell.midi);
+        if (existing) {
+          state.paint = { mode: "resize", note: existing, origin: cell.step, moved: false };
+        } else {
+          toggleNote(cell.step, cell.midi, "add");
+          state.paint = { mode: "add" };
+        }
         drawRoll();
       });
       ui.roll.addEventListener("mousemove", (event) => {
         if (!state.paint) return;
         const cell = cellFromEvent(event);
         if (!cell) return;
-        toggleNote(cell.step, cell.midi, state.paint);
+        if (state.paint.mode === "resize") {
+          const note = state.paint.note;
+          const maxLen = state.song.bars * 16 - note.step;
+          const nextLen = clamp(cell.step - note.step + 1, 1, maxLen);
+          if (nextLen !== note.length) state.paint.moved = true;
+          note.length = nextLen;
+        } else {
+          toggleNote(cell.step, cell.midi, state.paint.mode);
+        }
         drawRoll();
       });
-      window.addEventListener("mouseup", () => { state.paint = null; });
+      window.addEventListener("mouseup", () => {
+        if (state.paint && state.paint.mode === "resize" && !state.paint.moved) {
+          const note = state.paint.note;
+          const ch = state.song.channels[state.editChannel];
+          const idx = ch.notes.indexOf(note);
+          if (idx >= 0) ch.notes.splice(idx, 1);
+          drawRoll();
+        }
+        state.paint = null;
+      });
     }
 
     function loadJsonFile(file) {
@@ -1731,7 +2025,8 @@ window.BitForgePlay = async function BitForgePlay(song) {
         try {
           const song = JSON.parse(reader.result);
           if (!song.channels || !song.tempo) throw new Error("Not a Music Forge song");
-          setSong(song);
+          snapshot();
+          setSong(normalizeSong(song));
           setStatus("Loaded " + song.title);
         } catch (err) {
           setStatus("Could not load that JSON file.");
@@ -1748,6 +2043,11 @@ window.BitForgePlay = async function BitForgePlay(song) {
       $("wavBtn").addEventListener("click", () => exportWav().catch((err) => setStatus(String(err.message || err))));
       $("jsonBtn").addEventListener("click", saveJson);
       $("copyBtn").addEventListener("click", copyPlayer);
+      $("linkBtn").addEventListener("click", copyLink);
+      $("undoBtn").addEventListener("click", undo);
+      $("saveLibBtn").addEventListener("click", saveToLibrary);
+      $("loadLibBtn").addEventListener("click", loadFromLibrary);
+      $("delLibBtn").addEventListener("click", deleteFromLibrary);
       $("prevBar").addEventListener("click", () => {
         state.viewBar = (state.viewBar - 1 + state.song.bars) % state.song.bars;
         drawRoll();
@@ -1756,7 +2056,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
         state.viewBar = (state.viewBar + 1) % state.song.bars;
         drawRoll();
       });
-      ["tempo", "energy", "swing", "echo", "bright", "master"].forEach((id) => {
+      ["tempo", "energy", "swing", "echo", "bright", "master", "vibrato"].forEach((id) => {
         $(id).addEventListener("input", () => {
           if (!state.song) return;
           state.song.tempo = Number(ui.tempo.value);
@@ -1765,6 +2065,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
           state.song.echo = Number(ui.echo.value);
           state.song.brightness = Number(ui.bright.value);
           state.song.master = Number(ui.master.value);
+          state.song.vibrato = Number(ui.vibrato.value);
           syncLabels();
           ui.meta.textContent = NOTE_NAMES[state.song.key] + " " + SCALE_LABELS[state.song.scale] + " · " + state.song.tempo + " BPM · " + state.song.bars + " bars · seed " + state.song.seed;
           applyLiveMix();
@@ -1775,6 +2076,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
         applyLiveMix();
       });
       ui.key.addEventListener("change", () => {
+        snapshot();
         const next = Number(ui.key.value);
         transposeSong(state.song, state.song.key, next);
         setSong(state.song, { keepForm: true });
@@ -1786,14 +2088,31 @@ window.BitForgePlay = async function BitForgePlay(song) {
         const file = e.target.files && e.target.files[0];
         if (file) loadJsonFile(file);
       });
+      ui.title.addEventListener("focus", () => snapshot());
+      ui.title.addEventListener("blur", () => {
+        const next = ui.title.textContent.trim().toUpperCase() || state.song.title;
+        state.song.title = next;
+        ui.title.textContent = next;
+        try { localStorage.setItem("bitforge-song", JSON.stringify(state.song)); } catch (err) { /* ignore */ }
+      });
+      ui.title.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          ui.title.blur();
+        }
+      });
       window.addEventListener("keydown", (event) => {
         const tag = (event.target && event.target.tagName) || "";
-        if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+        if (tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || (event.target && event.target.isContentEditable)) return;
         if (event.code === "Space") {
           event.preventDefault();
           state.playing ? stopPlayback(true) : play();
         } else if (event.key === "g" || event.key === "G") generate(false);
         else if (event.key === "m" || event.key === "M") generate(true);
+        else if (event.key === "z" || event.key === "Z") {
+          event.preventDefault();
+          undo();
+        }
       });
       bindRoll();
     }
@@ -1802,16 +2121,22 @@ window.BitForgePlay = async function BitForgePlay(song) {
       renderMoods();
       renderSelects();
       renderTabs();
+      renderSfx();
+      renderLibrary();
       ui.echo.value = 28;
       ui.bright.value = 3400;
       ui.master.value = 72;
       ui.swing.value = 0;
-      let loaded = null;
-      try { loaded = JSON.parse(localStorage.getItem("bitforge-song") || "null"); } catch (err) { loaded = null; }
+      ui.vibrato.value = 10;
+      const fromHash = loadFromHash();
+      let loaded = fromHash;
+      if (!loaded) {
+        try { loaded = JSON.parse(localStorage.getItem("bitforge-song") || "null"); } catch (err) { loaded = null; }
+      }
       if (loaded && loaded.channels) {
         ui.seed.value = loaded.seed;
-        setSong(loaded);
-        setStatus("Restored last session. Press Play.");
+        setSong(normalizeSong(loaded));
+        setStatus(fromHash ? "Loaded shared cartridge. Press Play." : "Restored last session. Press Play.");
       } else {
         ui.seed.value = String(Math.floor(Math.random() * 1e9));
         ui.tempo.value = MOODS.overworld.tempo;
@@ -1831,6 +2156,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
     }
 
     async function runSelfTest() {
+      document.title = "SELFTEST_RUNNING";
       const report = { ok: true, checks: [] };
       const check = (name, cond, extra) => {
         report.checks.push({ name, ok: Boolean(cond), extra: extra == null ? undefined : extra });
@@ -1852,6 +2178,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
         check(mood + ":drums", song.channels.drums.notes.length >= 8, song.channels.drums.notes.length);
         check(mood + ":loop", songDuration(song) > 2 && Number.isFinite(songDuration(song)), songDuration(song));
       }
+      document.title = "SELFTEST_MOODS";
       const a = generateSong({ mood: "overworld", seed: "same", bars: 8, tempo: 120, energy: 50, key: 0, scale: "major" });
       const b = generateSong({ mood: "overworld", seed: "same", bars: 8, tempo: 120, energy: 50, key: 0, scale: "major" });
       check("seed-stable", JSON.stringify(a.channels) === JSON.stringify(b.channels));
@@ -1864,12 +2191,13 @@ window.BitForgePlay = async function BitForgePlay(song) {
         const basicBuf = await basic.startRendering();
         check("offline-basic", basicBuf.length === 8000, basicBuf.length);
 
-        const song = generateSong({ mood: "battle", seed: "probe", bars: 4, tempo: 160, energy: 90, swing: 0, key: 0, scale: "minor", echo: 20, echoSync: 0.5, brightness: 4000, master: 70 });
+        const song = generateSong({ mood: "battle", seed: "probe", bars: 4, tempo: 160, energy: 90, swing: 0, key: 0, scale: "minor", echo: 20, echoSync: 0.5, brightness: 4000, master: 70, vibrato: 0 });
         check("song-fields", [song.tempo, song.echo, song.echoSync, song.brightness, song.master].every(Number.isFinite), {
           tempo: song.tempo, echo: song.echo, echoSync: song.echoSync, brightness: song.brightness, master: song.master
         });
+        document.title = "SELFTEST_RENDERING";
         const sr = 22050;
-        const seconds = Math.min(1.5, songDuration(song));
+        const seconds = 0.6;
         const offline = new OfflineAudioContext(1, Math.ceil(sr * seconds), sr);
         const audio = {
           ctx: offline,
@@ -1880,9 +2208,9 @@ window.BitForgePlay = async function BitForgePlay(song) {
           },
           noise: noiseBuffer(offline)
         };
-        const graph = makeGraph(audio, song, offline.destination);
+        const graph = makeGraph(audio, song, offline.destination, { simple: true });
         check("graph", Boolean(graph && graph.master));
-        const total = song.bars * 16;
+        const total = Math.min(song.bars * 16, 16);
         for (let step = 0; step < total; step++) {
           const t = stepTime(song, step);
           if (t >= seconds - 0.05) break;
@@ -1903,6 +2231,15 @@ window.BitForgePlay = async function BitForgePlay(song) {
       } catch (err) {
         check("render-peak", false, String(err && err.message ? err.message : err));
       }
+      try {
+        const original = generateSong({ mood: "town", seed: "share-test", bars: 4, tempo: 110, energy: 40, key: 2, scale: "dorian", swing: 4 });
+        const round = decodeSong(encodeSong(original));
+        check("share-roundtrip", round.seed === original.seed && round.channels.lead.notes.length === original.channels.lead.notes.length);
+        check("sfx-kit", SFX_KIT.length === 8 && SFX_KIT.every((item) => item.id && item.label));
+        check("vibrato-field", Number.isFinite(original.vibrato));
+      } catch (err) {
+        check("share-roundtrip", false, String(err && err.message ? err.message : err));
+      }
       document.title = report.ok ? "SELFTEST_PASS" : "SELFTEST_FAIL";
       document.body.dataset.selftest = JSON.stringify(report);
       console.log("SELFTEST", JSON.stringify(report));
@@ -1913,12 +2250,22 @@ window.BitForgePlay = async function BitForgePlay(song) {
     window.BitForge = {
       generateSong,
       runSelfTest,
+      playSfx,
+      encodeSong,
+      decodeSong,
       get song() { return state.song; },
       play,
       stop: () => stopPlayback(true)
     };
 
-    boot();
+    try {
+      boot();
+    } catch (err) {
+      document.title = "BOOT_ERR";
+      const status = document.getElementById("status");
+      if (status) status.textContent = String(err && err.message ? err.message : err);
+      console.error(err);
+    }
   })();
   </script>
 </body>

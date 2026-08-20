@@ -436,10 +436,8 @@ function resolveGarment(cfg){
 }
 
 function resolveHair(cfg){
-  if (cfg.hair && cfg.hair !== 'custom' && HAIR_PRESETS[cfg.hair]) {
-    return Object.assign({}, HAIR_PRESETS[cfg.hair]);
-  }
-  const base = Object.assign({}, HAIR_PRESETS.crop);
+  const named = cfg.hair && cfg.hair !== 'custom' && HAIR_PRESETS[cfg.hair];
+  const base = Object.assign({}, named ? HAIR_PRESETS[cfg.hair] : HAIR_PRESETS.crop);
   if (cfg.hairTexture) base.texture = cfg.hairTexture;
   if (cfg.hairPart) base.part = cfg.hairPart;
   if (cfg.hairFringe) base.fringe = cfg.hairFringe;
@@ -507,10 +505,18 @@ function describeCharacter(cfg){
   bits.push(ageWord + (cfg.base === 'masculine' ? ' man' : cfg.base === 'feminine' ? ' woman' : ' person'));
   if (cfg.role) bits[0] = cfg.role + ', ' + bits[0];
   if (cfg.name && cfg.name !== 'Unnamed') bits.unshift(cfg.name);
-  const hairBit = hp.back === 'bald' ? 'bald' :
-    ((hp.texture === 'straight' ? '' : hp.texture + ' ') +
-     (hp.back === 'loose' ? 'short' : hp.back) + ' hair').replace(/\s+/g, ' ').trim();
-  bits.push(hairBit + (hp.back === 'bald' ? '' : ' in a ' + colorWord(cfg.hairColor) + ' colour'));
+  let hairBit;
+  if (hp.back === 'bald' && hp.fringe === 'none') {
+    hairBit = 'bald';
+  } else {
+    const hbits = [];
+    if (hp.texture && hp.texture !== 'straight') hbits.push(hp.texture);
+    if (hp.part && hp.part !== 'none') hbits.push(hp.part + ' part');
+    if (hp.fringe && hp.fringe !== 'none') hbits.push(hp.fringe + ' fringe');
+    hbits.push(hp.back === 'bald' ? 'bald crown' : (hp.back === 'loose' ? 'short' : hp.back) + ' hair');
+    hairBit = hbits.join(', ') + ' in a ' + colorWord(cfg.hairColor) + ' colour';
+  }
+  bits.push(hairBit);
   const clothes = [];
   if (cfg.baseTop && cfg.baseTop !== 'none') clothes.push(cfg.baseTop.replace('buttonup', 'button-up'));
   if (cfg.outerwear && cfg.outerwear !== 'none') clothes.push(cfg.outerwear);
@@ -1647,13 +1653,20 @@ function createCharacter(input){
   function hairShell(o){
     const seg = o.seg || Q.hairSeg || 28, rows = o.rows || 12, v0 = o.v0 || 0;
     const out = o.out, inn = o.inn || 1.004;
+    const a0 = o.a0 !== undefined ? o.a0 : 0;
+    const aSpan = o.aSpan !== undefined ? o.aSpan : Math.PI * 2;
     const pos = [], idx = [], grid = [];
     const ring = (v, scale) => {
       const row = [];
       for (let i = 0; i <= seg; i++){
-        const a = i / seg * Math.PI * 2, th = v * thetaAt(a, scale, o);
+        const a = a0 + i / seg * aSpan, th = v * thetaAt(a, scale, o);
         let sc = scale;
         if (o.wave) sc *= 1 + o.wave * .5 * (1 + Math.sin(a * 7) * Math.sin(th * 5.5));
+        if (o.partA !== undefined){
+          let d = Math.abs(Math.atan2(Math.sin(a - o.partA), Math.cos(a - o.partA)));
+          const w = o.partW || .16;
+          if (d < w) sc *= 1 - (o.partD || .08) * (1 - d / w) * v;
+        }
         const st = Math.sin(th), ct = Math.cos(th);
         const e = 1 - (HS.sq || 0) * .45, ca = Math.cos(a), sa = Math.sin(a);
         const qx = Math.sign(ca) * Math.pow(Math.abs(ca), e);
@@ -1676,123 +1689,288 @@ function createCharacter(input){
     return g;
   }
 
-  const cap = (out, wave, back) => {
-    const m = new THREE.Mesh(hairShell({ out: out * vol, wave, back }), hairMat);
+  const cap = (out, wave, back, extra) => {
+    const m = new THREE.Mesh(hairShell(Object.assign({ out: out * vol, wave, back }, extra || {})), hairMat);
     m.castShadow = true; hair.add(m); return m;
   };
   const lump = (rad, x, y, z, sx, sy, sz) => {
-    const m = new THREE.Mesh(new THREE.SphereGeometry(rad, 11, 8), hairMat);
+    const m = new THREE.Mesh(new THREE.SphereGeometry(rad, 10, 8), hairMat);
     m.position.set(x, y, z); m.scale.set(sx || 1, sy || 1, sz || 1);
-    m.castShadow = true; hair.add(m); return m;
-  };
-  // back-half tube, so a fall of hair never wraps across the face
-  const fallTube = (rTop, rBot, h, y, z, tilt) => {
-    const m = new THREE.Mesh(
-      new THREE.CylinderGeometry(rTop, rBot, h, 18, 1, true, Math.PI / 2, Math.PI), hairMat);
-    m.position.set(0, y, z); m.rotation.x = tilt || 0; m.scale.z = .92;
-    m.castShadow = true; hair.add(m); return m;
-  };
-  const tail = (rTop, rBot, h, x, y, z, rx, rz) => {
-    const m = new THREE.Mesh(new THREE.CylinderGeometry(rTop, rBot, h, 12), hairMat);
-    m.position.set(x, y, z); m.rotation.set(rx || 0, 0, rz || 0);
     m.castShadow = true; hair.add(m); return m;
   };
 
   const hp = resolveHair(cfg);
-  const S = hp.back === 'bald' && hp.fringe === 'none' ? 'bald' : (cfg.hair || 'crop');
-  const OUT = 1.055;
-  const waveAmt = ({ straight:0, wavy:.04, curly:.085, coily:.12, spiky:0 }[hp.texture] || 0);
-  if (hp.back !== 'bald'){
-    if (hp.back === 'mohawk'){
-      cap(1.012);
-      const ridgeOut = 1.012 * vol;
-      for (let i = 0; i < 8; i++){
-        const t = i / 7;
-        const th = THREE.MathUtils.lerp(thetaAt(Math.PI / 2, ridgeOut) * .70, -1.45, t);
-        const h = hry * (.5 + .38 * Math.sin(t * Math.PI)) * vol;
-        const sp = new THREE.Mesh(new THREE.ConeGeometry(hr * .13 * vol, h, 6), hairMat);
-        const ny = Math.cos(th), nz = Math.sin(th);
-        sp.position.set(0, ny * hry * ridgeOut + ny * h * .45, nz * hrz * ridgeOut + nz * h * .45);
-        sp.rotation.x = th; sp.castShadow = true; hair.add(sp);
-      }
-    } else if (hp.texture === 'curly' || hp.texture === 'coily'){
-      cap(1.15, waveAmt, -.48);
-      const out = 1.15 * vol;
-      const nCurl = hp.texture === 'coily' ? 22 : 16;
-      for (let i = 0; i < nCurl; i++){
-        const a = i / nCurl * Math.PI * 2 + .2;
-        const th = thetaAt(a, out, { back: -.48 }) * (.34 + .52 * ((i * 7) % 5) / 4);
-        const rad = hr * (hp.texture === 'coily' ? .16 : .20) * vol;
-        clampToLine(lump(rad, Math.sin(th) * Math.cos(a) * hr * out,
-                              Math.cos(th) * hry * out,
-                              Math.sin(th) * Math.sin(a) * hrz * out), rad, { back: -.48 });
-      }
-    } else {
-      cap(OUT, waveAmt, (hp.back === 'long' || hp.back === 'braid') ? -.52 : -.42);
-    }
+  const tex = hp.texture || 'straight';
+  const OUT = (tex === 'curly' || tex === 'coily') ? 1.12 : 1.055;
+  const waveAmt = ({ straight:0, wavy:.06, curly:.04, coily:.03, spiky:0 }[tex] || 0);
+  const bald = hp.back === 'bald';
+  const mohawk = hp.back === 'mohawk';
+  const partA = hp.part === 'center' ? Math.PI / 2
+    : hp.part === 'left' ? Math.PI / 2 - .40
+    : hp.part === 'right' ? Math.PI / 2 + .40
+    : undefined;
+  const napeK = hp.back === 'long' || hp.back === 'braid' ? (-.50 - .10 * len)
+    : hp.back === 'loose' ? (-.42 - .06 * Math.max(0, len - 1))
+    : -.42;
+  const partOpts = partA === undefined ? {} : { partA, partW: .18, partD: .09 };
+  const nLock = Math.max(4, Math.round((Q.hairSeg || 28) / 5));
+  const tubeOk = typeof THREE.CatmullRomCurve3 === 'function' && typeof THREE.TubeGeometry === 'function';
 
-    if (hp.fringe === 'straight' || hp.fringe === 'curtain'){
-      const out = OUT * vol;
-      const n = hp.fringe === 'curtain' ? 6 : 5;
-      for (let i = 0; i < n; i++){
-        const a = Math.PI / 2 + (i - (n - 1) / 2) * (hp.fringe === 'curtain' ? .28 : .33);
-        const th = thetaAt(a, out);
-        const rad = hr * .19, halfY = rad * .74;
-        const m = lump(rad, Math.sin(th) * Math.cos(a) * hr * out * 1.01,
-                            Math.cos(th) * hry * out,
-                            Math.sin(th) * Math.sin(a) * hrz * out * 1.01, 1.3, .74, .95);
-        clampToLine(m, halfY);
+  const onScalp = (a, t, scale, o) => {
+    const th = Math.max(.02, t) * thetaAt(a, scale, o);
+    const st = Math.sin(th), ct = Math.cos(th);
+    const e = 1 - (HS.sq || 0) * .45, ca = Math.cos(a), sa = Math.sin(a);
+    const qx = Math.sign(ca) * Math.pow(Math.abs(ca), e);
+    const qz = Math.sign(sa) * Math.pow(Math.abs(sa), e);
+    return V(st * qx * hr * scale, ct * hry * scale, st * qz * hrz * scale);
+  };
+  const scalpN = (a, t, scale, o) => {
+    const p = onScalp(a, t, scale, o);
+    const n = new THREE.Vector3().crossVectors(
+      onScalp(a + .03, t, scale, o).sub(p.clone()),
+      onScalp(a, Math.min(1, t + .04), scale, o).sub(p.clone())).normalize();
+    if (n.dot(p) < 0) n.negate();
+    return { pos: p, normal: n };
+  };
+  const pathPoints = (p0, p2, kind, phase) => {
+    const dir = p2.clone().sub(p0);
+    const ln = dir.length();
+    if (ln < 1e-4) return [p0.clone(), p2.clone()];
+    const axis = dir.clone().normalize();
+    const ref = Math.abs(axis.y) < .9 ? V(0, 1, 0) : V(1, 0, 0);
+    const s = new THREE.Vector3().crossVectors(ref, axis).normalize();
+    const f = new THREE.Vector3().crossVectors(axis, s).normalize();
+    const curly = kind === 'curly' || kind === 'coily';
+    const turns = kind === 'coily' ? 3.4 : kind === 'curly' ? 2.1 : kind === 'wavy' ? 1.2 : 0;
+    const amp = curly ? ln * (kind === 'coily' ? .16 : .12) : kind === 'wavy' ? ln * .11 : 0;
+    const n = Math.max(6, Math.round((Q.hairSeg || 28) / 3) + (curly ? 5 : 0));
+    const pts = [];
+    for (let i = 0; i <= n; i++){
+      const t = i / n;
+      const p = p0.clone().addScaledVector(axis, t * ln);
+      p.y -= t * t * ln * .07;
+      if (turns){
+        const ang = t * turns * Math.PI * 2 + (phase || 0);
+        const fade = Math.sin(Math.max(.02, t) * Math.PI);
+        p.addScaledVector(s, Math.cos(ang) * amp * fade);
+        p.addScaledVector(f, Math.sin(ang) * amp * fade);
       }
+      if (p.z > hrz * .42) p.y = Math.max(p.y, SAFE * hry + hr * .012);
+      pts.push(p);
     }
-    if (hp.fringe === 'side' || hp.part === 'left' || hp.part === 'right'){
-      const dir = hp.part === 'right' ? 1 : -1;
-      const sweep = lump(hr * .55, dir * hr * .28, hry * .80, hrz * .16, 1.15, .56, 1.0);
-      sweep.rotation.z = -.38 * dir;
-      clampToLine(sweep, hr * .55 * .56);
+    return pts;
+  };
+  const addStrand = (p0, p2, radius, kind, phase) => {
+    const pts = pathPoints(p0, p2, kind || tex, phase);
+    let mesh;
+    if (tubeOk && pts.length > 2){
+      mesh = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), pts.length, radius, 5, false), hairMat);
+    } else {
+      const dir = p2.clone().sub(p0);
+      const h = Math.max(dir.length(), 1e-4);
+      mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius * .62, h, 6), hairMat);
+      mesh.position.copy(p0).addScaledVector(dir, .5);
+      mesh.quaternion.setFromUnitVectors(V(0, 1, 0), dir.clone().normalize());
     }
-    if (hp.part === 'center'){
-      lump(hr * .22, 0, hry * .92, hrz * .10, .6, .4, 1);
-    }
-    if (hp.back === 'long'){
-      const h = hry * 1.55 * len, top = -hry * .10;
-      fallTube(hr * 1.00, hr * 1.06, h, top - h / 2, -hrz * .06);
-      fallTube(hr * 1.06, hr * .30, hry * .34, top - h - hry * .17, -hrz * .06);
-    }
-    if (hp.back === 'braid'){
-      const n = Math.max(3, Math.round(6 * len));
-      for (let i = 0; i < n; i++){
-        const t = i / (n - 1 || 1);
-        lump(hr * (.27 - .11 * t), 0, -hry * (.20 + 1.25 * len * t), -hrz * (.74 + .10 * t),
-             .95, .8, .95);
+    mesh.castShadow = true; hair.add(mesh); return mesh;
+  };
+  const addCoil = (a, t, scale, o) => {
+    const sn = scalpN(a, t, scale, o);
+    const r = hr * (tex === 'coily' ? .055 : .078) * vol;
+    const m = new THREE.Mesh(new THREE.TorusGeometry(r, r * .42, 6, 10), hairMat);
+    m.position.copy(sn.pos).addScaledVector(sn.normal, r * .55);
+    m.quaternion.setFromUnitVectors(V(0, 0, 1), sn.normal);
+    m.castShadow = true; hair.add(m); return m;
+  };
+  const addSpike = (a, t, scale, o, hMul) => {
+    const sn = scalpN(a, t, scale, o);
+    const h = hry * (.38 + .22 * (hMul || 1)) * vol;
+    const sp = new THREE.Mesh(new THREE.ConeGeometry(hr * .11 * vol, h, 6), hairMat);
+    sp.position.copy(sn.pos).addScaledVector(sn.normal, h * .45);
+    sp.quaternion.setFromUnitVectors(V(0, 1, 0), sn.normal);
+    sp.castShadow = true; hair.add(sp); return sp;
+  };
+  const addBraid = (p0, p2, rad) => {
+    const dir = p2.clone().sub(p0);
+    const ln = dir.length();
+    const axis = dir.clone().normalize();
+    const ref = Math.abs(axis.y) < .9 ? V(0, 1, 0) : V(1, 0, 0);
+    const s = new THREE.Vector3().crossVectors(ref, axis).normalize();
+    const f = new THREE.Vector3().crossVectors(axis, s).normalize();
+    const turns = 4.2 * Math.max(.75, ln / (hry * 1.15));
+    const n = Math.max(10, Math.round(turns * 6));
+    for (let k = 0; k < 3; k++){
+      const pts = [];
+      for (let i = 0; i <= n; i++){
+        const t = i / n;
+        const ang = t * turns * Math.PI * 2 + k * Math.PI * 2 / 3;
+        const spread = rad * 1.12 * (1 - t * .42);
+        const p = p0.clone().addScaledVector(axis, t * ln);
+        p.addScaledVector(s, Math.cos(ang) * spread);
+        p.addScaledVector(f, Math.sin(ang) * spread);
+        pts.push(p);
       }
+      if (!tubeOk) continue;
+      const m = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), n, rad * .52, 5, false), hairMat);
+      m.castShadow = true; hair.add(m);
     }
-    if (hp.back === 'ponytail'){
-      lump(hr * .27, 0, hry * .22, -hrz * .92);
-      tail(hr * .23, hr * .07, hry * 1.25 * len, 0,
-           hry * .22 - hry * .62 * len, -hrz * 1.02 - hrz * .16 * len, -.34);
+    if (!tubeOk){
+      const h = Math.max(ln, 1e-4);
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad * .45, h, 8), hairMat);
+      m.position.copy(p0).addScaledVector(dir, .5);
+      m.quaternion.setFromUnitVectors(V(0, 1, 0), axis);
+      m.castShadow = true; hair.add(m);
     }
-    if (hp.back === 'pigtails'){
-      [-1, 1].forEach(sx => {
-        lump(hr * .24, sx * hr * .92, hry * .10, -hrz * .34);
-        tail(hr * .20, hr * .07, hry * 1.0 * len,
-             sx * (hr * 1.02 + hr * .30 * len), hry * .10 - hry * .48 * len, -hrz * .38,
-             -.18, sx * .42);
-      });
+  };
+  const fringeShell = (a0, aSpan) => {
+    const m = new THREE.Mesh(hairShell({
+      out: OUT * vol * 1.03, inn: Math.max(1.01, OUT * vol * .985),
+      a0, aSpan, seg: 12, rows: 5, v0: .52, wave: waveAmt * 1.15,
+      front: Math.max(SAFE + .03, FRONT - .10),
+      side: FRONT - .02, back: FRONT
+    }), hairMat);
+    m.castShadow = true; hair.add(m); return m;
+  };
+
+  // Layers compose independently: cap (with part groove) + texture overlay +
+  // fringe + back. A curly ponytail with curtain bangs is three layers, not a
+  // preset lump. Bald still allows a fringe. Hair never drops below SAFE in front.
+  if (!bald && !mohawk){
+    cap(OUT, waveAmt, napeK, partOpts);
+  }
+  if (mohawk){
+    cap(1.012);
+    const ridgeOut = 1.012 * vol;
+    const nSpike = Math.max(6, nLock + 2);
+    for (let i = 0; i < nSpike; i++){
+      const t = i / (nSpike - 1);
+      const th = THREE.MathUtils.lerp(thetaAt(Math.PI / 2, ridgeOut) * .70, -1.45, t);
+      const h = hry * (.5 + .38 * Math.sin(t * Math.PI)) * vol;
+      const sp = new THREE.Mesh(new THREE.ConeGeometry(hr * .13 * vol, h, 6), hairMat);
+      const ny = Math.cos(th), nz = Math.sin(th);
+      sp.position.set(0, ny * hry * ridgeOut + ny * h * .45, nz * hrz * ridgeOut + nz * h * .45);
+      sp.rotation.x = th; sp.castShadow = true; hair.add(sp);
     }
-    if (hp.back === 'bun'){
-      lump(hr * .42 * vol, 0, hry * .80, -hrz * .52);
-      lump(hr * .16, 0, hry * .56, -hrz * .74, 1.5, .6, 1);
+  }
+  if (!bald && (tex === 'curly' || tex === 'coily')){
+    const nCurl = tex === 'coily' ? Math.round((Q.hairSeg || 28) * .85) : Math.round((Q.hairSeg || 28) * .55);
+    const o = { back: napeK };
+    for (let i = 0; i < nCurl; i++){
+      const a = i / nCurl * Math.PI * 2 + .17;
+      if (partA !== undefined){
+        let d = Math.abs(Math.atan2(Math.sin(a - partA), Math.cos(a - partA)));
+        if (d < .12) continue;
+      }
+      addCoil(a, .22 + ((i * 11) % 7) / 7 * .62, OUT * vol, o);
     }
-    if (hp.texture === 'spiky' && hp.back !== 'mohawk'){
-        for (let i = 0; i < 9; i++){
-          const a = (i / 9) * Math.PI * 2, tilt = .5 + (i % 3) * .13;
-          const sp = new THREE.Mesh(new THREE.ConeGeometry(hr * .16 * vol, hry * .55 * vol, 7), hairMat);
-          sp.position.set(Math.cos(a) * hr * .52, hry * .84, Math.sin(a) * hrz * .48);
-          sp.rotation.set(Math.sin(a) * tilt, 0, -Math.cos(a) * tilt);
-          sp.castShadow = true; hair.add(sp);
-        }
-        const top = new THREE.Mesh(new THREE.ConeGeometry(hr * .19 * vol, hry * .60 * vol, 7), hairMat);
-        top.position.y = hry * 1.04; top.castShadow = true; hair.add(top);
+  }
+  if (!bald && tex === 'spiky' && !mohawk){
+    const nSp = Math.max(8, nLock + 3);
+    for (let i = 0; i < nSp; i++){
+      const a = i / nSp * Math.PI * 2 + .1;
+      addSpike(a, .18 + (i % 3) * .22, OUT * vol, { back: napeK }, .8 + (i % 3) * .18);
+    }
+  }
+
+  if (hp.fringe === 'straight') fringeShell(Math.PI / 2 - .95, 1.90);
+  if (hp.fringe === 'curtain'){
+    fringeShell(Math.PI / 2 - .98, .62);
+    fringeShell(Math.PI / 2 + .36, .62);
+  }
+  if (hp.fringe === 'straight' || hp.fringe === 'curtain'){
+    const n = hp.fringe === 'curtain' ? Math.max(4, nLock - 1) : nLock;
+    for (let i = 0; i < n; i++){
+      if (hp.fringe === 'curtain' && i === Math.floor((n - 1) / 2)) continue;
+      const a = Math.PI / 2 + (i - (n - 1) / 2) * (hp.fringe === 'curtain' ? .30 : .26);
+      const p0 = onScalp(a, .82, OUT * vol);
+      const p2 = p0.clone();
+      p2.y = Math.max(SAFE * hry + hr * .02, p0.y - hry * .16);
+      p2.z += hrz * .06;
+      addStrand(p0, p2, hr * .028 * vol, tex, i * .7);
+    }
+  }
+  const sweepDir = hp.part === 'right' ? 1 : hp.part === 'left' ? -1
+    : hp.fringe === 'side' ? -1 : 0;
+  if (sweepDir){
+    const n = Math.max(3, nLock - 1);
+    for (let i = 0; i < n; i++){
+      const a0 = Math.PI / 2 - sweepDir * (.18 + i * .10);
+      const p0 = onScalp(a0, .78, OUT * vol);
+      const p2 = onScalp(a0 + sweepDir * (.55 + i * .08), .92, OUT * vol);
+      p2.y = Math.max(SAFE * hry + hr * .02, p2.y - hry * .04);
+      addStrand(p0, p2, hr * .032 * vol, tex, i);
+    }
+  }
+  if (hp.part === 'center'){
+    [-1, 1].forEach((sx, k) => {
+      const p0 = onScalp(Math.PI / 2, .70, OUT * vol);
+      const p2 = onScalp(Math.PI / 2 + sx * .55, .90, OUT * vol);
+      p2.y = Math.max(SAFE * hry + hr * .02, p2.y);
+      addStrand(p0, p2, hr * .030 * vol, tex, k);
+    });
+  }
+
+  if (hp.back === 'long'){
+    const fall = new THREE.Mesh(hairShell({
+      out: OUT * vol * 1.03, inn: 1.004, a0: Math.PI * .62, aSpan: Math.PI * .76,
+      front: 1, side: SIDE - .04, back: -.08 - .68 * len,
+      rows: 8, seg: Math.max(12, Math.round((Q.hairSeg || 28) * .55)),
+      wave: waveAmt, v0: .32
+    }), hairMat);
+    fall.castShadow = true; hair.add(fall);
+    for (let i = 0; i < nLock; i++){
+      const a = Math.PI + (i - (nLock - 1) / 2) * .20;
+      const p0 = onScalp(a, .88, OUT * vol, { back: -.55 });
+      const p2 = p0.clone();
+      p2.y -= hry * (.55 + .95 * len);
+      p2.z -= hrz * .10;
+      addStrand(p0, p2, hr * .036 * vol, tex, i * 1.1);
+    }
+  }
+  if (hp.back === 'braid'){
+    const p0 = onScalp(-Math.PI / 2, .62, OUT * vol, { back: -.48 });
+    const p2 = p0.clone();
+    p2.y -= hry * (1.05 * len + .25);
+    p2.z -= hrz * .12;
+    addBraid(p0, p2, hr * .07 * vol);
+  }
+  if (hp.back === 'ponytail'){
+    const g = scalpN(-Math.PI / 2, .58, OUT * vol, { back: -.45 });
+    lump(hr * .16 * vol, g.pos.x, g.pos.y, g.pos.z, 1.15, .85, 1.05);
+    const n = Math.max(3, nLock - 1);
+    for (let i = 0; i < n; i++){
+      const p0 = g.pos.clone().addScaledVector(g.normal, hr * .04);
+      p0.x += (i - (n - 1) / 2) * hr * .04;
+      const p2 = p0.clone();
+      p2.y -= hry * (1.05 * len + .15);
+      p2.z -= hrz * (.18 + .08 * len);
+      addStrand(p0, p2, hr * .032 * vol, tex, i * 1.3);
+    }
+  }
+  if (hp.back === 'pigtails'){
+    [-1, 1].forEach((sx, k) => {
+        const g = scalpN(sx * (Math.PI - .85), .55, OUT * vol, { back: -.35 });
+      lump(hr * .14 * vol, g.pos.x, g.pos.y, g.pos.z, 1.1, .9, 1);
+      const n = Math.max(3, nLock - 2);
+      for (let i = 0; i < n; i++){
+        const p0 = g.pos.clone().addScaledVector(g.normal, hr * .03);
+        const p2 = p0.clone();
+        p2.y -= hry * (.85 * len + .12);
+        p2.x += sx * hr * (.22 + .18 * len);
+        p2.z -= hrz * .06;
+        addStrand(p0, p2, hr * .028 * vol, tex, i + k * 2);
+      }
+    });
+  }
+  if (hp.back === 'bun'){
+    const g = scalpN(-Math.PI / 2, .28, OUT * vol, { back: -.32 });
+    const bunR = hr * .28 * vol;
+    const torus = new THREE.Mesh(new THREE.TorusGeometry(bunR, bunR * .46, 8, 16), hairMat);
+    torus.position.copy(g.pos).addScaledVector(g.normal, bunR * .35);
+    torus.quaternion.setFromUnitVectors(V(0, 0, 1), g.normal);
+    torus.castShadow = true; hair.add(torus);
+    if (tex === 'curly' || tex === 'coily'){
+      for (let i = 0; i < 6; i++) addCoil(-Math.PI / 2 + (i - 2.5) * .12, .22 + (i % 3) * .08, OUT * vol, { back: -.32 });
     }
   }
 
@@ -1808,7 +1986,7 @@ function createCharacter(input){
       roughness: .88, side: THREE.DoubleSide
     });
     // clear the hair shell, whatever volume it is set to
-    const over = Math.max(1.14, ((hp.texture === 'curly' || hp.texture === 'coily') ? 1.15 : 1.055) * vol + .07);
+    const over = Math.max(1.14, OUT * vol + .07);
     const BRIM = Math.max(SAFE, .44);        // horizontal, safely above the eyes
 
     const crown = (o, mat) => {

@@ -303,9 +303,10 @@
   function refreshSegs() {
     seg('hairs', [['crop', 'Crop'], ['fringe', 'Fringe'], ['sidepart', 'Part'], ['long', 'Long'],
       ['ponytail', 'Tail'], ['pigtails', 'Pigtails'], ['braid', 'Braid'], ['bun', 'Bun'],
-      ['curls', 'Curls'], ['spiky', 'Spiky'], ['mohawk', 'Mohawk'], ['bald', 'Bald']],
+      ['curls', 'Curls'], ['spiky', 'Spiky'], ['mohawk', 'Mohawk'], ['bald', 'Bald'], ['custom', 'Mix']],
       () => cfg.hair, v => {
         cfg.hair = v;
+        if (v === 'custom') return;
         const table = (window.CharacterEngine && (CharacterEngine.hairPresets || CharacterEngine.HAIR_PRESETS)) || {};
         const hp = table[v];
         if (hp) {
@@ -595,14 +596,23 @@
       mouthRest: +rndN(rng, -.16, .16).toFixed(2)
     });
     if (section === 'hair') {
-      const preset = pickN(rng, ['crop', 'crop', 'fringe', 'sidepart', 'long', 'ponytail', 'pigtails', 'braid', 'bun', 'curls', 'spiky', 'mohawk', 'bald']);
-      cfg.hair = preset;
-      const table = (window.CharacterEngine && (CharacterEngine.hairPresets || CharacterEngine.HAIR_PRESETS)) || {};
-      const hp = table[preset] || {};
-      cfg.hairTexture = hp.texture || 'straight';
-      cfg.hairPart = hp.part || 'none';
-      cfg.hairFringe = hp.fringe || 'none';
-      cfg.hairBack = hp.back || 'loose';
+      const mix = rng() < .38;
+      if (mix) {
+        cfg.hair = 'custom';
+        cfg.hairTexture = pickN(rng, ['straight', 'wavy', 'wavy', 'curly', 'coily', 'spiky']);
+        cfg.hairPart = pickN(rng, ['none', 'none', 'left', 'right', 'center']);
+        cfg.hairFringe = pickN(rng, ['none', 'none', 'straight', 'side', 'curtain']);
+        cfg.hairBack = pickN(rng, ['loose', 'loose', 'long', 'ponytail', 'pigtails', 'braid', 'bun']);
+      } else {
+        const preset = pickN(rng, ['crop', 'crop', 'fringe', 'sidepart', 'long', 'ponytail', 'pigtails', 'braid', 'bun', 'curls', 'spiky', 'mohawk', 'bald']);
+        cfg.hair = preset;
+        const table = (window.CharacterEngine && (CharacterEngine.hairPresets || CharacterEngine.HAIR_PRESETS)) || {};
+        const hp = table[preset] || {};
+        cfg.hairTexture = hp.texture || 'straight';
+        cfg.hairPart = hp.part || 'none';
+        cfg.hairFringe = hp.fringe || 'none';
+        cfg.hairBack = hp.back || 'loose';
+      }
       cfg.hairline = pickN(rng, ['high', 'even', 'even', 'low']);
       cfg.hairVolume = +rndN(rng, .9, 1.35).toFixed(2);
       cfg.hairLength = +rndN(rng, .65, 1.6).toFixed(2);

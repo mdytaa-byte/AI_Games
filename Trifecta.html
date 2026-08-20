@@ -97,6 +97,10 @@
     .piece{cursor:pointer;transition:filter var(--ease),transform .35s ease}
     .piece:hover,.piece:focus{filter:brightness(1.18) drop-shadow(0 0 10px currentColor);outline:none}
     .piece.selected{filter:brightness(1.28) drop-shadow(0 0 14px currentColor)}
+    .piece.contested{filter:drop-shadow(0 0 8px #e1544799)}
+    .piece.aura{filter:drop-shadow(0 0 10px #e5bb5588)}
+    .piece.selected.contested{filter:brightness(1.28) drop-shadow(0 0 14px currentColor) drop-shadow(0 0 8px #e15447)}
+    .piece.selected.aura{filter:brightness(1.28) drop-shadow(0 0 14px currentColor) drop-shadow(0 0 10px #e5bb55)}
     .piece.gigas{animation:hoverGigas 3.2s ease-in-out infinite}
     @keyframes hoverGigas{50%{transform:translateY(-7px)}}
     .pressure-badge{font:800 11px Outfit,sans-serif;text-anchor:middle;dominant-baseline:central;fill:#fff4d6;paint-order:stroke;stroke:#140b08;stroke-width:3px;pointer-events:none}
@@ -437,9 +441,9 @@
       <section class="panel">
         <h2>Objective</h2>
         <p class="objective">Enter a rival keep—or be the last faction standing.</p>
-        <div class="rule-cue"><div class="rule-icon">◇</div><div><strong>Move or reshape</strong><small>Advance a creature, rotate a larger one, or change a Mage Fowl’s aspect.</small></div></div>
-        <div class="rule-cue"><div class="rule-icon">⌾</div><div><strong>Surround</strong><small>Adjacent pressure captures. Strength counts twice; the Gigas counts three times.</small></div></div>
-        <div class="rule-cue"><div class="rule-icon">△</div><div><strong>Conquer</strong><small>Any part of a piece stepping into a rival corner keep wins at once.</small></div></div>
+        <div class="rule-cue"><div class="rule-icon">◇</div><div><strong>Move or reshape</strong><small>Advance a creature, rotate a larger one, or change a Mage Fowl’s aspect. A Fowl that changes aspect must march before changing again.</small></div></div>
+        <div class="rule-cue"><div class="rule-icon">⌾</div><div><strong>Surround</strong><small>Pressure captures. Strength is fiercer on obsidian; Sight is fiercer on ivory. Touch two rival banners and you are contested.</small></div></div>
+        <div class="rule-cue"><div class="rule-icon">△</div><div><strong>Conquer</strong><small>Reach a rival keep to win. Bind the unbound Gigas in the center — its shimmer grants adjacent allies +1 pressure.</small></div></div>
       </section>
       <section class="panel turn-card">
         <div class="eyebrow">Current command</div>
@@ -507,15 +511,17 @@
         <li>Light and dark triangular tiles alternate. Ordinary steps always change color. Sight leaps two links and therefore stays on the same color—until the Fowl changes aspect.</li>
         <li>Every cell of a multi-space piece must fit on empty tiles. Larger creatures may also rotate sixty degrees around one of their vertices.</li>
         <li>After acting, your adjacent pieces exert surrounding pressure. Mage Fowl require two pressure to capture, Mage Beasts three, Mage Bears four, and the Mage Gigas five. Strength counts as two pressure; the Gigas counts as three.</li>
+        <li>The chamber itself takes sides. Strength gains +1 pressure on obsidian (dark) tiles. Sight gains +1 pressure on ivory (light) tiles. A creature adjacent to two different rival factions is contested and loses 1 armor (minimum 1).</li>
+        <li>A Mage Fowl that changes aspect is committed: it must march or rotate before it may change aspect again.</li>
         <li>Keeps are sacred. No army may rest on a keep. If any part of a piece reaches a rival keep—or stands adjacent and storms the gate—that faction wins immediately. Sight Fowl may also leap the last two links.</li>
         <li>Capture every rival piece to eliminate that faction. The last faction standing also wins.</li>
       </ol>
       <div class="legend">
-        <div><strong>◆ Strength</strong><small>One linked step. Counts as two surrounding pressure, and creatures with Strength resist capture more stubbornly in spirit—use it to finish a surround.</small></div>
+        <div><strong>◆ Strength</strong><small>One linked step. Two surrounding pressure, three on obsidian. Use it to finish a surround or to garrison a dark gate.</small></div>
         <div><strong>➶ Swiftness</strong><small>May travel through up to two linked, empty spaces in one move. Mage Beasts are born with this hunt.</small></div>
-        <div><strong>◉ Sight</strong><small>May leap directly to an empty space exactly two links away, ignoring the tile between—the assassin’s path into a keep.</small></div>
+        <div><strong>◉ Sight</strong><small>Leaps exactly two links, staying on color. One pressure, two on ivory — the assassin’s path into a keep.</small></div>
       </div>
-      <p><strong>Armies:</strong> Each faction commands five one-space Mage Fowl, one two-space Mage Beast (Swiftness), and one three-space Mage Bear (Strength). The unique Mage Gigas begins unbound in the center as three hovering sections. Surround it with five pressure to take command; another faction may later seize it. Because it hovers, the Gigas may fly one or two lattice steps, rotate like other large creatures, and land on any empty matching footprint, passing over intervening creatures.</p>
+      <p><strong>Armies:</strong> Each faction commands five one-space Mage Fowl, one two-space Mage Beast (Swiftness), and one three-space Mage Bear (Strength). The unique Mage Gigas begins unbound in the center as three hovering sections. Surround it with five pressure to take command; another faction may later seize it. While you command it, adjacent allies gain +1 trinity pressure from its shimmering armor. Because it hovers, the Gigas may fly one or two lattice steps, rotate like other large creatures, and land on any empty matching footprint, passing over intervening creatures.</p>
       <div class="modal-actions"><button class="gold-btn" id="rulesTutorialBtn" type="button">Guided Lesson</button></div>
     </div>
   </div>
@@ -655,12 +661,64 @@
     };
     const ownKeepBlocked=(ids,p)=>ids.some(id=>id===keepAt[p.f]);
     const rivalKeepHit=(ids,p)=>ORDER.find(f=>f!==p.f && ids.includes(keepAt[f]));
+    const AI_STYLE={
+      red:{keep:1.45, surround:0.85, gigas:0.72, sight:0.95, gate:1.15},
+      blue:{keep:0.95, surround:1.4, gigas:1.35, sight:1.0, gate:1.0},
+      yellow:{keep:1.18, surround:0.9, gigas:0.8, sight:1.5, gate:0.95}
+    };
 
-    const pressureValue=p=>p.type==='gigas'?3:p.aspect==='strength'?2:1;
-    const defenseValue=p=>p.type==='gigas'?5:p.type==='behemoth'?4:p.type==='creature'?3:2;
+    function isContested(p){
+      if(!p||p.f==='neutral') return false;
+      const rivals=new Set();
+      cellsOf(p).forEach(id=>nbr(id).forEach(n=>{
+        const a=pieceAt(n);
+        if(a&&a.f!==p.f&&a.f!=='neutral') rivals.add(a.f);
+      }));
+      return rivals.size>=2;
+    }
+    function hasTrinityAura(p){
+      if(!p||p.type==='gigas'||p.f==='neutral') return false;
+      const gigas=state.pieces.find(x=>x.type==='gigas'&&x.f===p.f);
+      if(!gigas) return false;
+      const gc=new Set(cellsOf(gigas));
+      return cellsOf(p).some(id=>nbr(id).some(n=>gc.has(n)));
+    }
+    function pressureValue(p){
+      let v=p.type==='gigas'?3:p.aspect==='strength'?2:1;
+      if(p.type==='mage'&&p.aspect==='strength'&&cellsOf(p).some(id=>cells[id]&&!cells[id].light)) v+=1;
+      if(p.type==='mage'&&p.aspect==='sight'&&cellsOf(p).some(id=>cells[id]&&cells[id].light)) v+=1;
+      if(hasTrinityAura(p)) v+=1;
+      return v;
+    }
+    function defenseValue(p){
+      let v=p.type==='gigas'?5:p.type==='behemoth'?4:p.type==='creature'?3:2;
+      if(isContested(p)) v=Math.max(1,v-1);
+      return v;
+    }
     const pieceName=p=>p.type==='gigas'?'Mage Gigas':p.type==='behemoth'?'Mage Bear':p.type==='creature'?'Mage Beast':'Mage Fowl';
     const living=f=>state.pieces.some(p=>p.f===f);
     const isHumanTurn=()=>state.mode==='local'||state.turn===state.human;
+    function keepThreat(f){
+      let best=99;
+      state.pieces.filter(p=>p.f===f).forEach(p=>{
+        cellsOf(p).forEach(id=>{
+          ORDER.forEach(r=>{ if(r!==f) best=Math.min(best, distance(id, keepAt[r])); });
+        });
+      });
+      return best;
+    }
+    function factionCanWinNow(f){
+      return state.pieces.filter(p=>p.f===f).some(p=>legalMovesFor(p).some(m=>m.note==='assault'||rivalKeepHit(m.cells||[],p)));
+    }
+    function boardLeader(){
+      const livingF=ORDER.filter(living);
+      if(!livingF.length) return null;
+      return livingF.slice().sort((a,b)=>{
+        const ta=keepThreat(a), tb=keepThreat(b);
+        if(ta!==tb) return ta-tb;
+        return state.pieces.filter(p=>p.f===b).length-state.pieces.filter(p=>p.f===a).length;
+      })[0];
+    }
 
     function pressureAgainst(enemy,f){
       const attackers=new Set();
@@ -1029,7 +1087,7 @@
         const isGigas=p.type==='gigas';
         const pieceColor=isGigas?'url(#gigasGradient)':COLORS[p.f];
         const g=svg('g',{
-          class:`piece${state.selected===p.id?' selected':''}${isGigas?' gigas':''}`,
+          class:`piece${state.selected===p.id?' selected':''}${isGigas?' gigas':''}${isContested(p)?' contested':''}${hasTrinityAura(p)?' aura':''}`,
           tabindex:'0',role:'button',
           'aria-label':`${NAMES[p.f]} ${pieceName(p)}, ${occ.length} spaces, ${p.aspect}`,
           style:`color:${COLORS[p.f]}`
@@ -1091,7 +1149,7 @@
       $$('.aspect-btn').forEach(b=>{
         const step=currentStep();
         const aspectLocked=!!(state.tutorial&&step?.aspect);
-        b.disabled=!sel||sel.type!=='mage'||!isHumanTurn()||state.busy||!!state.winner||tutorialContinueOnly()||(aspectLocked&&b.dataset.aspect!==step.aspect);
+        b.disabled=!sel||sel.type!=='mage'||!isHumanTurn()||state.busy||!!state.winner||!!sel.locked||tutorialContinueOnly()||(aspectLocked&&b.dataset.aspect!==step.aspect);
         b.classList.toggle('active',sel?.aspect===b.dataset.aspect);
       });
       $('#rotateBtn').disabled=!sel||sel.type==='mage'||!isHumanTurn()||state.busy||!!state.winner||!!state.tutorial||!state.legalMoves.some(m=>m.type==='rotate');
@@ -1103,11 +1161,19 @@
         $('#modeLabel').textContent='Guided Lesson';
         $('#roundLabel').textContent=`◆ Lesson ${(state.tutorial.step||0)+1} ◆`;
       }else{
-        $('#instruction').textContent=state.winner?`${NAMES[state.winner]} controls the chamber.`:state.busy?'The rival masters consider the board…':!isHumanTurn()?'The rival master is moving…':sel?`${pieceName(sel)} selected. Choose a glowing tile${sel.type==='mage'?' or change its aspect.':', or rotate it.'}`:'Select one of your pieces.';
+        $('#instruction').textContent=state.winner?`${NAMES[state.winner]} controls the chamber.`:state.busy?'The rival masters consider the board…':!isHumanTurn()?'The rival master is moving…':sel?`${pieceName(sel)} selected. Choose a glowing tile${sel.type==='mage'?(sel.locked?' — aspect locked until it marches.':' or change its aspect.'):', or rotate it.'}`:'Select one of your pieces.';
         $('#modeLabel').textContent=state.mode==='solo'?`Solo · ${cap(state.difficulty)}`:'Three-Player Match';
         $('#roundLabel').textContent=`◆ Round ${state.round} ◆`;
       }
-      $('#inspect').textContent=sel?`${pieceName(sel)} · ${cellsOf(sel).length} space${cellsOf(sel).length>1?'s':''} · ${cap(sel.aspect)} · pressure ${pressureValue(sel)} · armor ${defenseValue(sel)} · ${state.legalMoves.filter(m=>m.type==='move').length} march${state.legalMoves.filter(m=>m.type==='move').length===1?'':'es'}, ${state.legalMoves.filter(m=>m.type==='rotate').length} rotation${state.legalMoves.filter(m=>m.type==='rotate').length===1?'':'s'}.`:'Light tiles are ivory; dark tiles are obsidian. Sight stays on one color. The gate beside each keep is the ordinary path in.';
+      const stance=[];
+      if(sel){
+        if(sel.locked) stance.push('aspect locked');
+        if(isContested(sel)) stance.push('contested');
+        if(hasTrinityAura(sel)) stance.push('trinity aura');
+        if(sel.type==='mage'&&sel.aspect==='strength'&&cellsOf(sel).some(id=>cells[id]&&!cells[id].light)) stance.push('obsidian strength');
+        if(sel.type==='mage'&&sel.aspect==='sight'&&cellsOf(sel).some(id=>cells[id]&&cells[id].light)) stance.push('ivory sight');
+      }
+      $('#inspect').textContent=sel?`${pieceName(sel)} · ${cellsOf(sel).length} space${cellsOf(sel).length>1?'s':''} · ${cap(sel.aspect)} · pressure ${pressureValue(sel)} · armor ${defenseValue(sel)}${stance.length?' · '+stance.join(', '):''} · ${state.legalMoves.filter(m=>m.type==='move').length} march${state.legalMoves.filter(m=>m.type==='move').length===1?'':'es'}, ${state.legalMoves.filter(m=>m.type==='rotate').length} rotation${state.legalMoves.filter(m=>m.type==='rotate').length===1?'':'s'}.`:'Ivory favors Sight. Obsidian favors Strength. A piece touching two rival banners is contested. Command the Gigas to grant adjacent allies trinity pressure.';
       state.inspectBase=$('#inspect').textContent;
       const gigas=state.pieces.find(p=>p.type==='gigas');
       $('#players').innerHTML=ORDER.map(f=>`<div class="player-row ${state.turn===f?'current':''} ${state.defeated.has(f)?'defeated':''}"><i class="faction-dot" style="background:${COLORS[f]};color:${COLORS[f]}"></i><span>${NAMES[f]}${(state.mode==='solo'&&f===state.human)||(state.tutorial&&f==='blue')?' · You':''}</span><span class="piece-count">${state.pieces.filter(p=>p.f===f).length} pieces</span></div>`).join('')+`<div class="player-row"><i class="faction-dot" style="background:linear-gradient(90deg,#e15447,#4e88e1,#f1bc32)"></i><span>Mage Gigas</span><span class="piece-count">${gigas? (gigas.f==='neutral'?'Unbound':NAMES[gigas.f]):'—'}</span></div>`;
@@ -1168,6 +1234,7 @@
       const p=state.pieces.find(x=>x.id===state.selected);
       if(!p||p.type!=='mage'||p.aspect===aspect||state.busy||!isHumanTurn()) return;
       if(tutorialContinueOnly()) return;
+      if(p.locked&&!state.tutorial){toast('This Fowl must march before changing aspect again.');return;}
       const step=currentStep();
       if(step?.aspect && aspect!==step.aspect){toast(step.hint||'Choose the highlighted aspect.');return;}
       takeAction({type:'aspect',id:p.id,aspect,cells:cellsOf(p)});
@@ -1185,10 +1252,12 @@
       rememberUndo();
       if(a.type==='aspect'){
         p.aspect=a.aspect;
+        p.locked=!state.tutorial;
         log(`${NAMES[p.f]} Mage Fowl turns to ${cap(a.aspect)}.`);
       }else{
         const from=cellsOf(p).join(' · ');
         p.cells=[...a.cells]; p.pos=a.cells[0];
+        p.locked=false;
         const rival=rivalKeepHit(a.cells,p);
         if(a.note==='assault'||rival){
           const fallen=rival||ORDER.find(f=>a.cells.includes(keepAt[f]));
@@ -1258,65 +1327,92 @@
       const arr=[];
       state.pieces.filter(p=>p.f===f).forEach(p=>{
         legalMovesFor(p).forEach(m=>arr.push(m));
-        if(p.type==='mage') ['strength','swiftness','sight'].filter(a=>a!==p.aspect).forEach(aspect=>arr.push({type:'aspect',id:p.id,aspect,cells:cellsOf(p)}));
+        if(p.type==='mage'&&!p.locked) ['strength','swiftness','sight'].filter(a=>a!==p.aspect).forEach(aspect=>arr.push({type:'aspect',id:p.id,aspect,cells:cellsOf(p)}));
       });
       return arr;
     }
 
     function applyTemp(p,a){
-      const snap={pos:p.pos,cells:p.cells?[...p.cells]:null,aspect:p.aspect,f:p.f,removed:[]};
-      if(a.type==='aspect') p.aspect=a.aspect;
-      else{p.cells=[...a.cells];p.pos=a.cells[0];}
+      const snap={pos:p.pos,cells:p.cells?[...p.cells]:null,aspect:p.aspect,f:p.f,locked:!!p.locked};
+      if(a.type==='aspect'){ p.aspect=a.aspect; p.locked=true; }
+      else{p.cells=[...a.cells];p.pos=a.cells[0]; p.locked=false;}
       return snap;
     }
     function revertTemp(p,snap){
-      p.pos=snap.pos; p.cells=snap.cells; p.aspect=snap.aspect; p.f=snap.f;
+      p.pos=snap.pos; p.cells=snap.cells; p.aspect=snap.aspect; p.f=snap.f; p.locked=snap.locked;
     }
 
-    function scoreAction(a){
+    function scoreAction(a, ctx){
       const p=state.pieces.find(x=>x.id===a.id);
       if(!p) return -999;
+      const style=(ctx&&ctx.style)||AI_STYLE[p.f]||AI_STYLE.blue;
+      const master=!!(ctx&&ctx.master);
+      const leader=ctx&&ctx.leader;
       if(a.type==='aspect'){
-        let s=state.difficulty==='novice'?Math.random()*4:2+Math.random();
-        if(a.aspect==='strength'&&nbr(p.pos).some(n=>{const e=pieceAt(n);return e&&e.f!==p.f;})) s+=8;
+        let s=2+Math.random()*3;
+        if(a.aspect==='strength'&&nbr(p.pos).some(n=>{const e=pieceAt(n);return e&&e.f!==p.f;})) s+=10*style.surround;
         if(a.aspect==='sight'){
           const leap=cellList.some(c=>distance(p.pos,c.id)===2&&ORDER.some(f=>f!==p.f&&c.id===keepAt[f]));
-          if(leap) s+=40;
+          if(leap) s+=48*style.sight;
+          if(cells[p.pos]&&cells[p.pos].light) s+=4*style.sight;
         }
+        if(a.aspect==='strength'&&cells[p.pos]&&!cells[p.pos].light) s+=4;
         return s;
       }
       const snap=applyTemp(p,a);
       let s=Math.random()*3;
-      const moved=cellsOf(p);
-      if(rivalKeepHit(moved,p)) s+=5000;
-      state.pieces.filter(e=>e.f!==p.f).forEach(e=>{
-        if(pressureAgainst(e,p.f)>=defenseValue(e)) s+=e.type==='gigas'?220:e.type==='behemoth'?110:e.type==='creature'?70:38;
-      });
-      const myDanger=state.pieces.filter(x=>x.f===p.f).reduce((sum,x)=>{
-        const worst=Math.max(0,...ORDER.filter(f=>f!==p.f).map(f=>pressureAgainst(x,f)-defenseValue(x)+1));
-        return sum+(worst>0?(x.type==='gigas'?80:x.type==='behemoth'?40:18):0);
-      },0);
-      s-=myDanger;
-      const rivals=ORDER.filter(f=>f!==p.f&&!state.defeated.has(f));
-      const keepDists=moved.map(id=>rivals.length?Math.min(...rivals.map(f=>distance(id,keepAt[f]))):9);
-      s+=(14-Math.min(...keepDists))*(state.difficulty==='master'?7:3.5);
-      const myGate=nbr(keepAt[p.f])[0];
-      if(myGate&&pieceAt(myGate)?.f===p.f) s+=12;
-      if(myGate&&ORDER.some(f=>f!==p.f&&pieceAt(myGate)?.f===f)) s-=25;
-      if(p.type==='gigas') s+=8;
-      const counts=ORDER.map(f=>state.pieces.filter(x=>x.f===f).length);
-      const leader=Math.max(...counts);
-      const myCount=state.pieces.filter(x=>x.f===p.f).length;
-      if(myCount<leader-1) s+=6;
-      if(state.difficulty==='master'){
-        const reply=ORDER.filter(f=>f!==p.f&&living(f)).some(f=>{
-          return state.pieces.filter(x=>x.f===f).some(en=>{
-            return legalMovesFor(en).some(m=>rivalKeepHit(m.cells,en));
-          });
+      try{
+        const moved=cellsOf(p);
+        if(rivalKeepHit(moved,p)||a.note==='assault') s+=5000;
+        state.pieces.filter(e=>e!==p&&e.f!==p.f).forEach(e=>{
+          if(pressureAgainst(e,p.f)>=defenseValue(e)){
+            let prize=e.type==='gigas'?240*style.gigas:e.type==='behemoth'?110:e.type==='creature'?70:38;
+            prize*=style.surround;
+            if(leader&&e.f===leader) prize*=1.35;
+            s+=prize;
+          }
         });
-        if(reply) s-=900;
-      }
-      revertTemp(p,snap);
+        const myDanger=state.pieces.filter(x=>x.f===p.f).reduce((sum,x)=>{
+          const worst=Math.max(0,...ORDER.filter(f=>f!==p.f).map(f=>pressureAgainst(x,f)-defenseValue(x)+1));
+          return sum+(worst>0?(x.type==='gigas'?90:x.type==='behemoth'?40:18):0);
+        },0);
+        s-=myDanger;
+        if(isContested(p)) s-=master?22:14;
+        if(hasTrinityAura(p)) s+=12*style.gigas;
+        const rivals=ORDER.filter(f=>f!==p.f&&!state.defeated.has(f));
+        const keepDists=moved.map(id=>rivals.length?Math.min(...rivals.map(f=>distance(id,keepAt[f]))):9);
+        const keepPush=(14-Math.min(...keepDists))*(master?7:3.6)*style.keep;
+        s+=keepPush;
+        if(leader&&leader!==p.f){
+          const hunt=moved.map(id=>distance(id,keepAt[leader]));
+          s+=(10-Math.min(...hunt))*(master?3.2:1.8);
+        }
+        const myGate=nbr(keepAt[p.f])[0];
+        if(myGate&&pieceAt(myGate)?.f===p.f) s+=12*style.gate;
+        if(myGate&&ORDER.some(f=>f!==p.f&&pieceAt(myGate)?.f===f)) s-=28*style.gate;
+        if(p.type==='gigas') s+=10*style.gigas;
+        if(p.aspect==='sight') s+=3*style.sight;
+        const counts=ORDER.map(f=>state.pieces.filter(x=>x.f===f).length);
+        const most=Math.max(...counts);
+        const myCount=state.pieces.filter(x=>x.f===p.f).length;
+        if(myCount<most-1) s+=6;
+        const rivalWin=ORDER.filter(f=>f!==p.f&&living(f)).some(f=>ctx&&ctx.canWin&&ctx.canWin[f]);
+        if(rivalWin){
+          const still=ORDER.filter(f=>f!==p.f&&living(f)).some(f=>{
+            return state.pieces.filter(x=>x.f===f).some(en=>legalMovesFor(en).some(m=>m.note==='assault'||rivalKeepHit(m.cells||[],en)));
+          });
+          if(!still) s+=master?900:420;
+          else if(myGate&&moved.includes(myGate)) s+=80;
+        }
+        if(master){
+          const reply=ORDER.filter(f=>f!==p.f&&living(f)).some(f=>{
+            return state.pieces.filter(x=>x.f===f).some(en=>{
+              return legalMovesFor(en).some(m=>rivalKeepHit(m.cells,en)||m.note==='assault');
+            });
+          });
+          if(reply) s-=900;
+        }
+      }finally{ revertTemp(p,snap); }
       return s;
     }
 
@@ -1336,7 +1432,17 @@
         }
         let chosen;
         if(state.difficulty==='novice') chosen=acts[Math.floor(Math.random()*acts.length)];
-        else chosen=acts.map(a=>[a,scoreAction(a)]).sort((x,y)=>y[1]-x[1])[0][0];
+        else{
+          const f=state.turn;
+          const ctx={
+            style:AI_STYLE[f]||AI_STYLE.blue,
+            leader:boardLeader(),
+            master:state.difficulty==='master',
+            canWin:{}
+          };
+          ORDER.forEach(r=>{ctx.canWin[r]=living(r)&&factionCanWinNow(r);});
+          chosen=acts.map(a=>[a,scoreAction(a,ctx)]).sort((x,y)=>y[1]-x[1])[0][0];
+        }
         if(seq!==state.aiSeq||state.winner) return;
         state.busy=false; takeAction(chosen);
       },delay);
@@ -1418,7 +1524,7 @@
       },
       {
         id:'gigas', title:'The Mage Gigas', next:'Continue',
-        body:'The hovering Mage Gigas is unique: three sections of black armor that shimmer red, blue, and yellow. Surround it with five pressure to command it. Larger creatures may also rotate.',
+        body:'The hovering Mage Gigas is unique: three sections of black armor that shimmer red, blue, and yellow. Surround it with five pressure to command it. Adjacent allies then strike with trinity pressure. Larger creatures may also rotate.',
         prompt:'The unbound Gigas waits in the center.',
         pieces:['gigas'], setup:'gigas'
       },
@@ -1753,6 +1859,7 @@
       ok(nbr(`U${N-1}-${N-1}`).join()===`D${N-1}-${N-2}`,'dorian keep gate');
       cellList.forEach(c=>nbr(c.id).forEach(n=>ok(nbr(n).includes(c.id),`asymmetric ${c.id} / ${n}`)));
       resetPieces();
+      const openingPieces=state.pieces.map(clonePiece);
       ok(!boardInvariant(), boardInvariant()||'opening invariant');
       state.pieces.filter(p=>p.f!=='neutral').forEach(p=>{
         ok(legalMovesFor(p).length>0, `${p.id} has a physical move`);
@@ -1764,8 +1871,25 @@
       ok(gigas.cells.length===3,'gigas is three sections');
       ok(legalMovesFor(gigas).length>0,'gigas can hover');
       ok(defenseValue(gigas)===5 && pressureValue(gigas)===3,'gigas combat values');
+      ok(pressureValue({id:'ds',f:'blue',type:'mage',aspect:'strength',pos:'D1-0',cells:['D1-0']})===3,'strength is fiercer on obsidian');
+      ok(pressureValue({id:'ls',f:'blue',type:'mage',aspect:'sight',pos:'U1-0',cells:['U1-0']})===2,'sight is fiercer on ivory');
+      state.pieces=[
+        {id:'mid',f:'blue',type:'mage',aspect:'swiftness',pos:'D2-0',cells:['D2-0']},
+        {id:'rAdj',f:'red',type:'mage',aspect:'strength',pos:'U1-0',cells:['U1-0']},
+        {id:'yAdj',f:'yellow',type:'mage',aspect:'sight',pos:'U2-0',cells:['U2-0']}
+      ];
+      ok(isContested(state.pieces[0]) && defenseValue(state.pieces[0])===1,'contested fowl loses armor');
+      state.pieces=[
+        {id:'g',f:'blue',type:'gigas',aspect:'trinity',pos:'U5-2',cells:['U5-2','D5-2','U5-3']},
+        {id:'ally',f:'blue',type:'mage',aspect:'swiftness',pos:nbr('U5-2').find(id=>!['U5-2','D5-2','U5-3'].includes(id)),cells:[nbr('U5-2').find(id=>!['U5-2','D5-2','U5-3'].includes(id))]}
+      ];
+      ok(hasTrinityAura(state.pieces[1]) && pressureValue(state.pieces[1])>=2,'gigas grants trinity pressure');
+      state.pieces=[{id:'lock',f:'blue',type:'mage',aspect:'strength',pos:'U3-1',cells:['U3-1'],locked:true}];
+      state.turn='blue'; state.mode='local'; state.winner=null; state.busy=false; state.selected='lock';
+      changeAspect('sight');
+      ok(state.pieces[0].aspect==='strength','locked fowl cannot change aspect again');
 
-      const saved=[...state.pieces];
+      const saved=openingPieces.map(clonePiece);
       state.pieces=[
         {id:'atk1',f:'blue',type:'mage',aspect:'strength',pos:'U1-0',cells:['U1-0']},
         {id:'atk2',f:'blue',type:'mage',aspect:'strength',pos:'U1-1',cells:['U1-1']},
@@ -1907,7 +2031,8 @@
       state, legalMovesFor, takeAction, allActions, selectPiece, onTile, newGame, resetPieces,
       cells, keepAt, cellsOf, pieceAt, nbr, boardInvariant,
       startTutorial, endTutorial, tutorialAdvance, currentStep, TUTORIAL_STEPS,
-      undoMove, capturesFrom, leapMids, showVictory, hideVictory
+      undoMove, capturesFrom, leapMids, showVictory, hideVictory,
+      pressureValue, defenseValue, isContested, hasTrinityAura
     };
 
     drawStatic();

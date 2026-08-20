@@ -121,17 +121,25 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
 .export-mini p{margin:0;font-size:12px;color:var(--muted);line-height:1.4}
 
 .modal-bg{position:fixed;inset:0;background:#000000c7;display:grid;place-items:center;z-index:20;padding:20px;backdrop-filter:blur(8px)}
-.modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:linear-gradient(180deg,#1a1e27,#12141a);border:1px solid var(--line-2);border-radius:6px;box-shadow:var(--shadow);padding:22px}
+.modal{width:min(920px,100%);max-height:90vh;overflow:auto;background:linear-gradient(180deg,#1a1e27,#12141a);border:1px solid var(--line-2);border-radius:6px;box-shadow:var(--shadow);padding:22px}
 .modal h2{font-family:var(--display);font-size:26px;margin:0 0 8px;color:#fff}
 .modal p{color:var(--muted);line-height:1.5}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
 .card{border:1px solid var(--line);background:var(--panel);padding:14px;border-radius:var(--r)}
 .card strong{display:block;margin-bottom:4px}
 .card small{color:var(--muted);line-height:1.4}
-.library{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:12px}
+.library{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-top:12px}
 .lib-item{border:1px solid var(--line);background:var(--panel);padding:8px;text-align:left;border-radius:var(--r)}
+.lib-item:hover{border-color:var(--mint)}
 .lib-item canvas{width:100%;height:auto;image-rendering:pixelated;background:#0e1016}
-.lib-item b{display:block;margin-top:6px;font-size:12px}
+.lib-item b{display:block;margin-top:4px;font-size:13px}
+.lib-item .role{display:block;margin-top:6px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--mint);font-weight:800}
+.genre-tabs{margin:12px 0 4px;display:flex;flex-wrap:wrap;gap:6px}
+.genre-rail{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 14px 16px}
+.chip{height:28px;padding:0 8px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r);font-size:10px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);width:100%}
+.genre-tabs .chip{width:auto}
+.chip.on,.chip[aria-pressed="true"]{border-color:var(--mint);background:#1a2422;color:var(--mint)}
+.lib-saved{margin-top:18px;padding-top:12px;border-top:1px solid var(--line)}
 
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(12px);opacity:0;background:#151820;border:1px solid var(--mint);color:var(--ink);padding:10px 14px;z-index:40;transition:.2s;font-size:13px}
 .toast.show{opacity:1;transform:translateX(-50%)}
@@ -183,6 +191,11 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       <button class="btn" id="btnUndo" style="width:100%;margin-bottom:6px">Undo</button>
       <button class="btn" id="btnRedo" style="width:100%">Redo</button>
     </div>
+    <div class="section" style="border-top:1px solid var(--line)">
+      <h2>Game kit</h2>
+      <p style="margin:8px 0 10px;color:var(--muted);font-size:12px;line-height:1.4">Start from a genre, then customize.</p>
+    </div>
+    <div class="genre-rail" id="genreRail"></div>
   </aside>
 
   <section class="stage-wrap">
@@ -259,6 +272,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     <p>Highbit draws true pixel art at 128×192 — large enough for eyelid tension, iris catchlights, and mouth shapes, small enough to drop into a game as a sprite. Faces also render as 96×96 portraits for dialogue.</p>
     <div class="grid-2">
       <div class="card"><strong>Customize</strong><small>Swap body, face, hair, outfit, and extras. Colors generate a five-stop shade ramp automatically.</small></div>
+      <div class="card"><strong>Game kits</strong><small>Start from Fantasy, Wild West, Futuristic, Noir, Pirate, Horror, or Modern, then customize.</small></div>
       <div class="card"><strong>Perform</strong><small>Fourteen expressions and directional poses, including a four-frame walk cycle.</small></div>
       <div class="card"><strong>Paint</strong><small>The paint layer lets you add unique pixels on top of the generated sprite.</small></div>
       <div class="card"><strong>Export</strong><small>PNG at 1×/2×/4×, pose sheets, walk strips, expression grids, and JSON metadata.</small></div>
@@ -270,14 +284,19 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
 
 <div class="modal-bg hidden" id="libModal" role="dialog" aria-modal="true">
   <div class="modal">
-    <h2>Library</h2>
-    <p>Characters save in this browser. Load one to keep editing, or start from a preset.</p>
-    <div style="display:flex;gap:8px;margin:10px 0">
+    <h2>Game kits & library</h2>
+    <p>Pick a genre for the kind of game you’re making, then load a character and tailor them. Saves stay in this browser.</p>
+    <div class="genre-tabs" id="genreTabs"></div>
+    <div style="display:flex;gap:8px;margin:10px 0;flex-wrap:wrap">
       <button class="btn mint" id="btnSaveLib">Save current</button>
       <button class="btn" id="btnLoadJson">Import JSON</button>
       <input type="file" id="jsonFile" accept="application/json" class="hidden">
     </div>
     <div class="library" id="library"></div>
+    <div class="lib-saved">
+      <h2>Saved in this browser</h2>
+      <div class="library" id="savedLib"></div>
+    </div>
     <div style="text-align:right;margin-top:12px"><button class="btn" id="closeLib">Close</button></div>
   </div>
 </div>
@@ -1667,6 +1686,8 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     return {
       id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
       name:"Aurel Vale",
+      genre:"modern",
+      role:"Lead",
       bodyType:"average",
       skin:"#e4b894",
       marks:"none",
@@ -1695,13 +1716,160 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     };
   }
 
-  const PRESETS = [
-    () => Object.assign(defaultChar(),{name:"Aurel Vale"}),
-    () => Object.assign(defaultChar(),{name:"Nim Solace",bodyType:"slim",skin:"#f0d0b0",hairStyle:"pixie",hairColor:"#c45a8a",top:"hoodie",topColor:"#3d2a58",bottom:"skirt",bottomColor:"#2a1a22",shoes:"sneakers",shoeColor:"#d8d2c8",eyeColor:"#4a2a4a",expression:"smile",extra:"round-glasses",accColor:"#1a1a1d"}),
-    () => Object.assign(defaultChar(),{name:"Bram Forge",bodyType:"athletic",skin:"#8d5524",hairStyle:"crop",hairColor:"#1a1210",top:"armor",topColor:"#6b5344",bottom:"cargo",bottomColor:"#2c241c",shoes:"boots",eyeColor:"#5a3a22",browStyle:"thick",expression:"determined",extra:"none"}),
-    () => Object.assign(defaultChar(),{name:"Ivy Quill",bodyType:"slim",skin:"#c68654",hairStyle:"bun",hairColor:"#4a2a14",top:"shirt",topColor:"#d8d2c8",bottom:"pants",bottomColor:"#4a5560",extra:"glasses",accColor:"#1a1a1d",eyeColor:"#2a4a7a",expression:"thinking",bangs:true}),
-    () => Object.assign(defaultChar(),{name:"Orrin Marsh",bodyType:"sturdy",skin:"#6d3b22",hairStyle:"afro",hairColor:"#1a1210",top:"tee",topColor:"#c45a2a",bottom:"shorts",bottomColor:"#1f2430",shoes:"sandals",shoeColor:"#6b5344",expression:"grin",mouth:"full"})
+  const GENRES = [
+    {id:"fantasy", label:"Fantasy", hint:"Knights, mages, rangers"},
+    {id:"western", label:"Wild West", hint:"Frontier towns and outlaws"},
+    {id:"future", label:"Futuristic", hint:"Neon streets and chrome"},
+    {id:"noir", label:"Noir", hint:"Detectives, rain, alleys"},
+    {id:"pirate", label:"Pirate", hint:"Ships, ports, mutiny"},
+    {id:"horror", label:"Horror", hint:"Gothic night and dread"},
+    {id:"modern", label:"Modern", hint:"Cities, schools, everyday"}
   ];
+
+  const KITS = {
+    fantasy:{
+      top:["armor","tunic","vest","shirt","jacket"],
+      bottom:["pants","cargo","skirt"],
+      shoes:["boots","loafers"],
+      extra:["none","scarf","necklace","headband","cap"],
+      hairStyle:["long","wavy","bun","braids","crop","pixie"],
+      topColor:["#6b5344","#2d5a45","#7a2e2e","#3d2a58","#c9a227","#2b4c7e","#d8d2c8"],
+      bottomColor:["#1f2430","#2c241c","#3a2a22","#2d5a45","#4a5560"],
+      hairColor:["#1a1210","#4a2a14","#f5f0e6","#8a4a1c","#4b2a4a","#e2b05a"],
+      eyeColor:["#3a6b4a","#2a4a7a","#5a3a22","#6a8aaa"]
+    },
+    western:{
+      top:["shirt","vest","jacket","tee"],
+      bottom:["jeans","pants","skirt"],
+      shoes:["boots","loafers"],
+      extra:["cap","none","scarf","necklace"],
+      hairStyle:["messy","crop","bun","long","wavy","undercut"],
+      topColor:["#6b5344","#d8d2c8","#7a2e2e","#c45a2a","#1f2430","#8aa0b8"],
+      bottomColor:["#2b4c7e","#1f2430","#3a2a22","#4a5560"],
+      hairColor:["#1a1210","#4a2a14","#8a4a1c","#e2b05a","#f0d48a"],
+      eyeColor:["#5a3a22","#3a6b4a","#2a4a7a","#1a1a1a"]
+    },
+    future:{
+      top:["hoodie","armor","tank","jacket","tee"],
+      bottom:["cargo","pants","skirt","shorts"],
+      shoes:["sneakers","boots","none"],
+      extra:["glasses","round-glasses","none","headband"],
+      hairStyle:["undercut","pixie","buzz","crop","messy"],
+      topColor:["#3d2a58","#1a1a1d","#8aa0b8","#2a3a8a","#4fb89c","#1f2430"],
+      bottomColor:["#1a1a1d","#1f2430","#3d2a58","#4a5560"],
+      hairColor:["#f5f0e6","#8a8a92","#c45a8a","#2a3a8a","#1a1210","#245c48"],
+      eyeColor:["#2a6a6a","#6a8aaa","#4a2a4a","#c8c3b4","#a33a3a"]
+    },
+    noir:{
+      top:["jacket","shirt","vest","sweater"],
+      bottom:["pants","skirt","jeans"],
+      shoes:["loafers","boots"],
+      extra:["cap","glasses","none"],
+      hairStyle:["undercut","bob","crop","wavy","bun"],
+      topColor:["#1a1a1d","#1f2430","#4a5560","#d8d2c8","#7a2e2e"],
+      bottomColor:["#1a1a1d","#1f2430","#4a5560"],
+      hairColor:["#1a1210","#2a1810","#8a8a92","#4a2a14"],
+      eyeColor:["#5a3a22","#1a1a1a","#2a4a7a"]
+    },
+    pirate:{
+      top:["tunic","vest","shirt","tank"],
+      bottom:["pants","shorts","skirt","cargo"],
+      shoes:["boots","sandals","none"],
+      extra:["scarf","earrings","headband","none"],
+      hairStyle:["messy","braids","long","wavy","bun"],
+      topColor:["#7a2e2e","#d8d2c8","#2d5a45","#6b5344","#1f2430"],
+      bottomColor:["#3a2a22","#1f2430","#2c241c","#4a5560"],
+      hairColor:["#1a1210","#4a2a14","#e2b05a","#f5f0e6","#8a4a1c"],
+      eyeColor:["#3a6b4a","#5a3a22","#2a4a7a"]
+    },
+    horror:{
+      top:["tunic","sweater","vest","shirt"],
+      bottom:["pants","skirt"],
+      shoes:["boots","loafers","none"],
+      extra:["none","necklace","scarf"],
+      hairStyle:["long","messy","wavy","pixie","bald"],
+      topColor:["#1a1a1d","#7a2e2e","#4a2714","#2e1a12","#4a5560"],
+      bottomColor:["#1a1a1d","#1f2430","#2e1a12"],
+      hairColor:["#1a1210","#f5f0e6","#8a8a92","#4b2a4a"],
+      eyeColor:["#6a8aaa","#c8c3b4","#a33a3a","#1a1a1a"]
+    },
+    modern:{
+      top:["jacket","hoodie","tee","shirt","sweater"],
+      bottom:["pants","jeans","skirt","shorts"],
+      shoes:["sneakers","boots","loafers"],
+      extra:["none","glasses","round-glasses","backpack","cap"],
+      hairStyle:["crop","pixie","afro","bun","wavy","undercut"],
+      topColor:["#2b4c7e","#3d2a58","#c45a2a","#1f2430","#d8d2c8","#2d5a45"],
+      bottomColor:["#1f2430","#4a5560","#2a1a22","#2b4c7e"],
+      hairColor:["#1a1210","#2a1810","#c45a8a","#4a2a14","#8a8a92"],
+      eyeColor:["#3a6b4a","#2a4a7a","#4a2a4a","#5a3a22"]
+    }
+  };
+
+  function makeChar(spec){
+    return Object.assign(defaultChar(), spec);
+  }
+
+  const PRESETS = [
+    {genre:"fantasy", role:"Knight", name:"Cael Ironvale", bodyType:"athletic", skin:"#e4b894", hairStyle:"crop", hairColor:"#2a1810", bangs:false, top:"armor", topColor:"#8aa0b8", bottom:"pants", bottomColor:"#1f2430", shoes:"boots", shoeColor:"#4a5560", extra:"none", eyeColor:"#2a4a7a", browStyle:"thick", expression:"determined", marks:"scar"},
+    {genre:"fantasy", role:"Mage", name:"Mira Lumen", bodyType:"slim", skin:"#f0d0b0", hairStyle:"bun", hairColor:"#4b2a4a", bangs:true, top:"tunic", topColor:"#3d2a58", bottom:"skirt", bottomColor:"#2a1a22", shoes:"loafers", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#6a8aaa", expression:"thinking", faceShape:"heart"},
+    {genre:"fantasy", role:"Ranger", name:"Rook Ashfen", bodyType:"average", skin:"#c68654", hairStyle:"messy", hairColor:"#1a1210", bangs:true, top:"vest", topColor:"#2d5a45", bottom:"cargo", bottomColor:"#2c241c", shoes:"boots", shoeColor:"#3a2a22", extra:"cap", accColor:"#6b5344", eyeColor:"#3a6b4a", expression:"smirk", browStyle:"straight"},
+    {genre:"fantasy", role:"Rogue", name:"Sable Wren", bodyType:"slim", skin:"#d9a06a", hairStyle:"pixie", hairColor:"#1a1210", bangs:true, top:"jacket", topColor:"#1a1a1d", bottom:"pants", bottomColor:"#1f2430", shoes:"boots", shoeColor:"#1a1a1d", extra:"earrings", accColor:"#c9a227", eyeColor:"#4a2a4a", expression:"smirk", eyeShape:"sharp"},
+
+    {genre:"western", role:"Sheriff", name:"Dana Holt", bodyType:"athletic", skin:"#e4b894", hairStyle:"crop", hairColor:"#4a2a14", bangs:false, top:"shirt", topColor:"#d8d2c8", bottom:"jeans", bottomColor:"#2b4c7e", shoes:"boots", shoeColor:"#3a2a22", extra:"cap", accColor:"#6b5344", eyeColor:"#5a3a22", browStyle:"straight", expression:"determined"},
+    {genre:"western", role:"Outlaw", name:"Jed Calhoun", bodyType:"sturdy", skin:"#8d5524", hairStyle:"messy", hairColor:"#1a1210", bangs:false, top:"vest", topColor:"#3a2a22", bottom:"pants", bottomColor:"#1f2430", shoes:"boots", shoeColor:"#2e1a12", extra:"scarf", accColor:"#7a2e2e", eyeColor:"#5a3a22", browStyle:"thick", expression:"smirk", marks:"scar", mouth:"full"},
+    {genre:"western", role:"Gambler", name:"Lila Quinn", bodyType:"slim", skin:"#f0d0b0", hairStyle:"bun", hairColor:"#2a1810", bangs:true, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"loafers", shoeColor:"#1a1a1d", extra:"necklace", accColor:"#c9a227", eyeColor:"#2a4a7a", expression:"smirk", faceShape:"heart"},
+    {genre:"western", role:"Deputy", name:"Sam Reed", bodyType:"average", skin:"#c68654", hairStyle:"wavy", hairColor:"#8a4a1c", bangs:true, top:"jacket", topColor:"#6b5344", bottom:"jeans", bottomColor:"#1f2430", shoes:"boots", shoeColor:"#3a2a22", extra:"cap", accColor:"#4a2a14", eyeColor:"#3a6b4a", expression:"neutral"},
+
+    {genre:"future", role:"Runner", name:"Nyx Vale", bodyType:"slim", skin:"#f0d0b0", hairStyle:"pixie", hairColor:"#c45a8a", bangs:true, top:"hoodie", topColor:"#3d2a58", bottom:"cargo", bottomColor:"#1a1a1d", shoes:"sneakers", shoeColor:"#8aa0b8", extra:"round-glasses", accColor:"#4fb89c", eyeColor:"#4a2a4a", expression:"smile", faceShape:"heart"},
+    {genre:"future", role:"Operative", name:"Kade Orion", bodyType:"athletic", skin:"#b56b3d", hairStyle:"undercut", hairColor:"#1a1210", bangs:false, top:"armor", topColor:"#4a5560", bottom:"pants", bottomColor:"#1a1a1d", shoes:"boots", shoeColor:"#1a1a1d", extra:"glasses", accColor:"#8aa0b8", eyeColor:"#2a6a6a", browStyle:"straight", expression:"determined"},
+    {genre:"future", role:"Engineer", name:"Lin Sato", bodyType:"average", skin:"#d9a06a", hairStyle:"bun", hairColor:"#1a1210", bangs:true, top:"shirt", topColor:"#8aa0b8", bottom:"pants", bottomColor:"#1f2430", shoes:"loafers", shoeColor:"#4a5560", extra:"glasses", accColor:"#1a1a1d", eyeColor:"#2a4a7a", expression:"thinking"},
+    {genre:"future", role:"Android", name:"Echo-7", bodyType:"slim", skin:"#c9d5e8", hairStyle:"buzz", hairColor:"#f5f0e6", bangs:false, top:"tank", topColor:"#1a1a1d", bottom:"pants", bottomColor:"#4a5560", shoes:"sneakers", shoeColor:"#8aa0b8", extra:"headband", accColor:"#4fb89c", eyeColor:"#c8c3b4", expression:"neutral", browStyle:"short", marks:"none"},
+
+    {genre:"noir", role:"Detective", name:"Marlowe Finch", bodyType:"average", skin:"#e4b894", hairStyle:"undercut", hairColor:"#1a1210", bangs:false, top:"jacket", topColor:"#1a1a1d", bottom:"pants", bottomColor:"#1f2430", shoes:"loafers", shoeColor:"#1a1a1d", extra:"cap", accColor:"#1f2430", eyeColor:"#5a3a22", browStyle:"straight", expression:"tired"},
+    {genre:"noir", role:"Fixer", name:"Vera Quill", bodyType:"slim", skin:"#f6e0c8", hairStyle:"bob", hairColor:"#1a1210", bangs:true, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"loafers", shoeColor:"#1a1a1d", extra:"glasses", accColor:"#1a1a1d", eyeColor:"#2a4a7a", expression:"smirk", eyeShape:"lidded"},
+    {genre:"noir", role:"Informant", name:"Cal Rourke", bodyType:"slim", skin:"#c68654", hairStyle:"crop", hairColor:"#2a1810", bangs:false, top:"sweater", topColor:"#4a5560", bottom:"pants", bottomColor:"#1f2430", shoes:"loafers", shoeColor:"#3a2a22", extra:"none", eyeColor:"#1a1a1a", expression:"thinking"},
+
+    {genre:"pirate", role:"Captain", name:"Brine Hollow", bodyType:"sturdy", skin:"#8d5524", hairStyle:"messy", hairColor:"#4a2a14", bangs:false, top:"tunic", topColor:"#7a2e2e", bottom:"pants", bottomColor:"#1f2430", shoes:"boots", shoeColor:"#3a2a22", extra:"scarf", accColor:"#d8d2c8", eyeColor:"#5a3a22", browStyle:"thick", expression:"grin", mouth:"full"},
+    {genre:"pirate", role:"Navigator", name:"Wren Tide", bodyType:"slim", skin:"#e4b894", hairStyle:"braids", hairColor:"#1a1210", bangs:true, top:"vest", topColor:"#2d5a45", bottom:"shorts", bottomColor:"#3a2a22", shoes:"sandals", shoeColor:"#6b5344", extra:"earrings", accColor:"#c9a227", eyeColor:"#3a6b4a", expression:"smile"},
+    {genre:"pirate", role:"Gunner", name:"Pax Flint", bodyType:"athletic", skin:"#6d3b22", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tank", topColor:"#d8d2c8", bottom:"cargo", bottomColor:"#2c241c", shoes:"boots", shoeColor:"#3a2a22", extra:"headband", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"determined"},
+
+    {genre:"horror", role:"Scholar", name:"Ivo Graves", bodyType:"slim", skin:"#f6e0c8", hairStyle:"long", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#1a1a1d", bottom:"pants", bottomColor:"#1f2430", shoes:"loafers", shoeColor:"#1a1a1d", extra:"necklace", accColor:"#c9a227", eyeColor:"#6a8aaa", eyeShape:"lidded", expression:"tired", browStyle:"soft"},
+    {genre:"horror", role:"Medium", name:"Hazel Crowe", bodyType:"average", skin:"#e7c4c4", hairStyle:"wavy", hairColor:"#4b2a4a", bangs:true, top:"sweater", topColor:"#4a2714", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"boots", shoeColor:"#2e1a12", extra:"none", eyeColor:"#a33a3a", expression:"scared", faceShape:"heart"},
+    {genre:"horror", role:"Caretaker", name:"Nash Vellum", bodyType:"sturdy", skin:"#d9a06a", hairStyle:"bald", hairColor:"#1a1210", bangs:false, top:"vest", topColor:"#1f2430", bottom:"pants", bottomColor:"#1a1a1d", shoes:"boots", shoeColor:"#1a1a1d", extra:"none", eyeColor:"#1a1a1a", browStyle:"thick", expression:"angry", marks:"scar"},
+
+    {genre:"modern", role:"Lead", name:"Aurel Vale", bodyType:"average", skin:"#e4b894", hairStyle:"crop", hairColor:"#2a1810", bangs:false, top:"jacket", topColor:"#2b4c7e", bottom:"pants", bottomColor:"#1f2430", shoes:"boots", shoeColor:"#3a2a22", extra:"none", eyeColor:"#3a6b4a", expression:"neutral"},
+    {genre:"modern", role:"Student", name:"Nim Solace", bodyType:"slim", skin:"#f0d0b0", hairStyle:"pixie", hairColor:"#c45a8a", bangs:true, top:"hoodie", topColor:"#3d2a58", bottom:"skirt", bottomColor:"#2a1a22", shoes:"sneakers", shoeColor:"#d8d2c8", extra:"round-glasses", accColor:"#1a1a1d", eyeColor:"#4a2a4a", expression:"smile"},
+    {genre:"modern", role:"Coach", name:"Bram Forge", bodyType:"athletic", skin:"#8d5524", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tee", topColor:"#c45a2a", bottom:"shorts", bottomColor:"#1f2430", shoes:"sneakers", shoeColor:"#1a1a1d", extra:"none", eyeColor:"#5a3a22", browStyle:"thick", expression:"determined"},
+    {genre:"modern", role:"Neighbor", name:"Orrin Marsh", bodyType:"sturdy", skin:"#6d3b22", hairStyle:"afro", hairColor:"#1a1210", bangs:false, top:"tee", topColor:"#2d5a45", bottom:"jeans", bottomColor:"#1f2430", shoes:"sandals", shoeColor:"#6b5344", extra:"none", eyeColor:"#3a6b4a", expression:"grin", mouth:"full"}
+  ];
+
+  function presetChar(p){
+    return makeChar({
+      name:p.name, genre:p.genre, role:p.role,
+      bodyType:p.bodyType, skin:p.skin, marks:p.marks||"none",
+      faceShape:p.faceShape||"oval", eyeShape:p.eyeShape||"almond", eyeColor:p.eyeColor,
+      browStyle:p.browStyle||"soft", mouth:p.mouth||"medium", expression:p.expression||"neutral",
+      hairStyle:p.hairStyle, hairColor:p.hairColor, bangs:!!p.bangs,
+      top:p.top, topColor:p.topColor, bottom:p.bottom, bottomColor:p.bottomColor,
+      shoes:p.shoes, shoeColor:p.shoeColor, extra:p.extra||"none", accColor:p.accColor||"#c9a227"
+    });
+  }
+
+  function genreLabel(id){ return (GENRES.find(g=>g.id===id)||{label:id}).label }
+
+  function applyPreset(p, keepName){
+    snapshot();
+    const next = presetChar(p);
+    if(keepName) next.name = ch.name;
+    next.id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+    ch = next;
+    ui.genre = p.genre;
+    syncForm();
+    paintGenre();
+    paintAll();
+    toast(p.role+" · "+p.name);
+  }
 
   const ui = {
     layer:"body",
@@ -1714,7 +1882,9 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     brush:"#f2e6d4",
     brushOn:true,
     frame:0,
-    breath:0
+    breath:0,
+    genre:"modern",
+    libFilter:null
   };
   let ch = defaultChar();
   let undo=[], redo=[];
@@ -1917,34 +2087,85 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   }
 
   function randFrom(a){return a[Math.floor(Math.random()*a.length)]}
+  function paintGenre(){
+    const mark = id => (id===ui.genre ? " on" : "");
+    const fill = (root, openLib) => {
+      if(!root) return;
+      root.innerHTML="";
+      GENRES.forEach(g=>{
+        const b=document.createElement("button");
+        b.className="chip"+mark(g.id);
+        b.textContent=g.label;
+        b.title=g.hint;
+        b.setAttribute("aria-pressed", idOn(g.id));
+        b.onclick=()=>{
+          ui.genre=g.id;
+          if(openLib){ renderLib(); }
+          else {
+            const lead=PRESETS.find(p=>p.genre===g.id);
+            if(lead) applyPreset(lead, false);
+            else paintGenre();
+          }
+        };
+        root.append(b);
+      });
+    };
+    function idOn(id){return String(id===ui.genre)}
+    fill($("#genreRail"), false);
+    const tabs=$("#genreTabs");
+    if(tabs){
+      tabs.innerHTML="";
+      const all=document.createElement("button");
+      all.className="chip"+(ui.libFilter==null?" on":"");
+      all.textContent="All kits";
+      all.onclick=()=>{ui.libFilter=null; renderLib()};
+      tabs.append(all);
+      GENRES.forEach(g=>{
+        const b=document.createElement("button");
+        b.className="chip"+(ui.libFilter===g.id?" on":"");
+        b.textContent=g.label;
+        b.title=g.hint;
+        b.onclick=()=>{ui.libFilter=g.id; ui.genre=g.id; renderLib()};
+        tabs.append(b);
+      });
+    }
+  }
   $("#btnRandom").onclick=()=>{
     snapshot();
-    const p=randFrom(PRESETS)();
-    const keepName=ch.name;
-    Object.assign(ch, p, {
+    const keepName=ch.name, keepExpr=ch.expression;
+    const genre=ui.genre||ch.genre||"modern";
+    const kit=KITS[genre]||KITS.modern;
+    const base=randFrom(PRESETS.filter(p=>p.genre===genre))||randFrom(PRESETS);
+    const next=presetChar(base);
+    Object.assign(next, {
       id:ch.id,
       name:keepName,
+      genre,
       bodyType:randFrom(Object.keys(BODY)),
       skin:randFrom(SKINS),
-      hairStyle:randFrom(HAIR_STYLES.filter(h=>h!=="bald")),
-      hairColor:randFrom(HAIRS),
-      top:randFrom(TOPS),
-      topColor:randFrom(CLOTH),
-      bottom:randFrom(BOTTOMS),
-      bottomColor:randFrom(CLOTH),
-      shoes:randFrom(SHOES),
+      hairStyle:randFrom(kit.hairStyle),
+      hairColor:randFrom(kit.hairColor),
+      top:randFrom(kit.top),
+      topColor:randFrom(kit.topColor),
+      bottom:randFrom(kit.bottom),
+      bottomColor:randFrom(kit.bottomColor),
+      shoes:randFrom(kit.shoes),
       shoeColor:randFrom(CLOTH),
-      extra:randFrom(EXTRAS),
-      eyeColor:randFrom(EYES),
+      extra:randFrom(kit.extra),
+      eyeColor:randFrom(kit.eyeColor),
       eyeShape:randFrom(EYE_SHAPES),
       faceShape:randFrom(FACES),
-      expression:ch.expression,
+      expression:keepExpr,
+      bangs:Math.random()>.45,
       paint:{}
     });
-    syncForm(); paintAll(); toast("New silhouette");
+    ch=next;
+    ui.genre=genre;
+    syncForm(); paintGenre(); paintAll();
+    toast("New "+genreLabel(genre)+" silhouette");
   };
-  $("#btnUndo").onclick=()=>{if(!undo.length) return; redo.push(JSON.stringify(ch)); ch=JSON.parse(undo.pop()); syncForm(); paintAll()};
-  $("#btnRedo").onclick=()=>{if(!redo.length) return; undo.push(JSON.stringify(ch)); ch=JSON.parse(redo.pop()); syncForm(); paintAll()};
+  $("#btnUndo").onclick=()=>{if(!undo.length) return; redo.push(JSON.stringify(ch)); ch=JSON.parse(undo.pop()); ui.genre=ch.genre||ui.genre; syncForm(); paintGenre(); paintAll()};
+  $("#btnRedo").onclick=()=>{if(!redo.length) return; undo.push(JSON.stringify(ch)); ch=JSON.parse(redo.pop()); ui.genre=ch.genre||ui.genre; syncForm(); paintGenre(); paintAll()};
 
   function libKey(){return "highbit-atelier-v1"}
   function loadLib(){try{return JSON.parse(localStorage.getItem(libKey())||"[]")}catch{return []}}
@@ -1952,26 +2173,49 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
 
   function renderLib(){
     const box=$("#library"); box.innerHTML="";
-    PRESETS.forEach((fn,i)=>{
-      const p=fn();
-      const b=document.createElement("button"); b.className="lib-item";
+    const filter = ui.libFilter==null ? null : ui.libFilter;
+    const list = PRESETS.filter(p=>!filter || p.genre===filter);
+    if(!list.length){
+      const empty=document.createElement("p");
+      empty.style.color="var(--muted)";
+      empty.textContent="No kits in this genre yet.";
+      box.append(empty);
+    }
+    list.forEach(p=>{
+      const card=document.createElement("button"); card.className="lib-item";
       const c=document.createElement("canvas"); c.width=64; c.height=96;
-      render(p,{animAmt:0}).blitTo(c.getContext("2d"),0,0,.5);
-      b.append(c); const t=document.createElement("b"); t.textContent="Preset · "+p.name; b.append(t);
-      b.onclick=()=>{snapshot(); ch=fn(); ch.id=crypto.randomUUID?crypto.randomUUID():String(Date.now()); syncForm(); paintAll(); toast("Loaded "+p.name)};
-      box.append(b);
+      render(presetChar(p),{animAmt:0}).blitTo(c.getContext("2d"),0,0,.5);
+      const role=document.createElement("span"); role.className="role"; role.textContent=genreLabel(p.genre)+" · "+p.role;
+      const t=document.createElement("b"); t.textContent=p.name;
+      card.append(c, role, t);
+      card.onclick=()=>{ applyPreset(p, false); $("#libModal").classList.add("hidden") };
+      box.append(card);
     });
-    loadLib().forEach((p,i)=>{
-      const b=document.createElement("button"); b.className="lib-item";
-      const c=document.createElement("canvas"); c.width=64; c.height=96;
-      try{render(p,{animAmt:0}).blitTo(c.getContext("2d"),0,0,.5)}catch{}
-      b.append(c); const t=document.createElement("b"); t.textContent=p.name||"Saved"; b.append(t);
-      b.onclick=()=>{snapshot(); ch=Object.assign(defaultChar(),p); syncForm(); paintAll(); toast("Loaded")};
-      box.append(b);
-    });
+    const saved=$("#savedLib");
+    if(saved){
+      saved.innerHTML="";
+      const items=loadLib();
+      if(!items.length){
+        const empty=document.createElement("p");
+        empty.style.color="var(--muted)";
+        empty.textContent="Nothing saved yet.";
+        saved.append(empty);
+      }
+      items.forEach(p=>{
+        const card=document.createElement("button"); card.className="lib-item";
+        const c=document.createElement("canvas"); c.width=64; c.height=96;
+        try{render(Object.assign(defaultChar(),p),{animAmt:0}).blitTo(c.getContext("2d"),0,0,.5)}catch{}
+        const role=document.createElement("span"); role.className="role"; role.textContent=(p.genre?genreLabel(p.genre)+" · ":"")+(p.role||"Saved");
+        const t=document.createElement("b"); t.textContent=p.name||"Saved";
+        card.append(c, role, t);
+        card.onclick=()=>{snapshot(); ch=Object.assign(defaultChar(),p); ui.genre=ch.genre||ui.genre; syncForm(); paintGenre(); paintAll(); toast("Loaded"); $("#libModal").classList.add("hidden")};
+        saved.append(card);
+      });
+    }
+    paintGenre();
   }
 
-  $("#btnLib").onclick=()=>{renderLib(); $("#libModal").classList.remove("hidden")};
+  $("#btnLib").onclick=()=>{ui.libFilter=ui.genre||null; renderLib(); $("#libModal").classList.remove("hidden")};
   $("#closeLib").onclick=()=>$("#libModal").classList.add("hidden");
   $("#btnSaveLib").onclick=()=>{
     const list=loadLib();
@@ -2132,6 +2376,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   }
 
   buildLayers();
+  paintGenre();
   paintInspector();
   paintSheet();
   paintView();

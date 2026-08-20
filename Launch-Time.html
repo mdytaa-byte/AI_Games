@@ -111,7 +111,10 @@
       display: block; width: 100%; margin: 4px 0; padding: 6px; border: 2px solid #c9a33a;
       background: #231547; color: var(--pale); font: 700 12px "Courier New", monospace; cursor: pointer; text-align: left;
     }
-    .panel button:hover, .blist button:hover, .panel button:focus { filter: brightness(1.2); }
+    .panel button:hover, .blist button:hover, .panel button:focus,
+    .panel button.sel, .blist button.sel, .choice.sel, .jitem.sel {
+      filter: brightness(1.2); outline: 2px solid #ffe58a;
+    }
     .choice { display: block; width: 100%; margin: 5px 0; padding: 7px; border: 2px solid #9b5cff;
       background: #1b1036; color: #fff4c4; font: 700 12px "Courier New", monospace; cursor: pointer; text-align: left; }
     #battle .panel { width: min(340px, 94%); }
@@ -155,7 +158,7 @@
         <button class="menu-btn" id="btnNew">NEW QUEST</button>
         <button class="menu-btn" id="btnContinue">CONTINUE</button>
         <button class="menu-btn" id="btnHow">HOW TO PLAY</button>
-        <p style="margin-top:16px;font-size:10px;color:#9b8cc0">ARROWS / WASD MOVE · Z / SPACE CONFIRM · X MENU</p>
+        <p style="margin-top:16px;font-size:10px;color:#9b8cc0">ARROWS / WASD MOVE · Z / SPACE CONFIRM · X MENU · Z STARTS A NEW QUEST</p>
       </div>
       <div id="endingUI" class="overlay">
         <h1>EXCELSIOR</h1>
@@ -231,12 +234,12 @@ const ENEMIES = {
   punk:    { name: "Alley Tough", hp: 22, atk: 5, def: 1, xp: 10, weak: "fire", col: "#8a3040" },
   bouncer: { name: "Club Bouncer", hp: 28, atk: 6, def: 2, xp: 12, weak: "confuse", col: "#303040" },
   barrel:  { name: "Flaming Barrel", hp: 16, atk: 6, def: 0, xp: 6, weak: "quench", col: "#ff6030" },
-  treble:  { name: "Treble", hp: 36, atk: 8, def: 6, xp: 20, weak: "silence", col: "#f0e8d8" },
+  treble:  { name: "Treble", hp: 28, atk: 7, def: 2, xp: 20, weak: "silence", col: "#f0e8d8" },
   spark:   { name: "Red-Leaf Spark", hp: 20, atk: 7, def: 1, xp: 10, weak: "quench", col: "#ff4040" },
-  golem:   { name: "Thorn Golem", hp: 48, atk: 9, def: 4, xp: 28, weak: "fire", col: "#2a5a20" },
-  felgarath:{ name: "Felgarath", hp: 72, atk: 10, def: 4, xp: 50, weak: "fire", col: "#6a1020", boss: true },
-  dragon:  { name: "Mothership Dragon", hp: 64, atk: 11, def: 5, xp: 40, weak: "rabbit", col: "#40c070", boss: true },
-  tiberius:{ name: "Tiberius Plinth", hp: 80, atk: 12, def: 5, xp: 60, weak: "laser", col: "#3090c0", boss: true },
+  golem:   { name: "Thorn Golem", hp: 36, atk: 7, def: 3, xp: 28, weak: "fire", col: "#2a5a20" },
+  felgarath:{ name: "Felgarath", hp: 50, atk: 8, def: 3, xp: 50, weak: "fire", col: "#6a1020", boss: true },
+  dragon:  { name: "Mothership Dragon", hp: 48, atk: 8, def: 3, xp: 40, weak: "rabbit", col: "#40c070", boss: true },
+  tiberius:{ name: "Tiberius Plinth", hp: 52, atk: 8, def: 3, xp: 60, weak: "laser", col: "#3090c0", boss: true },
   editor: { name: "The Editor", hp: 54, atk: 7, def: 3, xp: 80, weak: "margin", col: "#a01828", boss: true }
 };
 
@@ -268,8 +271,8 @@ const FOOTNOTES = [
   {
     "id": 1,
     "map": "countryside",
-    "x": 8,
-    "y": 17,
+    "x": 11,
+    "y": 15,
     "title": "I tried \"Take me to your editor\" once",
     "text": "I tried “Take me to your editor” once. The editor refused to meet me until I removed seventeen pages of footnotes, which of course I refused to do on principle."
   },
@@ -300,8 +303,8 @@ const FOOTNOTES = [
   {
     "id": 5,
     "map": "apartment",
-    "x": 2,
-    "y": 6,
+    "x": 4,
+    "y": 5,
     "title": "She was as thin as a rail, her hair was…",
     "text": "She was as thin as a rail, her hair was black as pitch, her eyes blue as the sky, and her lips ruby red. Oh, and guilty as sin. She also had a mysterious laugh, an ominous cloak, and a habit of appearing in doorways exactly when dramatic tension required it."
   },
@@ -380,8 +383,8 @@ const FOOTNOTES = [
   {
     "id": 15,
     "map": "nyc",
-    "x": 8,
-    "y": 14,
+    "x": 9,
+    "y": 12,
     "title": "At the time of this writing, New York…",
     "text": "At the time of this writing, New York contains approximately three million aspiring actors and six acting jobs."
   },
@@ -412,8 +415,8 @@ const FOOTNOTES = [
   {
     "id": 19,
     "map": "club",
-    "x": 3,
-    "y": 8,
+    "x": 8,
+    "y": 6,
     "title": "Any establishment named after a planet…",
     "text": "Any establishment named after a planet should immediately make you suspicious. Such a name immediately triples the odds that it’s a front run by extraterrestrials."
   },
@@ -476,24 +479,24 @@ const FOOTNOTES = [
   {
     "id": 27,
     "map": "garyapt",
-    "x": 1,
-    "y": 2,
+    "x": 2,
+    "y": 3,
     "title": "Even in the afterlife, the postal…",
     "text": "Even in the afterlife, the postal service remains astonishingly inefficient. Living pigeons are hard enough to motivate, but what do you give to a pigeon that’s already dead?"
   },
   {
     "id": 28,
     "map": "cave",
-    "x": 2,
-    "y": 8,
+    "x": 7,
+    "y": 7,
     "title": "Which is simply a fancy way of saying…",
     "text": "Which is simply a fancy way of saying “ghost who asks too many questions.” Curiosity may have killed the cat, but it probably killed him too. I think it was the lovely pair of cement shoes he wears that gave it away."
   },
   {
     "id": 29,
     "map": "island",
-    "x": 6,
-    "y": 11,
+    "x": 10,
+    "y": 10,
     "title": "For some reason, prophecies love…",
     "text": "For some reason, prophecies love numbers, though the numbers rarely make sense. The worst example I have seen was the so-called “Fractious Fraction Prophecy,” which contained no fewer than a dozen fractions, including oddities like 1/37."
   },
@@ -524,8 +527,8 @@ const FOOTNOTES = [
   {
     "id": 33,
     "map": "office",
-    "x": 2,
-    "y": 6,
+    "x": 5,
+    "y": 5,
     "title": "Villains always keep the good liquor",
     "text": "Villains always keep the good liquor. I have a theory that their rotten natures make things ferment faster around them. In any case, he was sharing a cask of Bean-ot Noir, of the Supreme Bean vintage. It came from the Beandom’s royal vineyards; how he managed to swipe one remains a mystery."
   },
@@ -580,8 +583,8 @@ const FOOTNOTES = [
   {
     "id": 40,
     "map": "arcade",
-    "x": 2,
-    "y": 5,
+    "x": 4,
+    "y": 6,
     "title": "Bowling alleys remain one of the few…",
     "text": "Bowling alleys remain one of the few places where wizards, teenagers, and retired accountants coexist peacefully."
   },
@@ -612,8 +615,8 @@ const FOOTNOTES = [
   {
     "id": 44,
     "map": "bank",
-    "x": 2,
-    "y": 5,
+    "x": 5,
+    "y": 4,
     "title": "I have no idea who this is, but Gary…",
     "text": "I have no idea who this is, but Gary assured me the comparison is deeply flattering to the abdomen in question."
   },
@@ -660,15 +663,15 @@ const FOOTNOTES = [
   {
     "id": 50,
     "map": "ship",
-    "x": 10,
-    "y": 8,
+    "x": 9,
+    "y": 5,
     "title": "Modern courtship involves escorting…",
     "text": "Modern courtship involves escorting one’s beloved to watch strangers play games, and then to admire a single enormous decorated tree. In my day, one simply slew something impressive and presented the head. Both customs have their detractors."
   },
   {
     "id": 51,
     "map": "ruins",
-    "x": 6,
+    "x": 10,
     "y": 10,
     "title": "A scrying-glass that shows mostly…",
     "text": "A scrying-glass that shows mostly sharks, the assembly of very large vehicles, and the occasional man shouting about gold. Against all odds, I find it soothing."
@@ -676,8 +679,8 @@ const FOOTNOTES = [
   {
     "id": 52,
     "map": "mothership",
-    "x": 2,
-    "y": 8,
+    "x": 8,
+    "y": 7,
     "title": "A Swiss Army knife is a tiny toolbox…",
     "text": "A Swiss Army knife is a tiny toolbox masquerading as a blade, able to open bottles, file nails, and, in theory, remove stones from horses’ hooves, though I have yet to meet anyone who has used that last part. Gopat is much the same, minus the bottle opener."
   },
@@ -724,7 +727,7 @@ const FOOTNOTES = [
   {
     "id": 58,
     "map": "beandom",
-    "x": 6,
+    "x": 11,
     "y": 10,
     "title": "Pokémon are small magical creatures who…",
     "text": "Pokémon are small magical creatures who battle one another for sport and are stored in pocket-sized spheres. The Beandom banned the practice ages ago, largely because our creatures kept eating the spheres."
@@ -1148,7 +1151,7 @@ const CHAPTERS = [
     title: "EXCELSIOR",
     hero: "jd",
     map: "mothership",
-    spawn: [8, 4],
+    spawn: [8, 8],
     goal: "Set course for the Eagle's Roost.",
     intro: [
       ["jd", "Fourteen pieces remain. The Singhilarity is already heading for Tatsrar."]
@@ -1171,6 +1174,7 @@ let battle = null;
 let audio;
 let musicTimer = 0;
 let encounterCool = 0;
+let uiSel = 0;
 
 function deep(o) { return JSON.parse(JSON.stringify(o)); }
 
@@ -1315,7 +1319,7 @@ function finishGame() {
     document.getElementById("endingText").textContent =
       "One piece of the Deus Ex Machina is ours. Fourteen remain. The Singhilarity is already racing toward Tatsrar. The mothership plunges into Middlespace. Book I is complete."
       + (state.flags.editorDone ? " The Unabridged Edition rides along in the satchel." : "");
-    localStorage.removeItem(SAVE_KEY);
+    save();
   });
 }
 
@@ -1464,6 +1468,8 @@ function openJournal() {
       journalEl.querySelector("#jbody").textContent = "† " + fn.title + " — " + fn.text;
     };
   });
+  uiSel = 0;
+  highlightSel();
 }
 function closeJournal() {
   journalEl.classList.remove("show");
@@ -1477,12 +1483,11 @@ function interact() {
   const under = tileAt(state.x + 8, state.y + 12);
   const ch = chapter();
   const flags = state.flags;
-  const t = (f.t && f.t !== "." && f.t !== "," && f.t !== "=" && f.t !== "h") ? f.t : under;
-  const tx = f.tx, ty = f.ty;
   const standTx = Math.floor((state.x + 8) / TS), standTy = Math.floor((state.y + 12) / TS);
+  const t = usefulTile(f.t) ? f.t : (usefulTile(under) ? under : (f.t || under));
 
   const note = noteAt(f.tx, f.ty) || noteAt(standTx, standTy);
-  if (note) { collectNote(note); return; }
+  if (note && !isStoryObj(t)) { collectNote(note); return; }
 
   if (state.flags.editorQuest && !state.flags.editorDone && state.map !== "copydesk") {
     const p = pigeonTile();
@@ -1490,7 +1495,7 @@ function interact() {
   }
   if (state.map === "copydesk") {
     if (near(7, 4, 2) || t === "o") { talkEditor(); return; }
-    if (t === "D" && state.flags.editorDone) { leaveCopydesk(); return; }
+    if (t === "D") { leaveCopydesk(); return; }
     say("editor", "The copy desk does not have a snack bar. It has a red pen.");
     return;
   }
@@ -1508,7 +1513,7 @@ function interact() {
     return;
   }
 
-  if (t === "*" && ch.id === "ch1") {
+  if ((t === "*" || near(11, 5, 1)) && ch.id === "ch1") {
     sayMany([
       ["petra", "Yep, that's a big shiny gear, all right. Looks like one of the bigger ones."],
       ["jd", "If this isn't the DEM, it is definitely something we do not want in unscrupulous hands."],
@@ -1550,7 +1555,15 @@ function interact() {
     return;
   }
 
-  if (t === "f") { say("jd", "A device that keeps your drink cold. Not a potion cupboard, Petra."); give("coke"); return; }
+  if (t === "f") {
+    if ((state.items.coke || 0) < 5) {
+      give("coke");
+      say("jd", "A device that keeps your drink cold. Not a potion cupboard, Petra. I pocket a Coke.");
+    } else {
+      say("jd", "The fridge is already well stocked. Don't you ever change.");
+    }
+    return;
+  }
   if (t === "s" && ch.id === "ch2") { say("jd", "The gear stays in the safe until we know what we're doing."); return; }
   if (t === "w") { say("jd", "What looks like a humble thermostat can actually adjust the time-perature."); return; }
   if (t === "B") { say("jd", "Signage from the '70s. YOUR TAX DOLLARS AT WORK. A NEW DMV LOCATION IS COMING SOON."); return; }
@@ -1624,7 +1637,7 @@ function interact() {
   }
 
   if (ch.id === "ch6") {
-    if (t === "p" || t === "c") {
+    if (t === "p" || t === "c" || near(1, 1, 1) || near(4, 3, 1)) {
       sayMany([
         ["gary", "The mark heats up when I think about tossing this. It cools when I look at the signature line."]
       ], () => {
@@ -1683,15 +1696,13 @@ function interact() {
       return;
     }
     if (state.map === "ruins") {
-      if (near(10, 4, 2) && !flags.sergioTalk) {
-        sayMany([
+      if (t === "A" || near(9, 4, 1)) {
+        const intro = !flags.sergioTalk ? [
           ["sergio", "Where's your ear protection? Are you insane? They're coming! The trebles!"],
           ["jd", "We're not from around here."]
-        ], () => { flags.sergioTalk = true; });
-        return;
-      }
-      if (t === "A") {
-        startBattle("treble", () => {
+        ] : [];
+        flags.sergioTalk = true;
+        const begin = () => startBattle("treble", () => {
           flags.glove = true;
           state.glove = true;
           give("glove"); give("helmet");
@@ -1708,6 +1719,8 @@ function interact() {
             ], () => advanceChapter());
           });
         });
+        if (intro.length) sayMany(intro, begin);
+        else begin();
         return;
       }
     }
@@ -1719,10 +1732,10 @@ function interact() {
         ["vincenza", "Is it your first time at sea?"],
         ["gary", "Was it that obvious?"],
         ["vincenza", "I'm Vincenza. I'm with the expedition too."]
-      ], () => { flags.vincenza = true; state.vincenza = true; });
+      ], () => { flags.vincenza = true; state.vincenza = true; setGoal("Talk to Vincenza again when you are ready for dinner."); });
       return;
     }
-    if (flags.vincenza && !flags.fire) {
+    if (flags.vincenza && !flags.fire && near(12, 4, 3)) {
       sayMany([
         ["larson", "Chicken cordon bleu tonight. Bon appétit."],
         ["gary", "The flag at the stern looks suspiciously like the tattoo on my hand."],
@@ -1798,7 +1811,7 @@ function interact() {
   }
 
   if (ch.id === "ch13") {
-    if (t === "A" || t === "D" || near(10, 4, 2)) {
+    if (t === "A" || near(9, 4, 1)) {
       startBattle("treble", () => {
         sayMany([
           ["jd", "Gopat handles the sonic shield. Everyone stays close. No unnecessary sound."],
@@ -1835,7 +1848,7 @@ function interact() {
   }
 
   if (ch.id === "ch15") {
-    if (t === "P" || near(6, 4, 2)) {
+    if (t === "P" || near(6, 4, 1)) {
       sayMany([
         ["sergio", "The coordinates are confirmed. The Eagle's Roost. After that, Tatsrar."],
         ["jd", "How long until the Singhilarity reaches Tatsrar?"],
@@ -1880,8 +1893,17 @@ function bumpFlavor() {
 function facingTile() {
   const dx = state.dir === "left" ? -16 : state.dir === "right" ? 16 : 0;
   const dy = state.dir === "up" ? -16 : state.dir === "down" ? 16 : 0;
-  const px = state.x + 8 + dx, py = state.y + 8 + dy;
+  const px = state.x + 8 + dx, py = state.y + 12 + dy;
   return { t: tileAt(px, py), tx: Math.floor(px / TS), ty: Math.floor(py / TS) };
+}
+function isFloor(tile) {
+  return !tile || tile === "." || tile === "," || tile === "=" || tile === "h";
+}
+function isStoryObj(tile) {
+  return tile === "*" || tile === "$" || tile === "K" || tile === "A" || tile === "P" || tile === "C";
+}
+function usefulTile(tile) {
+  return tile && !isFloor(tile) && tile !== "#" && !BLOCK.has(tile);
 }
 function near(tx, ty, r) {
   const px = Math.floor((state.x + 8) / TS), py = Math.floor((state.y + 12) / TS);
@@ -1892,12 +1914,35 @@ function give(id, n) {
   state.items[id] = (state.items[id] || 0) + (n || 1);
 }
 
+function panelButtons() {
+  if (mode === "battle") return [...battleEl.querySelectorAll("button")];
+  if (mode === "pause" || mode === "choice") return [...pauseEl.querySelectorAll("button")];
+  if (mode === "journal") return [...journalEl.querySelectorAll("button")];
+  if (mode === "title") return [...titleUI.querySelectorAll("button")];
+  if (mode === "ending") return [...endingUI.querySelectorAll("button")];
+  return [];
+}
+function highlightSel() {
+  const btns = panelButtons();
+  if (!btns.length) return;
+  uiSel = ((uiSel % btns.length) + btns.length) % btns.length;
+  btns.forEach((b, i) => b.classList.toggle("sel", i === uiSel));
+  if (btns[uiSel].scrollIntoView) btns[uiSel].scrollIntoView({ block: "nearest" });
+}
+function activateSel() {
+  const btns = panelButtons();
+  const b = btns[uiSel] || btns[0];
+  if (b && !b.classList.contains("locked")) b.click();
+}
+
 function showChoices(opts) {
   pauseEl.classList.add("show");
   pauseEl.innerHTML = `<div class="panel"><h2>CHOOSE</h2>${opts.map((o, i) => `<button class="choice" data-i="${i}">${o[0]}</button>`).join("")}</div>`;
   [...pauseEl.querySelectorAll("button")].forEach((b, i) => {
     b.onclick = () => { pauseEl.classList.remove("show"); pauseEl.innerHTML = ""; opts[i][1](); };
   });
+  uiSel = 0;
+  highlightSel();
 }
 
 function openMenu() {
@@ -1930,6 +1975,8 @@ function openMenu() {
     state.petraOut = !state.petraOut;
     say("petra", state.petraOut ? "Always watching." : "Back to the Netherworld. Try not to start an orphanage-destroying scheme.");
   };
+  uiSel = 0;
+  highlightSel();
 }
 function closeMenu() {
   pauseEl.classList.remove("show");
@@ -1953,6 +2000,7 @@ function startBattle(id, onWin) {
   const foe = { ...src, hp: src.hp, max: src.hp, revealed: false };
   battle = { foe, onWin, log: foe.name + " appears!", menu: "main" };
   mode = "battle";
+  uiSel = 0;
   renderBattle();
   beep(180, 0.08); beep(120, 0.12);
 }
@@ -1990,7 +2038,10 @@ function renderBattle() {
   battleEl.querySelectorAll("[data-act]").forEach((el) => el.onclick = () => battleAct(el.dataset.act));
   battleEl.querySelectorAll("[data-sp]").forEach((el) => el.onclick = () => castSpell(el.dataset.sp));
   battleEl.querySelectorAll("[data-it]").forEach((el) => el.onclick = () => battleItem(el.dataset.it));
-  battleEl.querySelectorAll("[data-back]").forEach((el) => el.onclick = () => { battle.menu = "main"; renderBattle(); });
+  battleEl.querySelectorAll("[data-back]").forEach((el) => el.onclick = () => { battle.menu = "main"; uiSel = 0; renderBattle(); });
+  uiSel = Math.min(uiSel, battleEl.querySelectorAll("button").length - 1);
+  if (uiSel < 0) uiSel = 0;
+  highlightSel();
 }
 
 function heroSpells() {
@@ -2007,8 +2058,8 @@ function heroSpells() {
 
 function battleAct(act) {
   if (!battle || battle.foe.hp <= 0) return;
-  if (act === "magic") { battle.menu = "magic"; renderBattle(); return; }
-  if (act === "item") { battle.menu = "item"; renderBattle(); return; }
+  if (act === "magic") { battle.menu = "magic"; uiSel = 0; renderBattle(); return; }
+  if (act === "item") { battle.menu = "item"; uiSel = 0; renderBattle(); return; }
   if (act === "run") {
     if (battle.foe.boss) { battle.log = "You cannot run from this."; renderBattle(); return; }
     endBattle(false);
@@ -2077,10 +2128,10 @@ function enemyTurn() {
   battle.menu = "main";
   beep(140, 0.1);
   if (state.hp <= 0) {
-    state.hp = 1;
+    state.hp = Math.max(8, Math.floor(state.maxHp / 2));
     battle.log = "You drop... but J.D. has died before. Or Gary refuses to miss this callback.";
     renderBattle();
-    setTimeout(() => { endBattle(false); say("", "You stagger back. Try another approach."); }, 700);
+    setTimeout(() => { endBattle(false); say("", "You stagger back, half recovered. Try another approach."); }, 700);
     return;
   }
   renderBattle();
@@ -2144,6 +2195,18 @@ function musicTick() {
   }
 }
 
+function shouldHint() {
+  const f = facingTile();
+  const standTx = Math.floor((state.x + 8) / TS), standTy = Math.floor((state.y + 12) / TS);
+  if (noteAt(f.tx, f.ty) || noteAt(standTx, standTy)) return true;
+  if (state.flags.editorQuest && !state.flags.editorDone && state.map !== "copydesk") {
+    const p = pigeonTile();
+    if (near(p.x, p.y, 2)) return true;
+  }
+  if (state.map === "copydesk" && (near(7, 4, 2) || f.t === "o" || f.t === "D")) return true;
+  return usefulTile(f.t) || usefulTile(tileAt(state.x + 8, state.y + 12));
+}
+
 function draw() {
   const m = curMap();
   cam.x = Math.max(0, Math.min(m.w * TS - W, state.x - W / 2 + 8));
@@ -2167,6 +2230,13 @@ function draw() {
   }
   drawChapterNpcs();
   drawFootnotes();
+  if (mode === "explore" && !dialogEl.classList.contains("show") && shouldHint()) {
+    const px = Math.floor(state.x - cam.x) + 6;
+    const py = Math.floor(state.y - cam.y) - 6;
+    ctx.fillStyle = (anim % 40 < 20) ? "#ffe58a" : "#c45cff";
+    ctx.fillRect(px, py, 4, 4);
+    ctx.fillRect(px + 1, py + 5, 2, 2);
+  }
   if (mode === "card") {
     ctx.fillStyle = "rgba(6,2,14,0.55)";
     ctx.fillRect(0, 0, W, H);
@@ -2191,7 +2261,8 @@ function drawTile(tx, ty, t) {
     island: ["#102030", "#c2a46a"],
     cave: ["#140c10", "#2a1818"],
     beandom: ["#0e1c10", "#2f6a28"],
-    mothership: ["#07061a", "#12142a"]
+    mothership: ["#07061a", "#12142a"],
+    copydesk: ["#1a080c", "#3a1820"]
   };
   const [bg, fl] = palettes[ch] || ["#111", "#333"];
   ctx.fillStyle = bg;
@@ -2380,7 +2451,7 @@ function update(dt) {
     typeT += dt;
     if (typeT > 16) { typing += typeFull[typing.length]; typeT = 0; renderDialog(); }
   }
-  if (mode === "explore") {
+  if (mode === "explore" && !dialogEl.classList.contains("show")) {
     let dx = 0, dy = 0;
     if (keys.left || keys.a) dx -= 1;
     if (keys.right || keys.d) dx += 1;
@@ -2398,6 +2469,9 @@ function update(dt) {
       const ny = state.y + dy * sp;
       if (!blocked(nx, state.y)) state.x = nx;
       if (!blocked(state.x, ny)) state.y = ny;
+      const standTx = Math.floor((state.x + 8) / TS), standTy = Math.floor((state.y + 12) / TS);
+      const stepped = noteAt(standTx, standTy);
+      if (stepped) collectNote(stepped);
     }
     encounterCool = Math.max(0, encounterCool - 1);
     if (state.moving && encounterCool === 0 && (state.map === "ruins" || state.map === "beandom") && Math.random() < 0.004) {
@@ -2412,22 +2486,42 @@ function update(dt) {
 function confirm() {
   getAudio();
   if (dialogEl.classList.contains("show")) { nextLine(); beep(660, 0.04); return; }
-  if (mode === "title" || mode === "ending" || mode === "pause" || mode === "choice" || mode === "battle" || mode === "journal") return;
+  if (mode === "title" || mode === "ending" || mode === "pause" || mode === "choice" || mode === "battle" || mode === "journal") {
+    activateSel();
+    beep(660, 0.04);
+    return;
+  }
   interact();
 }
 
 window.addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
+  if (e.repeat && (k === "z" || k === "enter" || k === " " || k === "x" || k === "escape")) {
+    e.preventDefault();
+    return;
+  }
   keys[k] = true;
   if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(e.key.toLowerCase()) || e.code.startsWith("Arrow")) e.preventDefault();
   if (k === "arrowup") keys.up = true;
   if (k === "arrowdown") keys.down = true;
   if (k === "arrowleft") keys.left = true;
   if (k === "arrowright") keys.right = true;
+  const menuMode = mode === "pause" || mode === "choice" || mode === "battle" || mode === "journal" || mode === "title" || mode === "ending";
+  if (menuMode && (k === "arrowup" || k === "w" || k === "arrowleft" || k === "a")) {
+    uiSel--;
+    highlightSel();
+    return;
+  }
+  if (menuMode && (k === "arrowdown" || k === "s" || k === "arrowright" || k === "d")) {
+    uiSel++;
+    highlightSel();
+    return;
+  }
   if (k === "z" || k === "enter" || k === " ") confirm();
   if (k === "x" || k === "escape") {
     if (mode === "journal") closeJournal();
     else if (mode === "pause") closeMenu();
+    else if (mode === "title" || mode === "ending" || mode === "battle" || mode === "choice") return;
     else openMenu();
   }
 });
@@ -2484,7 +2578,7 @@ document.getElementById("btnContinue").onclick = () => {
 };
 document.getElementById("btnHow").onclick = () => {
   sayMany([
-    ["", "Walk with arrows or WASD. Confirm with Z or Space. Menu with X."],
+    ["", "Walk with arrows or WASD. Confirm with Z or Space. Menu with X. On menus, arrows move the cursor and Z selects."],
     ["", "You play J.D. Zaubermann and Gary Baumgartner in alternating chapters from the novel."],
     ["", "Talk to everyone. Touch glowing gears. When a purple wisp or a treble appears, fight."],
     ["", "J.D.'s watch summons Petra. Gopat's glove learns spells. Gary's red-leaf mark remembers fire."],
@@ -2505,6 +2599,7 @@ function loop(t) {
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
+highlightSel();
 
 window.LAUNCH_TIME = {
   start: () => { state = newState(); loadChapter(0); },
@@ -2521,7 +2616,9 @@ window.LAUNCH_TIME = {
   },
   winFight: () => { if (typeof battle !== "undefined" && battle) { battle.foe.hp = 0; winBattle(); } },
   chapters: CHAPTERS.map((c) => c.id),
-  maps: Object.keys(MAPS)
+  maps: Object.keys(MAPS),
+  grid: () => curMap(),
+  blockedTile: (t) => BLOCK.has(t)
 };
 </script>
 </body>

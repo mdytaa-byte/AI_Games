@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kleinhausen Deutsch — 3D und Canvas</title>
+<meta name="description" content="Immersive German learning games set in Kleinhausen. 3D WebGL worlds plus 2D practice, all deployable to Canvas LMS.">
+<style>
+:root{
+  --gelb:#F2C230; --tinte:#12141A; --emaille:#EFF1EC; --blau:#123E77; --ok:#3E8E4E;
+  --font-d:"Bahnschrift","DIN Alternate","Arial Narrow",system-ui,sans-serif;
+  --font-b:"Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#0b0d12;color:var(--emaille);font-family:var(--font-b);line-height:1.55}
+header{padding:2.4rem 1.2rem 1.6rem;background:linear-gradient(180deg,#1a2433,#0b0d12);border-bottom:3px solid var(--gelb)}
+header h1{font-family:var(--font-d);letter-spacing:.08em;text-transform:uppercase;margin:0 0 .3rem;font-size:clamp(1.6rem,4vw,2.4rem)}
+.kicker{font-family:var(--font-d);letter-spacing:.2em;text-transform:uppercase;color:var(--gelb);font-size:.78rem}
+main{max-width:1080px;margin:0 auto;padding:1.4rem 1.1rem 4rem}
+h2{font-family:var(--font-d);letter-spacing:.06em;text-transform:uppercase;color:var(--gelb);font-size:1.1rem}
+.lede{max-width:46rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:1rem 0 2rem}
+a.card{display:block;background:#1D212B;border:2px solid rgba(239,241,236,.14);border-radius:4px;padding:1rem 1.05rem;color:inherit;text-decoration:none;min-height:11rem}
+a.card:hover{border-color:var(--gelb);background:#242a38}
+.tag{display:inline-block;font-family:var(--font-d);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid currentColor;border-radius:99px;padding:.12em .5em;margin:0 .25em .4em 0}
+.tag.d3{color:var(--gelb)}
+.tag.d2{color:#8fd69c}
+.tag.lv{color:#9ec5ff}
+a.card h3{font-family:var(--font-d);margin:.2rem 0 .35rem;letter-spacing:.03em;text-transform:uppercase;font-size:1.02rem}
+a.card p{margin:0;opacity:.86;font-size:.92rem}
+.note{background:#1D212B;border-left:4px solid var(--gelb);padding:.8rem 1rem;margin:1.2rem 0}
+code{font-family:ui-monospace,Consolas,monospace;font-size:.88em}
+footer{opacity:.7;font-size:.85rem;margin-top:2rem}
+</style>
+</head>
+<body>
+<header>
+<p class="kicker">Kleinhausen · Deutsch als Fremdsprache</p>
+<h1>3D-Lernwelten für Canvas</h1>
+<p class="lede">Acht neue First-Person-Räume in der fiktiven Stadt Kleinhausen — plus die bestehenden 2D-Spiele. Alles läuft im Browser, ohne Konto, ohne CDN. Lehrerinnen kopieren den Abschlusscode in eine Canvas-Aufgabe.</p>
+</header>
+<main>
+<div class="note">
+<strong>Canvas:</strong> Am zuverlässigsten den GitHub-Pages-Link in einem neuen Tab öffnen oder per iframe einbetten (Scripts + Fullscreen erlauben).
+Wenn WebGL in der Schule gesperrt ist, hat jedes 3D-Spiel einen <em>Funkmodus</em> — dieselben Deutsch-Aufgaben ohne 3D.
+Einzeldateien zum Hochladen liegen unter <code>canvas/</code>. Anleitung: <a href="canvas-lehrerhinweise.html" style="color:var(--gelb)">Lehrerhinweise</a>.
+</div>
+
+<h2>Neu · 3D Kleinhausen</h2>
+<div class="grid">
+<a class="card" href="spiele/cafe-sonnenkorn.html"><span class="tag d3">3D</span><span class="tag lv">A1</span><h3>Café Sonnenkorn</h3><p>Speisekarte, höflich bestellen, zahlen, Abschied. Prefix CAF.</p></a>
+<a class="card" href="spiele/wohnung-muehlgasse.html"><span class="tag d3">3D</span><span class="tag lv">A1–A2</span><h3>Wohnung Mühlgasse</h3><p>Möbel finden, Wechselpräpositionen (auf dem Tisch). Prefix WOH.</p></a>
+<a class="card" href="spiele/bahnhof-kleinhausen.html"><span class="tag d3">3D</span><span class="tag lv">A2</span><h3>Bahnhof</h3><p>Fahrkarte, Anzeigetafel, Gleis 3, trennbare Verben. Prefix BHF.</p></a>
+<a class="card" href="spiele/arztpraxis-weber.html"><span class="tag d3">3D</span><span class="tag lv">A2</span><h3>Arztpraxis Dr. Weber</h3><p>Termin, Symptome, Körperteile, Modalverben. Prefix ARZ.</p></a>
+<a class="card" href="spiele/gymnasium-kleinhausen.html"><span class="tag d3">3D</span><span class="tag lv">A1–A2</span><h3>Gymnasium</h3><p>Stundenplan, Raum 12, Uhrzeiten, Schulsachen. Prefix GYM.</p></a>
+<a class="card" href="spiele/stadtfest-kleinhausen.html"><span class="tag d3">3D</span><span class="tag lv">A2–B1</span><h3>Stadtfest</h3><p>Stände, Bratwurst, Kulturquiz, Schreiben im Perfekt. Prefix FES.</p></a>
+<a class="card" href="spiele/heimatmuseum-kleinhausen.html"><span class="tag d3">3D</span><span class="tag lv">B1</span><h3>Heimatmuseum</h3><p>Adjektivendungen, Meinungen, höfliches Sie. Prefix MUS.</p></a>
+<a class="card" href="spiele/see-umwelt.html"><span class="tag d3">3D</span><span class="tag lv">B1</span><h3>See &amp; Umwelt</h3><p>Naturwortschatz, Recycling sortieren, weil/deshalb. Prefix SEE.</p></a>
+</div>
+
+<h2>Schon da · Stadt &amp; Alltag</h2>
+<div class="grid">
+<a class="card" href="foto-schnitzeljagd-3d-kleinhausen%20(2).html"><span class="tag d3">3D</span><h3>Foto-Schnitzeljagd</h3><p>Sehenswürdigkeiten fotografieren, Artikel, Postkarte. Prefix KH3.</p></a>
+<a class="card" href="lieferdienst-kleinhausen-offline_Delivery%20Game_Final.html"><span class="tag d3">3D</span><h3>Lieferdienst</h3><p>Wegbeschreibungen, Präpositionen, Imperative. Funkmodus inklusive.</p></a>
+<a class="card" href="supermarkt-einkauf%20(2).html"><span class="tag d2">2D</span><span class="tag lv">A1–A2</span><h3>Supermarkt</h3><p>Einkaufsliste, Gänge, Kasse.</p></a>
+<a class="card" href="kleiderschrank-kleinhausen-fixed.html"><span class="tag d2">2D</span><h3>Kleiderschrank</h3><p>Was ziehe ich an? Wetter, Anlässe, Farben.</p></a>
+<a class="card" href="geschenke-online-kaufen%20(1).html"><span class="tag d2">2D</span><span class="tag lv">A2–B1</span><h3>Kaufhaus Fröhlich</h3><p>Geschenke online bestellen.</p></a>
+<a class="card" href="chat-slang-deutsch%20(1).html"><span class="tag d2">2D</span><h3>Chatsprache</h3><p>wmd, krass, Registerwechsel.</p></a>
+<a class="card" href="gespraechspartner_German%20Speaking%20Practice%20(1).html"><span class="tag d2">2D</span><h3>Gesprächspartner</h3><p>Dialogbäume mit Vorlesen, ACTFL-Stufen.</p></a>
+</div>
+
+<h2>Themenkarte</h2>
+<p class="lede">Die neuen 3D-Räume füllen Lücken neben Foto-Jagd (Stadt) und Lieferdienst (Wege): Essen, Wohnung, Reise, Gesundheit, Schule, Feste, Kunst, Umwelt — von A1 bis B1, anschlussfähig an AP-Themen (Contemporary Life, Families, Beauty, Global Challenges).</p>
+<footer>Kleinhausen ist fiktiv. Spiele speichern nichts. Three.js r128 ist in den Canvas-Paketen eingebettet (MIT).</footer>
+</main>
+</body>
+</html>

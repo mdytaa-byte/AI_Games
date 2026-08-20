@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#163a45">
   <title>Michael D. Young — Start the Quest</title>
-  <meta name="description" content="Family-friendly comedic fantasy by Michael D. Young. Start with A Wonderful Day for a Quest: a prophecy, a knight, a goatherd, and far too many footnotes.">
+  <meta name="description" content="Family-friendly comedic fantasy by Michael D. Young. Start with A Wonderful Day for a Quest.">
   <link rel="canonical" href="https://authormichaelyoung.com/">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -732,24 +732,124 @@
   }
 }
 
-/* Hide block-theme chrome when this splash is on the page (WordPress.com homepage). */
-body:has(.amy-splash) .wp-block-template-part,
-body:has(.amy-splash) header.wp-block-template-part,
-body:has(.amy-splash) footer.wp-block-template-part,
-body:has(.amy-splash) .entry-header,
-body:has(.amy-splash) h1.wp-block-post-title,
-body.amy-splash-page .wp-block-template-part,
-body.amy-splash-page header.wp-block-template-part,
-body.amy-splash-page footer.wp-block-template-part,
-body.amy-splash-page .entry-header,
-body.amy-splash-page h1.wp-block-post-title {
+/* Hide block-theme chrome only for the homepage splash, not series landings. */
+body:has(.amy-splash--home) .wp-block-template-part,
+body:has(.amy-splash--home) header.wp-block-template-part,
+body:has(.amy-splash--home) footer.wp-block-template-part,
+body:has(.amy-splash--home) .entry-header,
+body:has(.amy-splash--home) h1.wp-block-post-title,
+body.amy-splash-page:not(:has(.amy-splash--chess)) .wp-block-template-part,
+body.amy-splash-page:not(:has(.amy-splash--chess)) header.wp-block-template-part,
+body.amy-splash-page:not(:has(.amy-splash--chess)) footer.wp-block-template-part,
+body.amy-splash-page:not(:has(.amy-splash--chess)) .entry-header,
+body.amy-splash-page:not(:has(.amy-splash--chess)) h1.wp-block-post-title {
   display: none !important;
+}
+
+/* Chess Quest series landing */
+.amy-splash--chess .amy-hero {
+  display: block;
+  min-height: 0;
+  padding-top: 0.6rem;
+}
+
+.amy-banner {
+  display: block;
+  margin: 0 0 1.6rem;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--amy-shadow);
+  border: 1px solid rgba(209, 184, 148, 0.45);
+}
+
+.amy-banner img {
+  width: 100%;
+  aspect-ratio: 1983 / 793;
+  object-fit: cover;
+}
+
+.amy-splash--chess .amy-hero h1 {
+  max-width: 18ch;
+}
+
+.amy-ranks {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.amy-rank {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-decoration: none;
+  color: inherit;
+  background: var(--amy-cream);
+  border: 1px solid var(--amy-gold-light);
+  border-radius: 14px;
+  padding: 1rem 0.75rem 1.05rem;
+  min-height: 100%;
+  transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.amy-rank:hover,
+.amy-rank:focus-visible {
+  transform: translateY(-4px);
+  border-color: var(--amy-gold);
+  outline: none;
+}
+
+.amy-piece {
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--amy-ink);
+}
+
+.amy-rank em {
+  font-family: var(--amy-sans);
+  font-size: 0.72rem;
+  font-style: normal;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amy-gold);
+}
+
+.amy-rank span {
+  font-family: var(--amy-serif);
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.amy-splash--chess .amy-band-ink {
+  background-color: var(--amy-ink-deep);
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.035) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.035) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.035) 75%),
+    linear-gradient(180deg, var(--amy-ink-deep), var(--amy-contrast));
+  background-size: 28px 28px, 28px 28px, 28px 28px, 28px 28px, auto;
+  background-position: 0 0, 0 14px, 14px -14px, -14px 0, 0 0;
+}
+
+@media (max-width: 980px) {
+  .amy-ranks {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.6rem;
+  }
+
+  .amy-rank {
+    flex: 0 0 150px;
+    scroll-snap-align: start;
+  }
 }
 
   </style>
 </head>
-<body class="amy-splash-page">
-<div class="amy-splash" id="amy-splash">
+<body>
+<div class="amy-splash amy-splash--home" id="amy-splash">
   <a class="amy-skip" href="#amy-start">Skip to the first book</a>
 
   <div class="amy-wrap">

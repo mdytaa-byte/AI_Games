@@ -841,7 +841,12 @@ defMap("fairgrounds",{
     {x:12,y:5,spr:"teacher",name:"Miss Spelling", vis:()=>!fl("misspell"), talk:async()=>misspellFight()},
     {x:4,y:7,spr:"kid",name:"Vendor", talk:async()=>{
       await say("Vendor","Hydra models, lemonade, and a spelling-bee trophy that isn't yours yet.");
-      if(!G.items.ration) { G.items.ration=(G.items.ration||0)+1; await say("","A paper cup of fair lemonade. Somehow it smells like a weakness."); }
+      setf("fair");
+      if(!G.items.lemonade){
+        G.items.lemonade=1;
+        jot("County-fair lemonade. Sugar, citrus, and a rumor that hydras cannot abide either.");
+        await say("","A paper cup of fair lemonade. Sugar, citrus, and a rumor about hydras.");
+      } else await say("Vendor","You already took the cup. Don't spill it before the arena.");
     }}
   ]
 });
@@ -1368,7 +1373,11 @@ async function aaronTalk(){
   if(!fl("spike")) await say("Aaron","School first. Bullies are a kind of dark knight. Smaller armor.");
   else if(!fl("sanctuary")) await say("Aaron","The painting downstairs is a door. Paladin blood opens it.");
   else if(!fl("four")) await say("Aaron","Four quests. Fire, ice, an elder, a race, a damsel. Arlenen counts oddly, but he is old.");
-  else if(!fl("knighted")) await say("Aaron","The Black Knight in the arena wears a hydra helm. That is no costume.");
+  else if(!fl("knighted")){
+    await say("Aaron","The Black Knight in the arena wears a hydra helm. That is no costume.");
+    if(G.items.lemonade) await say("Aaron","Bring the lemonade. Yes, the lemonade. I have waited centuries to say that.");
+    else await say("Aaron","County fair, north gate. A Model of Evil and cups of yellow spite. Hydras hate citrus.");
+  }
   else if(!fl("grayknight")) await say("Aaron","The Corridor of Keys holds your father. Bring something lost and found.");
   else if(!fl("ending")) await say("Aaron","Temperance would paint the world gray. Order and chaos both starve in gray.");
   else await say("Aaron","The next move is yours, Rich. It always was.");
@@ -1405,6 +1414,7 @@ async function minervaTalk(){
     await say("Minerva","Fire and ice. An elder. A race. A girl in detention. The board is already in motion.");
   } else if(!fl("knighted")){
     await say("Minerva","The Black Knight has been seen in the arena. Unmask him, and I will knight you.");
+    await say("Minerva","Old notes say a hydra cannot abide lemon and sugar. Paladins have used stranger weapons.");
   } else if(!fl("rook")){
     await say("Minerva","Phillip went into the Corridor of Keys. Doors beyond counting. Keys for each. Most who enter do not return.");
   } else if(!fl("mist")){
@@ -1560,15 +1570,34 @@ async function malloryFight(){
 }
 
 async function hydraFight(){
-  await say("","A black knight, impossibly tall, hydra-helm, a glittering broadsword.");
-  const won=await startBattle([makeEnemy("hydra")], true);
+  await say("","A black knight, impossibly tall. The hydra-helm breathes — three necks, one glittering broadsword.");
+  await say("Aaron","Living chaos, not costume. Cut a head and another grows, unless you spoil what it drinks.");
+  if(G.items.lemonade) await say("Aaron","That fair cup. Citrus and sugar. Hydras hate both.");
+  else if(fl("fair")) await say("Aaron","You saw the Model of Evil. You did not bring the lemonade.");
+  let hyd=makeEnemy("hydra");
+  if(G.items.lemonade){
+    const i=await choose(["Draw steel","Douse it with lemonade"]);
+    if(i===1){
+      G.items.lemonade--;
+      setf("lemoned");
+      hyd.def=Math.max(1, Math.floor(hyd.def/2));
+      hyd.atk=Math.max(6, hyd.atk-4);
+      hyd.hp=Math.floor(hyd.hp*0.65); hyd.mhp=hyd.hp;
+      await say("","The cup hits the visor. Heads hiss. The helm slumps like a week-old balloon.");
+    }
+  }
+  const won=await startBattle([hyd], true);
   if(won){
     setf("hydra");
+    await say("","The helm comes off in gray-green steam. Under it: a Nemesis knight, coughing.");
+    await say("","Arena sluices dump a cold tower-shower. The last hiss dies. You are dripping, and still standing.");
     await say("Minerva","Kneel, Heinrich Wulfrich Witz.");
     await say("Minerva","I knight you Paladin. Rise, Sir Rich.");
     G.rank=Math.max(G.rank,1); setf("knighted"); setf("rook_gate");
     G.party.forEach(p=>{p.lv++; applyStats(p); healFull(p);});
-    jot("Sir Heinrich the Paladin. The hydra helm came off. The Corridor will open.");
+    jot(fl("lemoned")
+      ? "Lemonade spoiled the hydra. Then a tower-shower. Then a sword on your shoulder."
+      : "Sir Heinrich the Paladin. The hydra helm came off. The Corridor will open.");
     await say("","Rank up: KNIGHT. The Corridor of Keys will open to a paladin.");
     await say("Aaron","Your father is inside. Bring the baseball card — lost, then found.");
   }
@@ -1673,12 +1702,36 @@ async function takeStone(flag, name){
   }
 }
 
+function optionalDepth(){
+  let n=0;
+  if(fl("bee")) n++;
+  if(fl("fair")||G.items.lemonade) n++;
+  if(fl("lemoned")) n++;
+  if(G.keys.clairvoyance) n++;
+  if(fl("gigas")||G.keys.skeleton) n++;
+  if(fl("locket")) n++;
+  if(fl("angela_join")) n++;
+  if(fl("museum")) n++;
+  if(fl("blackpawn")||G.keys.amulet) n++;
+  return n;
+}
+
 async function finalBattle(){
   await say("Temperance","Light. Dark. Noise. I am Temperance, Gray Queen. I will still the board.");
   await say("Temperance","Your Corridor is ash. Your song is off-key. Kneel in gray.");
   if(fl("mallory2")) await say("Mallory","Not a chance. I didn't pick chaos so a queen could pick nothing.");
-  const foes=[makeEnemy("temperance"), makeEnemy("umbratum")];
-  const won=await startBattle(foes, true);
+  if(G.keys.clairvoyance) await say("Rich","I heard the quiet a move ago. We brought a louder song.");
+  if(fl("angela_join")) await say("Angela","The mist is thin here. I can see the squares. We stay.");
+  if(G.keys.locket) await say("","The locket ticks once, like a house remembering its walls. Order steadies.");
+  if(fl("lemoned")) await say("Aaron","You once beat a hydra with a fair cup. Do not get shy now.");
+  const t=makeEnemy("temperance"), u=makeEnemy("umbratum");
+  const n=optionalDepth();
+  if(n>=3){
+    t.hp=t.mhp=Math.floor(t.mhp*0.78); t.atk=Math.max(10,t.atk-2);
+    u.hp=u.mhp=Math.floor(u.mhp*0.8);
+  }
+  if(n>=6){ t.def=Math.max(4,t.def-2); t.hp=t.mhp=Math.floor(t.mhp*0.9); }
+  const won=await startBattle([t,u], true);
   if(won){
     await say("Rich","The Sovereign Song is not silence. It's everyone on the same rank.");
     await say("","The banishing crystal drinks the gray. Checkmate.");
@@ -1693,15 +1746,28 @@ function ending(){
   el.endscr.classList.add("show");
   el.hud.classList.add("hidden");
   el.loc.classList.add("hidden");
-  el.endtxt.innerHTML=
-    "<p>Phillip walks out of the last door of the Corridor. Helena stops shaking. The stroganoff can wait.</p>"+
-    "<p>Minerva sets a fifth chair at the table of thirteen. Nadia refuses to wear only black. Mallory refuses to wear only white.</p>"+
-    "<p>Angela keeps a water balloon in her pack, just in case. Lancelot claims the next flight is his treat.</p>"+
-    "<p>Aaron yawns, which is his way of saying he is proud.</p>"+
-    "<p style='margin-top:10px;color:#e6c86a'>Sir Rich Witz — Paladin King. Palad's gift still hums behind his eyes.</p>"+
-    "<p>The Sovereign Song is not silence. It is everyone on the same rank.</p>"+
-    "<p>The next move is waiting. It always is.</p>"+
-    "<p style='margin-top:10px'>Based on Paladin: Pawn, Nemesis: Knight, Rook: Revenge, Bishop: Betrayal, and Sovereigns: Song by Michael D. Young.</p>";
+  const n=optionalDepth();
+  const bits=[
+    "<p>Phillip walks out of the last door of the Corridor. Helena stops shaking. The stroganoff can wait.</p>",
+    "<p>Minerva sets a fifth chair at the table of thirteen. Nadia refuses to wear only black. Mallory refuses to wear only white.</p>"
+  ];
+  if(fl("angela_join")) bits.push("<p>Angela keeps a water balloon in her pack, just in case. A new Paladin, stutter-step and all. Lancelot claims the next flight is his treat.</p>");
+  else bits.push("<p>Angela writes from Lincoln. The water balloons missed, mostly. She is practicing labyrinth anyway.</p>");
+  if(fl("locket")) bits.push("<p>Helena wears the Homeland locket. Both families have a house again, even if the dunes are only memory.</p>");
+  if(G.keys.clairvoyance) bits.push("<p>Palad's sight still hums a half-move early. Rich uses it to pass the salt before anyone asks.</p>");
+  if(fl("lemoned")) bits.push("<p>The arena still smells faintly of lemon. Sir Rich does not explain the hydra to anyone who was not there.</p>");
+  else if(fl("fair")) bits.push("<p>The Model of Evil gathers dust at the fair. Rich never did throw the cup. He still wonders.</p>");
+  if(fl("bee")) bits.push("<p>Labyrinth. He spelled it. Nadia still pretends she did not hear.</p>");
+  if(fl("gigas")||G.keys.skeleton) bits.push("<p>A skeleton key copies any door. Phillip says the Corridor has fewer jokes now.</p>");
+  if(fl("museum")) bits.push("<p>The Museum of Modern Terrors rehangs its signs. Art, mostly. A little gray in the corners.</p>");
+  if(fl("blackpawn")||G.keys.amulet) bits.push("<p>Grandmother's black box sits empty. The amulet stays over his heart.</p>");
+  bits.push("<p>Aaron yawns, which is his way of saying he is proud.</p>");
+  if(n>=6) bits.push("<p style='margin-top:10px;color:#e6c86a'>Sir Rich Witz — Paladin King. The Sovereign Song has every voice on the rank.</p>");
+  else if(n>=3) bits.push("<p style='margin-top:10px;color:#e6c86a'>Sir Rich Witz — Paladin King. Palad's gift still hums. The song has room for more voices.</p>");
+  else bits.push("<p style='margin-top:10px;color:#e6c86a'>Sir Rich Witz — Paladin King. The board is saved. Some squares he never walked.</p>");
+  bits.push("<p>The next move is waiting. It always is.</p>");
+  bits.push("<p style='margin-top:10px'>Based on Paladin: Pawn, Nemesis: Knight, Rook: Revenge, Bishop: Betrayal, and Sovereigns: Song by Michael D. Young.</p>");
+  el.endtxt.innerHTML=bits.join("");
   playMusic("sanctuary");
 }
 
@@ -1774,8 +1840,9 @@ async function spellingBee(){
 async function fairHydraTalk(){
   await say("","The Model of Evil: three painted necks, a helm you have seen on a living knight.");
   await say("Aaron","Lemonade once ruined a hydra's day. Do not tell the quartermaster. He prices by myth.");
+  await say("Aaron","Buy the cup. Bring it to the arena. Hydras cannot abide citrus.");
   setf("fair");
-  jot("County fair: Model of Evil. Hydras are not only stories.");
+  jot("County fair: Model of Evil. Lemonade spoils a hydra. Take a cup to the arena.");
 }
 async function misspellFight(){
   await say("Miss Spelling","Rendez-vous is two words in my country. Sit down.");
@@ -1855,7 +1922,7 @@ const ENEMY={
   icewarden:{name:"Ice Warden",hp:52,atk:11,def:5,spd:6,exp:40,gold:30,spr:"ice",tint:"#a0e0ff"},
   firewarden:{name:"Fire Warden",hp:52,atk:12,def:4,spd:7,exp:40,gold:30,spr:"fire",tint:"#ff6020"},
   mallory:{name:"Mallory",hp:64,atk:12,def:5,spd:10,exp:50,gold:40,spr:"mallory",tint:"#201018"},
-  hydra:{name:"Black Knight",hp:88,atk:14,def:6,spd:8,exp:80,gold:60,spr:"hydra",tint:"#100818"},
+  hydra:{name:"Black Knight",hp:110,atk:14,def:7,spd:8,exp:80,gold:60,spr:"hydra",tint:"#100818"},
   lostkey:{name:"Lost Key",hp:28,atk:10,def:3,spd:8,exp:12,gold:8,spr:"save",tint:"#c9a24a"},
   graypawn:{name:"Gray Pawn",hp:30,atk:11,def:4,spd:6,exp:14,gold:9,spr:"grayk",tint:"#888"},
   garg:{name:"Gargoyle",hp:40,atk:12,def:8,spd:4,exp:18,gold:12,spr:"garg",tint:"#5a6050"},
@@ -2006,11 +2073,16 @@ function enemyTurns(){
   for(const f of liveFoes()){
     const targets=G.party.filter(p=>p.alive&&p.hp>0);
     if(!targets.length) break;
+    let extra="";
+    if(f.id==="hydra" && !B.lemoned && !fl("lemoned")){
+      const grow=Math.max(5, Math.floor(f.mhp*0.12));
+      if(f.hp<f.mhp){ f.hp=Math.min(f.mhp, f.hp+grow); extra="A hydra head returns. "; }
+    }
     const t=targets[rand(0,targets.length-1)];
     const n=Math.max(1, f.atk - Math.floor(t.def/2) + rand(0,2));
     const red=B.def.has(t.id)?Math.floor(n/2):n;
     t.hp-=red;
-    bLog=f.name+" strikes "+t.name+" for "+red+"!";
+    bLog=extra+f.name+" strikes "+t.name+" for "+red+"!";
     if(t.hp<=0){ t.hp=0; t.alive=false; bLog+=" "+t.name+" is down!"; }
   }
   B.def=new Set();
@@ -2069,6 +2141,7 @@ function usableItems(){
   if(G.items.ether) out.push({id:"ether",name:"Ether x"+G.items.ether});
   if(G.items.phoenix) out.push({id:"phoenix",name:"Phoenix x"+G.items.phoenix});
   if(G.items.ration) out.push({id:"ration",name:"Ration x"+G.items.ration});
+  if(G.items.lemonade) out.push({id:"lemonade",name:"Fair lemonade x"+G.items.lemonade});
   return out;
 }
 function useItem(id, target){
@@ -2077,6 +2150,20 @@ function useItem(id, target){
   if(id==="ether"){ G.items.ether--; target.mp=Math.min(target.mmp,target.mp+25); bLog=target.name+" restores MP."; }
   if(id==="phoenix"){ G.items.phoenix--; target.hp=Math.floor(target.mhp/2); target.alive=true; bLog=target.name+" rises!"; }
   if(id==="ration"){ G.items.ration--; G.party.forEach(p=>heal(p,35)); }
+  if(id==="lemonade"){
+    G.items.lemonade--;
+    const hyd=mode==="battle" && B ? liveFoes().find(f=>f.id==="hydra") : null;
+    if(hyd){
+      B.lemoned=true; setf("lemoned");
+      hyd.def=Math.max(1, Math.floor(hyd.def/2));
+      hyd.atk=Math.max(6, hyd.atk-4);
+      hyd.hp=Math.max(1, Math.floor(hyd.hp*0.7));
+      bLog="Lemonade hits the hydra helm! The heads sputter.";
+    } else {
+      G.party.forEach(p=>heal(p,12));
+      bLog="Tart. Sticky. Not a strategy.";
+    }
+  }
 }
 
 /* ---------- menu ---------- */
@@ -2140,7 +2227,11 @@ function questText(){
     lines.push("• Gym race: "+(fl("q_race")?"done":"south gym"));
     lines.push("• Detention: "+(fl("q_detention")?"done":"after the race"));
   } else if(!fl("mallory1")) lines.push("• Mallory is waiting in the south gym.");
-  else if(!fl("knighted")) lines.push("• Face the Black Knight in the arena (Sanctuary Gates).");
+  else if(!fl("knighted")){
+    lines.push("• Face the Black Knight in the arena (Sanctuary Gates).");
+    if(G.items.lemonade) lines.push("• You have fair lemonade. Douse the hydra helm.");
+    else lines.push("• Optional: fairgrounds lemonade spoils a hydra.");
+  }
   else if(!G.keys.card) lines.push("• Take the baseball card from your room.");
   else if(!fl("phillip_seen")) lines.push("• Enter the Corridor of Keys (east Sanctuary).");
   else if(!fl("nadia_taken")) lines.push("• Report to Aaron at the Sanctuary Gates.");
@@ -2163,7 +2254,10 @@ function loreText(){
   if(fl("pkg")) bits.push("HWW: grandmother's white pawn. Aaron was waiting inside.");
   if(fl("sanctuary")) bits.push("Thirteen knights, one table. Palad sat first.");
   if(fl("bee")) bits.push("Labyrinth — the word that showed Phillip at the long table.");
-  if(fl("knighted")) bits.push("Sir Heinrich Wulfrich Witz. Hydra helm, lemonade, and a living chaos-knight.");
+  if(fl("knighted")) bits.push(fl("lemoned")
+    ? "Sir Heinrich Wulfrich Witz. The hydra helm came off after a fair cup and a tower-shower."
+    : "Sir Heinrich Wulfrich Witz. Hydra helm, living chaos, a sword on the shoulder.");
+  if(fl("lemoned")) bits.push("Lemonade: citrus and sugar. The one thing a hydra cannot abide.");
   if(fl("rook")) bits.push("A rook is a wall. Castling covers the ones you love.");
   if(fl("phillip_seen")) bits.push("Corridor of Keys: doors beyond counting. Phillip is in check, not captured.");
   if(G.keys.clairvoyance) bits.push("Palad's clairvoyance: a blessing unheld since Palad himself.");

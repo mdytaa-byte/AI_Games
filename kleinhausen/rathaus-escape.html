@@ -166,6 +166,10 @@ html[data-motion="aus"] *{animation:none !important;transition:none !important}
   *{animation:none !important;transition:none !important}
 }
 @media print{.settings,.hot,.btn{display:none !important}body{background:#fff;color:#000}}
+
+.brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
+a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
+a.hub-home:hover{background:rgba(255,255,255,.18)}
 </style>
 </head>
 <body>
@@ -173,7 +177,8 @@ html[data-motion="aus"] *{animation:none !important;transition:none !important}
 <div class="topbar">
   <div class="topbar-in">
     <div class="brand">
-      <h1>Escape from Rathaus Kleinhausen</h1>
+      <a class="hub-home" href="../index.html" aria-label="Zurück zum Stadtplan Kleinhausen">Kleinhausen</a>
+            <h1>Escape from Rathaus Kleinhausen</h1>
       <span class="sub">Nacht im Archiv · A2–B1</span>
     </div>
     <div class="settings" role="group" aria-label="Einstellungen">

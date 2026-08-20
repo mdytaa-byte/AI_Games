@@ -127,6 +127,10 @@ footer{max-width:1140px;margin:0 auto;padding:0 1rem 2rem;color:var(--muted);fon
 kbd{border:1px solid var(--muted);padding:.05em .35em;border-radius:4px;}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
 html[data-motion="aus"] *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+
+.brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
+a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
+a.hub-home:hover{background:rgba(255,255,255,.18)}
 </style>
 </head>
 <body>
@@ -134,7 +138,8 @@ html[data-motion="aus"] *{animation-duration:.001ms !important;transition-durati
 <header class="topbar">
   <div class="topbar-in">
     <div class="brand">
-      <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+      <a class="hub-home" href="../index.html" aria-label="Zurück zum Stadtplan Kleinhausen">Kleinhausen</a>
+            <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
         <rect width="44" height="44" rx="8" fill="#e03131"/>
         <circle cx="22" cy="18" r="8" fill="#ffd43b"/>
         <path d="M8 34 q14-12 28 0" fill="none" stroke="#2f9e44" stroke-width="4"/>

@@ -159,6 +159,7 @@ h3{font-family:var(--serif);font-size:1.18em;margin:1.3em 0 .45em;}
 .karte h3{margin:.15em 0 .35em;}
 .karte .meta{font-size:.9em;color:var(--tinte-weich);margin:0;}
 .karte .score{margin-top:.5em;font-weight:700;font-size:.9em;}
+.karte .score-hinweis{font-size:.82em;font-weight:600;color:var(--moos);margin:.25em 0 0;}
 
 details{margin:1.1rem 0;background:var(--papier-2);border:2px solid #d7cdb4;border-radius:var(--radius);padding:.4rem 1rem;}
 details summary{cursor:pointer;font-weight:700;padding:.4rem 0;}
@@ -230,14 +231,46 @@ html[data-lesbar="an"] .ort-btn{letter-spacing:.02em;}
 html[data-spots="an"] .hotspot .tag{opacity:1;}
 
 .max{
-  position:absolute;bottom:6%;width:7.5%;min-width:48px;z-index:4;pointer-events:none;
-  left:-12%;
+  position:absolute;bottom:4%;width:8%;min-width:52px;z-index:6;pointer-events:none;
+  left:-14%;
 }
-.max.laufen{animation:laufen 2.8s linear forwards;}
-.max.stoppen{animation:stoppen 1.4s ease-out forwards;}
-@keyframes laufen{from{left:-12%}to{left:108%}}
-@keyframes stoppen{from{left:-12%}to{left:var(--halt,42%)}}
-html[data-motion="aus"] .max.laufen, html[data-motion="aus"] .max.stoppen{animation:none;left:42%;}
+.max-body{display:block;width:100%;}
+.max-spruch{
+  position:absolute;left:50%;bottom:100%;transform:translate(-50%,-.2em);
+  background:var(--papier);color:var(--tinte);border:3px solid var(--nadel);
+  border-radius:10px;padding:.2em .45em;font-size:.7rem;font-weight:800;
+  white-space:nowrap;margin:0;
+}
+.max.suchen{animation:zur-stelle 1.15s ease-out forwards;}
+.max.vorbei{animation:vorbei 1.15s ease-in forwards;}
+.max.stop{left:var(--halt,42%);z-index:8;}
+@keyframes zur-stelle{from{left:-14%}to{left:var(--halt,42%)}}
+@keyframes vorbei{from{left:var(--halt,42%)}to{left:112%}}
+html[data-motion="aus"] .max.suchen,
+html[data-motion="aus"] .max.stop{animation:none;left:var(--halt,42%);}
+html[data-motion="aus"] .max.vorbei{animation:none;left:112%;}
+
+.spieler{
+  position:absolute;z-index:5;width:7.5%;min-width:44px;pointer-events:none;
+  transform:translate(-50%,-40%);
+}
+.spieler svg{display:block;width:100%;height:auto;}
+.spieler .pose-sitzen,
+.spieler .pose-ducken{display:none;}
+.spieler.sitzen .pose-stehen,
+.spieler.ducken .pose-stehen{display:none;}
+.spieler.sitzen .pose-sitzen{display:block;}
+.spieler.ducken .pose-ducken{display:block;}
+.spieler.versteckt.ducken{opacity:.82;transform:translate(-50%,-28%) scale(.82);}
+.spieler.versteckt.sitzen{transform:translate(-50%,-18%) scale(.92);}
+.spieler.versteckt.stehen{opacity:.9;transform:translate(-50%,-36%) scale(.95);}
+.spieler.entdeckt{opacity:1;z-index:7;transform:translate(-50%,-42%) scale(1.05);}
+.spieler.an{animation:hinhocken .35s ease-out;}
+@keyframes hinhocken{from{opacity:0;transform:translate(-50%,-80%) scale(.6)}to{opacity:1}}
+html[data-motion="aus"] .spieler.an{animation:none;}
+
+.spiel-feld{display:flex;flex-direction:column;}
+.ort-mobile-hinweis{display:none;margin:0 0 .45rem;font-weight:700;}
 
 .zaehl{
   position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
@@ -305,7 +338,14 @@ footer.wrap{color:var(--tinte-weich);font-size:.9em;padding-bottom:2.4rem;}
 @media (max-width:700px){
   .mia{grid-template-columns:1fr;}
   .mia svg{width:64px;height:64px;}
-  .hotspot .tag{opacity:1;font-size:.6rem;}
+  .hotspot{pointer-events:none !important;}
+  .hotspot .tag{display:none;}
+  .ort-mobile-hinweis{display:block;}
+  .spiel-feld .szene-box{order:3;}
+  .spiel-feld #ort-hilfe{order:1;}
+  .spiel-feld .ort-mobile-hinweis{order:1;}
+  .spiel-feld .ort-leiste{order:2;display:grid;grid-template-columns:1fr 1fr;margin-bottom:.8rem;}
+  .ort-btn{width:100%;justify-content:flex-start;text-align:left;}
 }
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
@@ -314,7 +354,7 @@ html[data-motion="aus"] *{
   animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;
 }
 @media print{
-  .settings,.btn,.hotspot,.zaehl,.max{display:none !important;}
+  .settings,.btn,.hotspot,.zaehl,.max,.spieler{display:none !important;}
   body{background:#fff;}
 }
 </style>
@@ -435,7 +475,7 @@ html[data-motion="aus"] *{
     <details>
       <summary>Tastatur und Barrierefreiheit <span class="en gloss" lang="en">Keyboard and accessibility</span></summary>
       <ul>
-        <li><kbd>Tab</kbd> bewegt den Fokus zur Ortsleiste unter dem Bild, nicht zu den Flächen im Bild. <kbd>1</kbd>–<kbd>8</kbd> wählen einen Ort. <span class="en gloss" lang="en">Tab moves to the place list under the picture, not the picture hotspots. Keys 1–8 pick a place.</span></li>
+        <li><kbd>Tab</kbd> bewegt den Fokus zur Ortsleiste unter dem Bild, nicht zu den Flächen im Bild. <kbd>1</kbd>–<kbd>8</kbd> wählen einen Ort. Auf dem Handy ist die Ortsliste die Steuerung; das Bild ist nur zum Anschauen. <span class="en gloss" lang="en">Tab moves to the place list under the picture, not the picture hotspots. Keys 1–8 pick a place. On phones, the place list is the control; the picture is only to look at.</span></li>
         <li>Jedes Versteck hat einen Namen als Text. Das Bild ist zusätzlich, nicht die einzige Information. <span class="en gloss" lang="en">Every hiding place is also named in text. The picture is extra, not the only information.</span></li>
         <li><strong lang="de">Orte zeigen</strong> lässt die Labels im Bild immer sichtbar. <span class="en gloss" lang="en">“Show places” keeps picture labels visible.</span></li>
         <li><strong lang="de">Vorlesen</strong> spricht Befehle auf Deutsch (wenn eine de-Stimme vorhanden ist). <span class="en gloss" lang="en">Read-aloud speaks commands in German if your device has a German voice.</span></li>
@@ -448,8 +488,8 @@ html[data-motion="aus"] *{
   <section class="screen" id="screen-episodes" aria-labelledby="h-eps" lang="de">
     <p class="eyebrow">Drei Folgen · Wohnzimmer, Warnungen, Garten</p>
     <h2 id="h-eps" tabindex="-1">Welche Folge möchtest du spielen?</h2>
-    <p class="lede">Die Folgen werden schwerer. In jeder Runde kann Max dich finden – dann gibt es null Punkte fürs Verstecken, aber du darfst die <span lang="de" translate="no">Wo?</span>-Frage trotzdem beantworten.
-      <span class="en gloss" lang="en">Episodes get harder. Getting found scores 0 for that hide, but you can still answer the location question.</span></p>
+    <p class="lede">Die Folgen werden schwerer. In jeder Runde kann Max dich finden – dann gibt es null Punkte fürs Verstecken, aber du darfst die <span lang="de" translate="no">Wo?</span>-Frage trotzdem beantworten. Dein bester Versuch zählt: nochmal spielen ändert ihn nicht, wenn du schlechter bist.
+      <span class="en gloss" lang="en">Episodes get harder. Getting found scores 0 for that hide, but you can still answer the location question. Your best score is kept; a worse retry does not overwrite it.</span></p>
     <div class="karten" id="ep-liste"></div>
     <div class="btn-row">
       <button type="button" class="btn btn-ghost" id="btn-zurueck-start">Zurück zum Anfang <span class="sr-only gloss" lang="en">Back to the start</span></button>
@@ -491,24 +531,34 @@ html[data-motion="aus"] *{
 
     <div id="befehl-wahl" class="wahl" hidden role="group" lang="de" aria-label="Befehle"></div>
 
-    <div class="szene-box" id="szene-box" role="group" lang="de" aria-label="Szene zum Verstecken">
-      <div id="szene-wohnzimmer"></div>
-      <div id="szene-garten" hidden></div>
-      <div class="zaehl" id="zaehl" hidden role="status" aria-live="polite" aria-atomic="true" lang="de">
-        <div>
-          <p class="eyebrow" style="color:#e2b441" lang="de">Max</p>
-          <p style="margin:0;font-weight:800" lang="de" translate="no">Augen zu! Ich zähle!</p>
-          <p class="zahl" id="zaehl-zahl">1</p>
-          <p id="zaehl-sub" lang="de" translate="no">Eins …</p>
-          <p class="en gloss" lang="en">Eyes closed! I’m counting!</p>
+    <div class="spiel-feld">
+      <p class="ort-mobile-hinweis" id="ort-mobile-hinweis" lang="de">
+        Auf dem Handy: Tipp auf einen Ort in der Liste. Das Bild zeigt nur, wo du dich versteckst.
+        <span class="en gloss" lang="en">On a phone: tap a place in the list. The picture only shows where you hid.</span>
+      </p>
+      <div class="szene-box" id="szene-box" role="group" lang="de" aria-label="Szene zum Verstecken">
+        <div id="szene-wohnzimmer"></div>
+        <div id="szene-garten" hidden></div>
+        <div class="zaehl" id="zaehl" hidden role="status" aria-live="polite" aria-atomic="true" lang="de">
+          <div>
+            <p class="eyebrow" style="color:#e2b441" lang="de">Max</p>
+            <p style="margin:0;font-weight:800" lang="de" translate="no">Augen zu! Ich zähle!</p>
+            <p class="zahl" id="zaehl-zahl">1</p>
+            <p id="zaehl-sub" lang="de" translate="no">Eins …</p>
+            <p class="en gloss" lang="en">Eyes closed! I’m counting!</p>
+          </div>
         </div>
+        <div class="spieler" id="spieler" hidden aria-hidden="true"></div>
+        <div class="max" id="max" hidden aria-hidden="true">
+          <div class="max-body" id="max-body"></div>
+          <p class="max-spruch" id="max-spruch" hidden lang="de" translate="no"></p>
+        </div>
+        <p class="stempel sicher" id="stempel" hidden aria-hidden="true">SICHER!</p>
       </div>
-      <div class="max" id="max" hidden aria-hidden="true"></div>
-      <p class="stempel sicher" id="stempel" hidden aria-hidden="true">SICHER!</p>
+      <h3 class="eyebrow" id="ort-hilfe" style="margin:.4rem 0 .35rem">Orte zum Verstecken <span class="en gloss" lang="en">Places to hide</span></h3>
+      <p class="sr-only" lang="de">Wähle ein Versteck. Tasten 1 bis 8 wählen in der Ortsleiste. <span class="en gloss" lang="en">Choose a hiding place. Keys 1 to 8 select from the list.</span></p>
+      <div class="ort-leiste" id="ort-leiste" role="group" lang="de" aria-labelledby="ort-hilfe"></div>
     </div>
-    <h3 class="eyebrow" id="ort-hilfe" style="margin:.4rem 0 .35rem">Orte zum Verstecken <span class="en gloss" lang="en">Places to hide</span></h3>
-    <p class="sr-only" lang="de">Wähle ein Versteck. Tasten 1 bis 8 wählen in der Ortsleiste. <span class="en gloss" lang="en">Choose a hiding place. Keys 1 to 8 select from the list.</span></p>
-    <div class="ort-leiste" id="ort-leiste" role="group" lang="de" aria-labelledby="ort-hilfe"></div>
 
     <div class="feedback" id="feedback" hidden tabindex="-1" lang="de" role="status" aria-live="polite"></div>
     <div id="wo-box" hidden lang="de">
@@ -530,6 +580,8 @@ html[data-motion="aus"] *{
     <p class="eyebrow">Ergebnis</p>
     <h2 id="h-sum" tabindex="-1">Das Spiel ist aus!</h2>
     <p class="lede" id="sum-text" lang="de"></p>
+    <p class="meta" id="sum-retry-note" lang="de">Wenn du eine Folge nochmal spielst, bleibt dein bester Versuch. Schlechtere Punkte überschreiben ihn nicht.
+      <span class="en gloss" lang="en">If you replay an episode, your best score is kept. A worse retry does not overwrite it.</span></p>
     <table class="tabelle" id="sum-tabelle">
       <caption lang="de">Deine Punkte pro Folge <span class="en gloss" lang="en">Your points per episode</span></caption>
       <thead><tr><th scope="col" lang="de">Folge</th><th scope="col" lang="de">Thema</th><th scope="col" lang="de">Punkte</th><th scope="col" lang="de">Prozent</th></tr></thead>
@@ -548,7 +600,8 @@ html[data-motion="aus"] *{
       <p><button type="button" class="btn" id="btn-copy" style="background:var(--gold)"><span id="btn-copy-label" lang="de">Code kopieren</span> <span class="sr-only gloss" lang="en">Copy code</span></button></p>
     </div>
     <div class="btn-row">
-      <button type="button" class="btn" id="btn-nochmal">Weitere Folge spielen <span class="sr-only gloss" lang="en">Play another episode</span></button>
+      <button type="button" class="btn" id="btn-folge-nochmal">Diese Folge nochmal <span class="sr-only gloss" lang="en">Retry this episode</span></button>
+      <button type="button" class="btn btn-ghost" id="btn-nochmal">Weitere Folge spielen <span class="sr-only gloss" lang="en">Play another episode</span></button>
       <button type="button" class="btn btn-ghost" id="btn-neustart">Alles zurücksetzen <span class="sr-only gloss" lang="en">Reset everything</span></button>
     </div>
     <details id="lehrer">
@@ -952,6 +1005,39 @@ const SVG_MAX = `
   <rect x="22" y="18" width="36" height="10" rx="3" fill="#c24a38"/>
 </svg>`;
 
+const SVG_SPIELER = `
+<svg viewBox="0 0 80 120" aria-hidden="true" focusable="false">
+  <g class="pose-stehen">
+    <ellipse cx="40" cy="114" rx="20" ry="5" fill="#18291f" opacity=".22"/>
+    <circle cx="40" cy="26" r="15" fill="#f0c7a0" stroke="#18291f" stroke-width="2"/>
+    <path d="M26 22 Q40 6 54 20" fill="#6b4423"/>
+    <rect x="26" y="40" width="28" height="36" rx="8" fill="#e2b441" stroke="#18291f" stroke-width="2"/>
+    <path d="M26 48 L16 74 M54 48 L64 74" stroke="#18291f" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M32 76 L28 108 M48 76 L52 108" stroke="#3d6b48" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="34" cy="26" r="1.8" fill="#18291f"/>
+    <circle cx="46" cy="26" r="1.8" fill="#18291f"/>
+  </g>
+  <g class="pose-sitzen">
+    <ellipse cx="40" cy="114" rx="22" ry="5" fill="#18291f" opacity=".22"/>
+    <circle cx="42" cy="34" r="15" fill="#f0c7a0" stroke="#18291f" stroke-width="2"/>
+    <path d="M28 30 Q42 14 56 28" fill="#6b4423"/>
+    <rect x="24" y="48" width="32" height="28" rx="8" fill="#e2b441" stroke="#18291f" stroke-width="2"/>
+    <path d="M28 72 L18 92 M56 72 L70 86" stroke="#3d6b48" stroke-width="6" stroke-linecap="round"/>
+    <path d="M24 56 L12 70 M56 56 L68 68" stroke="#18291f" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <circle cx="36" cy="34" r="1.8" fill="#18291f"/>
+    <circle cx="48" cy="34" r="1.8" fill="#18291f"/>
+  </g>
+  <g class="pose-ducken">
+    <ellipse cx="40" cy="114" rx="24" ry="5" fill="#18291f" opacity=".22"/>
+    <circle cx="40" cy="58" r="14" fill="#f0c7a0" stroke="#18291f" stroke-width="2"/>
+    <path d="M26 54 Q40 40 54 52" fill="#6b4423"/>
+    <ellipse cx="40" cy="86" rx="22" ry="16" fill="#e2b441" stroke="#18291f" stroke-width="2"/>
+    <path d="M22 84 L14 104 M58 84 L66 104" stroke="#3d6b48" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="34" cy="58" r="1.8" fill="#18291f"/>
+    <circle cx="46" cy="58" r="1.8" fill="#18291f"/>
+  </g>
+</svg>`;
+
 /* ============================================================
    3. ZUSTAND
    ============================================================ */
@@ -960,7 +1046,7 @@ const S = {
   modus:"einzeln", folgeIdx:0, rundeIdx:0,
   phase:"hide", // hide | wo | done
   gefunden:false, hidePunkte:0, woPunkte:0, befehlPunkte:0,
-  folgePunkte:0, folgeMax:0, ergebnisse:{},
+  folgePunkte:0, folgeMax:0, ergebnisse:{}, letzter:{}, maxTick:0,
   befehlGewaehlt:false
 };
 
@@ -1052,13 +1138,23 @@ function baueFolgenliste(){
   const box = $("ep-liste"); box.innerHTML = "";
   FOLGEN.forEach((f,i)=>{
     const e = S.ergebnisse[f.nr];
+    const letzt = S.letzter[f.nr];
     const b = document.createElement("button");
     b.type="button"; b.className="karte"; b.lang="de";
+    let scoreHtml;
+    if(e){
+      scoreHtml = '<p class="score" lang="de">Beste: '+e.punkte+' / '+e.max+' Punkte</p>';
+      if(letzt!=null && letzt!==e.punkte){
+        scoreHtml += '<p class="score-hinweis" lang="de">Letzter Versuch: '+letzt+' / '+e.max+'</p>';
+      }
+      scoreHtml += '<p class="score-hinweis" lang="de">Nochmal spielen · dein Bester bleibt'+
+        ' <span class="en gloss" lang="en">Retry — your best score is kept</span></p>';
+    }else{
+      scoreHtml = '<p class="score" lang="de">Noch nicht gespielt <span class="en gloss" lang="en">Not played yet</span></p>';
+    }
     b.innerHTML = '<p class="nr" lang="de">Folge '+f.nr+'</p><h3 lang="de" translate="no">'+esc(f.titel)+'</h3>'+
       '<p class="meta" lang="de">'+esc(f.thema)+'</p>'+
-      '<p class="en gloss" lang="en">'+esc(f.introEn)+'</p>'+
-      (e ? '<p class="score" lang="de">'+e.punkte+' / '+e.max+' Punkte</p>' :
-        '<p class="score" lang="de">Noch nicht gespielt <span class="en gloss" lang="en">Not played yet</span></p>');
+      '<p class="en gloss" lang="en">'+esc(f.introEn)+'</p>'+scoreHtml;
     b.addEventListener("click", ()=>{ S.modus="einzeln"; starteFolge(i); });
     box.appendChild(b);
   });
@@ -1089,6 +1185,10 @@ function starteRunde(){
 
   $("feedback").hidden = true; $("wo-box").hidden = true; $("btn-weiter").hidden = true;
   $("stempel").hidden = true; $("max").hidden = true;
+  $("max").className = "max";
+  $("max-spruch").hidden = true; $("max-spruch").textContent = "";
+  $("spieler").hidden = true; $("spieler").className = "spieler";
+  S.maxTick++;
   $("befehl-wahl").hidden = true; $("befehl-wahl").innerHTML = "";
 
   baueSzene(f.szene);
@@ -1206,7 +1306,10 @@ function baueSzene(name){
     chip.addEventListener("click", ()=>verstecke(id));
     leiste.appendChild(chip);
   });
-  $("max").innerHTML = SVG_MAX;
+  $("max-body").innerHTML = SVG_MAX;
+  $("spieler").innerHTML = SVG_SPIELER;
+  $("spieler").hidden = true;
+  $("max-spruch").hidden = true;
   $("szene-box").setAttribute("aria-label", name==="garten" ? "Garten: Orte zum Verstecken" : "Wohnzimmer: Orte zum Verstecken");
   glossUpdate();
 }
@@ -1217,6 +1320,50 @@ function setOrteAktiv(an){
     el.dataset.aus = an ? "0" : "1";
     el.style.pointerEvents = an ? "auto" : "none";
   });
+}
+
+function pctAus(style, name){
+  const m = String(style).match(new RegExp(name+"\\s*:\\s*([0-9.]+)%","i"));
+  return m ? Number(m[1]) : 0;
+}
+function poseVon(prep){
+  if(prep==="auf") return "sitzen";
+  if(prep==="vor" || prep==="neben") return "stehen";
+  return "ducken";
+}
+function setzeSpieler(spot, gefunden){
+  const el = $("spieler");
+  const left = pctAus(spot.style,"left");
+  const top = pctAus(spot.style,"top");
+  const w = pctAus(spot.style,"width");
+  const h = pctAus(spot.style,"height");
+  el.style.left = (left + w/2) + "%";
+  el.style.top = (top + h*0.55) + "%";
+  el.hidden = false;
+  el.className = "spieler an "+poseVon(spot.prep)+" "+(gefunden?"entdeckt":"versteckt");
+}
+function maxGehtZumOrt(spot, sicher, danach){
+  const max = $("max");
+  const spruch = $("max-spruch");
+  const tick = ++S.maxTick;
+  max.hidden = false;
+  spruch.hidden = true;
+  spruch.textContent = "";
+  max.style.setProperty("--halt", spot.halt || "42%");
+  max.className = "max suchen";
+  const ankunft = S.motion ? 1180 : 0;
+  setTimeout(()=>{
+    if(tick !== S.maxTick) return;
+    if(sicher){
+      max.className = "max vorbei";
+    }else{
+      max.className = "max stop";
+      spruch.textContent = "Da bist du!";
+      spruch.hidden = false;
+    }
+  }, ankunft);
+  const wait = S.motion ? (sicher ? 2300 : 1400) : 0;
+  setTimeout(()=>{ if(tick === S.maxTick) danach(); }, wait);
 }
 
 function verstecke(id){
@@ -1258,19 +1405,14 @@ function verstecke(id){
     art = "bad";
   }
   S.gefunden = !sicher;
-
-  const max = $("max");
-  max.hidden = false;
-  max.className = "max "+(sicher?"laufen":"stoppen");
-  max.style.setProperty("--halt", spot.halt || "42%");
+  setzeSpieler(spot, !sicher);
 
   const st = $("stempel");
   st.hidden = false;
   st.textContent = sicher ? "SICHER!" : "GEFUNDEN!";
   st.className = "stempel "+(sicher?"sicher":"gefunden");
 
-  const wait = S.motion ? (sicher?1600:1100) : 0;
-  setTimeout(()=>zeigeHideFeedback(titel, grund, art, r, spot, ziel), wait);
+  maxGehtZumOrt(spot, sicher, ()=>zeigeHideFeedback(titel, grund, art, r, spot, ziel));
   sagen(sicher ? "Du bist sicher." : "Max hat dich gefunden.");
   if(S.audio) sprich(sicher ? "Du bist sicher. Max geht vorbei." : "Gefunden!");
 }
@@ -1358,6 +1500,7 @@ $("btn-sprich").addEventListener("click", ()=>{
 
 function endeFolge(){
   const f = FOLGEN[S.folgeIdx];
+  S.letzter[f.nr] = S.folgePunkte;
   const alt = S.ergebnisse[f.nr];
   if(!alt || alt.punkte < S.folgePunkte){
     S.ergebnisse[f.nr] = {punkte:S.folgePunkte, max:f.max, thema:f.thema};
@@ -1472,9 +1615,13 @@ $("btn-verify").addEventListener("click", ()=>{
 $("btn-folgen").addEventListener("click", ()=>{ baueFolgenliste(); zeigeScreen("screen-episodes"); });
 $("btn-zurueck-start").addEventListener("click", ()=>zeigeScreen("screen-start"));
 $("btn-nochmal").addEventListener("click", ()=>{ baueFolgenliste(); zeigeScreen("screen-episodes"); });
+$("btn-folge-nochmal").addEventListener("click", ()=>{
+  S.modus = "einzeln";
+  starteFolge(S.folgeIdx);
+});
 $("btn-zum-ergebnis").addEventListener("click", zeigeErgebnis);
 $("btn-neustart").addEventListener("click", ()=>{
-  S.ergebnisse = {}; $("name-in").value = ""; codeAktualisieren();
+  S.ergebnisse = {}; S.letzter = {}; $("name-in").value = ""; codeAktualisieren();
   baueFolgenliste(); zeigeScreen("screen-start");
   sagen("Alles zurückgesetzt.");
 });

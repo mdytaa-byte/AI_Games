@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="de" class="show-en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mission: Nachbarschaft</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --terra:#c4784a;--terra-deep:#8e4e2a;--sage:#6a8f6e;--sage-deep:#3d5c42;
+  --cream:#faf3e8;--dusk:#5c4a6e;--wood:#6b3e2a;--ink:#2a1f18;--ink-soft:#5c4e44;
+  --paper:#fffdf8;--ok:#3d5c42;--err:#9a3b32;--gold:#d4a056;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1rem;--r:10px;
+}
+html[data-size="gross"]{--fs:1.16rem} html[data-size="sehr-gross"]{--fs:1.34rem}
+html[data-contrast="hoch"]{
+  --terra:#000;--terra-deep:#000;--sage:#00551f;--sage-deep:#000;--cream:#fff;
+  --dusk:#000;--wood:#000;--ink:#000;--ink-soft:#000;--paper:#fff;--gold:#000;
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:var(--fs);line-height:1.5;min-height:100vh;-webkit-text-size-adjust:100%}
+.skip{position:absolute;left:-9999px;top:0;z-index:200;background:var(--dusk);color:#fff;padding:.7em 1.1em;font-weight:700;text-decoration:none}
+.skip:focus{left:0}
+:focus-visible{outline:4px solid var(--gold);outline-offset:3px}
+html[data-contrast="hoch"] :focus-visible{outline:5px solid #000}
+.topbar{background:var(--dusk);color:#fff;border-bottom:5px solid var(--terra)}
+.topbar-in{max-width:1100px;margin:0 auto;padding:.65rem 1rem;display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;justify-content:space-between}
+.brand h1{font-family:var(--serif);font-size:1.22em;margin:0}
+.brand .sub{font-family:var(--mono);font-size:.68em;letter-spacing:.14em;text-transform:uppercase;color:#e8d4a8;display:block}
+.settings{display:flex;flex-wrap:wrap;gap:.35rem}
+.set-btn{font:inherit;font-size:.8em;background:transparent;color:#fff;border:2px solid #b9a8c8;border-radius:999px;padding:.35em .85em;cursor:pointer;min-height:44px}
+.set-btn[aria-pressed="true"]{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}
+.wrap{max-width:1100px;margin:0 auto;padding:1rem 1rem 3rem}
+.screen{display:none}.screen.on{display:block}
+h2{font-family:var(--serif);font-size:1.65em;margin:.15em 0 .4em} h2:focus{outline:none}
+.eyebrow{font-family:var(--mono);font-size:.72em;letter-spacing:.16em;text-transform:uppercase;color:var(--terra);margin:0}
+.lede{max-width:64ch}
+.en{color:var(--ink-soft);font-style:italic}.en::before{content:" – "}
+html:not(.show-en) .gloss{display:none}
+.btn{font:inherit;font-weight:700;background:var(--terra);color:#fff;border:3px solid var(--terra-deep);border-radius:var(--r);padding:.65em 1.2em;cursor:pointer;min-height:44px}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.btn-row{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}
+.street{position:relative;border:3px solid var(--wood);border-radius:var(--r);overflow:hidden;background:#8fb56a;aspect-ratio:1000/420}
+.street svg.bg{display:block;width:100%;height:100%}
+.doors{position:absolute;inset:0}
+.door-btn{
+  position:absolute;min-width:44px;min-height:52px;font:inherit;font-size:.78em;font-weight:700;
+  background:rgba(42,31,24,.82);color:#fff;border:2px solid var(--gold);border-radius:8px 8px 4px 4px;cursor:pointer;
+}
+.door-btn:hover,.door-btn:focus-visible{background:var(--gold);color:var(--ink)}
+.door-btn.done{background:var(--sage);border-color:#fff}
+.door-btn[disabled]{opacity:.55;cursor:not-allowed}
+.play-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,1fr);gap:1rem;align-items:start}
+@media(max-width:860px){.play-grid{grid-template-columns:1fr}}
+.panel{background:var(--paper);border:2px solid var(--wood);border-radius:var(--r);padding:1rem}
+.panel h3{font-family:var(--serif);margin:.1em 0 .4em}
+.npc{background:#f3e6d4;border-left:4px solid var(--dusk);padding:.7em .8em;margin:.5em 0;border-radius:0 8px 8px 0}
+.choices{display:grid;gap:.55rem;margin:.7rem 0}
+.opt{text-align:left;font:inherit;background:#fff;border:2px solid #d9c6b0;border-radius:10px;padding:.7em .8em .7em 2.8em;cursor:pointer;position:relative;min-height:44px;color:var(--ink)}
+.opt .key{position:absolute;left:.55em;top:.75em;width:1.5em;height:1.5em;border-radius:5px;background:var(--dusk);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:.8em}
+.opt.right{border-color:var(--ok);background:#e8f3ea}
+.opt.wrong{border-color:var(--err);background:#fdeceb}
+.recast{background:#fff4d0;border-left:4px solid var(--gold);padding:.6em .8em;margin:.5em 0}
+.side .box{background:#fff;border:2px solid #e0d0bc;border-radius:var(--r);padding:.85rem;margin:0 0 .8rem}
+.side h3{font-family:var(--serif);margin:0 0 .4em;font-size:1.05em}
+.score{font-family:var(--mono);font-size:1.4em;color:var(--dusk)}
+.chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{min-height:44px;border:2px solid var(--sage);background:#fff;border-radius:999px;padding:.35em .8em;cursor:pointer;font:inherit}
+.chip.on{background:var(--sage);color:#fff}
+.hot-mini{
+  position:absolute;min-width:44px;min-height:44px;font:inherit;font-size:.7em;font-weight:700;
+  background:rgba(92,74,110,.88);color:#fff;border:2px solid #e8d4a8;border-radius:8px;cursor:pointer;
+}
+.lex{columns:2;gap:1.2rem;font-size:.92em}
+@media(max-width:700px){.lex{columns:1}}
+.lex b{color:var(--dusk)}
+.q-box{background:var(--paper);border:2px solid var(--wood);border-radius:var(--r);padding:1rem;margin:1rem 0}
+dt{font-weight:700;margin-top:.55em} dd{margin:0 0 .35em 0}
+.panel .npc p{margin:.25em 0}
+html[data-contrast="hoch"] .door-btn{background:#000;color:#fff;border-color:#fff}
+html[data-contrast="hoch"] .opt{border-color:#000}
+.street .hot-mini:focus-visible{outline:4px solid #fff}
+.note-out:empty{min-height:4rem}
+.poster li{margin:.35em 0}
+@media print{.settings,.door-btn,.opt{display:none !important}}
+.note-out{min-height:4rem;background:#fffbe8;border:2px dashed var(--wood);padding:.7em;margin:.6em 0}
+.poster{background:#fff;border:8px solid var(--dusk);padding:1.2rem;max-width:36rem}
+.poster h2{color:var(--dusk)}
+.checks li.ok::marker{content:"✓ "}
+.code-box{background:var(--dusk);color:var(--gold);padding:1rem;border-radius:var(--r);margin:1rem 0}
+.code-val{font-family:var(--mono);font-size:1.1em;word-break:break-all}
+input[type=text]{font:inherit;padding:.65em .8em;border:2px solid #d9c6b0;border-radius:8px;min-height:44px;width:100%;max-width:22rem}
+.status-bar{min-height:1.4em;margin:1rem 0 0}
+details{margin:1rem 0} summary{cursor:pointer;font-weight:700;min-height:44px}
+kbd{font-family:var(--mono);border:1px solid #cbb;padding:.05em .3em;border-radius:4px}
+html[data-motion="aus"] *{animation:none !important;transition:none !important}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+
+.door-btn.done{box-shadow:0 0 0 2px #fff inset}
+.hot-mini:hover{filter:brightness(1.1)}
+.npc{font-size:1.02em}
+html[data-size="gross"] .door-btn{font-size:.85em}
+html[data-size="sehr-gross"] .door-btn{font-size:.95em}
+html[data-contrast="hoch"] .street{border-color:#000}
+html[data-contrast="hoch"] .panel{border-color:#000}
+html[data-contrast="hoch"] .chip{border-color:#000}
+html[data-contrast="hoch"] .poster{border-color:#000}
+.score{margin:.2em 0}
+.chips{margin:.4em 0 0}
+@media (max-width:600px){
+  .play-grid{gap:.7rem}
+  .street{aspect-ratio:1000/480}
+  h2{font-size:1.35em}
+}
+@media (min-width:901px){
+  .side{position:sticky;top:.6rem}
+}
+.note-out{font-size:1.05em;line-height:1.45}
+.q-box .opt{margin:0}
+input[type=text]:focus-visible{outline:4px solid var(--gold);outline-offset:2px}
+details[open]{padding:.3rem .5rem}
+.lex dt{break-inside:avoid}
+
+.btn-row .btn-ghost{min-height:44px}
+html[data-contrast="hoch"] .npc{background:#fff;border-color:#000}
+html[data-contrast="hoch"] .recast{background:#fff;border-color:#000}
+html[data-contrast="hoch"] .note-out{background:#fff;border-color:#000}
+html[data-contrast="hoch"] .q-box{border-color:#000}
+html[data-contrast="hoch"] .hot-mini{background:#000;border-color:#fff;color:#fff}
+.door-btn:disabled{opacity:.5}
+aside .box ul{margin:.2em 0 0;padding-left:1.1em}
+#panel-de{margin:.3em 0}
+@media (prefers-reduced-motion:reduce){
+  .door-btn,.hot-mini,.opt{transition:none}
+}
+@media (max-width:480px){
+  .settings{width:100%}
+  .set-btn{flex:1 1 auto;text-align:center}
+}
+.poster p{margin:.4em 0}
+.checks{padding-left:1.2em}
+.code-box p{margin:.35em 0}
+#v-out{min-height:1.3em}
+.skip:focus{z-index:400}
+body{text-rendering:optimizeLegibility}
+.brand h1{line-height:1.15}
+.chip.on:focus-visible{outline-color:#fff}
+.opt.right .key{background:var(--ok)}
+.opt.wrong .key{background:var(--err);color:#fff}
+.street{min-height:220px}
+.play-grid aside .box:last-child{margin-bottom:0}
+#besucht li{margin:.15em 0}
+.panel h3{line-height:1.25}
+html[data-size="sehr-gross"] .hot-mini{font-size:.85em;padding:.3em}
+html[data-size="sehr-gross"] body{line-height:1.6}
+#status{clear:both}
+.wrap{overflow-wrap:anywhere}
+@media print{
+  .topbar,.skip{display:none !important}
+  .panel,.poster{border-color:#000}
+}
+.konz-choices, #konz-choices{display:grid;gap:.55rem;margin:1rem 0}
+#screen-konzert .lede{max-width:62ch}
+#screen-quiz .lede{max-width:62ch}
+#screen-note .lede{max-width:62ch}
+.prod-lab{font-weight:700;margin:.2rem 0 .35rem;}
+.prod-in,textarea.prod-in{
+  width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;
+  padding:.55em .7em;border:2px solid #d9c6b0;border-radius:8px;background:#fff;color:var(--ink);
+}
+textarea.prod-in{min-height:7.2rem;line-height:1.45;resize:vertical;}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0;}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:700;cursor:pointer;background:#fff;border:2px solid var(--sage);border-radius:6px;}
+
+.brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
+a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
+a.hub-home:hover{background:rgba(255,255,255,.18)}
+</style>
+</head>
+<body>
+<a class="skip" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <a class="hub-home" href="../index.html" aria-label="Zurück zum Stadtplan Kleinhausen">Kleinhausen</a>
+            <h1>Mission: Nachbarschaft</h1>
+      <span class="sub">Gemeindekonzert · höflich einladen</span>
+    </div>
+    <div class="settings" role="group" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">Vorlesen</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</div>
+<main class="wrap" id="hauptinhalt">
+<section class="screen on" id="screen-start" aria-labelledby="h-start">
+  <p class="eyebrow">Kleinhausen · sich vorstellen · einladen</p>
+  <h2 id="h-start" tabindex="-1">Du bist neu in Kleinhausen</h2>
+  <p class="lede">Am Samstag um 19 Uhr gibt es ein Gemeindekonzert im Gemeindehaus – offen, freundlich, für die Nachbarschaft. Du gehst von Tür zu Tür und lädst ein. Nicht predigen: zuhören, Sie und du richtig wählen, Kuchen nicht greifen.
+    <span class="en gloss" lang="en">You are new in town and invite neighbors to a community concert. Respectful, not preachy. Watch Sie vs. du.</span></p>
+  <ul class="lede">
+    <li>Frau Keller (70) – Sie, Kuchen, gerne / nein danke.</li>
+    <li>Familie Yılmaz – Kinder du, Eltern Sie, Zettel dalassen.</li>
+    <li>Herr Koch – „Kein Interesse.“ Trotzdem einen schönen Tag noch.</li>
+    <li>Student-WG – sehr informell. Sie laden DICH ein.</li>
+  </ul>
+  <p class="lede">Danach schreibst du einen kurzen Zettel für den Briefkasten von Familie Weber (nicht zu Hause).
+    <span class="en gloss" lang="en">Then write a short polite note for the last mailbox.</span></p>
+  <p><label for="name-in">Dein Name</label></p>
+  <p><input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname"></p>
+  <div class="btn-row"><button type="button" class="btn" id="btn-start">Die Straße betreten</button>
+    <button type="button" class="btn btn-ghost" id="btn-ueben">Satz vorlesen üben</button></div>
+  <section class="panel" aria-label="Beispielsätze">
+    <h3>Sätze zum Üben, bevor du klingelst</h3>
+    <p>Guten Tag, ich heiße … Ich bin neu in Kleinhausen und möchte mich vorstellen.</p>
+    <p>Ich lade Sie zum Gemeindekonzert ein. Am Samstag um 19 Uhr im Gemeindehaus.</p>
+    <p>Ja bitte, gerne. Das ist sehr freundlich von Ihnen.</p>
+    <p>Nein danke, ich habe schon gegessen. Aber danke für das Angebot.</p>
+    <p>Darf ich Ihnen einen Zettel geben?</p>
+    <p>Trotzdem einen schönen Tag noch.</p>
+    <p>Danke für Ihre Zeit. Ich störe nicht mehr.</p>
+    <p>Auf Wiedersehen, Frau Keller. Schönen Tag noch.</p>
+    <p>Hi! Sind deine Eltern da? (zu Kindern)</p>
+    <p>Guten Tag, Frau Yılmaz, Herr Yılmaz. (zu Eltern, Sie)</p>
+    <p>Hey, ich bin neu. Darf ich kurz reinkommen? (WG, du)</p>
+    <p>Ich komme aus … / Ich wohne jetzt in Kleinhausen. Was studierst du?</p>
+    <p>Kein Zwang. Kommt ihr, wenn ihr Lust habt?</p>
+    <p>Gerne, aber heute nicht lange. Tschüss und bis Samstag!</p>
+    <p>Guten Tag, liebe Familie Weber. Leider waren Sie nicht da. Ich lade Sie ein … Auf Wiedersehen.</p>
+    <p>Nicht: Gib mir Kuchen. Nicht: Du musst kommen. Nicht: Why are you unfriendly?</p>
+    <p>Register-Karte: Keller Sie · Yılmaz-Kinder du · Yılmaz-Eltern Sie · Koch Sie · WG du · Weber-Zettel Sie.</p>
+    <p>Kuchen: annehmen mit gerne, ablehnen mit schon gegessen. Zettel: darf ich Ihnen. Grouch: trotzdem einen schönen Tag noch. WG: Woher kommst du, was studierst du.</p>
+    <p>Abschied: Auf Wiedersehen an der Haustür der Älteren. Tschüss in der WG und zu Kindern. Beides in einer Familie: Auf Wiedersehen, Tschüss Kinder.</p>
+    <p>Gemeindekonzert: Samstag 19 Uhr, Gemeindehaus, Eintritt frei, Tee, Zwiebelkuchen, Chor, Geigen. Offen, nicht missionarisch laut.</p>
+    <p>Höflichkeit-Punkte: plus für Sie/du richtig, gerne, leider, danke, darf ich. Minus für Gib mir, müssen, English-only, Beleidigungen.</p>
+    <p>Nach vier Häusern: Chips zum Zettel. Dann Sie-oder-du-Quiz. Dann eine Minute im Gemeindehaus. Dann Plakat und KH-MISS-Code.</p>
+    <p>Tastatur: 1 2 3 in Dialogen. E oder Enter an der Tür. 1–9 auf den Wort-Chips.</p>
+  </section>
+  <details>
+    <summary>Tastatur und Wörter</summary>
+    <p><kbd>1</kbd>–<kbd>3</kbd> Antworten. <kbd>E</kbd>/<kbd>Enter</kbd> Tür. Vorlesen spricht Deutsch (de-DE). Keine Cookies.</p>
+    <p>Wortschatz: sich vorstellen, einladen, danke, gerne, leider, Tschüss / Auf Wiedersehen, dürfen / können, Kuchen, Nachbar.</p>
+  </details>
+  <div class="panel" style="margin-top:1rem">
+    <h3>Vier Türen – was du übst</h3>
+    <p><strong>Frau Keller:</strong> sich vorstellen mit Sie. Kuchen: „Ja bitte, gerne“ oder „Nein danke, ich habe schon gegessen.“ Nicht: „Gib mir Kuchen.“ Abschied: Auf Wiedersehen.</p>
+    <p><strong>Familie Yılmaz:</strong> Kinder duzen, Eltern siezen. Register wechseln. „Darf ich Ihnen einen Zettel geben?“</p>
+    <p><strong>Herr Koch:</strong> „Kein Interesse.“ Nicht streiten. „Trotzdem einen schönen Tag noch.“ Danke für Ihre Zeit.</p>
+    <p><strong>WG:</strong> du, Small Talk: Woher kommst du? Was studierst du? Sie laden dich ein. Tschüss ist hier richtig, Auf Wiedersehen klingt komisch steif.</p>
+    <p><strong>Zettel Weber:</strong> Guten Tag, einladen, Samstag 19 Uhr, Gemeindehaus, leider nicht da, Auf Wiedersehen. Kein „Gib mir“.</p>
+    <p class="en gloss" lang="en">Sie with older/unknown adults; du with kids and the WG. Invite, don’t force (müssen). Polite cake yes/no.</p>
+  </div>
+  <details>
+    <summary>Mini-Grammatik für die Straße</summary>
+    <dl>
+      <dt>sich vorstellen</dt><dd>Guten Tag, ich heiße … Ich bin neu in Kleinhausen. Ich möchte mich vorstellen.</dd>
+      <dt>einladen</dt><dd>Ich lade Sie zum Gemeindekonzert ein. Am Samstag um 19 Uhr im Gemeindehaus.</dd>
+      <dt>Ja bitte, gerne</dt><dd>Kuchen annehmen. Freundlich, ohne zu greifen.</dd>
+      <dt>Nein danke, ich habe schon gegessen</dt><dd>Kuchen ablehnen. Komplett höflich.</dd>
+      <dt>Gib mir Kuchen</dt><dd>Falsch: Imperativ, gierig. Nicht verwenden.</dd>
+      <dt>dürfen</dt><dd>Darf ich Ihnen einen Zettel geben? Darf ich kurz reinkommen?</dd>
+      <dt>können</dt><dd>Können Sie uns etwas Schriftliches lassen? Fähigkeit oder höfliche Bitte.</dd>
+      <dt>leider</dt><dd>Leider sind Sie nicht da. Leider habe ich schon gegessen.</dd>
+      <dt>danke / gerne</dt><dd>Danke für Ihre Zeit. Gern geschehen. Gerne, aber heute nicht lange.</dd>
+      <dt>Auf Wiedersehen</dt><dd>Frau Keller, Herr Koch, Eltern Yılmaz.</dd>
+      <dt>Tschüss</dt><dd>Kinder, WG, Gleichaltrige. Nicht zur 70-jährigen Unbekannten.</dd>
+      <dt>Trotzdem einen schönen Tag noch</dt><dd>Wenn jemand kein Interesse hat. Nicht streiten.</dd>
+      <dt>Sie / du wechseln</dt><dd>Kinder du, dann Eltern Sie. Sag den Wechsel ruhig: Entschuldigung, mit den Kindern habe ich du gesagt.</dd>
+      <dt>müssen</dt><dd>Zu hart beim Einladen. Besser: wenn Sie Lust haben / wenn ihr Lust habt.</dd>
+      <dt>Ihnen</dt><dd>Dativ von Sie. Darf ich Ihnen helfen? Ich gebe Ihnen den Zettel.</dd>
+    </dl>
+  </details>
+</section>
+
+<section class="screen" id="screen-play" aria-labelledby="h-play">
+  <p class="eyebrow">Kirchweg · Nachmittag</p>
+  <h2 id="h-play" tabindex="-1">Vier Häuser, eine Einladung</h2>
+  <div class="play-grid">
+    <div>
+      <div class="street" id="street"></div>
+      <div class="panel" id="panel">
+        <h3 id="panel-h">Wähle eine Tür</h3>
+        <p id="panel-de">Klicke auf eine Haustür. Jemand macht auf.</p>
+        <p class="en gloss" lang="en" id="panel-en">Click a front door. Someone answers.</p>
+        <div class="npc" id="npc" hidden></div>
+        <div class="choices" id="choices"></div>
+        <div id="recast" hidden></div>
+        <p><button type="button" class="btn btn-ghost" id="btn-sprich">Text vorlesen</button></p>
+      </div>
+    </div>
+    <aside class="side">
+      <div class="box">
+        <h3>Höflichkeit</h3>
+        <p class="score" id="score">0</p>
+        <p class="en gloss" lang="en">Politeness score. Rude lines lose points; Sie/du switches gain some.</p>
+      </div>
+      <div class="box">
+        <h3>Besucht</h3>
+        <ul id="besucht"><li>Noch niemand.</li></ul>
+      </div>
+      <div class="box">
+        <h3>Dein Satz</h3>
+        <p lang="de">Ich lade Nachbarn zum Gemeindekonzert ein.</p>
+        <p class="en gloss" lang="en">I am inviting neighbors to the parish concert.</p>
+      </div>
+    </aside>
+  </div>
+  <p class="status-bar" id="status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="screen" id="screen-note" aria-labelledby="h-note">
+  <p class="eyebrow">Briefkasten Weber</p>
+  <h2 id="h-note" tabindex="-1">Familie Weber ist nicht da</h2>
+  <p class="lede">Schreibe einen höflichen Zettel. Nicht: „Gib mir…“
+    <span class="en gloss" lang="en">Write a short polite note.</span></p>
+  <p class="prod-lab"><label for="note-in">Dein Zettel</label></p>
+  <div id="note-uml"></div>
+  <textarea class="prod-in" id="note-in" lang="de" autocomplete="off" spellcheck="false" placeholder="Guten Tag, liebe Familie Weber …"></textarea>
+  <div class="note-out" id="note-out" aria-live="polite"></div>
+  <div class="btn-row">
+    <button type="button" class="btn btn-ghost" id="btn-note-clear">Text leeren</button>
+    <button type="button" class="btn" id="btn-note-ok">Zettel einwerfen</button>
+  </div>
+</section>
+
+<section class="screen" id="screen-quiz" aria-labelledby="h-quiz">
+  <p class="eyebrow">Kurzquiz · Register</p>
+  <h2 id="h-quiz" tabindex="-1">Sie oder du?</h2>
+  <p class="lede">Sechs Mini-Fragen. Danach das Plakat.
+    <span class="en gloss" lang="en">Six register checks, then the concert poster.</span></p>
+  <div class="q-box" id="q-box"></div>
+</section>
+
+<section class="screen" id="screen-konzert" aria-labelledby="h-konz">
+  <p class="eyebrow">Samstag · 19:02</p>
+  <h2 id="h-konz" tabindex="-1">Im Gemeindehaus</h2>
+  <p class="lede" id="konz-de">Die Stühle sind aus Holz. Es duftet nach Tee. Du siehst bekannte Gesichter – oder auch nicht, je nachdem, wie höflich du warst.</p>
+  <p class="en gloss" lang="en" id="konz-en">Saturday night. Wooden chairs, tea, neighbors.</p>
+  <div class="choices" id="konz-choices"></div>
+</section>
+
+<section class="screen" id="screen-end" aria-labelledby="h-end">
+  <p class="eyebrow">Samstag · 19 Uhr</p>
+  <h2 id="h-end" tabindex="-1">Gemeindekonzert</h2>
+  <div class="poster" id="poster"></div>
+  <div class="code-box">
+    <p>Abgabecode</p>
+    <p class="code-val" id="code-val"></p>
+    <p><button type="button" class="btn" id="btn-copy">Code kopieren</button></p>
+  </div>
+  <div class="btn-row"><button type="button" class="btn" id="btn-nochmal">Noch einmal die Straße</button></div>
+  <details>
+    <summary>Für Lehrkräfte: Code prüfen</summary>
+    <p><label for="v-name">Name</label> <input type="text" id="v-name"></p>
+    <p><label for="v-code">Code</label> <input type="text" id="v-code"></p>
+    <p><button type="button" class="btn" id="btn-verify">Prüfen</button></p>
+    <p id="v-out" role="status" aria-live="polite"></p>
+  </details>
+</section>
+</main>
+<footer class="wrap" style="padding-bottom:2rem">
+  <p>Mission: Nachbarschaft · Kleinhausen · A2–B1 · sich vorstellen, einladen, Sie und du, gerne, leider, Auf Wiedersehen. Eine Datei, keine Cookies, kein Netz.</p>
+  <p>Code beginnt mit KH-MISS- und nennt die Höflichkeit.</p>
+</footer>
+<script>
+"use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      try{ inp.setSelectionRange(a+b.dataset.c.length, a+b.dataset.c.length); }catch(e){}
+    });
+  });
+}
+function typingIn(e){
+  const tag=(e.target.tagName||"").toLowerCase();
+  return tag==="input"||tag==="textarea";
+}
+
+const S = {
+  englisch:true, audio:false, kontrast:false, size:0, motion:true,
+  name:"", hoef:0, house:null, turn:0, tries:0,
+  done:{keller:false, yilmaz:false, koch:false, wg:false},
+  noteScore:0, turnLocked:false
+};
+
+function sagen(t){ $("status").textContent = t; }
+function sprich(text){
+  if(!S.audio || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang="de-DE"; u.rate=.9;
+    const v = window.speechSynthesis.getVoices().find(x=>/^de/i.test(x.lang));
+    if(v) u.voice=v;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function setToggle(btn,on){ btn.setAttribute("aria-pressed", on?"true":"false"); }
+function glossUpdate(){
+  document.documentElement.classList.toggle("show-en", S.englisch);
+  document.querySelectorAll(".gloss").forEach(el => { el.hidden = !S.englisch; });
+}
+function zeigeScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+  const h=document.querySelector("#"+id+" h2");
+  if(h) h.focus();
+  window.scrollTo({top:0,behavior:S.motion?"smooth":"auto"});
+}
+
+$("s-en").onclick=()=>{ S.englisch=!S.englisch; setToggle($("s-en"),S.englisch); glossUpdate(); sagen(S.englisch?"Englische Hilfe ist an.":"Englische Hilfe ist aus."); };
+$("s-audio").onclick=()=>{ S.audio=!S.audio; setToggle($("s-audio"),S.audio); if(S.audio){sprich("Vorlesen ist an.");} else if("speechSynthesis" in window) window.speechSynthesis.cancel(); };
+$("s-contrast").onclick=()=>{ S.kontrast=!S.kontrast; setToggle($("s-contrast"),S.kontrast); document.documentElement.setAttribute("data-contrast", S.kontrast?"hoch":"normal"); };
+$("s-size").onclick=()=>{ S.size=(S.size+1)%3; const n=["normal","gross","sehr-gross"], l=["A","A+","A++"]; document.documentElement.setAttribute("data-size", n[S.size]); $("s-size").textContent="Schrift: "+l[S.size]; };
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){ S.motion=false; document.documentElement.setAttribute("data-motion","aus"); }
+
+function streetSVG(){
+  return `<svg class="bg" viewBox="0 0 1000 420" aria-hidden="true" focusable="false">
+    <rect width="1000" height="220" fill="#b7d4ea"/>
+    <rect y="220" width="1000" height="200" fill="#6a8f6e"/>
+    <rect y="300" width="1000" height="70" fill="#8a8a8a"/>
+    <polygon points="40,220 140,90 240,220" fill="#c4784a"/>
+    <rect x="70" y="140" width="140" height="160" fill="#f3e6d4" stroke="#6b3e2a" stroke-width="4"/>
+    <rect x="120" y="210" width="40" height="90" fill="#6b3e2a"/>
+    <rect x="90" y="160" width="36" height="36" fill="#8ec5d4"/>
+    <text x="140" y="132" text-anchor="middle" fill="#2a1f18" font-size="12" font-family="Georgia">Keller</text>
+    <polygon points="270,220 370,80 470,220" fill="#5c4a6e"/>
+    <rect x="300" y="130" width="140" height="170" fill="#efe4c8" stroke="#2a1f18" stroke-width="4"/>
+    <rect x="350" y="210" width="42" height="90" fill="#2a1f18"/>
+    <rect x="320" y="150" width="30" height="30" fill="#8ec5d4"/>
+    <rect x="390" y="150" width="30" height="30" fill="#8ec5d4"/>
+    <text x="370" y="122" text-anchor="middle" fill="#fff" font-size="12" font-family="Georgia">Yılmaz</text>
+    <polygon points="500,220 600,100 700,220" fill="#3d5c42"/>
+    <rect x="530" y="145" width="140" height="155" fill="#d9c6b0" stroke="#2a1f18" stroke-width="4"/>
+    <rect x="580" y="210" width="40" height="90" fill="#4a3020"/>
+    <rect x="560" y="165" width="28" height="28" fill="#3a3a3a"/>
+    <text x="600" y="138" text-anchor="middle" fill="#2a1f18" font-size="12" font-family="Georgia">Koch</text>
+    <rect x="760" y="80" width="170" height="220" fill="#e8dcc8" stroke="#6b3e2a" stroke-width="4"/>
+    <rect x="760" y="80" width="170" height="36" fill="#c4784a"/>
+    <rect x="820" y="200" width="44" height="100" fill="#6b3e2a"/>
+    <circle cx="858" cy="250" r="5" fill="#d4a056"/>
+    <text x="845" y="104" text-anchor="middle" fill="#fff" font-size="12" font-family="Georgia">WG</text>
+    <rect x="40" y="330" width="70" height="40" fill="#5c4a6e"/>
+    <text x="75" y="355" text-anchor="middle" fill="#fff" font-size="10">Weber</text>
+    <circle cx="860" cy="50" r="22" fill="#f4e2a8"/>
+  </svg>`;
+}
+
+const H = {
+  keller:{
+    title:"Frau Keller, 70", sie:true,
+    doneLabel:"Frau Keller",
+    turns:[
+      {npc:"Die Tür geht langsam auf. Eine ältere Frau mit grauen Haaren. „Guten Tag? Wer sind Sie denn?“", en:"She uses Sie. Introduce yourself politely.",
+        opts:[
+          {de:"Guten Tag, Frau Keller. Ich heiße {{NAME}}. Ich bin neu in Kleinhausen und möchte mich vorstellen.", en:"Name + Sie + sich vorstellen.", hoef:2},
+          {de:"Hallo, ich bin der neue Nachbar. Du kennst mich noch nicht, oder?", en:"du to a 70-year-old you just met.", hoef:-1, recast:"Mit älteren Nachbarn, die du nicht kennst: Sie. Guten Tag, ich heiße … Ich möchte mich vorstellen."},
+          {de:"Gib mir Kuchen, ich habe Hunger. You have cake, yes?", en:"Grabby and English.", hoef:-2, recast:"Nicht greifen. Erst vorstellen: Guten Tag, ich heiße …"}
+        ]},
+      {npc:"Sie lächelt unsicher, dann freundlicher. „Kommen Sie herein. Ich habe Kuchen. Möchten Sie ein Stück?“", en:"Accept or decline politely. Never 'Gib mir Kuchen'.",
+        opts:[
+          {de:"Ja bitte, gerne. Das ist sehr freundlich von Ihnen. Vielen Dank!", en:"Ja bitte, gerne — polite accept.", hoef:2},
+          {de:"Nein danke, ich habe schon gegessen. Aber das Angebot ist sehr nett.", en:"Polite decline.", hoef:2},
+          {de:"Gib mir Kuchen. Mehr, bitte, ich nehme zwei.", en:"Imperative grab.", hoef:-2, recast:"Nicht: Gib mir Kuchen. Sondern: Ja bitte, gerne / Nein danke, ich habe schon gegessen."}
+        ]},
+      {npc:"Auf dem Tisch steht Apfelkuchen. „Und warum sind Sie hier, außer wegen des Kuchens?“ Sie lacht leise.", en:"Invite her to the concert with Sie.",
+        opts:[
+          {de:"Ich lade Sie zum Gemeindekonzert ein. Am Samstag um 19 Uhr im Gemeindehaus. Es ist für die Nachbarschaft, nicht teuer, einfach Musik.", en:"einladen + Sie + time and place.", hoef:2},
+          {de:"You come to concert Saturday? Es ist in the church hall. Be there.", en:"English + command.", hoef:-1, recast:"Ich lade Sie zum Gemeindekonzert ein. Am Samstag um 19 Uhr im Gemeindehaus."},
+          {de:"Du musst kommen. Es ist Pflicht. Das Konzert braucht alte Leute.", en:"du + müssen, rude.", hoef:-2, recast:"Einladen, nicht zwingen: Ich lade Sie ein. Sie müssen nicht."}
+        ]},
+      {npc:"Sie nickt. „Vielleicht schaue ich vorbei. Die Kirche kenne ich seit 1968.“ Sie bringt dich zur Tür.", en:"Goodbye: Auf Wiedersehen, not Tschüss, with her.",
+        opts:[
+          {de:"Auf Wiedersehen, Frau Keller. Schönen Tag noch – und vielen Dank für den Kuchen, auch wenn ich nur gerochen habe.", en:"Auf Wiedersehen + Sie.", hoef:2},
+          {de:"Tschüss! Bis Samstag, sei nicht late.", en:"Too informal.", hoef:-1, recast:"Mit Frau Keller: Auf Wiedersehen. Nicht Tschüss, nicht late."},
+          {de:"Bye bye. I go now. Door please.", en:"English exit.", hoef:-2, recast:"Auf Wiedersehen, Frau Keller. Schönen Tag noch."}
+        ]}
+    ]
+  },
+  yilmaz:{
+    title:"Familie Yılmaz", sie:true,
+    doneLabel:"Familie Yılmaz",
+    turns:[
+      {npc:"Die Tür fliegt auf. Zwei Kinder, ungefähr neun und elf. „Ja? Wer bist du?“ Sie duzen dich sofort – Kinder untereinander.", en:"Kids first: du is right. Then parents will need Sie.",
+        opts:[
+          {de:"Hi! Ich heiße {{NAME}}. Sind deine Eltern da? Ich möchte sie einladen, ganz kurz.", en:"du with kids, ask for parents.", hoef:2},
+          {de:"Guten Tag, sind Sie die Kinder der Familie? Ich muss mit den Erwachsenen sprechen.", en:"Sie with kids is stiff, not rude.", hoef:0, recast:"Mit Kindern ist du normal: Hi, sind deine Eltern da?"},
+          {de:"Move. I need adults. Geht weg vom Door.", en:"Rude to kids.", hoef:-2, recast:"Freundlich: Hi, sind deine Eltern da? Bitte."}
+        ]},
+      {npc:"Die Eltern kommen: Frau Yılmaz wischt sich die Hände ab, Herr Yılmaz trägt eine Brille. „Guten Tag?“ Jetzt: Sie.", en:"Switch register: Sie with the parents.",
+        opts:[
+          {de:"Guten Tag, Frau Yılmaz, Herr Yılmaz. Entschuldigung – mit den Kindern habe ich du gesagt. Ich bin neu und möchte Sie einladen.", en:"Clear Sie-switch.", hoef:2},
+          {de:"Hey, same as the kids. Du, ihr, whatever. Konzert am Samstag, okay?", en:"No register switch.", hoef:-1, recast:"Eltern: Sie. Guten Tag, ich möchte Sie einladen."},
+          {de:"Here is paper. Take. I leave.", en:"No German greeting.", hoef:-2, recast:"Zuerst grüßen: Guten Tag. Dann: Darf ich Ihnen einen Zettel geben?"}
+        ]},
+      {npc:"Frau Yılmaz: „Ein Konzert? Wir haben am Samstag vielleicht Besuch. Können Sie uns etwas Schriftliches lassen?“", en:"Leave a Zettel. dürfen/können.",
+        opts:[
+          {de:"Ja, gerne. Darf ich Ihnen einen Zettel geben? Das Konzert ist am Samstag um 19 Uhr im Gemeindehaus.", en:"Darf ich Ihnen… + details.", hoef:2},
+          {de:"Hier, nimm das. Kannst du lesen? Saturday, church.", en:"du to parents + English.", hoef:-1, recast:"Darf ich Ihnen einen Zettel geben? (Sie, Dativ Ihnen)"},
+          {de:"Ihr müsst kommen. Kein Besuch ist wichtiger. Punkt.", en:"müssen, no empathy.", hoef:-2, recast:"Sie müssen nicht. Ich lade Sie ein. Leider haben Sie schon Besuch? Dann: Trotzdem einen schönen Abend."}
+        ]},
+      {npc:"Die Kinder winken. Die Eltern nicken. „Wir schauen auf den Zettel. Danke.“", en:"Split goodbye: Sie parents, du kids.",
+        opts:[
+          {de:"Auf Wiedersehen! Tschüss, Kinder – vielleicht sehen wir uns am Samstag.", en:"Auf Wiedersehen + Tschüss to kids.", hoef:2},
+          {de:"Tschüss an alle, ihr seid cool, also later.", en:"One informal brush for everyone.", hoef:0, recast:"Eltern: Auf Wiedersehen. Kinder: Tschüss."},
+          {de:"Ich gehe einfach. Kein Wort mehr. Door closes.", en:"No goodbye.", hoef:-1, recast:"Ein Abschied kostet eine Sekunde: Auf Wiedersehen!"}
+        ]}
+    ]
+  },
+  koch:{
+    title:"Herr Koch", sie:true,
+    doneLabel:"Herr Koch",
+    turns:[
+      {npc:"Die Tür öffnet sich einen Spalt. Ein Mann mit Strickjacke. „Kein Interesse.“ Er will schon schließen.", en:"Don't argue. Soften.",
+        opts:[
+          {de:"Guten Tag trotzdem, Herr Koch. Ich bin neu in Kleinhausen und wollte nur kurz einladen. Eine Minute, mehr nicht.", en:"Don't argue; greet anyway.", hoef:2},
+          {de:"Warum sind Sie so unfreundlich? Ich habe extra geklingelt. Hören Sie zu!", en:"Arguing.", hoef:-2, recast:"Nicht argumentieren. Besser: Trotzdem einen schönen Tag noch."},
+          {de:"Whatever, old man. Kein Interesse, okay, bye.", en:"Insult.", hoef:-2, recast:"Respekt: Guten Tag, Herr Koch. Ich störe nicht lange."}
+        ]},
+      {npc:"„Ich sagte: kein Interesse. Konzerte, Gemeinde, Zettel – kenne ich. Gute Nacht, obwohl es Nachmittag ist.“", en:"Still soften. Trotzdem einen schönen Tag noch.",
+        opts:[
+          {de:"Trotzdem einen schönen Tag noch, Herr Koch. Ich lasse Sie in Ruhe.", en:"The target line.", hoef:2},
+          {de:"Das Konzert ist kostenlos. Vielleicht überlegen Sie es sich. Kein Druck – nur eine Einladung.", en:"Gentle extra info, still ok.", hoef:1},
+          {de:"Sie müssen kommen. Es ist wichtig für die Stadt. Machen Sie die Tür auf.", en:"Argue + müssen.", hoef:-2, recast:"Einladen ≠ zwingen. Trotzdem einen schönen Tag noch."}
+        ]},
+      {npc:"Er zögert. Die Kette bleibt vor. „Den Zettel könnt ihr in den Kasten werfen. Aber kommt nicht wieder heute.“", en:"Leave the flyer, thank him for his time.",
+        opts:[
+          {de:"Ich lasse den Zettel im Kasten. Danke für Ihre Zeit. Wirklich – ich störe nicht mehr.", en:"Danke für Ihre Zeit.", hoef:2},
+          {de:"Open the door. Ich bin not finished. Sie hören mir zu, verstanden?", en:"Demand.", hoef:-2, recast:"Die Tür bleibt seine. Danke für Ihre Zeit."},
+          {de:"Fine, be alone. Leute wie Sie ruinieren die Nachbarschaft.", en:"Attack.", hoef:-2, recast:"Kein Angriff. Trotzdem einen schönen Tag noch."}
+        ]},
+      {npc:"Der Briefkasten klappt. Hinter der Tür ein Radio, leise. Er sagt nichts mehr.", en:"One last goodbye.",
+        opts:[
+          {de:"Auf Wiedersehen, Herr Koch.", en:"Formal goodbye is enough.", hoef:2},
+          {de:"Tschüss, Grumpy. Bis nie.", en:"Mocking.", hoef:-2, recast:"Auf Wiedersehen reicht. Kein Spitzname."},
+          {de:"...", en:"Walking off in silence — not terrible, a bit cold.", hoef:0, recast:"Ein leises Auf Wiedersehen wäre freundlicher."}
+        ]}
+    ]
+  },
+  wg:{
+    title:"Student-WG", sie:false,
+    doneLabel:"die WG",
+    turns:[
+      {npc:"Bass aus dem Kellerfenster. Ein Typ in Socken öffnet. „Yo – wer bist du? Komm rein, wir haben Tee. Oder Limo.“ Sehr informell. Hier: du.", en:"They invite YOU in. du is right.",
+        opts:[
+          {de:"Hey, ich bin {{NAME}}, neu hier. Darf ich kurz reinkommen? Nur fünf Minuten – ich will euch einladen.", en:"du + darf ich.", hoef:2},
+          {de:"Guten Tag, sehr geehrte Studierende. Gestatten Sie, dass ich eintrete?", en:"Too stiff — funny, not cruel.", hoef:0, recast:"In der WG ist du normal: Hey, darf ich kurz rein?"},
+          {de:"Let me in now. Ich wohne here. Move.", en:"Rude guest.", hoef:-2, recast:"Darf ich kurz reinkommen? Bitte."}
+        ]},
+      {npc:"Im Flur: Fahrräder, ein Plakat, der Geruch von Nudeln. Eine Studentin: „Woher kommst du? Was machst du in Kleinhausen?“", en:"Small talk: Woher kommst du.",
+        opts:[
+          {de:"Ich komme aus der Nähe / ich wohne jetzt in Kleinhausen. Ich gehe noch zur Schule. Und ihr – was studiert ihr?", en:"Woher / wohnen + Gegenfrage.", hoef:2},
+          {de:"I come from not here. Ich komme von Kleinhausen. Born in the USA maybe.", en:"von vs aus; English.", hoef:-1, recast:"Ich komme aus … / Ich wohne in Kleinhausen. Ich bin … geboren."},
+          {de:"Das geht dich nichts an. Frage nicht so viel.", en:"Shuts small talk down.", hoef:-1, recast:"Small Talk ist freundlich: Ich wohne jetzt hier. Und du?"}
+        ]},
+      {npc:"„Ich studiere Sozialarbeit in Mainz“, sagt sie. „Selin. Das ist Jan. Und das Konzert? Kirche? Wir sind nicht so kirchlich, ehrlich.“", en:"Invite without pressure.",
+        opts:[
+          {de:"Kein Zwang. Es ist ein Gemeindekonzert für alle – Musik, Tee, Nachbarn. Kommt ihr, wenn ihr Lust habt? Samstag, 19 Uhr.", en:"Optional invite, du.", hoef:2},
+          {de:"I study German. You come to church concert. It is important for God and stuff.", en:"Preachy + English.", hoef:-1, recast:"Nicht predigen. Musik, Nachbarn, wenn ihr Lust habt."},
+          {de:"Ihr müsst kommen. Alle Nachbarn müssen. Sonst seid ihr unfreundlich.", en:"müssen.", hoef:-2, recast:"einladen, nicht müssen. Wenn ihr Lust habt."}
+        ]},
+      {npc:"Jan grinst. „Bleib doch. Wir machen nachher Kartoffeln. Du bist eingeladen – also wir laden DICH ein.“", en:"They invite you. Accept briefly or postpone politely.",
+        opts:[
+          {de:"Gerne, aber heute nicht lange. Tschüss und bis Samstag – vielleicht am Gemeindehaus!", en:"Tschüss is right here. gerne.", hoef:2},
+          {de:"Ja, party time, I live here now. Ich ziehe ein, okay?", en:"Over-accept, English.", hoef:0, recast:"Heute nur kurz: Gerne, aber ich muss bald weiter. Tschüss!"},
+          {de:"Auf Wiedersehen. Ich danke Ihnen für die Audienz.", en:"Too formal — comic.", hoef:0, recast:"Mit der WG: Tschüss! Bis bald."}
+        ]}
+    ]
+  }
+};
+
+const DOORS = [
+  {id:"keller", label:"Frau Keller", x:"9%", y:"48%"},
+  {id:"yilmaz", label:"Familie Yılmaz", x:"33%", y:"48%"},
+  {id:"koch", label:"Herr Koch", x:"55%", y:"48%"},
+  {id:"wg", label:"Student-WG", x:"80%", y:"46%"}
+];
+
+function zeichneStrasse(){
+  const el=$("street");
+  el.innerHTML = streetSVG()+'<div class="doors" id="doors"></div>';
+  DOORS.forEach(d=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="door-btn"+(S.done[d.id]?" done":"");
+    b.style.left=d.x; b.style.top=d.y;
+    b.textContent = S.done[d.id] ? ("✓ "+d.label) : d.label;
+    b.disabled = !!S.house && S.house!==d.id;
+    if(S.done[d.id] && !S.house) b.disabled = true;
+    b.setAttribute("aria-label", d.label+", Taste E");
+    b.onclick=()=>startHouse(d.id);
+    el.querySelector("#doors").appendChild(b);
+  });
+  [
+    {id:"linde", label:"Linde", x:"2%", y:"18%"},
+    {id:"kirche", label:"Gemeindehaus", x:"88%", y:"8%"},
+    {id:"katze", label:"Katze", x:"48%", y:"78%"},
+    {id:"plakat", label:"Plakat", x:"70%", y:"72%"},
+    {id:"weber", label:"Kasten Weber", x:"4%", y:"78%"}
+  ].forEach(h=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="hot-mini";
+    b.style.left=h.x; b.style.top=h.y;
+    b.textContent=h.label;
+    b.onclick=()=>lookStreet(h.id);
+    el.querySelector("#doors").appendChild(b);
+  });
+  $("score").textContent = String(S.hoef);
+  const names = Object.keys(S.done).filter(k=>S.done[k]).map(k=>H[k].doneLabel);
+  $("besucht").innerHTML = names.length ? names.map(n=>"<li>"+esc(n)+"</li>").join("") : "<li>Noch niemand.</li>";
+}
+
+function lookStreet(id){
+  const T = {
+    linde:{t:"Die Linde", de:"Unter der Linde ist es kühl. Ein Schild: Bitte nicht in den Baum klettern. Nachbarn treffen sich hier nach dem Konzert – wenn sie kommen.", en:"The linden tree. Neighbors may meet here after the concert."},
+    kirche:{t:"Gemeindehaus", de:"Das Gemeindehaus neben der Kirche. Samstag 19 Uhr: Chor, zwei Geigen, Tee. Kein Eintritt. Ein Zettel: Alle Nachbarn sind willkommen – glauben oder nicht glauben, Tee gibt es trotzdem.", en:"Parish hall. Open community concert, tea, no pressure."},
+    katze:{t:"Nachbarskatze", de:"Eine Katze sitzt auf der Mauer. Sie sagt nichts auf Deutsch. Du auch nicht. Manchmal ist Stille höflich.", en:"A cat. Silence can be polite."},
+    plakat:{t:"Konzertplakat", de:"Gemeindekonzert · Samstag 19 Uhr · Gemeindehaus Kleinhausen · Eintritt frei. Darunter klein: Bitte Nachbarn einladen – höflich, nicht laut.", en:"The poster you are walking for."},
+    weber:{t:"Briefkasten Weber", de: Object.values(S.done).every(Boolean) ? "Familie Weber ist nicht da. Du darfst jetzt den Zettel bauen." : "Familie Weber ist nicht zu Hause. Erst die vier Türen, dann der Zettel.", en:"Mailbox for the family who is out."}
+  };
+  const x=T[id]; if(!x) return;
+  $("panel-h").textContent=x.t;
+  $("panel-de").textContent=x.de;
+  $("panel-en").textContent=x.en;
+  $("npc").hidden=true; $("choices").innerHTML="";
+  if(id==="weber" && Object.values(S.done).every(Boolean)){
+    $("choices").innerHTML='<button type="button" class="btn" id="go-note2">Zettel schreiben</button>';
+    $("go-note2").onclick=openNote;
+  }
+  glossUpdate(); sprich(x.de); sagen(x.t);
+}
+
+function startHouse(id){
+  if(S.done[id]){ sagen("Hier warst du schon."); return; }
+  S.house=id; S.turn=0; S.tries=0;
+  zeichneStrasse();
+  showTurn();
+}
+
+function fill(t){ return String(t).replace(/\{\{NAME\}\}/g, S.name||"Alex"); }
+
+function showTurn(){
+  const house=H[S.house];
+  const t=house.turns[S.turn];
+  S.tries=0;
+  S.turnLocked=false;
+  $("panel-h").textContent = house.title+" · Gespräch "+(S.turn+1)+" von 4";
+  $("panel-de").textContent = "Tippe deine Antwort. Zwei Versuche.";
+  $("panel-en").textContent = t.en;
+  $("npc").hidden=false;
+  $("npc").innerHTML = "<p lang=\"de\">"+esc(t.npc)+"</p>"+(S.englisch?"<p class=\"en gloss\" lang=\"en\">"+esc(t.en)+"</p>":"");
+  $("recast").hidden=true; $("recast").innerHTML="";
+  const box=$("choices");
+  box.innerHTML =
+    '<p class="prod-lab"><label for="turn-in">Deine Antwort</label></p>'+
+    umlautsHtml("turn-in")+
+    '<p><textarea class="prod-in" id="turn-in" lang="de" autocomplete="off" spellcheck="false" rows="3"></textarea></p>'+
+    '<p><button type="button" class="btn" id="turn-ok">Antworten</button></p>'+
+    '<p id="turn-hint" class="en gloss" lang="en" hidden></p>';
+  bindUmlauts(box);
+  $("turn-ok").onclick=submitTurn;
+  $("turn-in").onkeydown=e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); submitTurn(); } };
+  glossUpdate();
+  sprich(t.npc);
+  sagen(house.title+". Runde "+(S.turn+1)+".");
+}
+
+function matchOpt(text, opts){
+  const good = opts.filter(o => !o.recast);
+  for(const o of good){ if(nearDe(text, fill(o.de))) return {o, kind:"good"}; }
+  for(const o of opts.filter(x => x.recast)){ if(nearDe(text, fill(o.de))) return {o, kind:"recast"}; }
+  return null;
+}
+
+function advanceTurn(delay){
+  setTimeout(()=>{
+    S.turn++;
+    if(S.turn>=4){
+      S.done[S.house]=true; S.house=null;
+      $("npc").hidden=true; $("choices").innerHTML="";
+      $("panel-h").textContent="Tür zu";
+      $("panel-de").textContent="Du gehst zurück auf die Straße. Noch offene Türen?";
+      $("panel-en").textContent="Back to the street.";
+      zeichneStrasse();
+      if(Object.values(S.done).every(Boolean)){
+        $("choices").innerHTML='<button type="button" class="btn" id="go-note">Zum Briefkasten Weber</button>';
+        $("go-note").onclick=openNote;
+      }
+    }else showTurn();
+  }, delay);
+}
+
+function submitTurn(){
+  if(S.turnLocked) return;
+  const house=H[S.house];
+  const t=house.turns[S.turn];
+  const v=$("turn-in").value.trim();
+  if(!v){ sagen("Bitte etwas tippen."); return; }
+  const m=matchOpt(v, t.opts);
+  if(m && m.kind==="good"){
+    S.turnLocked=true;
+    S.hoef += m.o.hoef;
+    $("score").textContent = String(S.hoef);
+    $("turn-hint").hidden=false;
+    $("turn-hint").textContent="Das klingt höflich.";
+    $("turn-in").disabled=true;
+    $("turn-ok").disabled=true;
+    sagen("Das klingt höflich.");
+    advanceTurn(S.motion?500:200);
+    return;
+  }
+  if(m && m.kind==="recast"){
+    S.turnLocked=true;
+    S.hoef += m.o.hoef;
+    $("score").textContent = String(S.hoef);
+    $("recast").hidden=false;
+    $("recast").innerHTML='<div class="recast"><strong>Freundlicher:</strong> '+esc(m.o.recast)+'</div>';
+    $("turn-in").disabled=true;
+    $("turn-ok").disabled=true;
+    sagen(m.o.recast); sprich(m.o.recast);
+    advanceTurn(S.motion?1400:500);
+    return;
+  }
+  S.tries++;
+  if(S.tries>=2){
+    S.turnLocked=true;
+    const model = t.opts.filter(o => !o.recast).sort((a,b)=>(b.hoef||0)-(a.hoef||0))[0] || t.opts[0];
+    const reduced = Math.max(0, (model.hoef||2)-1);
+    S.hoef += reduced;
+    $("score").textContent = String(S.hoef);
+    $("recast").hidden=false;
+    $("recast").innerHTML='<div class="recast"><strong>So klingt es höflich:</strong> '+esc(fill(model.de))+'</div>';
+    $("turn-in").disabled=true;
+    $("turn-ok").disabled=true;
+    sagen(fill(model.de)); sprich(fill(model.de));
+    advanceTurn(S.motion?1400:500);
+    return;
+  }
+  $("turn-hint").hidden=false;
+  $("turn-hint").textContent="Noch nicht passend. Versuch es noch einmal.";
+  sagen("Noch ein Versuch.");
+}
+
+function openNote(){
+  zeigeScreen("screen-note");
+  $("note-in").value = "";
+  $("note-uml").innerHTML = umlautsHtml("note-in");
+  bindUmlauts($("note-uml"));
+  renderNotePreview();
+  sagen("Schreibe einen höflichen Zettel.");
+}
+function renderNotePreview(){
+  const t = $("note-in").value.trim();
+  $("note-out").textContent = t || "…";
+}
+$("note-in").addEventListener("input", renderNotePreview);
+$("btn-note-clear").onclick=()=>{ $("note-in").value=""; renderNotePreview(); };
+$("btn-note-ok").onclick=()=>{
+  const t=$("note-in").value.toLowerCase();
+  let sc=0;
+  if(/einlade|konzert/.test(t)) sc+=2;
+  if(/samstag|19/.test(t)) sc+=2;
+  if(/leider|nicht da/.test(t)) sc+=1;
+  if(/auf wiedersehen/.test(t)) sc+=1;
+  if(/gib mir/.test(t)) sc-=3;
+  if(/tschüss/.test(t) && /weber/.test(t)) sc-=1;
+  S.noteScore=sc; S.hoef+=sc;
+  startQuiz();
+};
+
+const QUIZ = [
+  {q:"Frau Keller (70), erste Begegnung. Wie grüßt du?", ok:0, opts:["Guten Tag, ich heiße …","Hey, ich bin's","Gib mir Kuchen"]},
+  {q:"Kuchen ablehnen, höflich:", ok:1, opts:["Nee, mag ich nicht","Nein danke, ich habe schon gegessen","I don't want cake"]},
+  {q:"Kinder an der Tür Yılmaz:", ok:0, opts:["Hi, sind deine Eltern da?","Guten Tag, meine Herren Kinder","Move please"]},
+  {q:"Eltern Yılmaz:", ok:1, opts:["Nimm den Zettel","Darf ich Ihnen einen Zettel geben?","You must come"]},
+  {q:"Herr Koch sagt Kein Interesse. Beste Antwort:", ok:0, opts:["Trotzdem einen schönen Tag noch.","Warum sind Sie so unfreundlich?","Old man, whatever"]},
+  {q:"Abschied von der WG:", ok:1, opts:["Auf Wiedersehen, sehr geehrte WG","Tschüss und bis Samstag!","Bye bye esteemed students"]},
+  {q:"Mit Frau Keller Kuchen annehmen:", ok:0, opts:["Ja bitte, gerne. Vielen Dank!","Gib mehr.","I take cake."]},
+  {q:"Herr Koch schließt fast. Du sagst:", ok:2, opts:["Machen Sie die Tür auf!","Sie sind unmöglich.","Ich lasse den Zettel im Kasten. Danke für Ihre Zeit."]}
+];
+let qn=0, quizDeck=[], qTry=0;
+function startQuiz(){
+  quizDeck = shuffled(QUIZ).map(it => {
+    const packed = it.opts.map((o,i)=>({o, good:i===it.ok}));
+    const mixed = shuffled(packed);
+    return {q:it.q, opts:mixed.map(x=>x.o), ok:mixed.findIndex(x=>x.good)};
+  });
+  qn=0; zeigeScreen("screen-quiz"); showQ();
+}
+function showQ(){
+  const it=quizDeck[qn];
+  qTry=0;
+  $("q-box").innerHTML =
+    "<p lang=\"de\"><strong>"+(qn+1)+"/"+quizDeck.length+".</strong> "+esc(it.q)+"</p>"+
+    '<p class="prod-lab"><label for="quiz-in">Antwort tippen</label></p>'+
+    umlautsHtml("quiz-in")+
+    '<p><input class="prod-in" type="text" id="quiz-in" lang="de" autocomplete="off" spellcheck="false"></p>'+
+    '<p><button type="button" class="btn" id="quiz-ok">Prüfen</button></p>'+
+    '<p id="quiz-hint" hidden></p>';
+  bindUmlauts($("q-box"));
+  const right = it.opts[it.ok];
+  const lock = (good, msg) => {
+    $("quiz-in").disabled=true;
+    $("quiz-ok").disabled=true;
+    $("quiz-hint").hidden=false;
+    $("quiz-hint").textContent=msg;
+    setTimeout(()=>{ qn++; if(qn<quizDeck.length) showQ(); else startKonzert(); }, good?400:900);
+  };
+  $("quiz-ok").onclick=()=>{
+    const v=$("quiz-in").value;
+    if(nearDe(v, right)){
+      S.hoef+=1;
+      lock(true, "Richtig.");
+      return;
+    }
+    qTry++;
+    if(qTry>=2){
+      S.hoef-=1;
+      lock(false, "Richtig wäre: „"+right+"“.");
+      return;
+    }
+    $("quiz-hint").hidden=false;
+    $("quiz-hint").textContent="Noch ein Versuch.";
+  };
+  $("quiz-in").onkeydown=e=>{ if(e.key==="Enter"){ e.preventDefault(); $("quiz-ok").click(); } };
+}
+
+function startKonzert(){
+  zeigeScreen("screen-konzert");
+  const bits=[];
+  if(S.done.keller) bits.push("Frau Keller winkt mit einer Brottüte.");
+  if(S.done.yilmaz) bits.push("Die Kinder Yılmaz haben schon die erste Reihe.");
+  if(S.done.koch) bits.push("Herr Koch steht an der Tür – nur eine Minute, sagt sein Gesicht.");
+  if(S.done.wg) bits.push("Jan und Selin flüstern: Der Chor ist besser als erwartet.");
+  $("konz-de").textContent = "Die Stühle sind aus Holz. Es duftet nach Tee. "+(bits.join(" ")||"Einige Nachbarn sind da.")+" Ein Mikrofon: möchtest du danken?";
+  $("konz-en").textContent = "A last public sentence. Thank people without preaching.";
+  const polite = "Guten Abend. Danke, dass Sie gekommen sind. Ich bin neu und wollte nur einladen – nicht predigen. Viel Spaß beim Konzert.";
+  $("konz-choices").innerHTML =
+    '<p class="prod-lab"><label for="konz-in">Danke sagen</label></p>'+
+    umlautsHtml("konz-in")+
+    '<p><textarea class="prod-in" id="konz-in" lang="de" autocomplete="off" spellcheck="false" rows="3"></textarea></p>'+
+    '<p><button type="button" class="btn" id="konz-ok">Sprechen</button></p>'+
+    '<p id="konz-hint" hidden></p>';
+  bindUmlauts($("konz-choices"));
+  let kTry=0;
+  $("konz-ok").onclick=()=>{
+    const v=$("konz-in").value;
+    if(nearDe(v, polite)){
+      S.hoef+=2;
+      $("konz-in").disabled=true;
+      $("konz-ok").disabled=true;
+      $("konz-hint").hidden=false;
+      $("konz-hint").textContent="Das klingt höflich.";
+      setTimeout(ende, 600);
+      return;
+    }
+    kTry++;
+    if(kTry>=2){
+      S.hoef+=1;
+      $("konz-in").disabled=true;
+      $("konz-ok").disabled=true;
+      $("konz-hint").hidden=false;
+      $("konz-hint").textContent="So klingt es höflich: „"+polite+"“";
+      setTimeout(ende, 900);
+      return;
+    }
+    $("konz-hint").hidden=false;
+    $("konz-hint").textContent="Noch ein Versuch – höflich danken, nicht predigen.";
+  };
+  $("konz-in").onkeydown=e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); $("konz-ok").click(); } };
+  sagen("Gemeindehaus. Tippe deinen Dank.");
+  sprich($("konz-de").textContent);
+}
+function hash32(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function macheCode(){
+  const name=(S.name||"Gast").trim()||"Gast";
+  const houses = (S.done.keller?"K":"")+(S.done.yilmaz?"Y":"")+(S.done.koch?"C":"")+(S.done.wg?"W":"");
+  const pruef=hash32(name.toLowerCase()+"|"+S.hoef+"|"+houses+"|"+S.noteScore+"|KHMISS").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return "KH-MISS-"+S.hoef+"-"+houses+"-"+pruef;
+}
+
+function ende(){
+  const items = [
+    ["Frau Keller", S.done.keller],
+    ["Familie Yılmaz", S.done.yilmaz],
+    ["Herr Koch", S.done.koch],
+    ["Student-WG", S.done.wg],
+    ["Zettel Weber", S.noteScore>0]
+  ];
+  $("poster").innerHTML =
+    '<p class="eyebrow">Gemeindehaus Kleinhausen</p><h2>Gemeindekonzert</h2><p>Samstag, 19 Uhr · Eintritt frei · Tee und Zwiebelkuchen</p><ul class="checks">'+
+    items.map(([n,ok])=>'<li class="'+(ok?"ok":"")+'">'+esc(n)+(ok?" – eingeladen":" – fehlt")+"</li>").join("")+
+    "</ul><p><strong>Höflichkeit: "+S.hoef+"</strong></p><p lang=\"de\">Danke. Gerne. Leider nicht zu Hause. Auf Wiedersehen – und Tschüss, wenn es die WG ist.</p>";
+  $("code-val").textContent=macheCode();
+  zeigeScreen("screen-end");
+  sagen("Konzertplakat. Code bereit.");
+  glossUpdate();
+}
+
+$("btn-ueben").onclick=()=>{ if(!S.audio){S.audio=true; setToggle($("s-audio"),true);} uebenNaechstes(); };
+$("btn-start").onclick=()=>{ S.name=$("name-in").value.trim(); zeigeScreen("screen-play"); zeichneStrasse(); sagen("Vier Türen. Wen besuchst du zuerst?"); sprich("Du bist neu in Kleinhausen und lädst Nachbarn zum Gemeindekonzert ein."); };
+$("btn-sprich").onclick=()=>{ if(!S.audio){S.audio=true; setToggle($("s-audio"),true);} sprich(($("npc").innerText||$("panel-de").textContent)); };
+$("btn-nochmal").onclick=()=>location.reload();
+$("btn-copy").onclick=()=>{ const t=$("code-val").textContent; if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>sagen("Code kopiert.")); };
+$("btn-verify").onclick=()=>{
+  const name=$("v-name").value.trim(), code=$("v-code").value.trim().toUpperCase();
+  const m=/^KH-MISS-(-?\d+)-([KYCW]*)-([0-9A-Z]{7})$/.exec(code);
+  if(!name||!m){ $("v-out").textContent="Bitte Name und KH-MISS-Code eingeben."; return; }
+  let ok=false;
+  for(let ns=-3; ns<8; ns++){
+    const p=hash32(name.toLowerCase()+"|"+m[1]+"|"+m[2]+"|"+ns+"|KHMISS").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+    if(p===m[3]) ok=true;
+  }
+  $("v-out").textContent = ok ? ("Gültig. "+name+" · Höflichkeit "+m[1]+" · Häuser "+m[2]+".") : "Ungültig.";
+};
+
+document.addEventListener("keydown", e=>{
+  if(typingIn(e)) return;
+  if($("screen-play").classList.contains("on")){
+    if(e.key==="e"||e.key==="E"||e.key==="Enter"){
+      const el=document.activeElement;
+      if(el && el.classList.contains("door-btn")){ e.preventDefault(); el.click(); }
+    }
+  }
+});
+
+
+const UEBEN = [
+  "Guten Tag, ich möchte mich vorstellen.",
+  "Ich bin neu in Kleinhausen.",
+  "Ich lade Sie zum Gemeindekonzert ein.",
+  "Am Samstag um 19 Uhr im Gemeindehaus.",
+  "Ja bitte, gerne. Vielen Dank!",
+  "Nein danke, ich habe schon gegessen.",
+  "Das Angebot ist sehr nett.",
+  "Darf ich Ihnen einen Zettel geben?",
+  "Trotzdem einen schönen Tag noch.",
+  "Danke für Ihre Zeit.",
+  "Auf Wiedersehen, Frau Keller.",
+  "Schönen Tag noch.",
+  "Hi, sind deine Eltern da?",
+  "Guten Tag, Frau Yılmaz, Herr Yılmaz.",
+  "Mit den Kindern habe ich du gesagt.",
+  "Hey, darf ich kurz reinkommen?",
+  "Woher kommst du? Was studierst du?",
+  "Ich wohne jetzt in Kleinhausen.",
+  "Kein Zwang. Wenn ihr Lust habt.",
+  "Gerne, aber heute nicht lange.",
+  "Tschüss und bis Samstag!",
+  "Guten Tag, liebe Familie Weber.",
+  "Leider waren Sie nicht da.",
+  "Bitte kommen Sie zum Konzert.",
+  "Eintritt frei. Tee und Musik.",
+  "Ich störe nicht lange.",
+  "Ich lasse den Zettel im Kasten.",
+  "Sie müssen nicht kommen.",
+  "Ich wollte nur einladen.",
+  "Danke, dass Sie zugehört haben.",
+  "Darf ich Ihnen helfen?",
+  "Ich gebe Ihnen den Zettel.",
+  "Kinder sagt man du, Eltern Sie.",
+  "Nicht: Gib mir Kuchen.",
+  "Nicht: Du musst kommen.",
+  "Guten Abend und viel Spaß beim Konzert.",
+  "Ich habe schon gegessen, aber der Kuchen duftet gut.",
+  "Sind Ihre Eltern zu Hause?",
+  "Das Konzert ist für die Nachbarschaft, nicht nur für die Gemeinde.",
+  "Ich wollte hören, ob Sie Zeit haben.",
+  "Einen schönen Abend noch, Herr Koch.",
+  "Was studierst du in Mainz?",
+  "Ich gehe noch zur Schule.",
+  "Samstag, 19 Uhr, Gemeindehaus, Eintritt frei.",
+  "Bitte nicht predigen. Nur einladen.",
+  "Tschüss, Kinder. Auf Wiedersehen, Frau Yılmaz.",
+  "Darf ich mich setzen? Nur fünf Minuten.",
+  "Der Zettel liegt im Briefkasten.",
+  "Wir sehen uns vielleicht am Samstag.",
+  "Höflichkeit heißt: Sie oder du – aber bewusst.",
+  "Gerne. Leider. Danke. Bitte. Auf Wiedersehen.",
+  "Die Katze auf der Mauer sagt nichts. Das ist in Ordnung.",
+  "Unter der Linde ist es kühl.",
+  "Das Gemeindehaus steht neben der Kirche.",
+  "Alle Nachbarn sind willkommen."
+];
+function uebenNaechstes(){
+  const i = (uebenNaechstes.i||0) % UEBEN.length;
+  uebenNaechstes.i = i+1;
+  const t = UEBEN[i];
+  sagen(t); sprich(t);
+}
+
+glossUpdate();
+if("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged=()=>{};
+</script>
+</body>
+</html>

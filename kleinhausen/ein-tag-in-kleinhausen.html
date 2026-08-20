@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="de" class="show-en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ein Tag in Kleinhausen</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --sky:#7eb6d9;
+  --sky-deep:#3d7eab;
+  --cream:#fff8eb;
+  --sun:#e8b02a;
+  --brick:#c45c48;
+  --brick-deep:#8e382c;
+  --grass:#3f8c58;
+  --ink:#2a2418;
+  --ink-soft:#5c5346;
+  --paper:#fffdf7;
+  --ok:#2d6b45;
+  --err:#a33b32;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1rem; --r:10px;
+}
+html[data-size="gross"]{--fs:1.16rem}
+html[data-size="sehr-gross"]{--fs:1.34rem}
+html[data-contrast="hoch"]{
+  --sky:#fff;--sky-deep:#000;--cream:#fff;--sun:#000;--brick:#000;
+  --brick-deep:#000;--grass:#00551f;--ink:#000;--ink-soft:#000;--paper:#fff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:var(--fs);line-height:1.55;min-height:100vh;-webkit-text-size-adjust:100%}
+body{background-image:linear-gradient(var(--sky) 0 8rem, var(--cream) 12rem)}
+html[data-contrast="hoch"] body{background:#fff}
+.skip{position:absolute;left:-9999px;top:0;z-index:200;background:var(--brick);color:#fff;padding:.7em 1.1em;font-weight:700;text-decoration:none}
+.skip:focus{left:0}
+:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
+html[data-contrast="hoch"] :focus-visible{outline:5px solid #000}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.topbar{background:var(--brick);color:#fff;border-bottom:5px solid var(--sun)}
+.topbar-in{max-width:900px;margin:0 auto;padding:.65rem 1rem;display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;justify-content:space-between}
+.brand h1{font-family:var(--serif);font-size:1.25em;margin:0}
+.brand .sub{font-family:var(--mono);font-size:.68em;letter-spacing:.16em;text-transform:uppercase;color:#ffe7a8;display:block}
+.settings{display:flex;flex-wrap:wrap;gap:.35rem}
+.set-btn{font:inherit;font-size:.8em;background:transparent;color:#fff;border:2px solid #f3c4ba;border-radius:999px;padding:.35em .85em;cursor:pointer;min-height:44px}
+.set-btn[aria-pressed="true"]{background:var(--sun);color:var(--ink);border-color:var(--sun);font-weight:700}
+.wrap{max-width:900px;margin:0 auto;padding:1rem 1rem 3rem}
+.screen{display:none}.screen.on{display:block}
+h2{font-family:var(--serif);font-size:1.7em;margin:.15em 0 .4em}
+h2:focus{outline:none}
+.eyebrow{font-family:var(--mono);font-size:.72em;letter-spacing:.18em;text-transform:uppercase;color:var(--brick);margin:0}
+.lede{max-width:62ch}
+.en{color:var(--ink-soft);font-style:italic}
+.en::before{content:" – "}
+html:not(.show-en) .gloss{display:none}
+.btn{font:inherit;font-weight:700;background:var(--brick);color:#fff;border:3px solid var(--brick-deep);border-radius:var(--r);padding:.65em 1.2em;cursor:pointer;min-height:44px}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.btn-row{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}
+.timeline{display:flex;gap:.35rem;flex-wrap:wrap;margin:0 0 1rem}
+.tl{flex:1;min-width:4.5rem;text-align:center;font-family:var(--mono);font-size:.72em;letter-spacing:.06em;text-transform:uppercase;padding:.45em .3em;border-radius:999px;border:2px solid var(--sky-deep);background:#fff;min-height:44px}
+.tl.now{background:var(--sun);border-color:var(--brick);font-weight:700}
+.tl.done{background:var(--grass);color:#fff;border-color:var(--grass)}
+.scene-art{border:3px solid var(--brick);border-radius:var(--r);overflow:hidden;background:var(--sky);margin:.6rem 0}
+.scene-art svg{display:block;width:100%;height:auto}
+.story{background:var(--paper);border:2px solid #e6d8b8;border-radius:var(--r);padding:1rem 1.1rem;box-shadow:0 4px 0 rgba(42,36,24,.08)}
+.story p{margin:.4em 0}
+.choices{display:grid;gap:.65rem;margin:1rem 0}
+.opt{text-align:left;font:inherit;background:#fff;border:2px solid #d9cba8;border-radius:12px;padding:.8em .9em .8em 3rem;cursor:pointer;position:relative;min-height:44px;color:var(--ink)}
+.opt .key{position:absolute;left:.7em;top:.85em;width:1.6em;height:1.6em;border-radius:6px;background:var(--brick);color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:700}
+.opt:hover{border-color:var(--brick)}
+.opt.wrong{border-color:var(--err);background:#fdeceb}
+.opt.right{border-color:var(--ok);background:#e8f6ed}
+.recast{background:#fff4d0;border-left:4px solid var(--sun);padding:.7em .9em;margin:.7em 0;border-radius:0 8px 8px 0}
+.flags{font-size:.85em;color:var(--ink-soft)}
+.status-bar{min-height:1.4em;margin:1rem 0 0}
+.news{background:#fff;border:6px solid var(--ink);padding:1.1rem 1.3rem;font-family:var(--serif)}
+.news .mast{text-align:center;font-size:1.5em;border-bottom:3px double var(--ink);margin:0 0 .5em}
+.code-box{background:var(--ink);color:var(--sun);padding:1rem;border-radius:var(--r);margin:1rem 0}
+.code-val{font-family:var(--mono);font-size:1.1em;word-break:break-all}
+input[type=text]{font:inherit;padding:.65em .8em;border:2px solid #d9cba8;border-radius:8px;min-height:44px;width:100%;max-width:22rem}
+details{margin:1rem 0} summary{cursor:pointer;font-weight:700;min-height:44px}
+kbd{font-family:var(--mono);border:1px solid #cbb;padding:.05em .35em;border-radius:4px}
+html[data-motion="aus"] *{animation:none !important;transition:none !important}
+@media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
+.kultur{
+  background:#fff;border:2px dashed var(--brick);border-radius:var(--r);
+  padding:.8rem 1rem;margin:1rem 0;font-size:.92em;
+}
+.kultur h3{font-family:var(--serif);margin:.1em 0 .35em;font-size:1.05em}
+.karte-mini{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0 0}
+.karte-mini span{
+  background:#fff;border:2px solid #d9cba8;border-radius:999px;padding:.25em .7em;font-size:.8em;
+}
+.speak-note{font-size:.85em;color:var(--ink-soft)}
+.opt .en{display:block;margin-top:.25em;font-size:.88em}
+@media print{.settings,.opt,.btn{display:none !important}body{background:#fff}}
+dt{font-weight:700;margin-top:.6em} dd{margin:0 0 .3em}
+.story p+p{margin-top:.55em}
+.opt[disabled]{cursor:default}
+.timeline{position:sticky;top:0;z-index:5;background:var(--cream);padding:.35rem 0}
+html[data-contrast="hoch"] .timeline{background:#fff}
+html[data-contrast="hoch"] .story{border-color:#000}
+html[data-contrast="hoch"] .opt{border-color:#000}
+html[data-contrast="hoch"] .tl{border-color:#000}
+.btn:focus-visible,.opt:focus-visible,.set-btn:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
+footer.mini{margin-top:2rem;font-size:.85em;color:var(--ink-soft)}
+.szene-meta{font-family:var(--mono);font-size:.75em;letter-spacing:.08em;text-transform:uppercase;color:var(--brick)}
+
+.choice-hint{font-size:.85em;color:var(--ink-soft);margin:.2em 0 0}
+html[data-size="gross"] .opt{padding:.85em 1em .85em 3.1em}
+html[data-size="sehr-gross"] .opt{padding:.95em 1.1em .95em 3.2em}
+html[data-contrast="hoch"] .recast{background:#fff;border-color:#000}
+html[data-contrast="hoch"] .news{border-color:#000}
+html[data-contrast="hoch"] .code-box{background:#000;color:#fff;border:2px solid #000}
+.story{max-width:70ch}
+.opt .key{min-width:1.6em;min-height:1.6em}
+main:focus{outline:none}
+.scene-art svg text{font-family:Georgia,serif}
+@media (max-width:600px){
+  .topbar-in{padding:.5rem .7rem}
+  .opt{font-size:.95em}
+  h2{font-size:1.4em}
+}
+@media (min-width:901px){
+  .story{box-shadow:0 6px 0 rgba(42,36,24,.06)}
+}
+.flags{margin-top:.8rem}
+.status-bar:empty{min-height:0}
+input[type=text]:focus-visible{outline:4px solid var(--sun);outline-offset:2px}
+details[open]{background:rgba(255,255,255,.6);padding:.4rem .6rem;border-radius:8px}
+footer.mini p{margin:.3em 0}
+
+.brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
+a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
+a.hub-home:hover{background:rgba(255,255,255,.18)}
+.prod-lab{font-weight:700;margin:.35em 0}
+.prod-in,.prod-in[type=text]{font:inherit;padding:.65em .8em;border:2px solid #d9cba8;border-radius:8px;min-height:44px;width:100%;max-width:22rem;background:#fff;color:var(--ink)}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:700;cursor:pointer;background:#fff;color:var(--ink);border:2px solid #d9cba8;border-radius:6px}
+</style>
+</head>
+<body>
+<a class="skip" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <a class="hub-home" href="../index.html" aria-label="Zurück zum Stadtplan Kleinhausen">Kleinhausen</a>
+            <h1>Ein Tag in Kleinhausen</h1>
+      <span class="sub">Choose your own adventure · A2–B1</span>
+    </div>
+    <div class="settings" role="group" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">Vorlesen</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</div>
+<main class="wrap" id="hauptinhalt">
+<section class="screen on" id="screen-start" aria-labelledby="h-start">
+  <p class="eyebrow">Ein Schultag · Register, Fälle, Verbzweit</p>
+  <h2 id="h-start" tabindex="-1">Der Wecker klingelt</h2>
+  <p class="lede">Du wohnst in Kleinhausen. Heute entscheidest du: aufstehen oder liegen bleiben, Bus oder zu Fuß, helfen oder ignorieren, Mensa oder Café Linde. Jede Wahl ist zwei oder drei Sätze auf Deutsch. Manche klingen wie Englisch – und sind falsch.
+    <span class="en gloss" lang="en">You live in Kleinhausen. Each choice is two or three German sentences. Some sound like English — and are wrong.</span></p>
+  <p class="lede">Falsche Grammatik beendet das Spiel nicht (außer du bist grob zum Rektor). Du siehst eine Korrektur und gehst einen Umweg.
+    <span class="en gloss" lang="en">Wrong grammar is a detour, not game over — except rudeness to the principal.</span></p>
+  <div class="kultur">
+    <h3>Was du übst</h3>
+    <ul>
+      <li><strong>Register:</strong> Sie zum Busfahrer, Rektor, Frau Berg. du zu Hause, zu Yusuf, zu Malik.</li>
+      <li><strong>Akkusativ:</strong> den Rucksack, den Ball, die Tüten, einen Kuchen.</li>
+      <li><strong>Dativ:</strong> ich helfe der Freundin / Ihnen.</li>
+      <li><strong>Verbzweit:</strong> Heute lerne ich. In Kleinhausen gibt es ein Fest.</li>
+      <li><strong>Nicht:</strong> *ich bin spät → ich komme zu spät.</li>
+    </ul>
+    <p class="en gloss" lang="en">Register, accusative, dative, verb-second. A2–B1 Kleinhausen.</p>
+    <p>Enden: Held des Tages · Chaos-Tag · Stammgast · Nachsitzen-Ende. Der Code beginnt mit KH-TAG- und nennt das Ende.</p>
+  </div>
+  <details>
+    <summary>Knoten der Geschichte (mindestens zwölf)</summary>
+    <ol>
+      <li>Wecker – aufstehen oder liegen bleiben</li>
+      <li>Küche – mein Rucksack, das Brot, die Milch</li>
+      <li>Hetze – ich komme zu spät (nicht: ich bin spät)</li>
+      <li>Nachbarin Frau Keller, wenn du schwänzen willst</li>
+      <li>Wegwahl – Bus oder zu Fuß</li>
+      <li>Kiosk Herr Özkan – Sie, ein Brötchen</li>
+      <li>Busfahrer Herr Stein – Sie</li>
+      <li>Winzerhof – grüßen, kein Wein</li>
+      <li>Selzbrücke – Frau Berg, die Tüten</li>
+      <li>Rektor Herr Vogt – Sie; Grobheit = kurzes Ende, dann neu</li>
+      <li>Klasse – Yusuf, den Rucksack</li>
+      <li>Deutschstunde – Verbzweit</li>
+      <li>Pause und SMS von Mia</li>
+      <li>Mensa oder Café Linde</li>
+      <li>Nachmittag: Nachsitzen / Sportverein / Café / Bücherei</li>
+      <li>Abend: Eltern du, Heft oder Fest</li>
+    </ol>
+  </details>
+  <div class="kultur">
+    <h3>Mini-Lexikon für den Tag</h3>
+    <p><strong>der Rucksack</strong> – backpack · <strong>die Fahrkarte</strong> – ticket · <strong>der Rektor</strong> – principal · <strong>nachsitzen</strong> – detention · <strong>die Mensa</strong> – cafeteria · <strong>der Kuchen</strong> – cake · <strong>der Verein</strong> – club · <strong>das Fest</strong> – festival · <strong>die Hausaufgaben</strong> – homework · <strong>die Selz</strong> – local river · <strong>der Winzer</strong> – wine-grower · <strong>Entschuldigung</strong> – sorry (polite) · <strong>gerne</strong> – gladly · <strong>leider</strong> – unfortunately</p>
+    <p class="en gloss" lang="en">A compact word list for the day. English is in the glosses, not instead of German choices.</p>
+  </div>
+  <details>
+    <summary>Fälle und Register – Beispiele zum Nachlesen</summary>
+    <dl class="kultur">
+      <dt>der Rucksack → den Rucksack</dt><dd>Ich trage <em>den</em> Rucksack. Akkusativ nach tragen, sehen, nehmen.</dd>
+      <dt>die Tüten → die Tüten</dt><dd>Ich trage <em>die</em> Tüten. Feminin Akkusativ sieht aus wie Nominativ.</dd>
+      <dt>der Ball → den Ball</dt><dd>Ich nehme <em>den</em> Ball. Maskulin ändert sich.</dd>
+      <dt>helfen + Dativ</dt><dd>Ich helfe <em>der</em> Freundin. Ich helfe <em>Ihnen</em>. Wem?</dd>
+      <dt>kommen zu spät</dt><dd>Nicht: ich bin spät. Sondern: ich <em>komme zu spät</em>.</dd>
+      <dt>Verbzweit</dt><dd>Heute <em>lerne</em> ich. In Kleinhausen <em>gibt</em> es ein Fest. Um vier <em>spielt</em> der Verein.</dd>
+      <dt>weil + Ende</dt><dd>Ich komme zu spät, <em>weil der Bus Verspätung hatte</em>.</dd>
+      <dt>Sie</dt><dd>Busfahrer, Rektor, Frau Berg, Herr Özkan, Frau Krüger: Sie, bitte, Entschuldigung.</dd>
+      <dt>du</dt><dd>Familie, Yusuf, Mia, Malik, Trainer: du, Tschüss, gerne.</dd>
+      <dt>einladen</dt><dd>Ich lade dich ein. Ich lade Sie ein. Nicht: du musst kommen.</dd>
+      <dt>einen Kuchen</dt><dd>Ich hätte gern <em>einen</em> Apfelkuchen. Maskulin Akkusativ.</dd>
+      <dt>die Nudeln</dt><dd>Plural. Ich hätte gern <em>die</em> Nudeln, bitte.</dd>
+      <dt>aus vs von</dt><dd>Ich komme <em>aus</em> Kleinhausen. Ich bin hier <em>geboren</em>.</dd>
+      <dt>auf den Markt</dt><dd>Wohin? Akkusativ: auf <em>den</em> Markt. Zum Fest.</dd>
+      <dt>an der Selz</dt><dd>Wo? Dativ: an <em>der</em> Selz (die Selz). Nicht am Rhein.</dd>
+    </dl>
+  </details>
+  <p><label for="name-in">Dein Name</label></p>
+  <p><input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname"></p>
+  <div class="btn-row"><button type="button" class="btn" id="btn-start">Den Tag beginnen</button>
+    <button type="button" class="btn btn-ghost" id="btn-ueben">Satz vorlesen üben</button></div>
+  <section class="kultur" aria-label="Beispielsätze">
+    <h3>Sätze, die du heute hören kannst</h3>
+    <p>Guten Morgen, Herr Stein. Eine Schülerfahrkarte, bitte.</p>
+    <p>Entschuldigung, Herr Vogt. Ich komme zu spät, weil der Wecker nicht geklingelt hat.</p>
+    <p>Hallo Yusuf! Darf ich dir helfen? Ich trage den Rucksack.</p>
+    <p>Ich hätte gern die Nudeln und den Salat, bitte.</p>
+    <p>Einen Apfelkuchen und einen Tee, bitte. Stimmt das so?</p>
+    <p>Heute liegt Kleinhausen an der Selz, nicht am Rhein.</p>
+    <p>Darf ich Ihnen helfen? Ich trage die Tüten.</p>
+    <p>Ja, gerne. Ich nehme den Ball und spiele mit.</p>
+    <p>Ich mache zuerst die Hausaufgaben. Danach kann ich zum Markt.</p>
+    <p>Ich sehe den neuen Schüler. Ich helfe der Freundin.</p>
+    <p>Nachsitzen: Heute lerne ich. Um vier spielt der Verein. In Kleinhausen gibt es ein Fest.</p>
+    <p>Nicht: Ich bin spät. Nicht: Heute ich lerne. Nicht: Gib mir Ticket. Nicht: der Rucksack nach tragen.</p>
+  </section>
+  <details>
+    <summary>Tastatur</summary>
+    <ul>
+      <li><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> wählen eine Antwort. <kbd>E</kbd> / <kbd>Enter</kbd> bestätigt, wenn ein Knopf fokussiert ist.</li>
+      <li>English, Vorlesen (de-DE), Kontrast, Schrift. Keine Cookies.</li>
+    </ul>
+  </details>
+</section>
+
+<section class="screen" id="screen-play" aria-labelledby="h-play">
+  <p class="eyebrow" id="zeit-label">Morgen · 07:00</p>
+  <h2 id="h-play" tabindex="-1">Wecker</h2>
+  <div class="timeline" id="timeline" aria-label="Tageskarte">
+    <span class="tl now" data-ph="morgen">Morgen</span>
+    <span class="tl" data-ph="schule">Schule</span>
+    <span class="tl" data-ph="mittag">Mittag</span>
+    <span class="tl" data-ph="nachmittag">Nachmittag</span>
+    <span class="tl" data-ph="abend">Abend</span>
+  </div>
+  <div class="scene-art" id="art" aria-hidden="true"></div>
+  <div class="story">
+    <div id="story-de" lang="de"></div>
+    <p class="en gloss" lang="en" id="story-en"></p>
+    <p><button type="button" class="btn btn-ghost" id="btn-sprich">Text vorlesen</button></p>
+    <div class="choices" id="choices"></div>
+    <div id="recast" hidden></div>
+  </div>
+  <p class="flags" id="flag-view"></p>
+  <p class="status-bar" id="status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="screen" id="screen-end" aria-labelledby="h-end">
+  <p class="eyebrow">Ende des Tages</p>
+  <h2 id="h-end" tabindex="-1">Ende</h2>
+  <div class="news" id="news"></div>
+  <div class="code-box">
+    <p>Dein Abgabecode <span class="en gloss" lang="en" style="color:#ffe7a8">includes which ending</span></p>
+    <p class="code-val" id="code-val"></p>
+    <p><button type="button" class="btn" id="btn-copy">Code kopieren</button></p>
+  </div>
+  <div class="btn-row">
+    <button type="button" class="btn" id="btn-nochmal">Neuen Tag starten</button>
+  </div>
+  <details>
+    <summary>Für Lehrkräfte: Code prüfen</summary>
+    <p><label for="v-name">Name</label> <input type="text" id="v-name"></p>
+    <p><label for="v-code">Code</label> <input type="text" id="v-code"></p>
+    <p><button type="button" class="btn" id="btn-verify">Prüfen</button></p>
+    <p id="v-out" role="status" aria-live="polite"></p>
+  </details>
+</section>
+</main>
+<footer class="wrap mini">
+  <p>Ein Tag in Kleinhausen · Choose-your-own-adventure · Register, Fälle, Verbzweit. Eine Datei, keine Cookies. Code: KH-TAG- plus Ende.</p>
+</footer>
+<script>
+"use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      try{ inp.setSelectionRange(a+b.dataset.c.length,a+b.dataset.c.length);}catch(e){}
+    });
+  });
+}
+
+const S = {
+  englisch:true, audio:false, kontrast:false, size:0, motion:true,
+  name:"", node:"wecker", phase:"morgen",
+  late:false, helped:false, cafe:false, football:false, nachsitzen:false, v2:false,
+  festival:false, homework:false, politeBus:false, money:5,
+  chaos:0, gut:0, ending:null, retryFrom:null
+};
+
+function sagen(t){ $("status").textContent = t; }
+function sprich(text){
+  if(!S.audio || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang="de-DE"; u.rate=.9;
+    const v = window.speechSynthesis.getVoices().find(x=>/^de/i.test(x.lang));
+    if(v) u.voice=v;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function setToggle(btn,on){ btn.setAttribute("aria-pressed", on?"true":"false"); }
+function glossUpdate(){
+  document.documentElement.classList.toggle("show-en", S.englisch);
+  document.querySelectorAll(".gloss").forEach(el => { el.hidden = !S.englisch; });
+}
+function zeigeScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+  const h=document.querySelector("#"+id+" h2");
+  if(h) h.focus();
+  window.scrollTo({top:0,behavior:S.motion?"smooth":"auto"});
+}
+
+$("s-en").onclick=()=>{ S.englisch=!S.englisch; setToggle($("s-en"),S.englisch); glossUpdate(); sagen(S.englisch?"Englische Hilfe ist an.":"Englische Hilfe ist aus."); };
+$("s-audio").onclick=()=>{ S.audio=!S.audio; setToggle($("s-audio"),S.audio); if(S.audio){sprich("Vorlesen ist an."); sagen("Vorlesen ist an.");} else { if("speechSynthesis" in window) window.speechSynthesis.cancel(); sagen("Vorlesen ist aus."); } };
+$("s-contrast").onclick=()=>{ S.kontrast=!S.kontrast; setToggle($("s-contrast"),S.kontrast); document.documentElement.setAttribute("data-contrast", S.kontrast?"hoch":"normal"); sagen(S.kontrast?"Hoher Kontrast ist an.":"Normale Farben."); };
+$("s-size").onclick=()=>{ S.size=(S.size+1)%3; const n=["normal","gross","sehr-gross"], l=["A","A+","A++"]; document.documentElement.setAttribute("data-size", n[S.size]); $("s-size").textContent="Schrift: "+l[S.size]; sagen("Schriftgröße: "+["normal","groß","sehr groß"][S.size]+"."); };
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){ S.motion=false; document.documentElement.setAttribute("data-motion","aus"); }
+
+function art(kind){
+  const skies = {morgen:"#f4c56a",schule:"#7eb6d9",mittag:"#87c4e0",nachmittag:"#e8a05c",abend:"#3d4a8c"};
+  const sky = skies[S.phase]||"#7eb6d9";
+  const rooms = {
+    bett:`<rect y="90" width="800" height="110" fill="#c4a882"/><rect x="80" y="70" width="280" height="90" fill="#fff8eb" stroke="#2a2418" stroke-width="4"/><circle cx="160" cy="50" r="28" fill="#f0d0b0"/><rect x="500" y="30" width="40" height="40" fill="#2a2418"/><text x="520" y="58" text-anchor="middle" fill="#e8b02a" font-size="12">7:00</text>`,
+    kueche:`<rect y="90" width="800" height="110" fill="#e8d5b0"/><rect x="40" y="40" width="220" height="120" fill="#c45c48"/><rect x="280" y="100" width="160" height="50" fill="#fff"/><circle cx="520" cy="70" r="24" fill="#e8b02a"/>`,
+    bus:`<rect y="80" width="800" height="120" fill="#6a9e4a"/><rect x="80" y="50" width="520" height="110" rx="20" fill="#c45c48"/><circle cx="160" cy="165" r="22" fill="#2a2418"/><circle cx="520" cy="165" r="22" fill="#2a2418"/><rect x="200" y="70" width="80" height="50" fill="#7eb6d9"/>`,
+    strasse:`<rect y="110" width="800" height="90" fill="#8a8a8a"/><rect y="0" width="800" height="110" fill="${sky}"/><polygon points="40,110 120,40 200,110" fill="#c45c48"/><rect x="500" y="50" width="80" height="60" fill="#3f8c58"/>`,
+    schule:`<rect y="80" width="800" height="120" fill="#6a9e4a"/><rect x="200" y="20" width="400" height="140" fill="#e8dcc8" stroke="#2a2418" stroke-width="4"/><polygon points="180,20 400,-10 620,20" fill="#c45c48"/><rect x="360" y="90" width="80" height="70" fill="#5c3a28"/>`,
+    klasse:`<rect width="800" height="200" fill="#e7efe4"/><rect x="40" y="30" width="180" height="90" fill="#7eb6d9"/><rect x="280" y="110" width="200" height="50" fill="#c4a882"/><rect x="520" y="90" width="70" height="80" fill="#8e382c"/>`,
+    mensa:`<rect width="800" height="200" fill="#f3e6c8"/><rect x="60" y="80" width="680" height="40" fill="#c45c48"/><circle cx="200" cy="70" r="18" fill="#e8b02a"/><circle cx="400" cy="70" r="18" fill="#3f8c58"/><rect x="560" y="40" width="90" height="50" fill="#fff"/>`,
+    cafe:`<rect width="800" height="200" fill="#efe4c8"/><rect x="80" y="40" width="200" height="140" fill="#3f8c58"/><text x="180" y="110" text-anchor="middle" fill="#fff8eb" font-size="18" font-family="Georgia">Linde</text><circle cx="500" cy="140" r="28" fill="#c45c48"/><rect x="560" y="100" width="80" height="70" fill="#6b4a2e"/>`,
+    nachsitzen:`<rect width="800" height="200" fill="#dce4ea"/><rect x="60" y="40" width="500" height="120" fill="#fff"/><line x1="80" y1="70" x2="520" y2="70" stroke="#2a2418"/><line x1="80" y1="100" x2="500" y2="100" stroke="#2a2418"/><rect x="620" y="50" width="50" height="90" fill="#c45c48"/>`,
+    sport:`<rect width="800" height="200" fill="#3f8c58"/><rect x="80" y="40" width="640" height="120" fill="#4a9a62" stroke="#fff" stroke-width="4"/><circle cx="400" cy="100" r="28" fill="none" stroke="#fff" stroke-width="3"/>`,
+    biblio:`<rect width="800" height="200" fill="#efe6d4"/><rect x="40" y="30" width="40" height="140" fill="#c45c48"/><rect x="90" y="30" width="40" height="140" fill="#3d7eab"/><rect x="140" y="30" width="40" height="140" fill="#e8b02a"/><rect x="400" y="80" width="160" height="80" fill="#fff"/>`,
+    home:`<rect y="90" width="800" height="110" fill="#6a9e4a"/><polygon points="200,90 400,10 600,90" fill="#c45c48"/><rect x="250" y="90" width="300" height="90" fill="#fff8eb" stroke="#2a2418"/>`,
+    markt:`<rect width="800" height="200" fill="${sky}"/><circle cx="400" cy="90" r="40" fill="#c4a056"/><rect x="80" y="120" width="100" height="60" fill="#c45c48"/><rect x="220" y="110" width="120" height="70" fill="#3f8c58"/><rect x="520" y="115" width="110" height="65" fill="#e8b02a"/>`
+  };
+  const g = rooms[kind] || rooms.bett;
+  return `<svg viewBox="0 0 800 200" focusable="false"><rect width="800" height="200" fill="${sky}"/>${g}</svg>`;
+}
+
+const N = {
+  wecker:{
+    title:"Der Wecker", phase:"morgen", zeit:"Morgen · 07:00", art:"bett",
+    de:["Der Wecker klingelt laut. Es ist Montag in Kleinhausen. Durch das Fenster siehst du die Selz im Nebel.","Deine Schultasche steht schon an der Tür. Mama ruft vom Flur: „Stehst du auf oder nicht?“"],
+    en:"The alarm rings. Monday in Kleinhausen. Mum calls from the hall.",
+    ch:[
+      {de:["Ich stehe sofort auf. Ich gehe ins Bad und wasche mir das Gesicht. Dann sage ich: „Mama, ich komme!“"], en:"You get up at once and answer Mum.", next:"kueche", gut:1},
+      {de:["Ich bleibe liegen. Fünf Minuten mehr, denke ich. Der Wecker ist egal."], en:"You stay in bed. (Possible — but you will be late.)", next:"hetze", late:true},
+      {de:["I stay in bed because I am tired. Ich bin very müde. Nur five minutes."], en:"English mixed in — tempting, but wrong.", next:"hetze", late:true, chaos:1, recast:"Besser: Ich bleibe noch fünf Minuten liegen, weil ich müde bin. (Ein Satz, deutsche Wortstellung.)"}
+    ]
+  },
+  kueche:{
+    title:"In der Küche", phase:"morgen", zeit:"Morgen · 07:20", art:"kueche",
+    de:["In der Küche riecht es nach Brot und Kaffee. Papa liest die Kleinhausener Bote. Dein Bruder hat schon den letzten Apfel.","Mama fragt: „Wo ist dein Rucksack? Und trinkst du Milch?“ Zu Hause sagt ihr ihr."],
+    en:"Kitchen. Family uses du. Where is your backpack?",
+    ch:[
+      {de:["Mama, wo ist mein Rucksack? Ich packe das Brot ein und trinke die Milch. Danke, ich gehe gleich."], en:"Correct gender: mein Rucksack (der). Accusative: das Brot, die Milch.", next:"wegwahl", gut:1},
+      {de:["Mama, wo ist meine Rucksack? Ich packe den Brot und trinke der Milch. Ciao!"], en:"Wrong genders — English speakers often guess -e.", next:"wegwahl", chaos:1, recast:"Richtig: mein Rucksack (der Rucksack). Ich packe das Brot ein. Ich trinke die Milch."},
+      {de:["I eat quickly then I go to school. Ich esse schnell dann ich gehe. Kein Problem."], en:"Calque of English word order (missing und / verb-second).", next:"wegwahl", chaos:1, recast:"Richtig: Ich esse schnell und dann gehe ich zur Schule. Nach dann steht das Verb an Position zwei: dann gehe ich."}
+    ]
+  },
+  hetze:{
+    title:"Zu spät!", phase:"morgen", zeit:"Morgen · 07:48", art:"bett",
+    de:["Du springst aus dem Bett. Es ist schon acht vor acht. Der Schulbus wartet nicht lange am Brunnen.","Du findest nur eine Socke. Papa ruft: „Du kommst zu spät!“"],
+    en:"You overslept. Papa says you are late — kommen zu spät, not *bin spät.",
+    ch:[
+      {de:["Ich ziehe mich schnell an. Ich schnappe den Rucksack und laufe zur Tür. Vielleicht schaffe ich den Bus noch."], en:"You dress fast and run. Accusative: den Rucksack.", next:"wegwahl", gut:1, late:true},
+      {de:["Ich bin spät! Sorry, das ist nicht meine Schuld. Der Wecker hat nicht geklingelt, glaube ich."], en:"Ich bin spät is a calque of I am late.", next:"wegwahl", late:true, chaos:1, recast:"Richtig: Ich komme zu spät! (nicht: ich bin spät). Entschuldigung, nicht nur Sorry, wenn du höflich sein willst."},
+      {de:["Egal. Schule is stupid heute. Ich gehe einfach nicht. Niemand merkt das."], en:"Skipping school — a chaotic choice.", next:"schwanz", chaos:2}
+    ]
+  },
+  schwanz:{
+    title:"Kein Unterricht?", phase:"morgen", zeit:"Morgen · 08:10", art:"strasse",
+    de:["Du gehst Richtung Selz statt zur Schule. Frau Keller vom Nachbarhaus sieht dich. Sie kennt deine Mutter.","„Fehlst du heute in der Schule?“ fragt sie mit Sie-Stimme, obwohl sie dich duzt, seit du klein bist. Warte – sie duzt dich: „Fehlst du?“"],
+    en:"Skipping is noticed. A neighbor asks.",
+    ch:[
+      {de:["Ach, Frau Keller, ich bin krank. Ich gehe nach Hause und lege mich hin. Tschüss!"], en:"A lie — chaos continues, and you still end up going (she walks you).", next:"wegwahl", late:true, chaos:1, recast:"Frau Keller lächelt nicht. „Dann bringe ich dich zur Schule. Deine Mutter hat angerufen.“ Du gehst doch."},
+      {de:["Guten Morgen, Frau Keller. Sie haben recht. Ich gehe jetzt zur Schule. Danke für den Hinweis."], en:"You switch to polite repair. Sie with an adult.", next:"wegwahl", late:true, gut:1}
+    ]
+  },
+  wegwahl:{
+    title:"Bus oder zu Fuß?", phase:"morgen", zeit:"Morgen · 07:55", art:"strasse",
+    de:["Am Marktbrunnen hält der gelbe Schulbus. Der Weg zu Fuß entlang der Selz dauert fünfzehn Minuten extra.","Der Himmel ist klar. Du hast fünf Euro in der Tasche."],
+    en:"School bus vs. walk. Later the café costs money.",
+    ch:[
+      {de:["Ich nehme den Bus. So bin ich pünktlicher. Ich steige ein und suche einen Platz am Fenster."], en:"You take the bus. Optional kiosk first? Direct to driver.", next:"kiosk"},
+      {de:["Ich gehe zu Fuß. Die frische Luft hilft. Unterwegs kann ich noch an Deutsch denken."], en:"You walk past the wine farm.", next:"winzer"},
+      {de:["I take the bus because it is faster. Ich take den Bus weil er is schneller."], en:"Mixed English.", next:"busfahrer", chaos:1, recast:"Richtig: Ich nehme den Bus, weil er schneller ist. (weil + Verb am Ende)"}
+    ]
+  },
+  busfahrer:{
+    title:"Der Busfahrer", phase:"morgen", zeit:"Morgen · 08:00", art:"bus",
+    de:["Der Busfahrer ist Herr Stein, ungefähr sechzig. Mit ihm sprichst du Sie. Er hält die Hand auf: Fahrkarte oder Chip.","Hinter dir drängeln Kids und sagen du. Du musst dich entscheiden, wie du ihn ansprichst."],
+    en:"Address the driver with Sie, not du.",
+    ch:[
+      {de:["Guten Morgen, Herr Stein! Eine Schülerfahrkarte, bitte. Können Sie mich an der Schule rauslassen? Danke schön."], en:"Polite Sie + bitte.", next:"schule_ankunft", gut:1, politeBus:true},
+      {de:["Hey, gib mir Ticket. Du weißt doch, ich fahre jeden Tag. Mach schon, ich habe keine Zeit."], en:"Du + imperative to an older stranger — rude register.", next:"schule_ankunft", chaos:2, recast:"Mit Erwachsenen, die du nicht privat kennst: Sie. Besser: Eine Fahrkarte, bitte. Können Sie…?"},
+      {de:["Guten Morgen, kannst du mich zur Schule fahren? Ich brauche ein Ticket, please."], en:"Du to the driver plus English please.", next:"schule_ankunft", chaos:1, recast:"Richtig: Können Sie mich zur Schule fahren? Eine Fahrkarte, bitte. (nicht: please)"}
+    ]
+  },
+  strasse:{
+    title:"Entlang der Selz", phase:"morgen", zeit:"Morgen · 08:05", art:"strasse",
+    de:["Der Weg ist schön: Fachwerk, ein Winzerhof, die kleine Brücke. Vor dir trägt Frau Berg schwere Tüten. Sie ist die Mutter deiner Lehrerin.","Sie stolpert fast. Du könntest helfen – mit Sie."],
+    en:"Help an adult with Sie, or walk on.",
+    ch:[
+      {de:["Guten Morgen, Frau Berg! Darf ich Ihnen helfen? Ich trage die Tüten bis zur Ecke. Das ist kein Problem."], en:"Darf ich Ihnen helfen? Accusative die Tüten.", next:"bruecke", gut:1, helpedBag:true},
+      {de:["Ich gehe einfach weiter. Ich habe keine Zeit. Die Schule wartet, und die Tüten sind nicht mein Problem."], en:"You ignore her.", next:"schule_ankunft"},
+      {de:["Hey you, I help you. Hey du, ich helfe du mit den Bags. Komm, gib mir das."], en:"Wrong register and case (helfe dir / Ihnen).", next:"schule_ankunft", chaos:1, recast:"Richtig und höflich: Darf ich Ihnen helfen? Ich helfe Ihnen gern. (Dativ: Ihnen / dir – nicht du)"}
+    ]
+  },
+  schule_ankunft:{
+    title:"Vor der Schule", phase:"schule", zeit:"Schule · 08:15", art:"schule",
+    de:["Das Schulgebäude aus Backstein steht am Kirchweg. Die Klingel hat schon geläutet – oder noch nicht, je nach deinem Morgen.","Der Rektor, Herr Vogt, steht an der Tür mit einer Liste."],
+    en:"If you were late, you must speak to the principal with Sie.",
+    auto:"ankunft"
+  },
+  rektor:{
+    title:"Herr Vogt, der Rektor", phase:"schule", zeit:"Schule · 08:20", art:"schule",
+    de:["Herr Vogt schaut auf die Uhr und dann auf dich. Mit dem Rektor sprichst du Sie, immer.","„Nun?“ sagt er nur. Die Flure hinter ihm sind schon still."],
+    en:"Sie with the principal. Rudeness is a short bad ending, then retry this scene.",
+    ch:[
+      {de:["Entschuldigung, Herr Vogt. Ich komme zu spät, weil der Morgen schiefging. Es tut mir leid. Das passiert nicht wieder."], en:"Polite excuse, kommen zu spät, weil + verb at end.", next:"rektor_wait", gut:1, nachsitzen:true},
+      {de:["Sorry I am late. Das Bus war delay. Nicht meine Schuld, okay?"], en:"English + wrong article das Bus (der Bus).", next:"rektor_wait", chaos:1, nachsitzen:true, recast:"Richtig: Entschuldigung, ich komme zu spät. Der Bus hatte Verspätung. Es tut mir leid."},
+      {de:["Das ist nicht mein Problem. Sie können mich nicht aufhalten. Schule fängt halt an, wenn ich komme."], en:"Rude to the principal — short bad ending, then retry.", next:"rektor_bad", rude:true}
+    ]
+  },
+  rektor_bad:{
+    title:"Ein kurzes, schlechtes Ende", phase:"schule", zeit:"Schule · 08:21", art:"schule",
+    de:["Herr Vogt schließt die Tür nicht – er öffnet sein Büro. „So spricht man nicht mit mir.“ Du sitzt zehn Minuten und musst den Satz üben: Entschuldigung, ich komme zu spät.","Das ist noch nicht der ganze Tag. Du darfst es noch einmal höflich versuchen."],
+    en:"Short bad ending. Retry the principal scene.",
+    ch:[
+      {de:["Ich atme tief durch. Ich gehe zurück an die Tür und versuche es höflich. Diesmal mit Sie und Entschuldigung."], en:"Retry the principal.", next:"rektor"},
+      {de:["Ich flüstere: Entschuldigung, Herr Vogt. Ich komme zu spät. Es tut mir leid. Darf ich bitte in den Unterricht?"], en:"You repair immediately.", next:"klasse", gut:1, nachsitzen:true}
+    ]
+  },
+  klasse:{
+    title:"Ein neuer Schüler", phase:"schule", zeit:"Schule · 08:30", art:"klasse",
+    de:["In der Klasse steht ein neuer Junge an der Tür. Er heißt Yusuf. Sein Rucksack ist schwer, und niemand hilft. Mit Mitschülern sagst du du.","Frau Berg sagt: „Setzt euch. Yusuf, findest du einen Platz?“ Yusuf flüstert: „Wo kann ich den Rucksack hinstellen?“"],
+    en:"Help the new student with du. Accusative: den Rucksack.",
+    ch:[
+      {de:["Hallo Yusuf! Ich heiße {{NAME}}. Darf ich dir helfen? Ich trage den Rucksack zur letzten Bank. Komm mit, hier ist ein Platz frei."], en:"du + den Rucksack (Akkusativ).", next:"unterricht", gut:1, helped:true},
+      {de:["Hallo, ich trage der Rucksack für dich. Das ist der Platz von mir. Sit here, Bro."], en:"Wrong case der Rucksack after tragen; English at the end.", next:"unterricht", helped:true, chaos:1, recast:"Nach tragen steht der Akkusativ: ich trage den Rucksack. Und: Das ist mein Platz. (nicht: der Platz von mir, wenn es natürlicher gehen soll)"},
+      {de:["Ich drehe mich um und schaue aus dem Fenster. Der Neue findet den Weg schon allein. Ich habe meine eigenen Sorgen."], en:"You ignore him.", next:"unterricht"}
+    ]
+  },
+  unterricht:{
+    title:"Deutschstunde", phase:"schule", zeit:"Schule · 09:40", art:"klasse",
+    de:["Frau Berg schreibt an die Tafel: Heute ___ wir das Verb an Position zwei. Sie zeigt auf dich.","„Bitte einen Satz über Kleinhausen. Das Verb muss an Position zwei stehen.“"],
+    en:"Verb-second: after time/place, the verb still comes second.",
+    ch:[
+      {de:["Heute liegt Kleinhausen an der Selz, nicht am Rhein. In unserer Stadt gibt es ein Rathaus und ein Café. Das Verb steht in jedem Satz an Position zwei."], en:"Correct V2.", next:"pause", gut:1, v2:true},
+      {de:["Heute Kleinhausen liegt an der Selz. In unserer Stadt es gibt ein Rathaus. So say we that in English too, oder?"], en:"English-style subject after the time phrase — not German V2.", next:"pause", chaos:1, recast:"Richtig: Heute liegt Kleinhausen an der Selz. In unserer Stadt gibt es ein Rathaus. (gibt steht vor es)"}
+    ]
+  },
+  pause:{
+    title:"Große Pause", phase:"schule", zeit:"Schule · 10:15", art:"schule",
+    de:["Auf dem Hof spielt jemand Fußball. Yusuf steht allein mit einem Apfel. Am Tor hängt ein Zettel: Nachsitzen für Unpünktliche, 14 Uhr, Raum 12.","Deine Freundin Mia fragt, ob du später auf den Markt zum Fest gehst."],
+    en:"Foreshadowing: detention if late, football if you helped, festival tonight.",
+    ch:[
+      {de:["Ich gehe zu Yusuf und teile mein Brot. „Kommst du später zum Sportverein?“ frage ich. Er lächelt zum ersten Mal."], en:"You follow up if you care — still optional.", next:"sms", gut:1, helped:true},
+      {de:["Ich spiele kurz Fußball und trinke Wasser. Den Zettel lese ich nur mit einem Auge. Der Nachmittag kommt früh genug."], en:"Neutral break.", next:"sms"},
+      {de:["Ich ignorier alle und check mein Handy. Whatever. Die Pause is for me, not for homework."], en:"English drift.", next:"sms", chaos:1, recast:"Besser: Ich schaue kurz auf mein Handy. Die Pause gehört uns, aber nachmittags kommt noch etwas."}
+    ]
+  },
+  mittag:{
+    title:"Mittagessen – wohin?", phase:"mittag", zeit:"Mittag · 12:10", art:"mensa",
+    de:["Die Mensa dampft nach Soße. Gegenüber, zwei Straßen weiter, liegt Café Linde – Kuchen, aber nicht umsonst. Du hast noch {{MONEY}} Euro.","Wer in die Mensa geht, braucht ein Tablett. Wer sich rausschleicht, braucht eine Ausrede."],
+    en:"Cafeteria order, or sneak to Café Linde.",
+    ch:[
+      {de:["Ich gehe in die Mensa. Ich stelle mich an und übe den Satz für die Ausgabe. Heute esse ich warm und bleibe auf dem Gelände."], en:"Cafeteria path.", next:"mensa"},
+      {de:["Ich schleiche zum Café Linde. Ein Stück Kuchen und ein Tee – das ist besser als die Soße. Ich hoffe, niemand vom Kollegium sitzt dort."], en:"Café path.", next:"cafe_linde", cafe:true},
+      {de:["I go to the cafe because the food here is bad. Ich gehe zum Café weil the food is schlecht."], en:"Mixed sentence.", next:"cafe_linde", cafe:true, chaos:1, recast:"Richtig: Ich gehe ins Café Linde, weil das Essen hier schlecht ist. (weil + Verb am Ende)"}
+    ]
+  },
+  mensa:{
+    title:"An der Ausgabe", phase:"mittag", zeit:"Mittag · 12:20", art:"mensa",
+    de:["Frau Krüger an der Ausgabe spricht Sie, obwohl alle sie kennen. Hinter dir: Nudeln, Kartoffeln, ein Salat. Sie fragt: „Und, was darf’s sein?“"],
+    en:"Order politely. Watch gender: die Nudeln, den Salat, die Kartoffeln.",
+    ch:[
+      {de:["Guten Appetit – äh, ich hätte gern die Nudeln, bitte. Und den Salat auch. Vielen Dank, Frau Krüger!"], en:"die Nudeln, den Salat. Conditional hätte gern is polite.", next:"hof", gut:1},
+      {de:["Gib mir die Pasta. Schnell bitte, ich bin hungrig. Das hier, ja, das rote."], en:"Gib mir is rough; Pasta is understood but register is off.", next:"hof", chaos:1, recast:"Höflicher: Ich hätte gern die Nudeln, bitte. (nicht: Gib mir…)"},
+      {de:["Ich möchte den Nudel und das Kartoffel. That one. Danke you."], en:"Wrong genders and English.", next:"hof", chaos:1, recast:"Richtig: die Nudeln (Plural), die Kartoffeln. Ich möchte die Nudeln und die Kartoffeln, bitte."}
+    ]
+  },
+  cafe_linde:{
+    title:"Café Linde", phase:"mittag", zeit:"Mittag · 12:25", art:"cafe",
+    de:["Die Glocke über der Tür klingelt. Es duftet nach Kaffee und Apfelkuchen. Hinter dem Tresen steht Malik, Anfang zwanzig. Mit ihm kannst du du sagen, er bietet es an.","Ein Stück Kuchen kostet drei Euro, der Tee zwei. Du hast {{MONEY}} Euro."],
+    en:"Order. Money check. Accusative: einen Kuchen, einen Tee.",
+    ch:[
+      {de:["Hi Malik! Ich hätte gern einen Apfelkuchen und einen Tee, bitte. Hier sind fünf Euro – stimmt das so?"], en:"einen Kuchen, einen Tee. Spends 5 if that's all you had… we'll subtract 3+2=5 or 3.", next:"cafe_pay", gut:1, spend:5, cafe:true},
+      {de:["Ich nehme ein Kuchen und ein Tee. I take that. Mach schnell, ich muss back to school."], en:"ein Kuchen should be einen Kuchen (Akk. mask.).", next:"cafe_pay", chaos:1, spend:3, cafe:true, recast:"Richtig: Ich nehme einen Apfelkuchen und einen Tee. (Akkusativ: den Kuchen → einen Kuchen)"},
+      {de:["Ich setze mich nur hin und trinke Leitungswasser. Zahlen? Nee, war nur kurz. Ciao!"], en:"Sitting without ordering — Malik notices.", next:"cafe_pay", chaos:1, spend:0, cafe:true, recast:"Malik sagt freundlich: „Wasser ist frei, aber setz dich nicht die ganze Pause, ja?“ Du nickst und gehst später."}
+    ]
+  },
+  cafe_pay:{
+    title:"Die Rechnung", phase:"mittag", zeit:"Mittag · 12:40", art:"cafe",
+    de:["Malik stellt die Tasse hin. Draußen läutet es schon fast. Ob das Geld reicht, siehst du an seinem Gesicht."],
+    en:"Money check after the café.",
+    auto:"pay"
+  },
+  nachsitzen:{
+    title:"Nachsitzen bei Frau Berg", phase:"nachmittag", zeit:"Nachmittag · 14:00", art:"nachsitzen",
+    de:["Raum 12. Frau Berg legt drei Karten hin. „Verbzweit. Kein Englisch im Kopf. Zeitangabe zuerst – dann das Verb.“","Wenn du das kannst, lässt sie dich früher gehen."],
+    en:"Grammar mini-game: verb second. Three items.",
+    mini:"v2"
+  },
+  fussball:{
+    title:"Sportverein am Platz", phase:"nachmittag", zeit:"Nachmittag · 15:30", art:"sport",
+    de:["Yusuf hat dich eingeladen. Der Sportverein kickt hinter der Turnhalle. Der Trainer, Herr Lang, duzt alle Spielerinnen und Spieler.","Yusuf wirft dir den Ball zu. „Nimm den Ball! Spielst du mit?“"],
+    en:"If you helped the new kid: football. Accusative den Ball.",
+    ch:[
+      {de:["Ja, gerne! Ich nehme den Ball und spiele mit. Nach dem Spiel gehe ich nach Hause und erzähle es meinen Eltern."], en:"den Ball. Friendly du.", next:"abend_eltern", gut:1, football:true},
+      {de:["Ja, ich nehme der Ball. Let’s go, team. Ich bin the best."], en:"Wrong article; English.", next:"abend_eltern", football:true, chaos:1, recast:"Richtig: Ich nehme den Ball. (Akkusativ). Und auf Deutsch: Los geht’s! Ich spiele gern mit."},
+      {de:["Danke, aber ich muss gehen. Trotzdem einen schönen Nachmittag noch. Wir sehen uns morgen in der Klasse, Yusuf."], en:"Polite decline — still a kind path.", next:"abend_eltern", gut:1}
+    ]
+  },
+  cafe_nachmittag:{
+    title:"Noch einmal Linde", phase:"nachmittag", zeit:"Nachmittag · 15:00", art:"cafe",
+    de:["Weil du mittags im Café warst, kennt Malik dich schon. Eine Stammkundin, Frau Keller, fragt, woher du kommst.","Malik: „Bleibst du noch? Ich übe Deutsch mit den Gästen – du kannst helfen oder nur zuhören.“"],
+    en:"Extra café dialogue. Stammgast path.",
+    ch:[
+      {de:["Ich bleibe noch zehn Minuten. Ich komme aus Kleinhausen, ganz in der Nähe. Gerne helfe ich bei einem Satz, Malik."], en:"Woher kommen + aus.", next:"abend_eltern", gut:1, cafe:true},
+      {de:["I come from here. Ich komme von Kleinhausen. Ich bin hier born."], en:"von vs aus; born calque.", next:"abend_eltern", cafe:true, chaos:1, recast:"Richtig: Ich komme aus Kleinhausen. Ich bin hier geboren. (aus der Stadt / geboren, nicht born)"},
+      {de:["Ich muss leider gehen. Tschüss Malik, bis bald! Der Kuchen war echt gut."], en:"Informal goodbye with a peer: Tschüss is fine.", next:"abend_eltern", cafe:true}
+    ]
+  },
+  bibliothek:{
+    title:"In der Bücherei", phase:"nachmittag", zeit:"Nachmittag · 15:00", art:"biblio",
+    de:["Du warst nicht beim Nachsitzen, nicht beim Fußball, nicht lange im Café. Die Stadtbücherei ist warm und still.","Die Bibliothekarin, Frau Holm, spricht Sie. Auf dem Tisch: ein Blatt mit Lücken zu Präpositionen."],
+    en:"Quiet default afternoon.",
+    ch:[
+      {de:["Guten Tag, Frau Holm. Ich setze mich an den Tisch und lese. Ich mache die Übung: Ich wohne in Kleinhausen, an der Selz, nicht am Rhein."], en:"in + city, an + river (feminine die Selz → an der Selz).", next:"abend_eltern", gut:1},
+      {de:["Hi, ich brauche das Buch. Gib mir das. I sit here now."], en:"Too blunt for Sie-context.", next:"abend_eltern", chaos:1, recast:"Richtig: Guten Tag, ich hätte gern dieses Buch, bitte. Darf ich mich hier hinsetzen?"}
+    ]
+  },
+  abend_eltern:{
+    title:"Zu Hause – du", phase:"abend", zeit:"Abend · 18:00", art:"home",
+    de:["Zu Hause duzt du Mama und Papa. Auf dem Tisch liegt dein Heft. Vom Markt her hörst du Musik: das kleine Herbstfest.","Mama: „Machst du zuerst die Hausaufgaben, oder gehst du auf den Markt?“"],
+    en:"At home you use du. Homework vs. festival on the Markt.",
+    ch:[
+      {de:["Ich mache zuerst die Hausaufgaben. Danach kann ich vielleicht noch kurz zum Markt. Versprochen, Mama."], en:"Accusative die Hausaufgaben. dann/danach + V2: Danach kann ich…", next:"platz", homework:true, gut:1},
+      {de:["Ich gehe auf den Markt. Das Fest beginnt, und ich möchte meine Freunde sehen. Die Hausaufgaben mache ich später, ehrlich."], en:"auf den Markt (Akk. wohin).", next:"festival", festival:true},
+      {de:["I go to the festival now. Ich gehe zu der Festival. Homework later, okay?"], en:"das Fest, not die Festival; zu der is wrong here.", next:"festival", festival:true, chaos:1, recast:"Richtig: Ich gehe auf den Markt / zum Fest. Die Hausaufgaben mache ich später."}
+    ]
+  },
+  hausaufgaben:{
+    title:"Das Heft", phase:"abend", zeit:"Abend · 18:40", art:"home",
+    de:["Die Übung heißt Fälle. Ein Satz: Ich sehe ___ neuen Schüler. Ein zweiter: Ich helfe ___ Freundin. Du schreibst langsam."],
+    en:"Last grammar beat before the ending is calculated.",
+    ch:[
+      {de:["Ich sehe den neuen Schüler. Ich helfe der Freundin. Akkusativ bei sehen, Dativ bei helfen. Fertig – vielleicht noch zehn Minuten Fest?"], en:"Correct cases.", next:"ending", gut:1, homework:true},
+      {de:["Ich sehe der neue Schüler. Ich helfe die Freundin. Cases are like the and a, right?"], en:"Cases mixed up.", next:"ending", chaos:1, homework:true, recast:"sehen + Akk.: den neuen Schüler. helfen + Dat.: der Freundin."}
+    ]
+  },
+  festival:{
+    title:"Fest auf dem Markt", phase:"abend", zeit:"Abend · 19:00", art:"markt",
+    de:["Lichter am Brunnen, der Geruch von Zwiebelkuchen, eine Band aus Ingelheim. Yusuf winkt. Malik trägt eine Tüte aus dem Café. Frau Berg trinkt Apfelsaft, nicht Wein, weil sie morgen unterrichtet.","Jemand reicht dir ein Mikrofon: Sag einen Satz über deinen Tag – auf Deutsch."],
+    en:"A public German sentence. Then the day ends.",
+    ch:[
+      {de:["Heute habe ich Menschen geholfen und Deutsch gesprochen. Kleinhausen ist klein, aber der Tag war groß. Danke, dass ihr zuhört!"], en:"Solid closing sentence.", next:"ending", gut:1, festival:true},
+      {de:["Today I have a chaos day. Ich habe gegessen Kuchen und the teacher was crazy. Whatever!"], en:"Word order: *gegessen Kuchen should be Kuchen gegessen.", next:"ending", chaos:1, festival:true, recast:"Richtig: Heute habe ich Kuchen gegessen. Der Tag war chaotisch. (Partizip am Ende)"}
+    ]
+  },
+  bruecke:{
+    title:"Auf der Brücke", phase:"morgen", zeit:"Morgen · 08:12", art:"strasse",
+    de:["Frau Berg bleibt auf der Selzbrücke stehen. Das Wasser ist trübgrün, ein Kahn liegt am Ufer. Sie atmet aus.","„Danke, dass du die Tüten trägst. Sag in der Schule: Ich komme gleich. Und denk an den Akkusativ: du trägst die Tüten – nicht der Tüten.“"],
+    en:"A thank-you and a tiny accusative reminder on the bridge.",
+    ch:[
+      {de:["Gern geschehen, Frau Berg. Ich trage die Tüten bis zur Ecke und laufe dann zur Schule. Auf Wiedersehen!"], en:"Sie-goodbye with an adult: Auf Wiedersehen.", next:"schule_ankunft", gut:1},
+      {de:["Kein Ding. I carry the bags. Tschüss Frau Berg, du bist cool."], en:"Tschüss + du to a teacher-parent is too casual.", next:"schule_ankunft", chaos:1, recast:"Mit Erwachsenen auf der Straße: Gern geschehen. Auf Wiedersehen, Frau Berg. (Sie, nicht du)"}
+    ]
+  },
+  hof:{
+    title:"Hof nach dem Essen", phase:"mittag", zeit:"Mittag · 12:50", art:"schule",
+    de:["Du stellst das Tablett ab. Yusuf sitzt auf der Mauer, Mia trinkt Apfelschorle. Am Tor hängt immer noch der Zettel zum Nachsitzen.","Der Nachmittag teilt sich jetzt: Strafe, Sport, Café oder Bücherei – je nachdem, was du heute schon getan hast."],
+    en:"The afternoon quest depends on earlier flags.",
+    ch:[
+      {de:["Ich atme durch und gehe weiter. Der Tag ist noch nicht vorbei. Ich bin gespannt, was um vier Uhr passiert."], en:"Continue to the afternoon branch.", next:"route_pm"},
+      {de:["Ich sage zu Yusuf: Bis später, vielleicht auf dem Platz. Dann gehe ich. Die Klingel zur nächsten Stunde kommt bestimmt."], en:"A friendly nod before routing.", next:"route_pm", gut:1}
+    ]
+  },
+  kiosk:{
+    title:"Kiosk am Brunnen", phase:"morgen", zeit:"Morgen · 07:58", art:"markt",
+    de:["Neben dem Bus hält ein Kiosk. Zeitung, Kaugummi, die Kleinhausener Bote. Der Verkäufer, Herr Özkan, spricht Sie, obwohl alle ihn kennen.","Ein Brötchen kostet einen Euro. Du hast {{MONEY}} Euro."],
+    en:"Optional polite purchase with Sie. Accusative: ein Brötchen.",
+    ch:[
+      {de:["Guten Morgen! Ich hätte gern ein Brötchen, bitte. Hier ist ein Euro. Vielen Dank, Herr Özkan."], en:"Polite Sie order.", next:"busfahrer", gut:1, spend:1},
+      {de:["Gib mir Brötchen. Schnell, der Bus kommt. Thanks."], en:"Rude imperative + English.", next:"busfahrer", chaos:1, recast:"Höflicher: Ich hätte gern ein Brötchen, bitte."},
+      {de:["Ich kaufe nichts. Ich gehe direkt zum Bus. Der Hunger wartet bis zur Pause."], en:"Skip the kiosk.", next:"busfahrer"}
+    ]
+  },
+  winzer:{
+    title:"Am Winzerhof", phase:"morgen", zeit:"Morgen · 08:08", art:"strasse",
+    de:["Wenn du zu Fuß gehst, riechst du den Hof der Familie Bauer: Trauben, Holz, ein Traktor. Ein Schild: Weinprobe am Wochenende – ab 16 Jahren.","Ein Hund wedelt. Niemand zwingt dich zu bleiben, aber ein Satz auf Deutsch wäre freundlich."],
+    en:"A tiny Rheinhessen wine-grower beat. You are a student: no wine, just greeting.",
+    ch:[
+      {de:["Guten Morgen! Ihr Hof riecht gut. Ich muss zur Schule, aber das Schild habe ich gelesen. Schönen Tag noch!"], en:"Polite, no alcohol, keep walking.", next:"strasse", gut:1},
+      {de:["Hey, give me wine. Ich bin almost 16. Ein Glas, bitte, schnell."], en:"Not appropriate and wrong register.", next:"strasse", chaos:1, recast:"Du gehst zur Schule. Besser: Guten Morgen, schönen Tag noch. Weinprobe ist nichts für den Schulweg."}
+    ]
+  },
+  sms:{
+    title:"Nachricht von Mia", phase:"schule", zeit:"Schule · 10:25", art:"schule",
+    de:["Dein Handy vibriert. Mia schreibt auf Deutsch, nicht in Slang: „Gehst du heute Abend auf den Markt? Das Fest ist klein, aber der Zwiebelkuchen ist echt.“","Du kannst kurz antworten. Danach ist Mittag."],
+    en:"A short text in German about the evening festival.",
+    ch:[
+      {de:["Ja, vielleicht. Zuerst esse ich. Ich schreibe später, wo ich bin. Danke für die Info!"], en:"Clear German reply.", next:"mittag", gut:1},
+      {de:["Maybe I go. Ich gehe to the Markt if homework is finish. Cul8r."], en:"English/slang mix.", next:"mittag", chaos:1, recast:"Besser: Vielleicht gehe ich auf den Markt. Die Hausaufgaben mache ich zuerst. Bis später!"}
+    ]
+  },
+  platz:{
+    title:"Kurzer Blick auf den Markt", phase:"abend", zeit:"Abend · 18:10", art:"markt",
+    de:["Wenn du die Haustür aufmachst, siehst du schon Lichter. Papa sagt duzend: „Nimm eine Jacke. Es wird kühl an der Selz.“","Du entscheidest noch einmal bewusst: Heft oder Fest."],
+    en:"A last beat before homework vs festival — already routed from abend_eltern. This node is a scenic extra if you chose homework then peek outside.",
+    ch:[
+      {de:["Ich nehme die Jacke und gehe nur fünf Minuten zum Brunnen. Dann komme ich zurück zum Heft. Versprochen."], en:"A tiny detour, then ending via homework finish.", next:"hausaufgaben", gut:1},
+      {de:["Jacke? I don't need. Ich gehe ohne. It's not cold."], en:"English + ignore advice.", next:"festival", festival:true, chaos:1, recast:"Nimm eine Jacke. Es wird kühl. Auf Deutsch: Ich nehme die Jacke mit."}
+    ]
+  },
+  rektor_wait:{
+    title:"Auf dem Flur", phase:"schule", zeit:"Schule · 08:22", art:"schule",
+    de:["Nach dem Gespräch mit Herrn Vogt ist der Flur lang. An der Wand: Verbzweit-Poster. Heute lernen wir. Nicht: Heute wir lernen.","Yusuf steht schon an der Klassentür und wartet, ohne zu wissen, dass du ihn gleich sehen wirst."],
+    en:"A corridor beat after the principal, then class.",
+    ch:[
+      {de:["Ich lese das Poster laut: Heute lernen wir Deutsch. Dann öffne ich die Tür zur Klasse. Ich bin bereit."], en:"You apply V2 once, then enter.", next:"klasse", gut:1, v2:true},
+      {de:["Heute wir lernen nothing. I walk in. Whatever the poster says."], en:"You ignore the poster.", next:"klasse", chaos:1, recast:"Heute lernen wir … — Verb an Position zwei."}
+    ]
+  }
+};
+
+function routeAfternoon(){
+  if(S.late || S.nachsitzen) return "nachsitzen";
+  if(S.helped) return "fussball";
+  if(S.cafe) return "cafe_nachmittag";
+  return "bibliothek";
+}
+
+function applyFlags(ch){
+  if(ch.late) S.late = true;
+  if(ch.helped) S.helped = true;
+  if(ch.cafe) S.cafe = true;
+  if(ch.football) S.football = true;
+  if(ch.nachsitzen) S.nachsitzen = true;
+  if(ch.v2) S.v2 = true;
+  if(ch.festival) S.festival = true;
+  if(ch.homework) S.homework = true;
+  if(ch.politeBus) S.politeBus = true;
+  if(ch.gut) S.gut += ch.gut;
+  if(ch.chaos) S.chaos += ch.chaos;
+  if(ch.spend) S.money = Math.max(0, S.money - ch.spend);
+}
+
+function pickEnding(){
+  if(S.chaos >= 4) return "chaos";
+  if(S.cafe && S.chaos < 4 && !S.football) return "stammgast";
+  if((S.late || S.nachsitzen) && S.v2 && S.gut >= 2 && S.chaos < 4 && !S.helped) return "nachsitzen";
+  if(S.helped && S.gut >= 4 && S.chaos <= 2) return "held";
+  if(S.chaos >= 3) return "chaos";
+  if(S.cafe) return "stammgast";
+  if(S.late || S.nachsitzen) return "nachsitzen";
+  if(S.helped) return "held";
+  return "chaos";
+}
+
+const ENDS = {
+  held:{
+    code:"HELD", title:"Held des Tages",
+    de:"Die Kleinhausener Bote schreibt: Eine Schülerin / ein Schüler hat geholfen, höflich gesprochen und den Rucksack getragen. Yusuf winkt vom Sportplatz. Mama stellt den Kakao hin. Du hast du und Sie nicht verwechselt – und den Akkusativ getroffen. Frau Berg erzählt in der Pause, dass die Tüten angekommen sind. Herr Stein, der Busfahrer, nickt morgen vielleicht sogar.",
+    en:"You helped people and used solid German."
+  },
+  chaos:{
+    code:"CHAOS", title:"Chaos-Tag",
+    de:"Alles ist ein bisschen schief: der Rucksack, der Busfahrer, die Nudeln. Leute lächeln trotzdem. Du lernst die Korrekturen: kommen zu spät, den Rucksack, Sie zum Rektor, Verb an Position zwei. Morgen wird’s besser – vielleicht. Die Zeitung druckt ein kleines Foto vom Fest und jemand, der den Mikrofon-Satz auf Englisch angefangen hat. Das passiert.",
+    en:"Funny disasters from cases and register. You still finish the day."
+  },
+  stammgast:{
+    code:"STAMM", title:"Stammgast im Café Linde",
+    de:"Malik schreibt deinen Namen nicht auf eine Karte – er merkt ihn sich. Apfelkuchen, Tee, ein Satz mit aus Kleinhausen. Das Fest kannst du riechen, aber der Tresen ist dein Marktplatz. Bezahlen nicht vergessen. Bis bald, nicht please. Frau Keller sitzt später am Fenster und sagt: Der Junge / das Mädchen aus der Schule kann bestellen.",
+    en:"The café path. You became a regular."
+  },
+  nachsitzen:{
+    code:"NACH", title:"Nachsitzen-Ende",
+    de:"Raum 12 hat nach Kaffee und Kreide gerochen. Dafür kannst du es jetzt: Heute lerne ich. Um vier spielt der Verein. In Kleinhausen gibt es ein Fest. Verbzweit sitzt. Der Rektor nickt auf dem Flur – nicht warm, aber fair. Im Heft steht ein Satz, den du nicht mehr verdrehst: In Kleinhausen gibt es ein Rathaus.",
+    en:"Detention — but you learned verb-second."
+  }
+};
+
+function setTimeline(ph){
+  const order=["morgen","schule","mittag","nachmittag","abend"];
+  const i=order.indexOf(ph);
+  document.querySelectorAll(".tl").forEach(el=>{
+    const p=el.dataset.ph;
+    const j=order.indexOf(p);
+    el.classList.toggle("now", p===ph);
+    el.classList.toggle("done", j>=0 && j<i);
+  });
+}
+
+function renderMiniV2(){
+  const items = shuffled([
+    {q:"Heute _____ ich Deutsch in Kleinhausen.", ok:"lerne", recast:"Heute lerne ich … — das Verb direkt nach der Zeit."},
+    {q:"Um vier _____ der Verein auf dem Platz.", ok:"spielt", recast:"Um vier spielt der Verein …"},
+    {q:"In Kleinhausen _____ es ein Fest auf dem Markt.", ok:"gibt", recast:"In Kleinhausen gibt es ein Fest. (gibt vor es)"},
+    {q:"Nach der Schule _____ ich nach Hause.", ok:"gehe", recast:"Nach der Schule gehe ich nach Hause."},
+    {q:"Am Abend _____ Mama Kakao.", ok:"kocht", recast:"Am Abend kocht Mama Kakao. Zeit + Verb + Subjekt."}
+  ]);
+  let step = 0;
+  function show(){
+    const it=items[step];
+    const inpId="v2-in";
+    $("choices").innerHTML =
+      '<p class="prod-lab"><label for="'+inpId+'">Schreib das fehlende Verb</label></p>'+
+      umlautsHtml(inpId)+
+      '<p><input class="prod-in" type="text" id="'+inpId+'" lang="de" autocomplete="off" spellcheck="false" placeholder="Verb"></p>'+
+      '<p><button type="button" class="btn" id="v2-ok">Prüfen</button></p>';
+    $("story-de").innerHTML = "<p>"+esc(it.q)+"</p>";
+    $("story-en").textContent = "Type the missing verb (verb-second).";
+    glossUpdate();
+    bindUmlauts($("choices"));
+    function advance(good){
+      if(good){ S.gut++; S.v2=true; sagen("Richtig. Verb an Position zwei."); }
+      else { S.chaos++; $("recast").hidden=false; $("recast").innerHTML='<div class="recast"><strong>Korrektur:</strong> '+esc(it.recast)+'</div>'; sagen(it.recast); }
+      setTimeout(()=>{
+        step++;
+        $("recast").hidden=true; $("recast").innerHTML="";
+        if(step<items.length) show();
+        else { S.nachsitzen=true; gehe("abend_eltern"); }
+      }, good?600:1400);
+    }
+    function check(){
+      const inp=$(inpId);
+      if(!inp||inp.disabled) return;
+      const v=inp.value;
+      const good = foldDe(v)===foldDe(it.ok) || nearDe(v, it.ok);
+      inp.disabled=true;
+      const btn=$("v2-ok"); if(btn) btn.disabled=true;
+      advance(good);
+    }
+    $("v2-ok").onclick=check;
+    const inp=$(inpId);
+    if(inp){
+      inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+      setTimeout(()=>{ try{ inp.focus(); }catch(e){} }, 50);
+    }
+  }
+  show();
+}
+
+function gehe(id){
+  if(id==="schule_ankunft"){ id = S.late ? "rektor" : "klasse"; }
+  if(id==="route_pm"){ id = routeAfternoon(); }
+  if(id==="ending"){ return finish(); }
+  if(id==="cafe_pay"){
+    if(S.money<=0 && S.cafe){
+      N.cafe_pay.de = ["Malik schaut auf die Münzen. Es reicht – knapp. „Nächstes Mal bringst du etwas extra, ja? Du kannst trotzdem Stammgast werden.“","Du nickst. Draußen ist die Schule schon fast wieder da."];
+      N.cafe_pay.ch = [{de:["Ich danke dir, Malik. Ich komme wieder, wenn ich Geld habe. Tschüss und bis bald!"], en:"You leave on good terms.", next:"route_pm", cafe:true}];
+    }else{
+      N.cafe_pay.de = ["Du bezahlst. Malik sagt: „Danke! Du sprichst gut Deutsch.“ In der Vitrine glänzt noch ein Stück Kuchen für später.","Die Pause ist vorbei. Der Nachmittag hängt von deinem Morgen ab."];
+      N.cafe_pay.ch = [{de:["Ich lächle, nehme die Tasche und gehe zurück. Vielleicht komme ich nachmittags noch einmal vorbei."], en:"Back toward school / afternoon routing.", next:"route_pm", cafe:true}];
+    }
+  }
+  const node = N[id];
+  if(!node){ sagen("Unbekannter Knoten."); return; }
+  S.node = id;
+  S.phase = node.phase;
+  $("h-play").textContent = node.title;
+  $("zeit-label").textContent = node.zeit;
+  setTimeline(node.phase);
+  $("art").innerHTML = art(node.art);
+  const fill = t => String(t).replace(/\{\{NAME\}\}/g, esc(S.name||"Alex")).replace(/\{\{MONEY\}\}/g, String(S.money));
+  $("story-de").innerHTML = node.de.map(p=>"<p>"+fill(p)+"</p>").join("");
+  $("story-en").textContent = node.en;
+  $("recast").hidden = true; $("recast").innerHTML = "";
+  $("flag-view").textContent = "Tageskarte: "+(S.late?"zu spät · ":"")+(S.helped?"Yusuf geholfen · ":"")+(S.cafe?"Café · ":"")+(S.football?"Verein · ":"")+"Chaos "+S.chaos+" · Gute Sätze "+S.gut+" · "+S.money+" €";
+  glossUpdate();
+  sprich(node.de.join(" "));
+  sagen(node.title+". Wähle 1, 2 oder 3.");
+  if(node.mini==="v2"){ renderMiniV2(); sagen("Verb an Position zwei schreiben."); return; }
+  const box = $("choices"); box.innerHTML = "";
+  (node.ch?shuffled(node.ch):[]).forEach((ch,i)=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="opt";
+    b.innerHTML = '<span class="key">'+(i+1)+'</span>'+ch.de.map(s=>esc(fill(s))).join(" ")+
+      (S.englisch && ch.en ? '<span class="en gloss" lang="en">'+esc(ch.en)+'</span>' : "");
+    b.setAttribute("aria-label","Wahl "+(i+1));
+    b.onclick=()=>waehle(ch,b);
+    box.appendChild(b);
+  });
+}
+
+function waehle(ch, btn){
+  $("choices").querySelectorAll(".opt").forEach(o=>o.disabled=true);
+  applyFlags(ch);
+  if(ch.recast){
+    btn.classList.add("wrong");
+    $("recast").hidden=false;
+    $("recast").innerHTML = '<div class="recast"><strong>So sagt man es klarer:</strong> '+esc(ch.recast)+' <span class="en gloss" lang="en">A recast, then the story continues.</span></div>';
+    glossUpdate();
+    sagen(ch.recast);
+    sprich(ch.recast);
+    setTimeout(()=>gehe(ch.next), S.motion?1600:400);
+  }else{
+    btn.classList.add("right");
+    setTimeout(()=>gehe(ch.next), S.motion?500:50);
+  }
+}
+
+function hash32(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+function macheCode(){
+  const name=(S.name||"Gast").trim()||"Gast";
+  const e=ENDS[S.ending].code;
+  const flags=(S.late?"L":"")+(S.helped?"H":"")+(S.cafe?"C":"")+(S.football?"F":"")+(S.v2?"V":"");
+  const pruef=hash32(name.toLowerCase()+"|"+e+"|"+flags+"|"+S.chaos+"|"+S.gut+"|KHTAG").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return "KH-TAG-"+e+"-"+flags+"-"+S.chaos+S.gut+"-"+pruef;
+}
+
+function finish(){
+  S.ending = pickEnding();
+  const E = ENDS[S.ending];
+  $("h-end").textContent = E.title;
+  $("news").innerHTML = '<p class="mast">Kleinhausener Bote · Tageskarte</p><h2>'+esc(E.title)+'</h2><p>'+esc(E.de)+'</p><p class="en gloss" lang="en">'+esc(E.en)+'</p><p>Chaos '+S.chaos+' · Gute Sätze '+S.gut+(S.late?" · zu spät":"")+(S.helped?" · geholfen":"")+(S.cafe?" · Café":"")+(S.football?" · Verein":"")+(S.v2?" · Verbzweit":"")+"</p>";
+  $("code-val").textContent = macheCode();
+  zeigeScreen("screen-end");
+  sagen("Ende: "+E.title);
+  glossUpdate();
+}
+
+$("btn-ueben").onclick=()=>{ if(!S.audio){S.audio=true; setToggle($("s-audio"),true);} uebenNaechstes(); };
+$("btn-start").onclick=()=>{ S.name=$("name-in").value.trim(); zeigeScreen("screen-play"); gehe("wecker"); };
+$("btn-sprich").onclick=()=>{ if(!S.audio){ S.audio=true; setToggle($("s-audio"),true);} sprich($("story-de").innerText); };
+$("btn-nochmal").onclick=()=>location.reload();
+$("btn-copy").onclick=()=>{ const t=$("code-val").textContent; if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>sagen("Code kopiert.")); else sagen(t); };
+$("btn-verify").onclick=()=>{
+  const name=$("v-name").value.trim(), code=$("v-code").value.trim().toUpperCase();
+  const m=/^KH-TAG-(HELD|CHAOS|STAMM|NACH)-([LHCFV]*)-(\d+)-([0-9A-Z]{7})$/.exec(code);
+  if(!name||!m){ $("v-out").textContent="Bitte Name und KH-TAG-Code eingeben."; return; }
+  const pruef=hash32(name.toLowerCase()+"|"+m[1]+"|"+m[2]+"|"+m[3].charAt(0)+"|"+m[3].slice(1)+"|KHTAG").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  $("v-out").textContent = pruef===m[4] ? ("Gültig. "+name+" · Ende "+m[1]+" · Flags "+(m[2]||"—")+" · Chaos/Gut "+m[3]+".") : "Ungültig. Name und Code passen nicht.";
+};
+
+document.addEventListener("keydown", e=>{
+  if(!$("screen-play").classList.contains("on")) return;
+  if((e.target.tagName||"").toLowerCase()==="input") return;
+  if(/^[1-3]$/.test(e.key)){
+    const b=$("choices").querySelectorAll(".opt")[Number(e.key)-1];
+    if(b && !b.disabled){ e.preventDefault(); b.click(); }
+  }
+  if(e.key==="e"||e.key==="E"||e.key==="Enter"){
+    const el=document.activeElement;
+    if(el && el.classList.contains("opt") && !el.disabled){ e.preventDefault(); el.click(); }
+  }
+});
+
+
+const UEBEN = [
+  "Ich stehe auf und gehe ins Bad.",
+  "Mama, wo ist mein Rucksack?",
+  "Ich packe das Brot ein und trinke die Milch.",
+  "Ich komme zu spät, nicht: ich bin spät.",
+  "Guten Morgen, Herr Stein. Eine Schülerfahrkarte, bitte.",
+  "Können Sie mich an der Schule rauslassen?",
+  "Darf ich Ihnen helfen? Ich trage die Tüten.",
+  "Auf Wiedersehen, Frau Berg.",
+  "Entschuldigung, Herr Vogt. Ich komme zu spät.",
+  "Es tut mir leid. Das passiert nicht wieder.",
+  "Hallo Yusuf! Darf ich dir helfen?",
+  "Ich trage den Rucksack zur letzten Bank.",
+  "Heute liegt Kleinhausen an der Selz.",
+  "In unserer Stadt gibt es ein Rathaus.",
+  "Ich hätte gern die Nudeln, bitte.",
+  "Und den Salat auch. Vielen Dank.",
+  "Einen Apfelkuchen und einen Tee, bitte.",
+  "Ich komme aus Kleinhausen. Ich bin hier geboren.",
+  "Heute lerne ich Deutsch.",
+  "Um vier spielt der Verein.",
+  "In Kleinhausen gibt es ein Fest.",
+  "Ich nehme den Ball und spiele mit.",
+  "Ich mache zuerst die Hausaufgaben.",
+  "Danach kann ich zum Markt.",
+  "Ich sehe den neuen Schüler.",
+  "Ich helfe der Freundin.",
+  "Ich gehe auf den Markt. Das Fest beginnt.",
+  "Guten Morgen, Herr Özkan. Ein Brötchen, bitte.",
+  "Nach der Schule gehe ich nach Hause.",
+  "Am Abend kocht Mama Kakao.",
+  "Ich bleibe noch fünf Minuten liegen, weil ich müde bin.",
+  "Dann gehe ich zur Schule.",
+  "Der Bus hatte Verspätung.",
+  "Ich nehme den Bus, weil er schneller ist.",
+  "Guten Morgen. Ihr Hof riecht gut. Schönen Tag noch.",
+  "Heute habe ich Menschen geholfen und Deutsch gesprochen.",
+  "Kleinhausen ist klein, aber der Tag war groß."
+];
+function uebenNaechstes(){
+  const i = (uebenNaechstes.i||0) % UEBEN.length;
+  uebenNaechstes.i = i+1;
+  const t = UEBEN[i];
+  sagen(t); sprich(t);
+}
+
+glossUpdate();
+if("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged=()=>{};
+</script>
+</body>
+</html>

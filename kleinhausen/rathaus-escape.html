@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="de" class="show-en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape from Rathaus Kleinhausen</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --night:#0c1424;
+  --night-2:#162033;
+  --stone:#4a5163;
+  --stone-2:#323848;
+  --lamp:#e6c36a;
+  --lamp-soft:#f3e2b0;
+  --brass:#c4a056;
+  --paper:#f3ead6;
+  --ink:#141820;
+  --ink-soft:#4a5163;
+  --moss:#2f6a4a;
+  --moss-deep:#1d4530;
+  --wine:#9a3b3b;
+  --glass:#8ec5d4;
+  --wood:#6b4a2e;
+  --wood-deep:#3e2a18;
+  --ok:#2f6a4a;
+  --err:#9a3b3b;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1rem;
+  --r:8px;
+}
+html[data-size="gross"]{--fs:1.16rem}
+html[data-size="sehr-gross"]{--fs:1.34rem}
+html[data-contrast="hoch"]{
+  --night:#000;--night-2:#111;--stone:#000;--stone-2:#000;
+  --lamp:#fff;--lamp-soft:#fff;--brass:#fff;--paper:#fff;
+  --ink:#000;--ink-soft:#000;--moss:#00551f;--moss-deep:#003314;
+  --wine:#9b0000;--glass:#fff;--wood:#000;--wood-deep:#000;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--night);
+  color:var(--paper);
+  font-family:var(--sans);
+  font-size:var(--fs);
+  line-height:1.5;
+  min-height:100vh;
+  -webkit-text-size-adjust:100%;
+}
+.skip{position:absolute;left:-9999px;top:0;z-index:200;background:var(--lamp);color:var(--ink);padding:.7em 1.1em;font-weight:700;text-decoration:none}
+.skip:focus{left:0}
+:focus-visible{outline:4px solid var(--lamp);outline-offset:3px}
+html[data-contrast="hoch"] :focus-visible{outline:5px solid #fff}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.topbar{background:var(--night-2);border-bottom:4px solid var(--brass);color:var(--paper)}
+.topbar-in{max-width:1180px;margin:0 auto;padding:.65rem 1rem;display:flex;flex-wrap:wrap;gap:.7rem 1rem;align-items:center;justify-content:space-between}
+.brand h1{font-family:var(--serif);font-size:1.22em;margin:0;font-weight:600}
+.brand .sub{font-family:var(--mono);font-size:.68em;letter-spacing:.16em;text-transform:uppercase;color:var(--lamp);display:block}
+.settings{display:flex;flex-wrap:wrap;gap:.35rem}
+.set-btn{
+  font:inherit;font-size:.8em;background:transparent;color:var(--paper);
+  border:2px solid var(--stone);border-radius:999px;padding:.35em .85em;cursor:pointer;
+  min-height:44px;
+}
+.set-btn[aria-pressed="true"]{background:var(--lamp);color:var(--ink);border-color:var(--lamp);font-weight:700}
+.wrap{max-width:1180px;margin:0 auto;padding:1rem 1rem 3rem}
+.screen{display:none}
+.screen.on{display:block}
+h2{font-family:var(--serif);font-size:1.7em;margin:.2em 0 .4em;font-weight:600}
+h2:focus{outline:none}
+.eyebrow{font-family:var(--mono);font-size:.72em;letter-spacing:.18em;text-transform:uppercase;color:var(--lamp);margin:0 0 .3em}
+.lede{max-width:62ch;margin:0 0 1rem}
+.en{color:var(--lamp-soft);font-style:italic;opacity:.9}
+.en::before{content:" – "}
+html:not(.show-en) .gloss{display:none}
+.btn{
+  font:inherit;font-weight:700;background:var(--brass);color:var(--ink);
+  border:3px solid #8a6c2e;border-radius:var(--r);padding:.65em 1.2em;cursor:pointer;
+  min-height:44px;min-width:44px;
+}
+.btn:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:var(--paper);border-color:var(--lamp)}
+.btn-row{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}
+.play-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr);gap:1rem;align-items:start}
+@media (max-width:860px){.play-grid{grid-template-columns:1fr}}
+.scene-wrap{
+  position:relative;background:#0a101c;border:3px solid var(--brass);border-radius:var(--r);
+  overflow:hidden;aspect-ratio:1000/560;
+}
+.scene-wrap svg.bg{display:block;width:100%;height:100%}
+.hots{position:absolute;inset:0}
+.hot{
+  position:absolute;min-width:44px;min-height:44px;padding:.25em .45em;
+  font:inherit;font-size:.72em;font-weight:700;line-height:1.15;
+  background:rgba(20,24,32,.72);color:var(--lamp-soft);
+  border:2px solid var(--brass);border-radius:6px;cursor:pointer;
+  text-align:center;
+}
+.hot:hover,.hot:focus-visible{background:var(--lamp);color:var(--ink)}
+.hot.done{border-color:var(--moss);color:#c8f0d8}
+.hot.lock{opacity:.55}
+.panel{
+  background:var(--paper);color:var(--ink);border-radius:var(--r);
+  border:2px solid var(--wood);padding:1rem 1.05rem;
+  min-height:12rem;
+}
+.panel h3{font-family:var(--serif);margin:.1em 0 .4em;font-size:1.2em}
+.panel .de{margin:0 0 .5em}
+.choices{display:grid;gap:.5rem;margin:.7rem 0}
+.opt{
+  text-align:left;font:inherit;background:#fff;border:2px solid var(--stone);
+  border-radius:8px;padding:.7em .8em .7em 2.8em;cursor:pointer;position:relative;
+  min-height:44px;color:var(--ink);
+}
+.opt .key{
+  position:absolute;left:.55em;top:50%;transform:translateY(-50%);
+  width:1.5em;height:1.5em;border-radius:5px;background:var(--night-2);color:var(--lamp);
+  display:grid;place-items:center;font-family:var(--mono);font-size:.8em;font-weight:700;
+}
+.opt.right{border-color:var(--ok);background:#e7f6ec}
+.opt.wrong{border-color:var(--err);background:#fdeceb}
+.side{display:flex;flex-direction:column;gap:.8rem}
+.box{background:var(--night-2);border:2px solid var(--stone);border-radius:var(--r);padding:.85rem}
+.box h3{font-family:var(--serif);margin:0 0 .4em;font-size:1.05em;color:var(--lamp)}
+.inv{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:.35rem}
+.inv li{background:var(--wood);color:var(--paper);border-radius:999px;padding:.25em .7em;font-size:.85em}
+.notes{list-style:none;padding:0;margin:0;font-size:.9em}
+.notes li{border-bottom:1px dashed var(--stone);padding:.35em 0}
+.ziffern{display:flex;gap:.4rem;font-family:var(--mono);font-size:1.4em;letter-spacing:.1em}
+.ziffern span{width:2rem;height:2.2rem;display:grid;place-items:center;background:#0a101c;border:2px solid var(--brass);border-radius:4px}
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.6rem 0}
+.match-pic,.match-word{
+  min-height:44px;font:inherit;cursor:pointer;border-radius:8px;border:2px solid var(--stone);
+  background:#fff;color:var(--ink);padding:.5em;
+}
+.match-pic.sel,.match-word.sel{outline:3px solid var(--brass)}
+.match-pic.ok,.match-word.ok{border-color:var(--ok);background:#e7f6ec}
+.hint{background:#fff4d6;border-left:4px solid var(--brass);padding:.5em .7em;margin:.5em 0;color:var(--ink)}
+.fb{margin:.5em 0;font-weight:700}
+.fb.ok{color:var(--moss-deep)}
+.fb.bad{color:var(--wine)}
+.status-bar{margin:1rem 0 0;font-size:.9em;color:var(--lamp-soft);min-height:1.4em}
+.nav-rooms{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0}
+.nav-rooms button[aria-current="true"]{background:var(--lamp);color:var(--ink)}
+input[type=text],input[type=password]{
+  font:inherit;padding:.65em .8em;border:2px solid var(--stone);border-radius:6px;min-height:44px;width:100%;max-width:22rem;
+  background:#fff;color:var(--ink);
+}
+.news{
+  background:#f7f1e3;color:#1a1a1a;border:8px solid #1a1a1a;padding:1.2rem 1.4rem;max-width:42rem;
+  font-family:var(--serif);
+}
+.news .mast{font-family:var(--serif);font-size:1.8em;text-align:center;border-bottom:3px double #1a1a1a;margin:0 0 .4em}
+.news h2{color:#1a1a1a}
+.code-box{background:#0a101c;border:2px solid var(--lamp);padding:1rem;border-radius:var(--r);margin:1rem 0}
+.code-val{font-family:var(--mono);font-size:1.15em;color:var(--lamp);word-break:break-all}
+details{margin:1rem 0;background:var(--night-2);padding:.8rem 1rem;border-radius:var(--r)}
+summary{cursor:pointer;font-weight:700;min-height:44px}
+kbd{font-family:var(--mono);border:1px solid var(--stone);padding:.05em .35em;border-radius:4px;background:var(--night-2)}
+.pic-svg{width:100%;height:72px}
+html[data-motion="aus"] *{animation:none !important;transition:none !important}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+}
+@media print{.settings,.hot,.btn{display:none !important}body{background:#fff;color:#000}}
+
+.brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
+a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
+a.hub-home:hover{background:rgba(255,255,255,.18)}
+.prod-lab{font-weight:700;margin:.35em 0}
+.prod-in,.prod-in[type=text]{font:inherit;padding:.65em .8em;border:2px solid var(--stone);border-radius:6px;min-height:44px;width:100%;max-width:22rem;background:#fff;color:var(--ink)}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:700;cursor:pointer;background:#fff;color:var(--ink);border:2px solid var(--stone);border-radius:6px}
+</style>
+</head>
+<body>
+<a class="skip" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <a class="hub-home" href="../index.html" aria-label="Zurück zum Stadtplan Kleinhausen">Kleinhausen</a>
+            <h1>Escape from Rathaus Kleinhausen</h1>
+      <span class="sub">Nacht im Archiv · A2–B1</span>
+    </div>
+    <div class="settings" role="group" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">Vorlesen</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="hauptinhalt">
+
+<section class="screen on" id="screen-start" aria-labelledby="h-start">
+  <p class="eyebrow">Point-and-click · Kleinhausen</p>
+  <h2 id="h-start" tabindex="-1">Du bist zu lange geblieben</h2>
+  <p class="lede">Du hast im Archiv des Rathauses gearbeitet. Plötzlich ist es still. Die große Tür ist zu. Draußen wartet der Nachtwächter – aber er öffnet nur, wenn du die <strong>vier Ziffern</strong> und die <strong>Codephrase</strong> auf Deutsch kennst.
+    <span class="en gloss" lang="en">You stayed too late in the town-hall archive. The building is locked. The night watch expects a German code phrase.</span></p>
+  <p class="lede">Untersuche jeden Raum. Klicke auf Gegenstände (oder drücke <kbd>E</kbd> / <kbd>Enter</kbd>). Zahlen <kbd>1</kbd>–<kbd>9</kbd> wählen Antworten.
+    <span class="en gloss" lang="en">Search each room. Click objects, or press E / Enter. Number keys choose answers.</span></p>
+  <ol class="lede">
+    <li>Eingangshalle – Bürowörter zuordnen. <span class="en gloss" lang="en">Match office nouns.</span></li>
+    <li>Sitzungssaal – Konjunktionen im Protokoll. <span class="en gloss" lang="en">Fill conjunctions in the minutes.</span></li>
+    <li>Archiv – das richtige Datum und der Dativ. <span class="en gloss" lang="en">The right date and the dative.</span></li>
+    <li>Turmzimmer – Code und Phrase. <span class="en gloss" lang="en">Code and passphrase.</span></li>
+  </ol>
+  <p><label for="name-in">Dein Name (für den Abgabecode)</label></p>
+  <p><input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname"></p>
+  <div class="btn-row">
+    <button type="button" class="btn" id="btn-start">Ins Rathaus gehen</button>
+  </div>
+  <details>
+    <summary>Tastatur und Barrierefreiheit</summary>
+    <ul>
+      <li><kbd>Tab</kbd> bewegt den Fokus. Jedes Ziel ist mindestens 44 Pixel groß.</li>
+      <li><kbd>1</kbd>–<kbd>9</kbd> wählen eine Antwort. <kbd>E</kbd> oder <kbd>Enter</kbd> untersucht den fokussierten Gegenstand.</li>
+      <li><strong>Vorlesen</strong> spricht Deutsch (de-DE). <strong>Kontrast</strong> und <strong>Schrift</strong> helfen beim Lesen.</li>
+      <li>Falsche Antworten sperren das Spiel nicht. Nach zwei Fehlern erscheint ein Hinweis auf Deutsch.</li>
+    </ul>
+  </details>
+</section>
+
+<section class="screen" id="screen-play" aria-labelledby="h-play">
+  <p class="eyebrow" id="raum-label">Raum 1 von 4</p>
+  <h2 id="h-play" tabindex="-1">Eingangshalle</h2>
+  <div class="nav-rooms" role="navigation" aria-label="Räume">
+    <button type="button" class="btn btn-ghost" data-goto="1" aria-current="true">1 Halle</button>
+    <button type="button" class="btn btn-ghost" data-goto="2" id="nav-2" disabled>2 Saal</button>
+    <button type="button" class="btn btn-ghost" data-goto="3" id="nav-3" disabled>3 Archiv</button>
+    <button type="button" class="btn btn-ghost" data-goto="4" id="nav-4" disabled>4 Turm</button>
+  </div>
+
+  <div class="play-grid">
+    <div>
+      <div class="scene-wrap" id="scene"></div>
+      <div class="panel" id="panel">
+        <h3 id="panel-h">Schau dich um</h3>
+        <p class="de" id="panel-de">Klicke auf einen Gegenstand in der Halle. Die Uhr steht still. Die Glastür ist zu.</p>
+        <p class="en gloss" lang="en" id="panel-en">Click an object in the hall. The clock has stopped. The glass door is locked.</p>
+        <div id="panel-extra"></div>
+        <p class="fb" id="panel-fb" hidden></p>
+        <p><button type="button" class="speak-btn btn btn-ghost" id="btn-sprich">Text vorlesen</button></p>
+      </div>
+    </div>
+    <aside class="side">
+      <div class="box">
+        <h3>Code</h3>
+        <div class="ziffern" id="ziffern" aria-label="Vier Ziffern"><span>?</span><span>?</span><span>?</span><span>?</span></div>
+        <p class="en gloss" lang="en">Four digits, one from each room.</p>
+      </div>
+      <div class="box">
+        <h3>Inventar</h3>
+        <ul class="inv" id="inv"><li>Notizbuch</li></ul>
+      </div>
+      <div class="box">
+        <h3>Notizbuch</h3>
+        <ul class="notes" id="notes"><li>Die Tür braucht vier Ziffern und eine Phrase.</li></ul>
+      </div>
+    </aside>
+  </div>
+  <p class="status-bar" id="status" role="status" aria-live="polite"></p>
+</section>
+
+<section class="screen" id="screen-end" aria-labelledby="h-end">
+  <p class="eyebrow">Ende</p>
+  <h2 id="h-end" tabindex="-1">Der Marktplatz im Morgenlicht</h2>
+  <div class="news" id="news"></div>
+  <div class="code-box">
+    <p><strong>Dein Abgabecode</strong> <span class="en gloss" lang="en" style="color:var(--lamp-soft)">Your submission code</span></p>
+    <p class="code-val" id="code-val">Bitte Namen eingeben.</p>
+    <p><button type="button" class="btn" id="btn-copy">Code kopieren</button></p>
+  </div>
+  <div class="btn-row">
+    <button type="button" class="btn" id="btn-nochmal">Noch einmal spielen</button>
+  </div>
+  <details>
+    <summary>Für Lehrkräfte: Code prüfen</summary>
+    <p><label for="v-name">Name</label> <input type="text" id="v-name"></p>
+    <p><label for="v-code">Code</label> <input type="text" id="v-code"></p>
+    <p><button type="button" class="btn" id="btn-verify">Prüfen</button></p>
+    <p id="v-out" role="status" aria-live="polite"></p>
+  </details>
+</section>
+</main>
+<footer class="wrap" style="padding-bottom:2rem;color:var(--lamp-soft)">
+  <p>Escape from Rathaus Kleinhausen · vier Räume, Inventar, Notizbuch. Eine Datei, keine Cookies. KH-ESC-.</p>
+</footer>
+
+<script>
+"use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      try{ inp.setSelectionRange(a+b.dataset.c.length,a+b.dataset.c.length);}catch(e){}
+    });
+  });
+}
+
+const S = {
+  englisch:true, audio:false, kontrast:false, size:0, motion:true,
+  raum:1, name:"", fehler:0, hinweise:0, ending:"dawn",
+  ziffern:[null,null,null,null],
+  inv:["Notizbuch"],
+  notes:["Die Tür braucht vier Ziffern und eine Phrase."],
+  seen:{},
+  r1:{matched:{}, tries:0, done:false, word:null, pic:null},
+  r2:{a:null,b:null,c:null, tries:0, done:false, painting:false},
+  r3:{box:null, tries:0, dativ:null, dativTries:0, done:false},
+  r4:{codeTries:0, passTries:0, codeOk:false, passOk:false, digit:false},
+  scraps:{ich:false, bitte:false, hinaus:false},
+  roomsOpen:{1:true,2:false,3:false,4:false},
+  lastHot:null
+};
+
+function sagen(t){ $("status").textContent = t; }
+function sprich(text){
+  if(!S.audio || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "de-DE"; u.rate = .88;
+    const v = window.speechSynthesis.getVoices().find(x => /^de/i.test(x.lang));
+    if(v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  }catch(e){/* keine Stimme */}
+}
+function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true":"false"); }
+function glossUpdate(){
+  document.documentElement.classList.toggle("show-en", S.englisch);
+  document.querySelectorAll(".gloss").forEach(el => { el.hidden = !S.englisch; });
+}
+function note(t){
+  if(S.notes.indexOf(t) < 0){ S.notes.push(t); zeichneSide(); }
+}
+function nimm(t){
+  if(S.inv.indexOf(t) < 0){ S.inv.push(t); zeichneSide(); sagen(t + " liegt jetzt im Inventar."); }
+}
+function zeichneSide(){
+  $("inv").innerHTML = S.inv.map(x => "<li>"+esc(x)+"</li>").join("");
+  $("notes").innerHTML = S.notes.map(x => "<li>"+esc(x)+"</li>").join("");
+  $("ziffern").innerHTML = S.ziffern.map(z => "<span>"+(z==null?"?":z)+"</span>").join("");
+}
+function zeigeScreen(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id===id));
+  const h = document.querySelector("#"+id+" h2");
+  if(h) h.focus();
+  window.scrollTo({top:0, behavior: S.motion ? "smooth":"auto"});
+}
+
+$("s-en").addEventListener("click", ()=>{
+  S.englisch = !S.englisch; setToggle($("s-en"), S.englisch); glossUpdate();
+  sagen(S.englisch ? "Englische Hilfe ist an." : "Englische Hilfe ist aus.");
+});
+$("s-audio").addEventListener("click", ()=>{
+  S.audio = !S.audio; setToggle($("s-audio"), S.audio);
+  if(S.audio){ sprich("Vorlesen ist an."); sagen("Vorlesen ist an."); }
+  else { if("speechSynthesis" in window) window.speechSynthesis.cancel(); sagen("Vorlesen ist aus."); }
+});
+$("s-contrast").addEventListener("click", ()=>{
+  S.kontrast = !S.kontrast; setToggle($("s-contrast"), S.kontrast);
+  document.documentElement.setAttribute("data-contrast", S.kontrast ? "hoch":"normal");
+  sagen(S.kontrast ? "Hoher Kontrast ist an." : "Normale Farben.");
+});
+$("s-size").addEventListener("click", ()=>{
+  S.size = (S.size+1)%3;
+  const namen=["normal","gross","sehr-gross"], labels=["A","A+","A++"];
+  document.documentElement.setAttribute("data-size", namen[S.size]);
+  $("s-size").textContent = "Schrift: "+labels[S.size];
+  sagen("Schriftgröße: "+["normal","groß","sehr groß"][S.size]+".");
+});
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  S.motion = false;
+  document.documentElement.setAttribute("data-motion","aus");
+}
+
+function svgHalle(){
+  return `<svg class="bg" viewBox="0 0 1000 560" aria-hidden="true" focusable="false">
+    <rect width="1000" height="560" fill="#0c1424"/>
+    <rect x="80" y="40" width="840" height="360" fill="#3a4254"/>
+    <polygon points="80,40 0,0 0,560 80,400" fill="#2c3344"/>
+    <polygon points="920,40 1000,0 1000,560 920,400" fill="#2c3344"/>
+    <polygon points="80,400 920,400 1000,560 0,560" fill="#2a241c"/>
+    <rect x="390" y="90" width="220" height="280" fill="#1a2438" stroke="#c4a056" stroke-width="6"/>
+    <rect x="410" y="110" width="80" height="240" fill="#6a9aaa" opacity=".45"/>
+    <rect x="510" y="110" width="80" height="240" fill="#6a9aaa" opacity=".45"/>
+    <circle cx="590" cy="250" r="8" fill="#e6c36a"/>
+    <rect x="470" y="20" width="60" height="70" fill="#1a1a1a" stroke="#c4a056" stroke-width="3"/>
+    <text x="500" y="62" text-anchor="middle" fill="#e6c36a" font-size="18" font-family="Georgia">19:15</text>
+    <rect x="100" y="80" width="130" height="160" fill="#6b4a2e" stroke="#e6c36a" stroke-width="3"/>
+    <rect x="112" y="96" width="106" height="24" fill="#f3ead6"/>
+    <rect x="112" y="128" width="106" height="24" fill="#f3ead6"/>
+    <rect x="112" y="160" width="106" height="24" fill="#f3ead6"/>
+    <rect x="100" y="270" width="160" height="90" fill="#4a3220"/>
+    <rect x="110" y="250" width="140" height="20" fill="#6b4a2e"/>
+    <rect x="250" y="300" width="70" height="50" fill="#3e2a18"/>
+    <ellipse cx="285" cy="300" rx="28" ry="8" fill="#f3ead6"/>
+    <rect x="820" y="220" width="70" height="150" fill="#1d4530"/>
+    <ellipse cx="855" cy="210" rx="55" ry="70" fill="#2f6a4a"/>
+    <ellipse cx="830" cy="190" rx="28" ry="40" fill="#3d8a5c"/>
+    <rect x="700" y="70" width="90" height="50" fill="#9a3b3b" stroke="#e6c36a" stroke-width="3"/>
+    <text x="745" y="102" text-anchor="middle" fill="#f3ead6" font-size="14" font-family="Georgia">AUSGANG</text>
+    <rect x="40" y="160" width="28" height="180" fill="#3e2a18"/>
+    <line x1="40" y1="170" x2="90" y2="170" stroke="#c4a056" stroke-width="6"/>
+    <rect x="720" y="300" width="70" height="90" fill="#2c3344" stroke="#8ec5d4" stroke-width="2"/>
+    <circle cx="880" cy="390" r="7" fill="#e6c36a"/>
+    <circle cx="200" cy="70" r="18" fill="#e6c36a" opacity=".85"/>
+    <rect x="196" y="40" width="8" height="20" fill="#c4a056"/>
+  </svg>`;
+}
+function svgSaal(){
+  return `<svg class="bg" viewBox="0 0 1000 560" aria-hidden="true" focusable="false">
+    <rect width="1000" height="560" fill="#1a1520"/>
+    <rect x="60" y="30" width="880" height="340" fill="#4a3040"/>
+    <polygon points="60,370 940,370 1000,560 0,560" fill="#3a2a20"/>
+    <rect x="180" y="300" width="640" height="36" fill="#6b4a2e"/>
+    <rect x="200" y="250" width="600" height="50" fill="#8a6240"/>
+    <rect x="220" y="210" width="70" height="40" fill="#f3ead6"/>
+    <rect x="320" y="210" width="70" height="40" fill="#f3ead6"/>
+    <rect x="420" y="210" width="70" height="40" fill="#f3ead6"/>
+    <rect x="520" y="210" width="70" height="40" fill="#f3ead6"/>
+    <rect x="120" y="50" width="50" height="90" fill="#c4a056"/>
+    <rect x="190" y="50" width="50" height="90" fill="#2f6a4a"/>
+    <rect x="260" y="50" width="50" height="90" fill="#8ec5d4"/>
+    <rect x="330" y="50" width="50" height="90" fill="#9a3b3b"/>
+    <rect x="700" y="40" width="180" height="140" fill="#2a1810" stroke="#c4a056" stroke-width="8"/>
+    <rect x="720" y="60" width="140" height="100" fill="#3d5a4a"/>
+    <circle cx="790" cy="110" r="28" fill="#e6c36a" opacity=".5"/>
+    <text x="790" y="116" text-anchor="middle" fill="#f3ead6" font-size="13" font-family="Georgia">Türme</text>
+    <rect x="80" y="200" width="90" height="120" fill="#f3ead6" stroke="#6b4a2e" stroke-width="3"/>
+    <line x1="90" y1="220" x2="160" y2="220" stroke="#4a5163" stroke-width="2"/>
+    <line x1="90" y1="240" x2="155" y2="240" stroke="#4a5163" stroke-width="2"/>
+    <line x1="90" y1="260" x2="150" y2="260" stroke="#4a5163" stroke-width="2"/>
+    <rect x="600" y="390" width="40" height="70" fill="#4a3220"/>
+    <rect x="680" y="390" width="40" height="70" fill="#4a3220"/>
+    <rect x="280" y="390" width="40" height="70" fill="#4a3220"/>
+    <rect x="360" y="390" width="40" height="70" fill="#4a3220"/>
+    <rect x="50" y="80" width="40" height="200" fill="#8ec5d4" opacity=".35" stroke="#c4a056"/>
+    <rect x="910" y="80" width="40" height="200" fill="#8ec5d4" opacity=".35" stroke="#c4a056"/>
+    <ellipse cx="500" cy="200" rx="28" ry="12" fill="#d0d8e0"/>
+    <rect x="488" y="188" width="24" height="20" fill="#d0d8e0"/>
+  </svg>`;
+}
+function svgArchiv(){
+  return `<svg class="bg" viewBox="0 0 1000 560" aria-hidden="true" focusable="false">
+    <rect width="1000" height="560" fill="#1c1810"/>
+    <rect x="40" y="20" width="920" height="380" fill="#3a3228"/>
+    <polygon points="40,400 960,400 1000,560 0,560" fill="#2a2218"/>
+    <rect x="70" y="80" width="160" height="110" fill="#8a6240" stroke="#c4a056" stroke-width="3"/>
+    <text x="150" y="140" text-anchor="middle" fill="#f3ead6" font-size="16" font-family="Georgia">3. Okt.</text>
+    <rect x="260" y="80" width="160" height="110" fill="#6b4a2e" stroke="#c4a056" stroke-width="3"/>
+    <text x="340" y="140" text-anchor="middle" fill="#f3ead6" font-size="16" font-family="Georgia">13. Okt.</text>
+    <rect x="450" y="80" width="160" height="110" fill="#6b4a2e" stroke="#c4a056" stroke-width="3"/>
+    <text x="530" y="140" text-anchor="middle" fill="#f3ead6" font-size="16" font-family="Georgia">30. Okt.</text>
+    <rect x="640" y="80" width="160" height="110" fill="#5a3a28" stroke="#9a3b3b" stroke-width="3"/>
+    <text x="720" y="130" text-anchor="middle" fill="#f3ead6" font-size="14" font-family="Georgia">drei Oktober</text>
+    <rect x="70" y="220" width="160" height="110" fill="#6b4a2e" stroke="#c4a056" stroke-width="3"/>
+    <text x="150" y="280" text-anchor="middle" fill="#f3ead6" font-size="14" font-family="Georgia">1. Mai</text>
+    <rect x="260" y="220" width="160" height="110" fill="#6b4a2e" stroke="#c4a056" stroke-width="3"/>
+    <text x="340" y="280" text-anchor="middle" fill="#f3ead6" font-size="14" font-family="Georgia">Index</text>
+    <rect x="820" y="60" width="24" height="280" fill="#4a3220"/>
+    <rect x="800" y="70" width="70" height="12" fill="#c4a056"/>
+    <rect x="800" y="120" width="70" height="12" fill="#c4a056"/>
+    <rect x="800" y="170" width="70" height="12" fill="#c4a056"/>
+    <circle cx="200" cy="40" r="16" fill="#e6c36a" opacity=".7"/>
+    <rect x="500" y="330" width="120" height="80" fill="#1a1520" stroke="#8ec5d4"/>
+    <circle cx="560" cy="360" r="18" fill="#f3ead6" opacity=".35"/>
+  </svg>`;
+}
+function svgTurm(){
+  return `<svg class="bg" viewBox="0 0 1000 560" aria-hidden="true" focusable="false">
+    <rect width="1000" height="560" fill="#0a1020"/>
+    <polygon points="200,40 800,40 900,400 100,400" fill="#2a3048"/>
+    <polygon points="100,400 900,400 1000,560 0,560" fill="#1a1820"/>
+    <circle cx="500" cy="160" r="70" fill="#1a2438" stroke="#c4a056" stroke-width="8"/>
+    <circle cx="500" cy="160" r="50" fill="#0c1424"/>
+    <line x1="500" y1="160" x2="530" y2="120" stroke="#e6c36a" stroke-width="4"/>
+    <rect x="80" y="80" width="70" height="220" fill="#c4a056" opacity=".85"/>
+    <rect x="170" y="110" width="55" height="190" fill="#b89040"/>
+    <rect x="240" y="140" width="40" height="160" fill="#a07830"/>
+    <circle cx="115" cy="90" r="18" fill="#8a6c2e"/>
+    <rect x="720" y="220" width="160" height="140" fill="#141820" stroke="#e6c36a" stroke-width="4"/>
+    <text x="800" y="280" text-anchor="middle" fill="#e6c36a" font-size="22" font-family="monospace">1 2 3</text>
+    <text x="800" y="312" text-anchor="middle" fill="#e6c36a" font-size="22" font-family="monospace">4 5 6</text>
+    <text x="800" y="344" text-anchor="middle" fill="#e6c36a" font-size="22" font-family="monospace">7 8 9</text>
+    <rect x="430" y="300" width="140" height="90" fill="#8ec5d4" opacity=".25" stroke="#c4a056"/>
+    <circle cx="500" cy="340" r="20" fill="#e6c36a" opacity=".25"/>
+    <rect x="40" y="260" width="20" height="180" fill="#6b4a2e"/>
+    <rect x="900" y="40" width="50" height="200" fill="#1a2438" stroke="#c4a056"/>
+    <text x="925" y="150" text-anchor="middle" fill="#f3ead6" font-size="11" writing-mode="tb" font-family="Georgia">KARTE</text>
+  </svg>`;
+}
+
+const HOTS = {
+  1:[
+    {id:"uhr", label:"Die Uhr", x:"48%", y:"2%"},
+    {id:"brett", label:"Aushang", x:"10%", y:"14%"},
+    {id:"buch", label:"Besucherbuch", x:"24%", y:"52%"},
+    {id:"pflanze", label:"Pflanze", x:"78%", y:"38%"},
+    {id:"tuer", label:"Glastür", x:"42%", y:"22%"},
+    {id:"schalter", label:"Schalter", x:"10%", y:"48%"},
+    {id:"schild", label:"Schild", x:"70%", y:"10%"},
+    {id:"schluessel", label:"Schlüssel", x:"84%", y:"68%"},
+    {id:"garde", label:"Garderobe", x:"2%", y:"30%"},
+    {id:"lampe", label:"Lampe", x:"16%", y:"4%"}
+  ],
+  2:[
+    {id:"flaggen", label:"Flaggen", x:"12%", y:"8%"},
+    {id:"tisch", label:"Tisch", x:"38%", y:"42%"},
+    {id:"protokoll", label:"Protokoll", x:"8%", y:"36%"},
+    {id:"gemaelde", label:"Gemälde", x:"72%", y:"8%"},
+    {id:"fensterL", label:"Fenster", x:"4%", y:"16%"},
+    {id:"karaffe", label:"Karaffe", x:"46%", y:"32%"},
+    {id:"stuhl", label:"Stühle", x:"28%", y:"70%"},
+    {id:"safe", label:"Tresor", x:"78%", y:"36%"},
+    {id:"hammer", label:"Hammer", x:"58%", y:"70%"}
+  ],
+  3:[
+    {id:"box3", label:"Karton 3. Okt.", x:"8%", y:"14%"},
+    {id:"box13", label:"Karton 13. Okt.", x:"28%", y:"14%"},
+    {id:"box30", label:"Karton 30. Okt.", x:"46%", y:"14%"},
+    {id:"boxdrei", label:"Karton drei Oktober", x:"66%", y:"14%"},
+    {id:"boxmai", label:"Karton 1. Mai", x:"8%", y:"40%"},
+    {id:"index", label:"Index", x:"28%", y:"40%"},
+    {id:"leiter", label:"Leiter", x:"80%", y:"12%"},
+    {id:"mond", label:"Fenster", x:"50%", y:"60%"},
+    {id:"lampe3", label:"Staubige Lampe", x:"16%", y:"2%"}
+  ],
+  4:[
+    {id:"fernrohr", label:"Fernrohr", x:"42%", y:"12%"},
+    {id:"glocken", label:"Glocken", x:"8%", y:"14%"},
+    {id:"keypad", label:"Tastatur", x:"74%", y:"40%"},
+    {id:"seil", label:"Seil", x:"2%", y:"48%"},
+    {id:"ausblick", label:"Fenster", x:"44%", y:"54%"},
+    {id:"karte", label:"Karte", x:"88%", y:"8%"},
+    {id:"kerze", label:"Kerze", x:"18%", y:"70%"},
+    {id:"logbuch", label:"Logbuch", x:"60%", y:"72%"}
+  ]
+};
+
+function zeichneRaum(){
+  const r = S.raum;
+  const titles = {1:"Eingangshalle",2:"Sitzungssaal",3:"Archiv",4:"Turmzimmer"};
+  $("h-play").textContent = titles[r];
+  $("raum-label").textContent = "Raum "+r+" von 4";
+  const svgs = {1:svgHalle,2:svgSaal,3:svgArchiv,4:svgTurm};
+  const wrap = $("scene");
+  wrap.innerHTML = svgs[r]() + '<div class="hots" id="hots"></div>';
+  const hots = $("hots");
+  HOTS[r].forEach((h,i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "hot"; b.dataset.act = h.id; b.dataset.i = String(i+1);
+    b.style.left = h.x; b.style.top = h.y;
+    b.setAttribute("aria-label", h.label + ", Taste E");
+    b.textContent = h.label;
+    if(S.seen[h.id]) b.classList.add("done");
+    b.addEventListener("click", () => untersuche(h.id));
+    b.addEventListener("focus", () => { S.lastHot = b; if(S.audio) sprich(h.label); });
+    hots.appendChild(b);
+  });
+  document.querySelectorAll(".nav-rooms [data-goto]").forEach(b => {
+    const n = Number(b.dataset.goto);
+    b.disabled = !S.roomsOpen[n];
+    b.setAttribute("aria-current", n===r ? "true":"false");
+  });
+  glossUpdate();
+}
+
+function setPanel(title, de, en, extraHtml){
+  $("panel-h").textContent = title;
+  $("panel-de").textContent = de;
+  $("panel-en").textContent = en || "";
+  $("panel-extra").innerHTML = extraHtml || "";
+  $("panel-fb").hidden = true;
+  glossUpdate();
+  if(S.audio) sprich(de);
+}
+
+function fb(ok, text){
+  const el = $("panel-fb");
+  el.hidden = false;
+  el.className = "fb "+(ok?"ok":"bad");
+  el.textContent = text;
+  sagen(text);
+  if(S.audio) sprich(text);
+}
+
+function untersuche(id){
+  S.seen[id] = true;
+  S.lastHot = document.querySelector('.hot[data-act="'+id+'"]');
+  if(S.lastHot) S.lastHot.classList.add("done");
+  const U = {
+    uhr(){
+      setPanel("Die Uhr",
+        "Die Uhr steht still: Viertel nach sieben – also 19:15. Die Zeiger bewegen sich nicht.",
+        "The clock is stuck at quarter past seven — 19:15.");
+      note("Uhr: Viertel nach sieben = 19:15.");
+    },
+    brett(){
+      setPanel("Aushang",
+        "Heute: Sitzung des Stadtrats. Bitte leise sein. Der Nachtwächter kommt um zweiundzwanzig Uhr. Codewort bereithalten.",
+        "Today: town council meeting. Please be quiet. The night watch comes at 22:00. Have the code word ready.");
+    },
+    buch(){
+      setPanel("Besucherbuch",
+        "Die letzte Zeile: „Die letzte Person ging um Viertel nach sieben.“ Darunter eine kleine 7 in Gold.",
+        "The last line: “The last person left at quarter past seven.” A small gold 7 underneath.");
+      note("Besucherbuch bestätigt: Viertel nach sieben.");
+    },
+    pflanze(){
+      S.scraps.ich = true;
+      nimm("Zettel: Ich möchte");
+      setPanel("Die Pflanze",
+        "Hinter dem Topf liegt ein Zettel: „Ich möchte“. Vielleicht ein Teil der Codephrase.",
+        "Behind the pot is a scrap: “Ich möchte”. Maybe part of the passphrase.");
+      note("Zettel 1: Ich möchte");
+    },
+    tuer(){
+      if(S.r1.done){
+        S.roomsOpen[2] = true;
+        setPanel("Glastür",
+          "Die Tür klickt. Du kannst in den Sitzungssaal gehen.",
+          "The door clicks. You can go to the council chamber.",
+          '<p><button type="button" class="btn" id="go2">Zum Sitzungssaal</button></p>');
+        $("go2").onclick = ()=>{ gehe(2); };
+      }else{
+        setPanel("Glastür",
+          "Die Glastür ist zu. Am Schloss steht: „Zuerst die Wörter am Schalter.“",
+          "The glass door is locked. The lock says: first the words at the counter.");
+      }
+    },
+    schalter(){ puzzleMatch(); },
+    schild(){
+      setPanel("Das Schild",
+        "Über der Tür: AUSGANG. Darunter klein: „Nur mit Code.“ Das ist das Schild – das Neutrum: das Schild.",
+        "Above the door: EXIT. Small print: “Only with code.” That's the sign — neuter: das Schild.");
+    },
+    schluessel(){
+      nimm("Alter Schlüssel");
+      setPanel("Der Schlüssel",
+        "Ein alter Schlüssel liegt am Boden. Er passt nicht zur Glastür. Aber du weißt jetzt: der Schlüssel.",
+        "An old key on the floor. It does not fit the glass door. But you know the word: der Schlüssel.");
+    },
+    garde(){
+      setPanel("Garderobe",
+        "Ein nasser Mantel. In der Tasche nur ein Busfahrschein nach Mainz. Kein Code.",
+        "A wet coat. In the pocket only a bus ticket to Mainz. No code.");
+    },
+    lampe(){
+      setPanel("Die Lampe",
+        "Die Lampe gibt warmes Licht. Unter dem Schirm steht: „Nicht anfassen – heiß!“",
+        "The lamp gives warm light. Under the shade: “Don't touch — hot!”");
+    },
+    flaggen(){
+      setPanel("Vier Flaggen",
+        "Vier Flaggen hängen an der Wand: Gold, Grün, Blau, Rot. Darunter: „Die vier Türme von Kleinhausen.“",
+        "Four flags: gold, green, blue, red. Below: “The four towers of Kleinhausen.”");
+      note("Vier Flaggen / vier Türme.");
+    },
+    tisch(){
+      setPanel("Der lange Tisch",
+        "Namensschilder: Frau Berg, Herr Klein, Frau Yılmaz, Herr Koch. Vier Personen, vier Stimmen.",
+        "Name plates: four people, four votes.");
+    },
+    protokoll(){ puzzleKonj(); },
+    gemaelde(){
+      if(S.r2.done){
+        S.r2.painting = true;
+        setPanel("Das Gemälde",
+          "Das Bild schwingt zur Seite. Hinter den vier Türmen liegt ein kleiner Tresor.",
+          "The painting swings aside. Behind the four towers is a small safe.");
+      }else{
+        setPanel("Das Gemälde",
+          "Die vier Türme von Kleinhausen. Der Rahmen sitzt locker – aber etwas hält ihn. Zuerst das Protokoll?",
+          "The four towers of Kleinhausen. The frame is loose — but something holds it. The minutes first?");
+      }
+    },
+    fensterL(){
+      setPanel("Fenster",
+        "Draußen der Marktplatz. Der Brunnen ist dunkel. Es ist tiefe Nacht.",
+        "Outside, the market square. The fountain is dark. Deep night.");
+    },
+    karaffe(){
+      setPanel("Die Karaffe",
+        "Wasser und vier Gläser. Niemand hat getrunken. Die Sitzung ist lange vorbei.",
+        "Water and four glasses. Nobody drank. The meeting ended long ago.");
+    },
+    stuhl(){
+      setPanel("Stühle",
+        "Schwere Holzstühle. Auf einem liegt ein Stift und das Wort „obwohl“.",
+        "Heavy wooden chairs. On one: a pen and the word “obwohl”.");
+    },
+    safe(){
+      if(!S.r2.done){
+        setPanel("Tresor",
+          "Du siehst nur die Wand. Das Gemälde verdeckt etwas. Zuerst das Protokoll ausfüllen.",
+          "You only see the wall. The painting hides something. Fill in the minutes first.");
+        return;
+      }
+      S.ziffern[1] = 4;
+      S.roomsOpen[3] = true;
+      nimm("Messing-4");
+      setPanel("Der Tresor",
+        "Im Tresor liegt eine Messingziffer: 4. Ein Zettel: „bitte“. Die Tür zum Archiv ist offen.",
+        "Inside: a brass digit 4. A scrap: “bitte”. The archive door is open.",
+        '<p><button type="button" class="btn" id="go3">Zum Archiv</button></p>');
+      S.scraps.bitte = true;
+      nimm("Zettel: bitte");
+      note("Zweite Ziffer: 4 (vier Türme / vier Flaggen).");
+      note("Zettel 2: bitte");
+      zeichneSide();
+      $("go3").onclick = ()=>gehe(3);
+    },
+    hammer(){
+      setPanel("Der Hammer",
+        "Der Hammer des Bürgermeisters. Darauf steht: „Nicht schlagen – denken.“",
+        "The mayor's gavel. It says: “Don't hit — think.”");
+    },
+    box3(){ puzzleBox("3"); },
+    box13(){ puzzleBox("13"); },
+    box30(){ puzzleBox("30"); },
+    boxdrei(){ puzzleBox("drei"); },
+    boxmai(){ puzzleBox("mai"); },
+    index(){
+      setPanel("Index",
+        "Karteikarte: „Brief an einen Freund, Karton vom dritten Oktober.“ Achtung: am dritten Oktober – nicht „drei Oktober“.",
+        "Index card: “Letter to a friend, box from the third of October.” Note: am dritten Oktober — not “drei Oktober”.");
+      note("Richtiger Karton: am dritten Oktober (3. Okt.).");
+    },
+    leiter(){
+      setPanel("Die Leiter",
+        "Die Leiter ist staubig. Oben nur leere Schachteln mit der Jahreszahl 1989.",
+        "The ladder is dusty. Up top only empty boxes dated 1989.");
+    },
+    mond(){
+      setPanel("Fenster",
+        "Der Mond steht über der Selz. Kleinhausen schläft. Du willst hinaus.",
+        "The moon hangs over the Selz. Kleinhausen is asleep. You want out.");
+    },
+    lampe3(){
+      setPanel("Staubige Lampe",
+        "Die Lampe flackert. Ein Schild: „Archiv – nur mit Erlaubnis.“",
+        "The lamp flickers. A sign: “Archive — only with permission.”");
+    },
+    fernrohr(){
+      S.r4.digit = true;
+      S.ziffern[3] = 1;
+      setPanel("Das Fernrohr",
+        "Durch das Fernrohr siehst du den Marktbrunnen: ein Becken, eine Säule. Eine Tafel: „1 Brunnen, 1 Stadt.“ Das ist die vierte Ziffer: 1.",
+        "Through the telescope: the market fountain. A plaque: “1 fountain, 1 town.” The fourth digit is 1.");
+      note("Vierte Ziffer: 1 (ein Brunnen).");
+      zeichneSide();
+    },
+    glocken(){
+      setPanel("Die Glocken",
+        "Drei Glocken. Auf der kleinsten steht eine eins. Ein Spruch: „Die kleinste Glocke trägt die Zahl 1.“",
+        "Three bells. The smallest bears a one. “The smallest bell carries the number 1.”");
+      note("Glocke: Zahl 1.");
+    },
+    keypad(){ puzzleKeypad(); },
+    seil(){
+      S.ending = "wache";
+      setPanel("Das Seil",
+        "Du ziehst am Seil. Eine Glocke schlägt laut. Schritte auf der Treppe! Der Nachtwächter kommt – aber er ist nicht böse, nur müde.",
+        "You pull the rope. A bell rings. Footsteps! The night watch is coming — tired, not angry.",
+        '<p><button type="button" class="btn" id="go-wache">Mit der Wache sprechen</button></p>');
+      $("go-wache").onclick = ()=>ende("wache");
+    },
+    ausblick(){
+      setPanel("Fenster zum Markt",
+        "Unten der Marktplatz. Bald wird es hell. Wenn der Code stimmt, gehst du in den Morgen.",
+        "Below, the square. Dawn is coming. If the code is right, you walk into the morning.");
+    },
+    karte(){
+      setPanel("Karte",
+        "Kleinhausen an der Selz, nicht am Rhein. Mainz liegt westlich. Der Turm ist mit einem Stern markiert.",
+        "Kleinhausen on the Selz, not the Rhine. Mainz is to the west. The tower is marked with a star.");
+    },
+    kerze(){
+      setPanel("Kerze",
+        "Die Kerze ist fast zu Ende. Wachs auf einem Zettel: unleserlich. Du brauchst die anderen Zettel.",
+        "The candle is almost gone. Wax on a scrap: unreadable. You need the other scraps.");
+    },
+    logbuch(){
+      setPanel("Logbuch des Nachtwächters",
+        "Eintrag: „Wer hinaus will, sagt: Ich möchte bitte hinaus. Nicht: I want to go out.“",
+        "Entry: “Whoever wants out says: Ich möchte bitte hinaus. Not: I want to go out.”");
+      note("Phrase: Ich möchte bitte hinaus.");
+    }
+  };
+  if(U[id]) U[id]();
+  else setPanel("Gegenstand", "Du siehst nichts Besonderes.", "Nothing special.");
+}
+
+function puzzleMatch(){
+  const items = [
+    {id:"schalter", de:"der Schalter", en:"the counter", svg:'<svg class="pic-svg" viewBox="0 0 80 48"><rect x="4" y="18" width="72" height="24" fill="#6b4a2e"/><rect x="10" y="8" width="60" height="12" fill="#4a3220"/></svg>'},
+    {id:"uhr", de:"die Uhr", en:"the clock", svg:'<svg class="pic-svg" viewBox="0 0 80 48"><circle cx="40" cy="24" r="18" fill="#1a1a1a" stroke="#c4a056" stroke-width="3"/><line x1="40" y1="24" x2="40" y2="12" stroke="#e6c36a" stroke-width="2"/></svg>'},
+    {id:"schild", de:"das Schild", en:"the sign", svg:'<svg class="pic-svg" viewBox="0 0 80 48"><rect x="12" y="10" width="56" height="24" fill="#9a3b3b" stroke="#c4a056"/><text x="40" y="27" text-anchor="middle" fill="#fff" font-size="8">AUSGANG</text></svg>'},
+    {id:"schluessel", de:"der Schlüssel", en:"the key", svg:'<svg class="pic-svg" viewBox="0 0 80 48"><circle cx="22" cy="24" r="8" fill="none" stroke="#c4a056" stroke-width="3"/><rect x="30" y="21" width="36" height="6" fill="#c4a056"/></svg>'}
+  ];
+  if(!S.r1.picOrder){
+    S.r1.picOrder = shuffled(items.map(x => x.id));
+    S.r1.wordOrder = shuffled(items.map(x => x.id));
+  }
+  const byId = {};
+  items.forEach(it => { byId[it.id] = it; });
+  const pics = S.r1.picOrder.map(id => byId[id]);
+  const wordItems = S.r1.wordOrder.map(id => byId[id]);
+  let html = '<p class="en gloss" lang="en">Match each German office noun to its picture. Click a word, then a picture.</p>';
+  html += '<div class="match-grid">';
+  pics.forEach(it => {
+    html += '<button type="button" class="match-pic'+(S.r1.matched[it.id]?" ok":"")+'" data-pic="'+it.id+'" aria-label="Bild: '+it.de+'">'+it.svg+'<span class="sr">'+esc(it.de)+'</span></button>';
+  });
+  wordItems.forEach(it => {
+    html += '<button type="button" class="match-word'+(S.r1.matched[it.id]?" ok":"")+'" data-word="'+it.id+'">'+esc(it.de)+' <span class="en gloss" lang="en">'+esc(it.en)+'</span></button>';
+  });
+  html += '</div>';
+  if(S.r1.tries>=2 && !S.r1.done){
+    html += '<p class="hint">Hinweis: Maskulin: der Schalter, der Schlüssel. Feminin: die Uhr. Neutrum: das Schild.</p>';
+  }
+  setPanel("Wörter am Schalter",
+    "Ordne vier Bürowörter den Bildern zu: der Schalter, die Uhr, das Schild, der Schlüssel.",
+    "Match four office nouns to the pictures.",
+    html);
+  const bind = () => {
+    $("panel-extra").querySelectorAll(".match-word").forEach(b => {
+      b.onclick = () => { if(b.classList.contains("ok")) return; S.r1.word = b.dataset.word; highlightMatch(); tryMatch(); };
+    });
+    $("panel-extra").querySelectorAll(".match-pic").forEach(b => {
+      b.onclick = () => { if(b.classList.contains("ok")) return; S.r1.pic = b.dataset.pic; highlightMatch(); tryMatch(); };
+    });
+  };
+  function highlightMatch(){
+    $("panel-extra").querySelectorAll(".match-word").forEach(b => b.classList.toggle("sel", b.dataset.word===S.r1.word && !b.classList.contains("ok")));
+  }
+  function tryMatch(){
+    if(!S.r1.word || !S.r1.pic) return;
+    if(S.r1.word === S.r1.pic){
+      S.r1.matched[S.r1.pic] = true;
+      fb(true, "Richtig: so heißt das Bild.");
+    }else{
+      S.r1.tries++;
+      S.fehler++;
+      fb(false, "Das passt nicht. Schau noch einmal: der, die oder das?");
+      if(S.r1.tries===2){ S.hinweise++; puzzleMatch(); return; }
+    }
+    S.r1.word = null; S.r1.pic = null;
+    if(Object.keys(S.r1.matched).length===4){
+      S.r1.done = true;
+      S.ziffern[0] = 7;
+      S.roomsOpen[2] = true;
+      note("Erste Ziffer: 7 (Viertel nach sieben).");
+      zeichneSide();
+      fb(true, "Alle vier Wörter sitzen. Die erste Ziffer ist 7 – wie „sieben“ in Viertel nach sieben.");
+      $("panel-extra").insertAdjacentHTML("beforeend", '<p><button type="button" class="btn" id="go2b">Zur Glastür / Sitzungssaal</button></p>');
+      $("go2b").onclick = ()=>gehe(2);
+    }else{
+      puzzleMatch();
+    }
+  }
+  bind();
+}
+
+function puzzleKonj(){
+  const rows = [
+    {k:"a", q:"Der Bürgermeister sagte, _____ die Sitzung wichtig ist.", ok:"dass", en:"The mayor said that the meeting is important."},
+    {k:"b", q:"Wir bleiben noch, _____ es schon spät ist.", ok:"obwohl", en:"We stay even though it is already late."},
+    {k:"c", q:"Die Tür ist zu, _____ niemand den Schlüssel hat.", ok:"weil", en:"The door is locked because nobody has the key."}
+  ];
+  let html = "";
+  rows.forEach(row => {
+    html += '<p lang="de">'+esc(row.q)+'</p><p class="en gloss" lang="en">'+esc(row.en)+'</p>';
+    html += '<p class="prod-lab"><label for="konj-'+row.k+'">Konjunktion schreiben</label></p>';
+    html += umlautsHtml("konj-"+row.k);
+    html += '<p><input class="prod-in" type="text" id="konj-'+row.k+'" lang="de" autocomplete="off" spellcheck="false" placeholder="weil / dass / obwohl" value="'+esc(S.r2[row.k]||"")+'"></p>';
+  });
+  if(S.r2.tries>=2 && !S.r2.done){
+    html += '<p class="hint">Hinweis: <em>dass</em> leitet eine Aussage ein. <em>obwohl</em> = trotz. <em>weil</em> = Grund.</p>';
+  }
+  html += '<p><button type="button" class="btn" id="chk2">Protokoll prüfen</button></p>';
+  setPanel("Das Protokoll",
+    "Im Protokoll fehlen drei Konjunktionen. Schreib weil, dass oder obwohl in jede Lücke.",
+    "Three conjunctions are missing. Type weil, dass or obwohl.",
+    html);
+  bindUmlauts($("panel-extra"));
+  rows.forEach(row => {
+    const inp=$("konj-"+row.k);
+    if(inp) inp.addEventListener("input", ()=>{ S.r2[row.k]=inp.value; });
+  });
+  $("chk2").onclick = () => {
+    rows.forEach(row => { const inp=$("konj-"+row.k); if(inp) S.r2[row.k]=inp.value; });
+    const ok = rows.every(row => foldDe(S.r2[row.k])===foldDe(row.ok));
+    if(ok){
+      S.r2.done = true;
+      fb(true, "Das Protokoll ist vollständig. Das Gemälde lockert sich. Schau hinter die vier Türme.");
+      note("Konjunktionen: dass, obwohl, weil.");
+    }else{
+      S.r2.tries++; S.fehler++;
+      fb(false, "Noch nicht. Lies jeden Satz langsam: Aussage, Gegensatz, Grund.");
+      if(S.r2.tries===2){ S.hinweise++; puzzleKonj(); }
+    }
+  };
+  const first=$("konj-a"); if(first) setTimeout(()=>{ try{ first.focus(); }catch(e){} }, 50);
+}
+
+function puzzleBox(which){
+  if(which!=="3"){
+    S.r3.tries++; S.fehler++;
+    const msgs = {
+      "13":"Der dreizehnte Oktober ist zu spät. Du brauchst den dritten Oktober.",
+      "30":"Der dreißigste Oktober ist ein anderer Tag. Gesucht: am dritten Oktober.",
+      "drei":"„Drei Oktober“ ist kein korrektes Datum. Richtig: am dritten Oktober.",
+      "mai":"Der erste Mai ist ein Feiertag – aber der Brief liegt nicht hier."
+    };
+    setPanel("Karton", msgs[which] || "Falscher Karton.", "Wrong box.");
+    fb(false, msgs[which]);
+    if(S.r3.tries>=2){
+      $("panel-extra").innerHTML = '<p class="hint">Hinweis: Ordinalzahl: der dritte Oktober. Im Datum: am dritten Oktober.</p>';
+      S.hinweise++;
+    }
+    return;
+  }
+  S.r3.box = "3";
+  let html = '<p lang="de">Im Karton liegt ein Brief: „Liebe Lena, ich schreibe _____ einen Brief aus dem Archiv.“</p>';
+  html += '<p class="en gloss" lang="en">In the box is a letter: “I am writing a letter to a friend.” Type the dative.</p>';
+  html += '<p class="prod-lab"><label for="dativ-in">Dativ schreiben</label></p>';
+  html += umlautsHtml("dativ-in");
+  html += '<p><input class="prod-in" type="text" id="dativ-in" lang="de" autocomplete="off" spellcheck="false" placeholder="einem Freund"></p>';
+  html += '<p><button type="button" class="btn" id="dativ-ok">Prüfen</button></p>';
+  if(S.r3.dativTries>=2 && S.r3.dativ!=="ok"){
+    html += '<p class="hint">Hinweis: nach „schreiben + Person“ steht oft der Dativ: wem? einem Freund. Akkusativ wäre den Brief.</p>';
+  }
+  setPanel("Karton vom 3. Oktober",
+    "Du öffnest den Karton vom dritten Oktober. Darin: ein Brief im Dativ.",
+    "You open the box from the third of October. Inside: a letter using the dative.",
+    html);
+  bindUmlauts($("panel-extra"));
+  function dativDone(){
+    S.r3.dativ = "ok"; S.r3.done = true;
+    S.ziffern[2] = 3;
+    S.roomsOpen[4] = true;
+    S.scraps.hinaus = true;
+    nimm("Zettel: hinaus");
+    nimm("Brief");
+    note("Dritte Ziffer: 3 (am dritten Oktober).");
+    note("Zettel 3: hinaus");
+    note("Dativ: einem Freund.");
+    zeichneSide();
+    fb(true, "Richtig: einem Freund (Dativ). Die dritte Ziffer ist 3. Die Treppe zum Turm ist frei.");
+    $("panel-extra").insertAdjacentHTML("beforeend", '<p><button type="button" class="btn" id="go4">Zum Turmzimmer</button></p>');
+    $("go4").onclick = ()=>gehe(4);
+  }
+  function checkDativ(){
+    const inp=$("dativ-in");
+    if(!inp||inp.disabled) return;
+    if(nearDe(inp.value, "einem Freund")){
+      inp.disabled=true;
+      const btn=$("dativ-ok"); if(btn) btn.disabled=true;
+      dativDone();
+      return;
+    }
+    S.r3.dativTries++; S.fehler++;
+    const g=foldDe(inp.value);
+    fb(false, g.indexOf("einen")>=0 && g.indexOf("freund")>=0
+      ? "„Einen Freund“ ist Akkusativ (wen?). Hier: wem schreibst du? Dativ."
+      : "Ohne Endung fehlt der Fall. Wem? einem Freund.");
+    if(S.r3.dativTries>=2){
+      S.hinweise++;
+      puzzleBox("3");
+      const inp2=$("dativ-in");
+      if(inp2){ inp2.value="einem Freund"; inp2.disabled=true; }
+      const btn2=$("dativ-ok"); if(btn2) btn2.disabled=true;
+      dativDone();
+    }
+  }
+  $("dativ-ok").onclick=checkDativ;
+  const din=$("dativ-in");
+  if(din){
+    din.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); checkDativ(); } });
+    setTimeout(()=>{ try{ din.focus(); }catch(e){} }, 50);
+  }
+}
+
+function puzzleKeypad(){
+  const digits = S.ziffern.map(z => z==null ? "?" : z).join("");
+  let html = '<p>Ziffern bisher: <strong>'+esc(digits)+'</strong></p>';
+  html += '<p><label for="code-in">Vier Ziffern</label></p>';
+  html += '<p><input type="text" id="code-in" inputmode="numeric" maxlength="4" autocomplete="off"></p>';
+  html += '<p><button type="button" class="btn" id="chk-code">Code prüfen</button></p>';
+  if(S.r4.codeOk){
+    html += '<p><label for="pass-in">Codephrase</label></p>';
+    html += '<p><input type="text" id="pass-in" maxlength="48" placeholder="Ich möchte …"></p>';
+    html += '<p><button type="button" class="btn" id="chk-pass">Phrase sagen</button></p>';
+    if(S.scraps.ich || S.scraps.bitte || S.scraps.hinaus){
+      html += '<p>Deine Zettel: '+(S.scraps.ich?"Ich möchte ":"")+(S.scraps.bitte?"bitte ":"")+(S.scraps.hinaus?"hinaus":"")+'</p>';
+    }
+  }
+  if(S.r4.codeTries>=2 && !S.r4.codeOk){
+    html += '<p class="hint">Hinweis: Halle = sieben (Uhr). Saal = vier Türme. Archiv = dritter Oktober. Turm = ein Brunnen.</p>';
+  }
+  if(S.r4.passTries>=2 && S.r4.codeOk && !S.r4.passOk){
+    html += '<p class="hint">Hinweis: Höflich hinausgehen: Ich möchte bitte hinaus. (Nicht: I want to leave.)</p>';
+  }
+  setPanel("Die Tastatur",
+    "Gib den Code ein. Danach die Phrase, die der Nachtwächter hören will.",
+    "Enter the code, then the phrase the night watch wants to hear.",
+    html);
+  const cin = $("code-in"); if(cin) cin.focus();
+  $("chk-code").onclick = () => {
+    const v = ($("code-in").value||"").replace(/\s/g,"");
+    if(v==="7431"){
+      S.r4.codeOk = true;
+      fb(true, "Der Code stimmt. Jetzt die Phrase – auf Deutsch, bitte.");
+      puzzleKeypad();
+    }else{
+      S.r4.codeTries++; S.fehler++;
+      fb(false, "Das Schloss bleibt zu. Prüfe die vier Räume noch einmal.");
+      if(S.r4.codeTries===2){ S.hinweise++; puzzleKeypad(); }
+    }
+  };
+  const pb = $("chk-pass");
+  if(pb) pb.onclick = () => {
+    const v = ($("pass-in").value||"").trim().toLowerCase().replace(/[.!]+$/,"").replace(/\s+/g," ");
+    const ok = v==="ich möchte bitte hinaus" || v==="ich moechte bitte hinaus";
+    const alt = v==="die freiheit der stadt";
+    if(ok){
+      S.r4.passOk = true;
+      S.ending = S.fehler<=3 ? "held":"dawn";
+      ende(S.ending);
+    }else if(alt){
+      S.r4.passOk = true;
+      S.ending = "freiheit";
+      ende("freiheit");
+    }else{
+      S.r4.passTries++; S.fehler++;
+      fb(false, "Der Nachtwächter hört nichts, das er kennt. Suche die Zettel: Ich möchte / bitte / hinaus.");
+      if(S.r4.passTries===2){ S.hinweise++; puzzleKeypad(); }
+    }
+  };
+}
+
+function gehe(n){
+  if(!S.roomsOpen[n]){ sagen("Dieser Raum ist noch verschlossen."); return; }
+  S.raum = n;
+  zeichneRaum();
+  const intros = {
+    1:["Schau dich um","Klicke auf einen Gegenstand in der Halle.","Click an object in the hall."],
+    2:["Sitzungssaal","Der lange Tisch ist leer. Das Protokoll liegt noch da.","The long table is empty. The minutes are still here."],
+    3:["Archiv","Kartons mit Daten. Welcher ist vom dritten Oktober?","Boxes with dates. Which is from the third of October?"],
+    4:["Turmzimmer","Fernrohr, Glocken, Tastatur. Der Morgen ist nah.","Telescope, bells, keypad. Morning is close."]
+  };
+  const t = intros[n];
+  setPanel(t[0], t[1], t[2]);
+  sagen("Raum: "+t[0]);
+}
+
+document.querySelectorAll(".nav-rooms [data-goto]").forEach(b => {
+  b.addEventListener("click", ()=>gehe(Number(b.dataset.goto)));
+});
+
+function hash32(s){
+  let h = 2166136261;
+  for(let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function macheCode(){
+  const name = (S.name||$("name-in").value||"Gast").trim() || "Gast";
+  S.name = name;
+  const end = {dawn:"DAWN",held:"HELD",freiheit:"FREI",wache:"WACH"}[S.ending]||"DAWN";
+  const body = name.toLowerCase()+"|7431|"+end+"|"+S.fehler+"|"+S.hinweise;
+  const pruef = hash32(body+"|KHESC").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return "KH-ESC-"+end+"-"+S.fehler+"-"+pruef;
+}
+
+function ende(kind){
+  S.ending = kind;
+  const news = {
+    dawn: {h:"Die Türen öffnen sich", t:"Kleinhausener Bote · Extra. Die Glastür geht auf. Draußen der Marktplatz im ersten Licht. Du sagst höflich: Ich möchte bitte hinaus. Der Brunnen glänzt. Die Freiheit der Stadt beginnt mit einem Satz auf Deutsch."},
+    held: {h:"Heldin und Held des Archivs", t:"Kleinhausener Bote · Titelgeschichte. Mit wenigen Fehlern findest du den Code 7431. Die Phrase sitzt. Der Nachtwächter nickt: „Gute Nachtarbeit.“ Über dem Markt steht die Sonne."},
+    freiheit: {h:"Die Freiheit der Stadt", t:"Du nennst den alten Wahlspruch. Die Tür geht trotzdem auf. In der Zeitung: DIE FREIHEIT DER STADT – und darunter dein Name. Der Nachtwächter murmelt: „Auch das gilt.“"},
+    wache: {h:"Der Nachtwächter kommt", t:"Die Glocke ruft ihn. Er ist nicht zornig. „Nächstes Mal die Phrase, nicht das Seil.“ Er lässt dich hinaus. Du lernst den Satz trotzdem: Ich möchte bitte hinaus."}
+  };
+  const n = news[kind]||news.dawn;
+  $("h-end").textContent = n.h;
+  $("news").innerHTML = '<p class="mast">Kleinhausener Bote</p><h2>'+esc(n.h)+'</h2><p>'+esc(n.t)+'</p><p>Codeziffern: 7–4–3–1. Phrase: Ich möchte bitte hinaus. Motto: Die Freiheit der Stadt.</p>';
+  $("code-val").textContent = macheCode();
+  zeigeScreen("screen-end");
+  sagen("Spielende. Dein Code steht bereit.");
+}
+
+$("btn-start").addEventListener("click", ()=>{
+  S.name = $("name-in").value.trim();
+  zeigeScreen("screen-play");
+  gehe(1);
+  sagen("Du stehst in der Eingangshalle. Es ist Nacht.");
+  sprich("Du stehst in der Eingangshalle. Es ist Nacht.");
+});
+$("btn-sprich").addEventListener("click", ()=>{
+  if(!S.audio){ S.audio = true; setToggle($("s-audio"), true); }
+  sprich($("panel-de").textContent);
+});
+$("btn-nochmal").addEventListener("click", ()=>location.reload());
+$("btn-copy").addEventListener("click", ()=>{
+  const t = $("code-val").textContent;
+  if(navigator.clipboard) navigator.clipboard.writeText(t).then(()=>sagen("Code kopiert.")).catch(()=>sagen(t));
+  else sagen(t);
+});
+$("btn-verify").addEventListener("click", ()=>{
+  const name = $("v-name").value.trim();
+  const code = $("v-code").value.trim().toUpperCase();
+  const m = /^KH-ESC-(DAWN|HELD|FREI|WACH)-(\d+)-([0-9A-Z]{7})$/.exec(code);
+  if(!name||!m){ $("v-out").textContent = "Bitte Name und Code im Format KH-ESC-… eingeben."; return; }
+  const ends = ["DAWN","HELD","FREI","WACH"];
+  let ok = false;
+  for(const e of ends){
+    const body = name.toLowerCase()+"|7431|"+e+"|"+m[2]+"|";
+    /* Hinweise unknown: accept hash of name+end+fehler with stored pruef by recomputing common hinweise 0-6 */
+    for(let h=0;h<8;h++){
+      const pruef = hash32(name.toLowerCase()+"|7431|"+e+"|"+m[2]+"|"+h+"|KHESC").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+      if(pruef===m[3] && e===m[1]) ok = true;
+    }
+  }
+  $("v-out").textContent = ok
+    ? "Gültig. "+name+" · Ende "+m[1]+" · Fehler "+m[2]+"."
+    : "Ungültig. Name und Code passen nicht.";
+});
+
+document.addEventListener("keydown", e => {
+  if(!$("screen-play").classList.contains("on")) return;
+  const tag = (e.target.tagName||"").toLowerCase();
+  if(tag==="input" || tag==="textarea"){
+    if(e.key==="Enter"){
+      e.preventDefault();
+      if($("chk-pass")) $("chk-pass").click();
+      else if($("chk-code")) $("chk-code").click();
+      else if($("chk2")) $("chk2").click();
+      else if($("dativ-ok")) $("dativ-ok").click();
+    }
+    return;
+  }
+  if(/^[1-9]$/.test(e.key)){
+    const opts = [...$("panel-extra").querySelectorAll(".match-word, .match-pic")];
+    const b = opts[Number(e.key)-1];
+    if(b){ e.preventDefault(); b.click(); b.focus(); }
+    return;
+  }
+  if(e.key==="e" || e.key==="E" || (e.key==="Enter" && document.activeElement && document.activeElement.classList.contains("hot"))){
+    const el = document.activeElement;
+    if(el && el.classList.contains("hot")){ e.preventDefault(); el.click(); }
+    else if(S.lastHot){ e.preventDefault(); S.lastHot.click(); }
+  }
+});
+
+glossUpdate();
+zeichneSide();
+if("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = ()=>{};
+</script>
+</body>
+</html>

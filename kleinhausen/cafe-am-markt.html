@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="de" data-en="an">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Im Café am Markt – Café Linde Kleinhausen</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --cream:#f6efe3;
+  --foam:#fff8ee;
+  --espresso:#3c2415;
+  --bean:#5c3a24;
+  --pistachio:#a8c686;
+  --pist-deep:#6e8f4e;
+  --brass:#c4a35a;
+  --brass-deep:#8a7030;
+  --berry:#8b3a3a;
+  --ink:#2a1c12;
+  --ink-soft:#6a5344;
+  --ok:#4a7c3a;
+  --bad:#9c3b32;
+  --line:#e2d3be;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1rem;
+}
+html[data-size="gross"]{--fs:1.14rem;}
+html[data-size="sehr-gross"]{--fs:1.28rem;}
+html[data-contrast="hoch"]{
+  --cream:#fff;--foam:#fff;--espresso:#000;--bean:#000;
+  --pistachio:#005c2e;--pist-deep:#003d1f;
+  --brass:#aa8800;--brass-deep:#000;--berry:#700;
+  --ink:#000;--ink-soft:#000;--ok:#050;--bad:#700;--line:#000;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--cream);
+  background-image:radial-gradient(circle at 20% 10%, rgba(168,198,134,.18), transparent 40%),
+    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(60,36,21,.04) 28px);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:var(--fs);
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+html[data-contrast="hoch"] body{background:#fff;}
+.skip{position:absolute;left:-9999px;top:0;z-index:200;background:var(--espresso);color:var(--brass);padding:.75em 1.1em;font-weight:700;text-decoration:none;}
+.skip:focus{left:0;}
+:focus-visible{outline:3px solid var(--brass);outline-offset:3px;}
+html[data-contrast="hoch"] :focus-visible{outline:4px solid #000;}
+button,input{font:inherit;color:inherit;}
+button,.set-btn,.btn,.opt,.menu-item{min-height:44px;}
+.en.gloss{display:block;color:var(--ink-soft);font-style:italic;font-size:.9em;margin:.15em 0 0;}
+.en.gloss.inline{display:inline;}
+html:not([data-en="an"]) .en.gloss{display:none !important;}
+.topbar{background:var(--espresso);color:var(--foam);border-bottom:5px solid var(--brass);}
+.topbar-in{max-width:1120px;margin:0 auto;padding:.7rem 1rem;display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:.7rem;}
+.brand h1{font-family:var(--serif);font-size:1.4em;margin:0;font-weight:600;color:var(--brass);}
+.brand small{display:block;font-family:var(--mono);font-size:.62em;letter-spacing:.18em;text-transform:uppercase;color:var(--pistachio);}
+.settings{display:flex;flex-wrap:wrap;gap:.4rem;}
+.set-btn{background:transparent;color:var(--foam);border:2px solid var(--brass);border-radius:999px;padding:.35em .85em;cursor:pointer;}
+.set-btn[aria-pressed="true"]{background:var(--brass);color:var(--espresso);font-weight:700;}
+.wrap{max-width:1120px;margin:0 auto;padding:1.2rem 1rem 3rem;}
+.screen{display:none;} .screen.on{display:block;}
+h2{font-family:var(--serif);font-size:1.7em;margin:.1em 0 .4em;}
+h2:focus{outline:none;}
+h3{font-family:var(--serif);margin:.2em 0 .4em;}
+.eyebrow{font-family:var(--mono);font-size:.72em;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);}
+.lede{max-width:62ch;}
+.btn{background:var(--espresso);color:var(--foam);border:3px solid #1e110a;border-radius:8px;padding:.55em 1.2em;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #1e110a;}
+.btn:hover{background:var(--bean);}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;}
+.btn-ghost{background:transparent;color:var(--espresso);border-color:var(--espresso);box-shadow:0 3px 0 var(--espresso);}
+.btn-ghost:hover{background:var(--espresso);color:var(--foam);}
+.btn-row{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem;}
+.live{min-height:1.4em;margin:.6rem 0 0;font-weight:600;}
+.visits{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin:1rem 0;}
+.vcard{background:var(--foam);border:2px solid var(--line);border-left:10px solid var(--pistachio);border-radius:8px;padding:1rem;text-align:left;cursor:pointer;box-shadow:3px 3px 0 rgba(60,36,21,.12);}
+.vcard:disabled{opacity:.55;cursor:default;}
+.vcard.done{border-left-color:var(--brass);}
+.play{display:grid;gap:1rem;grid-template-columns:minmax(0,1.35fr) 260px;align-items:start;}
+@media (max-width:860px){.play{grid-template-columns:1fr;}}
+.table-box{background:var(--bean);border-radius:18px;padding:1rem 1rem 1.4rem;color:var(--foam);}
+.tisch{width:100%;display:block;}
+.speech{background:var(--foam);color:var(--ink);border-radius:12px;padding:.9rem 1rem;margin:.8rem 0;border:2px solid var(--brass);}
+.opts{display:flex;flex-direction:column;gap:.5rem;}
+.opt{background:var(--foam);border:2px solid var(--espresso);border-radius:10px;padding:.7em .9em;cursor:pointer;text-align:left;}
+.opt:hover{background:#fff;}
+.opt.good{background:var(--pistachio);border-color:var(--pist-deep);}
+.opt.no{background:#f3d0c8;border-color:var(--bad);}
+.opt:disabled{cursor:default;}
+.karte{
+  background:var(--foam);border:3px solid var(--espresso);border-radius:4px;
+  padding:.8rem .9rem;box-shadow:4px 4px 0 rgba(60,36,21,.15);
+  font-family:var(--serif);
+}
+.karte h3{margin:0 0 .4em;text-align:center;border-bottom:2px solid var(--brass);}
+.menu-item{display:block;width:100%;background:transparent;border:0;border-bottom:1px dashed var(--line);padding:.45em 0;text-align:left;cursor:default;}
+.fb{margin:.8rem 0;padding:.8rem;border-radius:8px;border-left:8px solid var(--ok);background:#e8f0dc;}
+.fb.bad{border-left-color:var(--bad);background:#f8e4e0;}
+.fb[hidden]{display:none;}
+.bill{background:#fff;border:2px dashed var(--espresso);padding:1rem;font-family:var(--mono);margin-top:.8rem;}
+.bill h4{font-family:var(--serif);margin:0 0 .4em;}
+.stamm{width:min(340px,90%);display:block;margin:1rem auto;}
+.code-box{background:var(--espresso);color:var(--foam);padding:1rem;border-radius:8px;}
+.code-val{font-family:var(--mono);font-size:1.1em;word-break:break-all;color:var(--brass);}
+.name-feld{margin:1rem 0;}
+.name-feld input{min-height:44px;width:min(420px,100%);border:2px solid var(--espresso);border-radius:6px;padding:.4em .6em;background:var(--foam);}
+table{width:100%;border-collapse:collapse;margin:1rem 0;background:var(--foam);}
+th,td{border:1px solid var(--line);padding:.5em .7em;text-align:left;}
+.num{text-align:right;}
+footer{max-width:1120px;margin:0 auto;padding:0 1rem 2rem;color:var(--ink-soft);font-size:.9em;}
+kbd{border:1px solid var(--line);padding:.05em .35em;border-radius:4px;background:var(--foam);}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
+html[data-motion="aus"] *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+
+.brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
+a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
+a.hub-home:hover{background:rgba(255,255,255,.18)}
+.prod-in,textarea.prod-in{width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;padding:.55em .7em;border:3px solid var(--espresso);border-radius:6px;background:#fff;color:var(--ink)}
+textarea.prod-in{min-height:7.2rem;line-height:1.45}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:800;cursor:pointer;background:var(--foam);border:2px solid var(--espresso);color:var(--ink)}
+.prod-lab{font-weight:800;margin:.4rem 0 .2rem}
+.hint-try{color:var(--berry);font-weight:700;margin:.4rem 0}
+</style>
+</head>
+<body>
+<a class="skip" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <a class="hub-home" href="../index.html" aria-label="Zurück zum Stadtplan Kleinhausen">Kleinhausen</a>
+            <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true" focusable="false">
+        <circle cx="22" cy="22" r="22" fill="#c4a35a"/>
+        <ellipse cx="22" cy="26" rx="12" ry="8" fill="#3c2415"/>
+        <path d="M34 22 q8 4 6 12" fill="none" stroke="#3c2415" stroke-width="3"/>
+        <circle cx="16" cy="12" r="3" fill="#a8c686"/>
+        <circle cx="22" cy="8" r="3" fill="#a8c686"/>
+        <circle cx="28" cy="12" r="3" fill="#a8c686"/>
+      </svg>
+      <div>
+        <h1>Café Linde</h1>
+        <small>Am Markt · Kleinhausen</small>
+      </div>
+    </div>
+    <div class="settings" role="group" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">Vorlesen</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="hauptinhalt">
+  <p class="live" id="status" role="status" aria-live="polite"></p>
+  <section class="screen on" id="screen-start" aria-labelledby="h-start">
+    <p class="eyebrow">A1–A2 · Bestellen, reklamieren, zahlen</p>
+    <h2 id="h-start" tabindex="-1">Im Café am Markt</h2>
+    <p class="lede">Du sitzt im <strong>Café Linde</strong> am Marktplatz von Kleinhausen. Der Kellner spricht Sie – förmlich. Drei Besuche: Frühstück mit einer Freundin, ein Durcheinander beim Mittagessen, dann Kuchen und Smalltalk.
+      <span class="en gloss" lang="en">Three café visits. Use polite Sie-forms. Order, complain politely, pay with a tip.</span></p>
+    <ul class="lede">
+      <li>Nützliche Wörter: Speisekarte, bestellen, empfehlen, Allergien, vegetarisch, die Rechnung, Trinkgeld, Entschuldigung, hätte gern, noch etwas.</li>
+      <li>Jede Runde hat drei Antworten: eine beste, eine grammatisch kaputt, eine zu grob.</li>
+    </ul>
+    <div class="btn-row"><button type="button" class="btn" id="btn-go">Platz nehmen</button></div>
+    <details>
+      <summary>Tastatur <span class="en gloss" lang="en">Keyboard</span></summary>
+      <ul>
+        <li><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> wählen die Antwort.</li>
+        <li><kbd>Tab</kbd> und <kbd>Enter</kbd> funktionieren überall. Ziele sind 44 Pixel groß.</li>
+        <li><strong>Vorlesen</strong> spricht den Kellner (de-DE).</li>
+      </ul>
+    </details>
+  </section>
+
+  <section class="screen" id="screen-hub" aria-labelledby="h-hub">
+    <p class="eyebrow">Café Linde · Stammplatz am Fenster</p>
+    <h2 id="h-hub" tabindex="-1">Welchen Besuch spielst du?</h2>
+    <p class="lede">Spiele alle drei Besuche. Die Speisekarte bleibt auf dem Tisch.
+      <span class="en gloss" lang="en">Play all three visits.</span></p>
+    <div class="visits" id="visits"></div>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-sum" hidden>Zur Stammgastkarte</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-play" aria-labelledby="h-play">
+    <p class="eyebrow" id="play-eye">Besuch</p>
+    <h2 id="h-play" tabindex="-1">Bestellen</h2>
+    <div class="play">
+      <div>
+        <div class="table-box">
+          <svg class="tisch" id="tisch" viewBox="0 0 520 220" aria-hidden="true" focusable="false"></svg>
+          <p id="tisch-caption" style="margin:.4em 0 0;font-size:.9em;opacity:.9;"></p>
+        </div>
+        <div class="speech" id="npc">
+          <p id="npc-de"></p>
+          <span class="en gloss" lang="en" id="npc-en"></span>
+          <p><button type="button" class="btn btn-ghost" id="btn-sprich" style="margin-top:.5rem;">Kellner vorlesen</button></p>
+        </div>
+        <div class="opts" id="opts"></div>
+        <div class="fb" id="play-fb" hidden tabindex="-1"></div>
+        <div class="bill" id="bill" hidden></div>
+        <div class="btn-row">
+          <button type="button" class="btn" id="btn-next" hidden>Weiter</button>
+          <button type="button" class="btn btn-ghost" id="btn-hub">Zurück zur Übersicht</button>
+        </div>
+      </div>
+      <aside class="karte" aria-label="Speisekarte">
+        <h3>Speisekarte</h3>
+        <p style="text-align:center;font-size:.8em;margin:0 0 .4em;">Café Linde · vegetarisch markiert ★</p>
+        <div id="speise"></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-sum" aria-labelledby="h-sum">
+    <p class="eyebrow">Stammgast</p>
+    <h2 id="h-sum" tabindex="-1">Deine Karte</h2>
+    <svg class="stamm" viewBox="0 0 340 200" aria-hidden="true">
+      <rect width="340" height="200" rx="12" fill="#3c2415"/>
+      <rect x="10" y="10" width="320" height="180" rx="8" fill="none" stroke="#c4a35a" stroke-width="3"/>
+      <text x="28" y="52" fill="#c4a35a" font-size="22" font-family="Georgia">Café Linde</text>
+      <text x="28" y="78" fill="#a8c686" font-size="12" font-family="ui-monospace">STAMMGST · KLEINHAUSEN</text>
+      <text x="28" y="120" fill="#fff8ee" font-size="16" font-family="Georgia">Am Markt 3</text>
+      <circle cx="280" cy="130" r="34" fill="#a8c686"/>
+      <text x="262" y="136" fill="#3c2415" font-size="14" font-family="Georgia">Linde</text>
+    </svg>
+    <p class="lede" id="sum-text"></p>
+    <table>
+      <caption>Punkte je Besuch</caption>
+      <thead><tr><th>Besuch</th><th class="num">Punkte</th><th class="num">Max</th></tr></thead>
+      <tbody id="sum-body"></tbody>
+    </table>
+    <div class="name-feld">
+      <label for="name-in">Dein Name (Abgabecode) <span class="en gloss" lang="en">Your name for the code</span></label><br>
+      <input type="text" id="name-in" autocomplete="name" spellcheck="false">
+    </div>
+    <div class="code-box">
+      <p>Abgabecode</p>
+      <p class="code-val" id="code-val">Bitte Namen eingeben.</p>
+      <button type="button" class="btn" id="btn-copy" style="background:#c4a35a;color:#3c2415;border-color:#8a7030;">Code kopieren</button>
+    </div>
+    <details>
+      <summary>Für Lehrkräfte: Code prüfen</summary>
+      <p><label for="v-name">Name</label> <input id="v-name"> <label for="v-code">Code</label> <input id="v-code">
+      <button type="button" class="btn" id="btn-verify">Prüfen</button></p>
+      <p id="v-out" role="status" aria-live="polite"></p>
+    </details>
+    <div class="btn-row"><button type="button" class="btn" id="btn-again">Café neu betreten</button></div>
+  </section>
+</main>
+<footer>
+  <p>Café Linde, Kleinhausen · Speisekarte, bestellen, empfehlen, Allergien, vegetarisch, Rechnung, Trinkgeld. Keine Cookies, kein localStorage.</p>
+</footer>
+
+<script>
+"use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      const n=a+b.dataset.c.length;
+      try{ inp.setSelectionRange(n,n); }catch(e){}
+    });
+  });
+}
+function prodBlock(id, label){
+  return '<p class="prod-lab"><label for="'+id+'">'+label+"</label></p>"+umlautsHtml(id)+
+    '<p><textarea class="prod-in" id="'+id+'" lang="de" autocomplete="off" spellcheck="false" rows="3"></textarea></p>';
+}
+const S = {englisch:true, audio:false, kontrast:false, size:0, motion:true, visit:0, beat:0, pts:[0,0,0], done:[false,false,false], table:{}, firstTry:true};
+
+const MENU = [
+  {de:"Brötchen 2,40 €", en:"roll"},
+  {de:"Croissant 2,80 €", en:"croissant"},
+  {de:"Rührei 5,90 €", en:"scrambled eggs"},
+  {de:"Müsli 4,50 € ★", en:"muesli, vegetarian"},
+  {de:"Kaffee 2,60 €", en:"coffee"},
+  {de:"Tee 2,40 €", en:"tea"},
+  {de:"Orangensaft 3,20 €", en:"orange juice"},
+  {de:"Kakao 2,90 €", en:"cocoa"},
+  {de:"Tomatensuppe 6,50 € ★", en:"tomato soup"},
+  {de:"Gulasch 11,90 €", en:"goulash"},
+  {de:"Apfelschorle 3,10 €", en:"apple spritzer"},
+  {de:"Cola 3,00 €", en:"cola"},
+  {de:"Käsekuchen 3,80 € ★", en:"cheesecake"}
+];
+
+const VISITS = [
+  {
+    titel:"Frühstück mit Freundin",
+    en:"Breakfast — you order for both of you",
+    intro:"Deine Mitschülerin sitzt schon. Der Kellner kommt mit der Speisekarte.",
+    beats:[
+      {
+        npc:"Guten Morgen! Haben Sie schon gewählt? Darf ich Ihnen etwas empfehlen?",
+        en:"Good morning! Have you chosen? May I recommend something?",
+        opts:[
+          {de:"Guten Morgen! Ich hätte gern ein Brötchen und einen Kaffee. Für meine Freundin ein Müsli und einen Tee.", en:"I'd like… and for my friend…", best:true, table:{broetchen:1,kaffee:1,muesli:1,tee:1}, fb:"Perfekt: „Ich hätte gern“ und „für meine Freundin“. Der Kellner notiert höflich.", fbEn:"You used the polite order form and ordered for both."},
+          {de:"Ich will ein Kaffee.", en:"I want a coffee — wrong article and too blunt", best:false, art:"trap", fb:"„Ich will“ klingt grob, und es heißt einEN Kaffee (Akkusativ, maskulin). Besser: Ich hätte gern einen Kaffee.", fbEn:"Calque of 'I want' plus wrong article."},
+          {de:"Zwei Frühstück, schnell!", en:"Two breakfast, hurry! — rude and ungrammatical", best:false, fb:"Zu grob, und „Frühstück“ braucht einen Artikel: zwei Frühstücke. Der Kellner runzelt die Stirn.", fbEn:"Rude and grammatically broken."}
+        ]
+      },
+      {
+        npc:"Sehr gern. Der Kaffee mit Milch? Und Allergien – Nüsse im Müsli?",
+        en:"Coffee with milk? Any nut allergy in the muesli?",
+        opts:[
+          {de:"Mit Milch, bitte. Keine Allergien, danke.", en:"With milk, please. No allergies.", best:true, table:{milch:1}, fb:"Klar und höflich. Allergien zu erwähnen ist wichtig im Café.", fbEn:"Polite, and you answered the allergy question."},
+          {de:"Milch. Fertig.", en:"Milk. Done. — blunt", best:false, fb:"Zu knapp. Ein „bitte“ hilft, und die Allergie-Frage bleibt offen.", fbEn:"Too blunt; you skipped allergies."},
+          {de:"I want milk and no nuts.", en:"English in a German café", best:false, fb:"Im Café Linde bestellt man auf Deutsch. Der Kellner versteht dich, lächelt aber schief.", fbEn:"Don't switch to English here."}
+        ]
+      },
+      {
+        npc:"Alles notiert. Darf ich noch den Orangensaft empfehlen – frisch gepresst. Sonst noch etwas?",
+        en:"May I recommend the orange juice? Anything else?",
+        opts:[
+          {de:"Nein danke, das ist alles. Für mich nichts Vegetarisches extra.", en:"That's all, thank you.", best:true, fb:"„Das ist alles“ schließt die Bestellung freundlich ab.", fbEn:"You closed the order politely."},
+          {de:"Nee.", en:"Nah.", best:false, fb:"Zu knapp für Sie-Form. „Nein danke“ passt besser.", fbEn:"Too casual for Sie."},
+          {de:"Noch ein Kaffee, ich will.", en:"Broken word order", best:false, fb:"Wortstellung: „Ich hätte gern noch einen Kaffee.“ Nicht englisches SVO mit „will“.", fbEn:"English leftover plus blunt 'will'."}
+        ]
+      },
+      {
+        npc:"Bitte sehr. Ist das Frühstück in Ordnung?",
+        en:"Here you are. Is breakfast all right?",
+        opts:[
+          {de:"Ja, danke, sehr gut. Die Speisekarte können Sie mitnehmen.", en:"Yes, thank you, very good.", best:true, table:{gegessen:1}, fb:"Freundliches Feedback. Der Kellner räumt die Karte weg.", fbEn:"Polite check-in."},
+          {de:"Es schmeckt nicht, du!", en:"It doesn't taste good, you! — rude du", best:false, fb:"Hier spricht man den Kellner mit Sie an, nicht du – und so direkt ist unhöflich.", fbEn:"Wrong register: du to a waiter, and rude."},
+          {de:"Ja es gut ist.", en:"Yes it good is — broken", best:false, fb:"Verbzweitstellung: „Ja, es ist gut.“", fbEn:"Verb-second: es ist gut."}
+        ]
+      },
+      {
+        npc:"Zusammen oder getrennt? Die Rechnung kommt gleich.",
+        en:"Together or separately? The bill is coming.",
+        opts:[
+          {de:"Zusammen, bitte. Die Rechnung bitte – und stimmt so.", en:"Together, please. The bill — keep the change.", best:true, bill:{zeilen:["Brötchen 2,40","Kaffee 2,60","Müsli 4,50","Tee 2,40"], summe:"11,90", tip:"Aufrunden 13,00 · Trinkgeld"}, fb:"Rechnung und Trinkgeld (Aufrunden) – wie im Café üblich.", fbEn:"You asked for the bill and rounded up as a tip."},
+          {de:"Hey, Kasse!", en:"Hey, till!", best:false, fb:"„Die Rechnung bitte“ ist die feste Höflichkeitsformel.", fbEn:"Use 'Die Rechnung bitte'."},
+          {de:"I pay now the bill.", en:"English", best:false, fb:"Auf Deutsch: „Die Rechnung bitte.“", fbEn:"Stay in German."}
+        ]
+      }
+    ]
+  },
+  {
+    titel:"Mittagessen – Verwechslung",
+    en:"Lunch mix-up: you ordered tomato soup and apple spritzer",
+    intro:"Du hast Tomatensuppe und Apfelschorle bestellt. Der Kellner kommt mit einem Tablett…",
+    beats:[
+      {
+        npc:"Bitte, das Gulasch und die Cola. Guten Appetit!",
+        en:"Here's the goulash and the cola. Enjoy!",
+        opts:[
+          {de:"Entschuldigung – das habe ich nicht bestellt.", en:"Sorry — I didn't order this.", best:true, table:{gulasch:1,cola:1,falsch:1}, fb:"Genau: höflich widersprechen mit „Das habe ich nicht bestellt.“", fbEn:"The polite complaint."},
+          {de:"Was ist das? Bist du blind?", en:"What is this? Are you blind?", best:false, fb:"Beleidigung. Im Café reicht eine klare, höfliche Korrektur.", fbEn:"Insulting the waiter."},
+          {de:"Das nicht ich bestellt habe.", en:"Broken relative clause", best:false, fb:"Richtig: „Das habe ich nicht bestellt.“ (Verbzweit nach dem Frage-/Hinweiswort).", fbEn:"German verb-second: Das habe ich nicht bestellt."}
+        ]
+      },
+      {
+        npc:"Oh! Entschuldigung, das ist für den Nachbartisch. Einen Moment…",
+        en:"Oh! Sorry, that's for the next table.",
+        opts:[
+          {de:"Kein Problem. Könnten Sie bitte die Speisekarte noch einmal bringen?", en:"No problem. Could you bring the menu again?", best:true, table:{gulasch:0,cola:0,karte:1}, fb:"Höfliche Bitte mit Konjunktiv II: „Könnten Sie bitte…“", fbEn:"Polite Konjunktiv II request."},
+          {de:"Speisekarte her, sofort!", en:"Menu, now!", best:false, fb:"Befehlston. „Könnten Sie bitte…“ klingt nach Café Linde.", fbEn:"Commanding tone."},
+          {de:"Bring menu again please.", en:"English", best:false, fb:"Deutsch: „Könnten Sie bitte die Speisekarte noch einmal bringen?“", fbEn:"Use the German request."}
+        ]
+      },
+      {
+        npc:"Natürlich. Hier ist die Speisekarte. Was darf ich Ihnen bringen?",
+        en:"Of course. Here's the menu. What may I bring you?",
+        opts:[
+          {de:"Ich hätte gern die Tomatensuppe und eine Apfelschorle. Vegetarisch ist in Ordnung.", en:"I'd like tomato soup and an apple spritzer.", best:true, table:{suppe:1,schorle:1,karte:0}, fb:"Du bestellst neu, klar und höflich. Tomatensuppe ist vegetarisch.", fbEn:"You reorder politely; soup is vegetarian."},
+          {de:"Das gleiche wie vorher, ich will.", en:"The same as before, I want", best:false, fb:"„Ich hätte gern noch einmal Tomatensuppe und Apfelschorle.“", fbEn:"Avoid 'ich will' here."},
+          {de:"Gulasch dann halt. Cola auch.", en:"Goulash then. Cola too. — you didn't want that", best:false, fb:"Du wolltest Tomatensuppe und Schorle – nicht das falsche Tablett behalten.", fbEn:"Don't accept the mix-up."}
+        ]
+      },
+      {
+        npc:"Bitte sehr – Tomatensuppe und Apfelschorle. Schmeckt es?",
+        en:"Tomato soup and spritzer. Does it taste good?",
+        opts:[
+          {de:"Ja, danke, sehr gut. Die Rechnung bitte, wenn Sie Zeit haben.", en:"Yes, thank you. The bill please when you have a moment.", best:true, table:{gegessen:1}, fb:"Freundlich und die Rechnung kommt, ohne zu drängeln.", fbEn:"Bill request without rushing."},
+          {de:"Rechnung! Tempo!", en:"Bill! Hurry!", best:false, fb:"Zu grob. „Die Rechnung bitte“ reicht.", fbEn:"Too rude."},
+          {de:"Ja es schmeckt und Rechnung ich will.", en:"Broken", best:false, fb:"Zwei Sätze: „Ja, es schmeckt. Die Rechnung bitte.“", fbEn:"Split into two correct sentences."}
+        ]
+      },
+      {
+        npc:"6,50 plus 3,10 sind 9,60 €. Möchten Sie aufrunden?",
+        en:"€9.60. Would you like to round up (tip)?",
+        opts:[
+          {de:"Stimmt so – machen Sie zehn Euro. Danke für die Entschuldigung.", en:"Keep the change — make it ten euros.", best:true, bill:{zeilen:["Tomatensuppe 6,50","Apfelschorle 3,10"], summe:"9,60", tip:"Aufrunden 10,00 · Trinkgeld"}, fb:"Trinkgeld durch Aufrunden. Du bleibst freundlich trotz des Fehlers.", fbEn:"Rounding up as a tip after a mix-up."},
+          {de:"Ich gebe nie Trinkgeld. Ihre Schuld.", en:"I never tip. Your fault.", best:false, fb:"In Cafés rundet man oft auf. Du kannst ohne Trinkgeld zahlen, aber der Satz ist scharf.", fbEn:"Harsh; rounding up is common."},
+          {de:"Trinkgeld was ist?", en:"Tip what is? — broken", best:false, fb:"„Was ist Trinkgeld?“ – Extra-Geld für den Service, oft Aufrunden.", fbEn:"Word order: Was ist Trinkgeld?"}
+        ]
+      }
+    ]
+  },
+  {
+    titel:"Kuchen und Smalltalk",
+    en:"Cake, weather chat, pay separately",
+    intro:"Nachmittagssonne. Du sitzt allein. Der Kellner kennt dich schon fast.",
+    beats:[
+      {
+        npc:"Guten Tag! Ist alles in Ordnung? Zum Nachtisch hätte ich Käsekuchen…",
+        en:"Hello! Is everything all right? For dessert I have cheesecake…",
+        opts:[
+          {de:"Ja, danke, alles in Ordnung. Ich hätte gern ein Stück Käsekuchen.", en:"Yes, thanks. I'd like a piece of cheesecake.", best:true, table:{kuchen:1}, fb:"Du antwortest auf beide Fragen: Wohlbefinden und Nachtisch.", fbEn:"You answered both questions."},
+          {de:"Käsekuchen, schnell, ich hab Hunger.", en:"Cheesecake, quick, I'm hungry", best:false, fb:"Hunger ist okay, der Ton nicht. „Ich hätte gern…“ bleibt höflich.", fbEn:"Too demanding."},
+          {de:"Give me cake and it is okay.", en:"English", best:false, fb:"Deutsch: „Ja, danke. Ich hätte gern Käsekuchen.“", fbEn:"Stay in German."}
+        ]
+      },
+      {
+        npc:"Kommt sofort. Schönes Wetter heute, nicht? Die Linde vor der Tür ist ganz grün.",
+        en:"Nice weather today, isn't it? The linden tree is all green.",
+        opts:[
+          {de:"Ja, die Sonne scheint. Schön warm – gut für einen Kaffee später.", en:"Yes, the sun is shining. Nicely warm.", best:true, fb:"Smalltalk über Wetter: Sonne, warm. Sehr Kleinhausen.", fbEn:"Weather small talk works."},
+          {de:"Mir egal. Wetter ist Wetter.", en:"I don't care.", best:false, fb:"Etwas schroff. Ein Satz zur Sonne reicht als Smalltalk.", fbEn:"Too dismissive."},
+          {de:"Yes the weather is good very.", en:"English leftover", best:false, fb:"Auf Deutsch: „Ja, das Wetter ist sehr schön.“", fbEn:"German weather phrase."}
+        ]
+      },
+      {
+        npc:"Ihr Käsekuchen. Noch etwas – Kaffee, Tee?",
+        en:"Your cheesecake. Anything else — coffee, tea?",
+        opts:[
+          {de:"Einen Kaffee, bitte. Sonst nichts.", en:"A coffee, please. Nothing else.", best:true, table:{kaffee:1}, fb:"Kurz und höflich: noch etwas, dann Schluss.", fbEn:"You added coffee politely."},
+          {de:"Kaffee ich will noch.", en:"Coffee I want still — English SVO leftover", best:false, fb:"Verbzweit: „Ich hätte gern noch einen Kaffee.“", fbEn:"Verb-second reminder."},
+          {de:"Nee, raus mit der Rechnung, Alter.", en:"Nah, get the bill, dude", best:false, fb:"„Alter“ und „raus“ gehören nicht ins Café mit Sie-Form.", fbEn:"Wrong register entirely."}
+        ]
+      },
+      {
+        npc:"Gern. Zahlen Sie getrennt oder zusammen? Am Nebentisch sitzt noch jemand aus Ihrer Klasse…",
+        en:"Separately or together? A classmate is at the next table…",
+        opts:[
+          {de:"Getrennt, bitte. Nur meinen Kuchen und den Kaffee.", en:"Separately, please. Just my cake and coffee.", best:true, fb:"„Getrennt“ = jeder zahlt das Eigene. Richtig für diesen Besuch.", fbEn:"Pay separately, as the brief asked."},
+          {de:"Zusammen. Der zahlt.", en:"Together. He pays.", best:false, fb:"Heute sollst du getrennt zahlen – und andere Leute nicht einfach zur Kasse bitten.", fbEn:"This visit is 'getrennt'."},
+          {de:"You figure it out.", en:"English", best:false, fb:"„Getrennt, bitte.“ ist der Satz.", fbEn:"Say Getrennt, bitte."}
+        ]
+      },
+      {
+        npc:"Käsekuchen 3,80, Kaffee 2,60 – 6,40 €. Die Rechnung.",
+        en:"Cheesecake 3.80, coffee 2.60 — €6.40. The bill.",
+        opts:[
+          {de:"Die Rechnung stimmt. Stimmt so, danke – einen schönen Tag noch.", en:"The bill is correct. Keep the change, have a nice day.", best:true, bill:{zeilen:["Käsekuchen 3,80","Kaffee 2,60"], summe:"6,40", tip:"Aufrunden 7,00 · Trinkgeld"}, fb:"Du prüfst die Rechnung, gibst Trinkgeld, verabschiedest dich.", fbEn:"Check bill, tip, goodbye."},
+          {de:"Zu teuer. Ich zahle drei Euro.", en:"Too expensive. I'll pay three euros.", best:false, fb:"Die Preise stehen auf der Speisekarte. Zahlen, was draufsteht.", fbEn:"Pay the listed prices."},
+          {de:"Rechnung falsch ist.", en:"Bill wrong is", best:false, fb:"„Die Rechnung ist falsch“ – aber sie stimmt. Wortstellung: ist steht an Position 2.", fbEn:"Verb-second: Die Rechnung ist falsch / stimmt."}
+        ]
+      }
+    ]
+  }
+];
+
+function sagen(t){ $("status").textContent = t; }
+function sprich(text){
+  if(!S.audio || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "de-DE"; u.rate = .9;
+    const v = window.speechSynthesis.getVoices().find(x => /^de/i.test(x.lang));
+    if(v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  }catch(e){ /* keine Stimme */ }
+}
+function zeige(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+  const h = document.querySelector("#"+id+" h2");
+  if(h) h.focus();
+  window.scrollTo({top:0, behavior: S.motion ? "smooth" : "auto"});
+}
+function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
+
+$("s-en").addEventListener("click", () => {
+  S.englisch = !S.englisch;
+  setToggle($("s-en"), S.englisch);
+  document.documentElement.setAttribute("data-en", S.englisch ? "an" : "aus");
+  sagen(S.englisch ? "Englische Hilfe ist an." : "Englische Hilfe ist aus.");
+});
+$("s-audio").addEventListener("click", () => {
+  S.audio = !S.audio; setToggle($("s-audio"), S.audio);
+  if(S.audio){ sprich("Vorlesen ist an."); sagen("Vorlesen ist an."); }
+  else { if("speechSynthesis" in window) window.speechSynthesis.cancel(); sagen("Vorlesen ist aus."); }
+});
+$("s-contrast").addEventListener("click", () => {
+  S.kontrast = !S.kontrast; setToggle($("s-contrast"), S.kontrast);
+  document.documentElement.setAttribute("data-contrast", S.kontrast ? "hoch" : "normal");
+  sagen(S.kontrast ? "Hoher Kontrast." : "Normale Farben.");
+});
+$("s-size").addEventListener("click", () => {
+  S.size = (S.size + 1) % 3;
+  const namen = ["normal","gross","sehr-gross"], labels = ["A","A+","A++"];
+  document.documentElement.setAttribute("data-size", namen[S.size]);
+  $("s-size").textContent = "Schrift: " + labels[S.size];
+  sagen("Schriftgröße geändert.");
+});
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  S.motion = false; document.documentElement.setAttribute("data-motion","aus");
+}
+document.documentElement.setAttribute("data-en","an");
+
+function drawTable(){
+  const t = S.table;
+  const cup = (x, fill, steam) => {
+    let s = '<ellipse cx="'+x+'" cy="150" rx="28" ry="10" fill="#2a1c12" opacity=".25"/>';
+    s += '<path d="M'+(x-22)+' 108 h44 a8 8 0 0 1 8 8 v18 h-60 v-18 a8 8 0 0 1 8-8z" fill="'+fill+'"/>';
+    s += '<path d="M'+(x+22)+' 118 q16 2 16 16 q0 12-16 14" fill="none" stroke="#c4a35a" stroke-width="3"/>';
+    if(steam) s += '<path d="M'+x+' 96 q-6-10 0-18 M'+(x+8)+' 98 q-4-8 0-14" fill="none" stroke="#fff8ee" stroke-width="2" opacity=".7"/>';
+    return s;
+  };
+  const plate = (x, food) => {
+    let s = '<ellipse cx="'+x+'" cy="158" rx="46" ry="16" fill="#fff8ee" stroke="#c4a35a" stroke-width="3"/>';
+    if(food === "suppe") s += '<ellipse cx="'+x+'" cy="154" rx="28" ry="8" fill="#c45c26"/>';
+    if(food === "gulasch") s += '<ellipse cx="'+x+'" cy="154" rx="28" ry="8" fill="#7a2e12"/><circle cx="'+(x-8)+'" cy="152" r="4" fill="#a8c686"/>';
+    if(food === "muesli") s += '<ellipse cx="'+x+'" cy="154" rx="26" ry="7" fill="#e8d5a3"/><circle cx="'+x+'" cy="152" r="3" fill="#6e8f4e"/>';
+    if(food === "broetchen") s += '<ellipse cx="'+x+'" cy="150" rx="18" ry="8" fill="#e6c07b"/>';
+    if(food === "kuchen") s += '<path d="M'+(x-16)+' 158 h32 l-6-14 h-20z" fill="#f4e4c1"/><path d="M'+(x-16)+' 144 h32 v4 h-32z" fill="#f2f2ea"/>';
+    if(food === "leer") s += '<ellipse cx="'+x+'" cy="154" rx="20" ry="6" fill="none" stroke="#e2d3be"/>';
+    return s;
+  };
+  let svg = '<rect x="20" y="70" width="480" height="130" rx="70" fill="#5c3a24"/>';
+  svg += '<rect x="40" y="86" width="440" height="98" rx="56" fill="#7a5233"/>';
+  svg += '<text x="260" y="22" text-anchor="middle" fill="#c4a35a" font-size="16" font-family="Georgia">Café Linde</text>';
+  svg += '<circle cx="64" cy="44" r="10" fill="#e8c4a8"/><rect x="52" y="54" width="24" height="22" rx="4" fill="#3c2415"/>';
+  svg += '<rect x="58" y="58" width="12" height="6" fill="#c4a35a"/><text x="92" y="50" fill="#fff8ee" font-size="11">Kellner (Sie)</text>';
+  if(t.kaffee) svg += cup(120, "#3c2415", true);
+  else svg += cup(120, "#fff8ee", false);
+  if(t.tee) svg += cup(210, "#6e8f4e", true);
+  if(t.schorle) svg += cup(400, "#d4e6a5", false);
+  if(t.cola) svg += cup(400, "#3c2415", false);
+  if(t.suppe) svg += plate(300, "suppe");
+  else if(t.gulasch) svg += plate(300, "gulasch");
+  else if(t.kuchen) svg += plate(300, "kuchen");
+  else if(t.muesli) svg += plate(300, "muesli");
+  else if(t.broetchen) svg += plate(300, "broetchen");
+  else svg += plate(300, "leer");
+  if(t.falsch) svg += '<text x="260" y="64" text-anchor="middle" fill="#f6efe3" font-size="13">?</text>';
+  $("tisch").innerHTML = svg;
+  const cap = [];
+  if(t.kaffee) cap.push("Kaffee");
+  if(t.tee) cap.push("Tee");
+  if(t.broetchen) cap.push("Brötchen");
+  if(t.muesli) cap.push("Müsli");
+  if(t.suppe) cap.push("Tomatensuppe");
+  if(t.gulasch) cap.push("Gulasch");
+  if(t.schorle) cap.push("Apfelschorle");
+  if(t.cola) cap.push("Cola");
+  if(t.kuchen) cap.push("Käsekuchen");
+  $("tisch-caption").textContent = cap.length ? "Auf dem Tisch: " + cap.join(", ") : "Leerer Tisch – Teller und Tasse warten.";
+}
+
+function renderMenu(){
+  $("speise").innerHTML = MENU.map(m =>
+    '<span class="menu-item">'+esc(m.de)+' <span class="en gloss inline" lang="en">'+esc(m.en)+"</span></span>"
+  ).join("");
+}
+
+function renderHub(){
+  const box = $("visits"); box.innerHTML = "";
+  VISITS.forEach((v, i) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "vcard" + (S.done[i] ? " done" : "");
+    b.innerHTML = "<strong>Besuch "+(i+1)+"</strong><h3>"+esc(v.titel)+"</h3>"+
+      '<span class="en gloss" lang="en">'+esc(v.en)+"</span>"+
+      (S.done[i] ? "<p>Gespielt: "+S.pts[i]+" Punkte</p>" : "<p>Noch offen</p>");
+    b.addEventListener("click", () => startVisit(i));
+    box.appendChild(b);
+  });
+  $("btn-sum").hidden = !S.done.every(Boolean);
+}
+
+function startVisit(i){
+  S.visit = i; S.beat = 0; S.table = {}; S.firstTry = true; S.locked = false; S.pts[i] = 0;
+  $("play-eye").textContent = "Besuch "+(i+1)+" von 3";
+  $("h-play").textContent = VISITS[i].titel;
+  $("bill").hidden = true; $("btn-next").hidden = true; $("play-fb").hidden = true;
+  zeige("screen-play");
+  drawTable();
+  showBeat();
+  sagen(VISITS[i].intro);
+  sprich(VISITS[i].intro);
+}
+
+function showBeat(){
+  const v = VISITS[S.visit];
+  const b = v.beats[S.beat];
+  const best = b.opts.find(x => x.best);
+  S.locked = false;
+  S.tries = 0;
+  $("npc-de").textContent = b.npc;
+  $("npc-en").textContent = b.en;
+  $("play-fb").hidden = true;
+  $("btn-next").hidden = true;
+  const box = $("opts");
+  box.innerHTML = prodBlock("beat-in", "Deine Antwort (höflich, auf Deutsch)")+
+    '<p class="btn-row"><button type="button" class="btn" id="beat-ok">Prüfen</button></p>'+
+    '<p class="hint-try" id="beat-hint" hidden></p>';
+  bindUmlauts(box);
+  const inp = $("beat-in");
+  inp.focus();
+  function check(){
+    if(S.locked) return;
+    if(nearDe(inp.value, best.de)){
+      applyBeatResult(best, true);
+      return;
+    }
+    S.tries = (S.tries||0) + 1;
+    $("beat-hint").hidden = false;
+    if(S.tries >= 2){
+      inp.value = best.de;
+      applyBeatResult(best, false);
+    } else {
+      $("beat-hint").textContent = "Noch nicht. Noch ein Versuch — höflich und auf Deutsch.";
+      sagen("Noch nicht. Noch ein Versuch.");
+    }
+  }
+  $("beat-ok").addEventListener("click", check);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); check(); } });
+  sprich(b.npc);
+}
+
+function applyBeatResult(o, gotIt){
+  if(S.locked) return;
+  S.locked = true;
+  const v = VISITS[S.visit];
+  const b = v.beats[S.beat];
+  const best = b.opts.find(x => x.best);
+  const inp = $("beat-in");
+  if(inp) inp.disabled = true;
+  const okBtn = $("beat-ok");
+  if(okBtn) okBtn.disabled = true;
+  const visual = (gotIt ? o : best).table || best.table;
+  if(visual){
+    Object.keys(visual).forEach(k => {
+      if(visual[k]) S.table[k] = visual[k];
+      else delete S.table[k];
+    });
+    drawTable();
+  }
+  const per = Math.round(30 / v.beats.length);
+  if(gotIt && S.firstTry) S.pts[S.visit] += per;
+  else if(gotIt) S.pts[S.visit] += Math.round(per/2);
+  S.firstTry = gotIt;
+  const fbOpt = gotIt ? o : best;
+  const fb = $("play-fb");
+  fb.className = gotIt ? "fb" : "fb bad";
+  fb.innerHTML = "<p>"+esc(fbOpt.fb)+'</p><span class="en gloss" lang="en">'+esc(fbOpt.fbEn)+"</span>";
+  fb.hidden = false; fb.focus();
+  const bill = (gotIt ? o : best).bill || best.bill;
+  if(bill){
+    $("bill").hidden = false;
+    $("bill").innerHTML = "<h4>Rechnung · Café Linde</h4>"+
+      bill.zeilen.map(z => "<div>"+esc(z)+"</div>").join("")+
+      "<div><strong>Summe "+esc(bill.summe)+" €</strong></div>"+
+      "<div>"+esc(bill.tip)+"</div>"+
+      '<span class="en gloss" lang="en">Printed bill at the end of the visit.</span>';
+  }
+  sagen(gotIt ? "Gute Wahl." : "Schau dir die Erklärung an.");
+  sprich(fbOpt.fb);
+  $("btn-next").hidden = false;
+  $("btn-next").textContent = S.beat < v.beats.length - 1 ? "Weiter" : "Besuch beenden";
+}
+
+$("btn-next").addEventListener("click", () => {
+  const v = VISITS[S.visit];
+  if(S.beat < v.beats.length - 1){
+    S.beat += 1; S.firstTry = true; showBeat();
+  } else {
+    S.done[S.visit] = true;
+    S.pts[S.visit] = Math.min(30, S.pts[S.visit]);
+    renderHub();
+    zeige("screen-hub");
+    sagen("Besuch fertig. "+S.pts[S.visit]+" Punkte.");
+    if(S.done.every(Boolean)) $("btn-sum").hidden = false;
+  }
+});
+$("btn-hub").addEventListener("click", () => { renderHub(); zeige("screen-hub"); });
+$("btn-go").addEventListener("click", () => { renderMenu(); renderHub(); zeige("screen-hub"); sagen("Wähle einen Besuch."); });
+$("btn-sprich").addEventListener("click", () => {
+  if(!S.audio){ S.audio = true; setToggle($("s-audio"), true); }
+  sprich($("npc-de").textContent);
+});
+$("btn-sum").addEventListener("click", showSum);
+
+function hash32(str){
+  let h = 0x811c9dc5;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = (h + ((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24))) >>> 0; }
+  return h >>> 0;
+}
+const SALT = "kleinhausen-cafe-v1";
+function totals(){
+  const ges = S.pts.reduce((a,b)=>a+b,0);
+  const max = 90;
+  return {ges, max, pct: Math.round(ges/max*100)};
+}
+function baueCode(name){
+  const t = totals();
+  const norm = name.trim().toLowerCase().replace(/\s+/g," ");
+  const pruef = hash32(norm+"|"+t.ges+"|"+t.max+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return "KH-CAFE-"+t.ges+"-"+t.pct+"-"+pruef;
+}
+function codeAkt(){
+  $("code-val").textContent = $("name-in").value.trim() ? baueCode($("name-in").value) : "Bitte Namen eingeben.";
+}
+function showSum(){
+  const t = totals();
+  $("sum-body").innerHTML = VISITS.map((v,i) =>
+    "<tr><td>"+esc(v.titel)+"</td><td class='num'>"+S.pts[i]+"</td><td class='num'>30</td></tr>"
+  ).join("") + "<tr><th>Gesamt</th><th class='num'>"+t.ges+"</th><th class='num'>"+t.max+"</th></tr>";
+  const lob = t.pct >= 80 ? "Du bist Stammgast. Die Linde vor der Tür kennt dich." :
+              t.pct >= 50 ? "Guter Besuch. Übe noch „Ich hätte gern“ und die Rechnung." :
+              "Nächstes Mal langsamer bestellen – der Kellner hat Zeit.";
+  $("sum-text").innerHTML = "Du hast <strong>"+t.ges+" von "+t.max+" Punkten</strong> ("+t.pct+" %). "+esc(lob)+
+    ' <span class="en gloss" lang="en">Name → KH-CAFE submission code.</span>';
+  $("h-sum").textContent = t.pct >= 80 ? "Stammgastkarte" : "Noch kein Stammplatz";
+  codeAkt(); zeige("screen-sum");
+  sprich("Vielen Dank für Ihren Besuch im Café Linde.");
+}
+$("name-in").addEventListener("input", codeAkt);
+$("btn-copy").addEventListener("click", async () => {
+  const t = $("code-val").textContent;
+  if(!/^KH-CAFE-/.test(t)){ sagen("Namen eingeben."); return; }
+  try{ await navigator.clipboard.writeText(t); $("btn-copy").textContent = "Kopiert";
+    setTimeout(()=>{$("btn-copy").textContent="Code kopieren";},2000); }
+  catch(e){ const r=document.createRange(); r.selectNodeContents($("code-val")); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+});
+$("btn-verify").addEventListener("click", () => {
+  const name=$("v-name").value.trim(), code=$("v-code").value.trim().toUpperCase();
+  const m=/^KH-CAFE-(\d+)-(\d+)-([0-9A-Z]{7})$/.exec(code);
+  if(!name||!m){$("v-out").textContent="Name und KH-CAFE-Code eingeben.";return;}
+  const [,ges,pct,pruef]=m, max=90, norm=name.toLowerCase().replace(/\s+/g," ");
+  const soll=hash32(norm+"|"+ges+"|"+max+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  const echt=Math.round(Number(ges)/max*100);
+  $("v-out").textContent = (soll===pruef && Number(pct)===echt) ? "Gültig. "+name+": "+ges+" / "+max+" ("+echt+" %)." : "Ungültig.";
+});
+$("btn-again").addEventListener("click", () => location.reload());
+
+document.addEventListener("keydown", e => {
+  if(!$("screen-play").classList.contains("on")) return;
+  const tag = (e.target.tagName||"").toLowerCase();
+  if(tag === "input" || tag === "textarea") return;
+});
+if("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = () => {};
+renderMenu();
+sagen("Willkommen im Café Linde.");
+</script>
+</body>
+</html>

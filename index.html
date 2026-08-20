@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="de" data-en="an">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kleinhausen — Stadtplan zum Deutschlernen</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230E3A44'/%3E%3Crect y='24' width='32' height='8' fill='%23FFCC00'/%3E%3C/svg%3E">
+<meta name="description" content="Stadtplan von Kleinhausen: einseitige HTML-Spiele zum Deutschlernen. Klick ein Gebäude, öffne das Spiel. Für Canva, Canvas und den Browser.">
+<style>
+:root{
+  --petrol:#0E3A44; --petrol-hell:#1C5C6B; --gelb:#FFCC00; --gelb-tief:#E0A800;
+  --papier:#F4EBD8; --papier-tief:#E6D7B8; --ink:#142028; --soft:#4A5C62;
+  --ziegel:#C25B4A; --gras:#7A9A62; --gras-tief:#5E7A4A; --fluss:#5A9AAB;
+  --strasse:#EFE6D2; --dach:#6B3E32; --stein:#8B9098; --ok:#1F7A45;
+  --card:#fffaf1; --shadow:rgba(14,58,68,.22);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1rem;
+}
+html[data-size="gross"]{--fs:1.14rem}
+html[data-size="sehr-gross"]{--fs:1.3rem}
+html[data-contrast="hoch"]{
+  --papier:#fff; --papier-tief:#fff; --ink:#000; --soft:#000;
+  --petrol:#000; --petrol-hell:#000; --gelb:#FFE000; --fluss:#000;
+  --gras:#fff; --gras-tief:#000; --strasse:#fff; --card:#fff;
+  --ziegel:#9b0000; --stein:#000; --shadow:#000;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans); font-size:var(--fs); line-height:1.5; color:var(--ink);
+  background:var(--papier);
+  background-image:radial-gradient(circle at 1px 1px, rgba(14,58,68,.07) 1px, transparent 0);
+  background-size:22px 22px;
+  -webkit-text-size-adjust:100%;
+}
+html[data-contrast="hoch"] body{background-image:none}
+.skip{position:absolute;left:-9999px;top:0;z-index:40;background:var(--gelb);color:var(--petrol);padding:.7em 1.1em;font-weight:800;text-decoration:none}
+.skip:focus{left:8px;top:8px}
+:focus-visible{outline:4px solid var(--ziegel);outline-offset:3px}
+html[data-contrast="hoch"] :focus-visible{outline:5px solid #000}
+.en.gloss{display:none;font-style:italic;color:var(--soft);font-size:.9em}
+html[data-en="an"] .en.gloss{display:block}
+.topbar{background:var(--petrol);color:var(--papier);border-bottom:8px solid var(--gelb)}
+.topbar-in{max-width:1180px;margin:0 auto;padding:.75rem 1.1rem;display:flex;flex-wrap:wrap;gap:.8rem 1.2rem;align-items:center;justify-content:space-between}
+.brand h1{font-family:var(--serif);font-size:clamp(1.35rem,3vw,1.85rem);margin:0;font-weight:600}
+.brand .sub{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gelb);margin-top:.15rem}
+.settings{display:flex;flex-wrap:wrap;gap:.4rem}
+.set-btn{
+  font:inherit;font-size:.8em;min-height:44px;padding:.35em .9em;cursor:pointer;
+  background:transparent;color:var(--papier);border:2px solid #6e8890;border-radius:999px;
+  text-decoration:none;display:inline-flex;align-items:center;
+}
+a.set-btn{background:var(--gelb);color:var(--ink);border-color:var(--gelb);font-weight:800}
+.set-btn[aria-pressed="true"]{background:var(--gelb);color:var(--ink);border-color:var(--gelb);font-weight:800}
+.hero{max-width:1180px;margin:0 auto;padding:1.3rem 1.1rem .4rem}
+.kicker{font-family:var(--mono);letter-spacing:.18em;text-transform:uppercase;font-size:.72rem;color:var(--petrol-hell);margin:0 0 .35rem}
+.hero h2{font-family:var(--serif);font-size:clamp(1.6rem,4vw,2.35rem);margin:0 0 .4rem;font-weight:600}
+.lede{max-width:64ch;margin:0 0 1rem;color:var(--soft)}
+.filters{display:flex;flex-wrap:wrap;gap:.45rem;margin:0 0 1rem}
+.chip{
+  font:inherit;font-size:.82em;font-weight:700;min-height:44px;padding:.35em .95em;cursor:pointer;
+  background:var(--card);color:var(--ink);border:2px solid var(--petrol);border-radius:999px;
+}
+.chip[aria-pressed="true"]{background:var(--petrol);color:var(--gelb)}
+.stage{
+  max-width:1180px;margin:0 auto;padding:0 1.1rem 2.2rem;
+  display:grid;gap:1.1rem;grid-template-columns:minmax(0,1.55fr) minmax(280px,0.9fr);align-items:start;
+}
+@media (max-width:900px){.stage{grid-template-columns:1fr}}
+.map-card{
+  background:var(--card);border:4px solid var(--petrol);border-radius:14px;
+  box-shadow:0 6px 0 var(--shadow);padding:.55rem .55rem .7rem;position:relative;
+}
+.map-legend{
+  display:flex;justify-content:space-between;align-items:center;gap:.6rem;flex-wrap:wrap;
+  padding:.15rem .45rem .5rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--petrol-hell);
+}
+.compass{display:flex;align-items:center;gap:.4rem}
+.map-svg{width:100%;height:auto;display:block;border-radius:8px}
+.spot{cursor:pointer}
+.spot .hit{fill:transparent;stroke:transparent}
+.spot:focus{outline:none}
+.spot:focus-visible .glow, .spot:hover .glow, .spot[aria-current="true"] .glow{
+  opacity:1;
+}
+.glow{opacity:0;transition:opacity .2s}
+html[data-contrast="hoch"] .glow{display:none}
+.spot[aria-current="true"] .pin-disk{fill:var(--gelb)}
+.spot[aria-current="true"] .pin-label{font-weight:800}
+.spot.is-dim{opacity:.38}
+.pin-disk{fill:#fff;stroke:var(--petrol);stroke-width:2.2}
+.pin-label{
+  font-family:var(--sans);font-size:11px;font-weight:700;fill:var(--ink);
+  paint-order:stroke;stroke:#fff;stroke-width:3px;
+}
+html[data-contrast="hoch"] .pin-label{stroke:#fff;fill:#000}
+.panel{
+  background:var(--card);border:4px solid var(--petrol);border-radius:14px;
+  box-shadow:0 6px 0 var(--shadow);padding:1.05rem 1.1rem 1.2rem;
+  position:sticky;top:.7rem;
+}
+.panel h2{font-family:var(--serif);font-size:1.45rem;margin:0 0 .25rem}
+.place-kicker{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--petrol-hell);margin:0 0 .2rem}
+.games{list-style:none;margin:.85rem 0 0;padding:0;display:grid;gap:.65rem;max-height:min(62vh,32rem);overflow:auto}
+.games a{
+  display:block;text-decoration:none;color:var(--ink);background:#fff;
+  border:2px solid var(--petrol);border-left:8px solid var(--gelb);border-radius:8px;
+  padding:.7rem .8rem;min-height:44px;
+  box-shadow:0 2px 0 var(--shadow);
+}
+.games a:hover{transform:translateY(-1px)}
+.games a .tag{font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--petrol-hell);font-weight:700}
+.games a h3{font-family:var(--serif);margin:.1rem 0 .15rem;font-size:1.08rem}
+.games a p{margin:0;color:var(--soft);font-size:.9rem}
+.empty{color:var(--soft);margin:.6rem 0 0}
+.all-btn{
+  margin-top:.9rem;font:inherit;font-weight:700;min-height:44px;padding:.45em 1em;cursor:pointer;
+  background:transparent;border:2px solid var(--petrol);border-radius:8px;color:var(--ink);
+}
+.catalog{max-width:1180px;margin:0 auto;padding:0 1.1rem 2.4rem}
+.catalog h2{font-family:var(--serif);font-size:1.4rem;margin:0 0 .7rem}
+details.teach, details.how{
+  background:var(--card);border:3px solid var(--petrol);border-radius:10px;padding:.2rem 1rem 1rem;margin:0 0 1rem;
+}
+summary{cursor:pointer;font-weight:800;min-height:44px;display:flex;align-items:center}
+table{width:100%;border-collapse:collapse;font-size:.92em;margin-top:.6rem}
+th,td{text-align:left;padding:.4rem .45rem;border-bottom:1px solid #d7cdb8;vertical-align:top}
+th{font-family:var(--mono);font-size:.72em;letter-spacing:.08em;text-transform:uppercase}
+code{font-family:var(--mono);background:#fff;border:1px solid #d7cdb8;padding:.05em .35em;border-radius:4px}
+.note{background:#fff;border-left:8px solid var(--gelb);padding:1rem 1.1rem;border-radius:0 8px 8px 0}
+footer{max-width:1180px;margin:0 auto;padding:0 1.1rem 2.6rem;color:var(--soft);font-size:.9rem}
+@media (prefers-reduced-motion:reduce){
+  .glow,.games a:hover{transition:none;transform:none}
+}
+@media print{
+  .settings,.filters,.all-btn{display:none}
+  .stage{display:block}
+  .panel{position:static;break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#karte">Zum Stadtplan</a>
+<a class="skip" href="#ort">Zu den Spielen am Ort</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <h1>Kleinhausen</h1>
+      <span class="sub">Stadtplan · Deutsch üben · A1–B1</span>
+    </div>
+    <div class="settings" role="group" aria-label="Einstellungen">
+      <a class="set-btn" href="lehrkraft.html" title="Lehrblatt zum Drucken">Lehrblatt</a>
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <p class="kicker">Ein erfundener Ort zum Deutschlernen</p>
+  <h2>Willkommen in Kleinhausen</h2>
+  <p class="lede">Klick ein Gebäude auf dem Stadtplan. In den Spielen <strong>schreibst du Deutsch</strong> — Sätze, Artikel, Bestellungen — nicht nur antippen. Jedes Spiel ist eine Datei, kein Konto, keine Cookies.
+    <span class="en gloss" lang="en">Click a building. You type German in the games — sentences, articles, orders — not just tap. Each game is one HTML file, no account, no cookies.</span></p>
+  <div class="filters" role="group" aria-label="Niveau">
+    <button type="button" class="chip" data-level="alle" aria-pressed="true">Alle</button>
+    <button type="button" class="chip" data-level="A1" aria-pressed="false">A1</button>
+    <button type="button" class="chip" data-level="A2" aria-pressed="false">A2</button>
+    <button type="button" class="chip" data-level="B1" aria-pressed="false">B1</button>
+    <button type="button" class="chip" data-level="3D" aria-pressed="false">3D</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="map-card" id="karte">
+    <div class="map-legend">
+      <span>Stadtplan von Kleinhausen</span>
+      <span class="compass" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 28 28"><circle cx="14" cy="14" r="13" fill="#fff" stroke="#0E3A44"/><path d="M14 5 L17 14 L14 12 L11 14 Z" fill="#C25B4A"/><text x="14" y="24" text-anchor="middle" font-size="7" font-family="sans-serif">N</text></svg>
+        Marktstraße · Bahnhofstraße · Schulstraße
+      </span>
+    </div>
+    <svg class="map-svg" viewBox="0 0 1000 720" role="img" aria-labelledby="map-title map-desc">
+      <title id="map-title">Stadtplan von Kleinhausen</title>
+      <desc id="map-desc">Klickbare Gebäude: Bahnhof, Markt, Rathaus, Museum, Schule, Arzt, Wohnen, Nachbarschaft, Studio, Laden. Die Selz fließt im Süden.</desc>
+      <defs>
+        <pattern id="fields" width="28" height="28" patternUnits="userSpaceOnUse">
+          <rect width="28" height="28" fill="#8eaa70"/>
+          <path d="M0 14 H28" stroke="#7a965e" stroke-width="6"/>
+        </pattern>
+        <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0E3A44" flood-opacity=".18"/>
+        </filter>
+      </defs>
+      <rect width="1000" height="720" fill="url(#fields)"/>
+      <path d="M-20 560 C180 500, 320 620, 520 580 C720 540, 860 640, 1020 600 L1020 740 L-20 740 Z" fill="#5A9AAB"/>
+      <path d="M-20 560 C180 500, 320 620, 520 580 C720 540, 860 640, 1020 600" fill="none" stroke="#d5eef2" stroke-width="6" opacity=".45"/>
+      <text x="70" y="690" fill="#0E3A44" font-size="13" font-family="Georgia,serif">die Selz</text>
+
+      <rect x="40" y="300" width="920" height="36" fill="#EFE6D2"/>
+      <rect x="470" y="70" width="36" height="520" fill="#EFE6D2"/>
+      <rect x="40" y="470" width="920" height="28" fill="#EFE6D2"/>
+      <rect x="200" y="70" width="28" height="520" fill="#EFE6D2"/>
+      <rect x="760" y="70" width="28" height="520" fill="#EFE6D2"/>
+      <text x="80" y="292" fill="#4A5C62" font-size="11" font-family="ui-monospace,monospace" letter-spacing="1.4">BAHNHOFSTRASSE</text>
+      <text x="510" y="62" fill="#4A5C62" font-size="11" font-family="ui-monospace,monospace" transform="rotate(90 510 62)">SCHULSTRASSE</text>
+      <text x="80" y="512" fill="#4A5C62" font-size="11" font-family="ui-monospace,monospace" letter-spacing="1.4">LINDENALLEE</text>
+
+      <circle cx="488" cy="318" r="78" fill="#EFE6D2"/>
+      <circle cx="488" cy="318" r="34" fill="#8eaa70" stroke="#0E3A44" stroke-width="2"/>
+      <circle cx="488" cy="318" r="8" fill="#c4a056"/>
+      <text x="488" y="408" text-anchor="middle" fill="#0E3A44" font-size="11" font-family="ui-monospace,monospace">MARKTPLATZ</text>
+
+      <!-- Bahnhof -->
+      <g filter="url(#soft)">
+        <rect x="48" y="148" width="140" height="88" fill="#3a3a3a"/>
+        <rect x="48" y="148" width="140" height="18" fill="#FFCC00"/>
+        <rect x="48" y="166" width="140" height="8" fill="#E30613"/>
+        <rect x="78" y="188" width="28" height="36" fill="#d6f0ff"/>
+        <rect x="118" y="188" width="28" height="36" fill="#d6f0ff"/>
+        <rect x="36" y="236" width="164" height="10" fill="#555"/>
+      </g>
+      <!-- Wohnen -->
+      <g filter="url(#soft)">
+        <rect x="248" y="118" width="70" height="70" fill="#e8d5c4"/>
+        <polygon points="248,118 283,88 318,118" fill="#1b5e3b"/>
+        <rect x="328" y="128" width="58" height="60" fill="#dce8d4"/>
+        <polygon points="328,128 357,102 386,128" fill="#6B3E32"/>
+      </g>
+      <!-- Rathaus + Amt -->
+      <g filter="url(#soft)">
+        <rect x="430" y="46" width="110" height="92" fill="#8B9098"/>
+        <polygon points="430,46 485,12 540,46" fill="#5c6168"/>
+        <rect x="472" y="78" width="26" height="60" fill="#c4a056"/>
+        <rect x="546" y="70" width="72" height="68" fill="#cfc8b8"/>
+        <rect x="546" y="70" width="72" height="12" fill="#1C5C6B"/>
+      </g>
+      <!-- Kirche -->
+      <g filter="url(#soft)">
+        <rect x="560" y="168" width="64" height="78" fill="#e6d9c4"/>
+        <polygon points="560,168 592,128 624,168" fill="#6B3E32"/>
+        <rect x="584" y="118" width="16" height="28" fill="#e6d9c4"/>
+        <circle cx="592" cy="200" r="12" fill="#fff" stroke="#0E3A44"/>
+        <line x1="592" y1="200" x2="592" y2="191" stroke="#0E3A44" stroke-width="2"/>
+        <line x1="592" y1="200" x2="600" y2="200" stroke="#C25B4A" stroke-width="2"/>
+      </g>
+      <!-- Café -->
+      <g filter="url(#soft)">
+        <rect x="400" y="228" width="72" height="52" fill="#f6efe3"/>
+        <rect x="400" y="228" width="72" height="14" fill="#a8c686"/>
+        <circle cx="418" cy="248" r="5" fill="#3c2415"/>
+        <circle cx="436" cy="248" r="5" fill="#3c2415"/>
+        <rect x="452" y="244" width="12" height="22" fill="#c4a35a"/>
+      </g>
+      <!-- Museum -->
+      <g filter="url(#soft)">
+        <rect x="800" y="118" width="120" height="86" fill="#1a1a1a"/>
+        <rect x="818" y="136" width="28" height="36" fill="#c4a056"/>
+        <rect x="856" y="136" width="28" height="36" fill="#c4a056"/>
+        <rect x="800" y="118" width="120" height="10" fill="#c4a056"/>
+      </g>
+      <!-- Studio -->
+      <g filter="url(#soft)">
+        <rect x="838" y="28" width="86" height="58" fill="#0b1d3a"/>
+        <rect x="870" y="8" width="12" height="28" fill="#888"/>
+        <circle cx="876" cy="8" r="8" fill="#C25B4A"/>
+        <rect x="848" y="40" width="66" height="22" fill="#1a2744"/>
+      </g>
+      <!-- Schule -->
+      <g filter="url(#soft)">
+        <rect x="800" y="348" width="130" height="78" fill="#d7e4f0"/>
+        <rect x="800" y="348" width="130" height="16" fill="#12233f"/>
+        <rect x="818" y="376" width="22" height="28" fill="#fff"/>
+        <rect x="848" y="376" width="22" height="28" fill="#fff"/>
+        <rect x="878" y="376" width="22" height="28" fill="#fff"/>
+      </g>
+      <!-- Supermarkt -->
+      <g filter="url(#soft)">
+        <rect x="48" y="348" width="130" height="70" fill="#fff"/>
+        <rect x="48" y="348" width="130" height="18" fill="#DA3633"/>
+        <rect x="70" y="378" width="86" height="28" fill="#1C6EC7"/>
+      </g>
+      <!-- Arzt -->
+      <g filter="url(#soft)">
+        <rect x="800" y="500" width="92" height="70" fill="#fff"/>
+        <rect x="832" y="512" width="12" height="40" fill="#C81E1E"/>
+        <rect x="818" y="526" width="40" height="12" fill="#C81E1E"/>
+      </g>
+      <!-- Nachbarschaft -->
+      <g filter="url(#soft)">
+        <rect x="248" y="538" width="48" height="42" fill="#f0d9b5"/>
+        <polygon points="248,538 272,516 296,538" fill="#C25B4A"/>
+        <rect x="304" y="544" width="48" height="42" fill="#e7c4c0"/>
+        <polygon points="304,544 328,522 352,544" fill="#1b5e3b"/>
+        <rect x="360" y="538" width="48" height="42" fill="#cfd8dc"/>
+        <polygon points="360,538 384,516 408,538" fill="#3a3a3a"/>
+        <rect x="430" y="548" width="58" height="48" fill="#e8e0c8"/>
+        <polygon points="430,548 459,522 488,548" fill="#6B3E32"/>
+      </g>
+      <text x="448" y="612" text-anchor="middle" fill="#0E3A44" font-size="11" font-family="Georgia,serif">Gemeindehaus</text>
+
+      <!-- clickable spots -->
+      <g class="spot" data-place="bahnhof" tabindex="0" role="button" aria-label="Bahnhof">
+        <circle class="glow" cx="118" cy="168" r="92" fill="#FFCC00" opacity=".25"/>
+        <rect class="hit" x="36" y="140" width="170" height="120"/>
+        <circle class="pin-disk" cx="118" cy="140" r="14"/>
+        <text class="pin-label" x="118" y="132" text-anchor="middle">Bahnhof</text>
+      </g>
+      <g class="spot" data-place="wohnen" tabindex="0" role="button" aria-label="Wohnen">
+        <circle class="glow" cx="308" cy="130" r="70" fill="#FFCC00" opacity=".25"/>
+        <rect class="hit" x="240" y="86" width="160" height="110"/>
+        <circle class="pin-disk" cx="308" cy="96" r="14"/>
+        <text class="pin-label" x="308" y="88" text-anchor="middle">Wohnen</text>
+      </g>
+      <g class="spot" data-place="rathaus" tabindex="0" role="button" aria-label="Rathaus">
+        <circle class="glow" cx="510" cy="80" r="88" fill="#FFCC00" opacity=".25"/>
+        <rect class="hit" x="420" y="8" width="210" height="140"/>
+        <circle class="pin-disk" cx="510" cy="28" r="14"/>
+        <text class="pin-label" x="510" y="20" text-anchor="middle">Rathaus</text>
+      </g>
+      <g class="spot" data-place="markt" tabindex="0" role="button" aria-label="Marktplatz">
+        <circle class="glow" cx="488" cy="318" r="100" fill="#FFCC00" opacity=".22"/>
+        <rect class="hit" x="400" y="220" width="240" height="200"/>
+        <circle class="pin-disk" cx="430" cy="268" r="14"/>
+        <text class="pin-label" x="430" y="260" text-anchor="middle">Markt</text>
+      </g>
+      <g class="spot" data-place="museum" tabindex="0" role="button" aria-label="Museum">
+        <circle class="glow" cx="860" cy="160" r="78" fill="#FFCC00" opacity=".25"/>
+        <rect class="hit" x="790" y="108" width="140" height="110"/>
+        <circle class="pin-disk" cx="860" cy="112" r="14"/>
+        <text class="pin-label" x="860" y="104" text-anchor="middle">Museum</text>
+      </g>
+      <g class="spot" data-place="studio" tabindex="0" role="button" aria-label="Wetterstudio">
+        <circle class="glow" cx="880" cy="50" r="58" fill="#FFCC00" opacity=".25"/>
+        <rect class="hit" x="830" y="4" width="110" height="90"/>
+        <circle class="pin-disk" cx="930" cy="36" r="14"/>
+        <text class="pin-label" x="930" y="28" text-anchor="middle">Studio</text>
+      </g>
+      <g class="spot" data-place="schule" tabindex="0" role="button" aria-label="Schule">
+        <circle class="glow" cx="865" cy="386" r="78" fill="#FFCC00" opacity=".25"/>
+        <rect class="hit" x="790" y="338" width="150" height="100"/>
+        <circle class="pin-disk" cx="930" cy="360" r="14"/>
+        <text class="pin-label" x="930" y="352" text-anchor="middle">Schule</text>
+      </g>
+      <g class="spot" data-place="laden" tabindex="0" role="button" aria-label="Läden">
+        <circle class="glow" cx="113" cy="382" r="72" fill="#FFCC00" opacity=".25"/>
+        <rect class="hit" x="40" y="340" width="150" height="90"/>
+        <circle class="pin-disk" cx="80" cy="340" r="14"/>
+        <text class="pin-label" x="80" y="332" text-anchor="middle">Läden</text>
+      </g>
+      <g class="spot" data-place="arzt" tabindex="0" role="button" aria-label="Arzt">
+        <circle class="glow" cx="846" cy="534" r="68" fill="#FFCC00" opacity=".25"/>
+        <rect class="hit" x="790" y="490" width="120" height="90"/>
+        <circle class="pin-disk" cx="910" cy="512" r="14"/>
+        <text class="pin-label" x="910" y="504" text-anchor="middle">Arzt</text>
+      </g>
+      <g class="spot" data-place="nachbarn" tabindex="0" role="button" aria-label="Nachbarschaft">
+        <circle class="glow" cx="360" cy="560" r="92" fill="#FFCC00" opacity=".22"/>
+        <rect class="hit" x="240" y="510" width="260" height="110"/>
+        <circle class="pin-disk" cx="272" cy="520" r="14"/>
+        <text class="pin-label" x="272" y="512" text-anchor="middle">Nachbarn</text>
+      </g>
+      <g class="spot" data-place="tour" tabindex="0" role="button" aria-label="Stadtführung in 3D">
+        <circle class="glow" cx="488" cy="318" r="22" fill="#FFCC00" opacity=".0"/>
+        <circle class="pin-disk" cx="548" cy="318" r="14"/>
+        <text class="pin-label" x="548" y="310" text-anchor="middle">3D-Tour</text>
+      </g>
+    </svg>
+  </div>
+
+  <aside class="panel" id="ort" aria-live="polite">
+    <p class="place-kicker" id="place-kicker">Kleinhausen</p>
+    <h2 id="place-title">Klick ein Gebäude</h2>
+    <p id="place-lede">Der Stadtplan zeigt, wo jedes Spiel spielt. Wähle einen Ort — oder filtere nach Niveau.
+      <span class="en gloss" lang="en">The map shows where each game is set. Pick a place, or filter by level.</span></p>
+    <ul class="games" id="place-games"></ul>
+    <p class="empty" id="place-empty" hidden>Keine Spiele für diesen Filter.</p>
+    <button type="button" class="all-btn" id="btn-all">Ganze Stadt zeigen</button>
+  </aside>
+</div>
+
+<section class="catalog">
+  <h2>So nutzt du den Plan</h2>
+  <p class="note"><strong>Lehrkräfte:</strong> <a href="lehrkraft.html">Ein Blatt zum Drucken</a> — Aufträge, Wortschatz, Minuten, Codes, 75&nbsp;%-Regel.
+    <span class="en gloss" lang="en">Teachers: one printable sheet — packs, vocab, minutes, codes, 75% pass.</span></p>
+  <details class="how">
+    <summary>Canva, Canvas und Tastatur</summary>
+    <p>Jedes Spiel ist <strong>eine HTML-Datei</strong> ohne externe Schriften oder Bilder. In Canva Code einfügen oder von GitHub Pages einbetten. In den Spielen: English, Vorlesen, Kontrast, Schrift.</p>
+    <p class="en gloss" lang="en">Each game is a single HTML file. Paste into Canva Code or embed from GitHub Pages.</p>
+    <p>Auf dieser Seite: Tab zum Stadtplan, Enter auf einem Gebäude, Escape zeigt wieder die ganze Stadt. Tiefe Links: <code>index.html#markt</code>, <code>#rathaus</code>, <code>#bahnhof</code> …</p>
+  </details>
+  <details class="teach">
+    <summary>Für Lehrkräfte: Orte und Abgabecodes</summary>
+    <p><a href="lehrkraft.html" style="font-weight:800">→ Vollständiges Lehrblatt (drucken)</a>
+      <span class="en gloss" lang="en">Full teacher one-pager to print.</span></p>
+    <p>Die Lernenden geben am Ende vieler Spiele Name plus Code ab. Die Prüfsumme hängt am Namen. Alte Spiele (Supermarkt, 3D) haben zum Teil kein KH-Kürzel.</p>
+    <table>
+      <thead><tr><th>Ort</th><th>Spiel</th><th>Niveau</th><th>Code</th></tr></thead>
+      <tbody>
+        <tr><td>Bahnhof</td><td>Fahrkartenautomat</td><td>A1–A2</td><td><code>KH-FAHR-</code></td></tr>
+        <tr><td>Bahnhof</td><td>Lieferdienst</td><td>A2 · 3D</td><td>—</td></tr>
+        <tr><td>Markt</td><td>Café Linde</td><td>A1–A2</td><td><code>KH-CAFE-</code></td></tr>
+        <tr><td>Markt</td><td>Uhrzeit-Chaos</td><td>A1</td><td><code>KH-UHR-</code></td></tr>
+        <tr><td>Rathaus</td><td>Escape / Detektiv / Amt</td><td>A2–B1</td><td><code>KH-ESC-</code> <code>KH-DET-</code> <code>KH-AMT-</code></td></tr>
+        <tr><td>Museum</td><td>Museumsnacht</td><td>A2–B1</td><td><code>KH-MUS-</code></td></tr>
+        <tr><td>Studio</td><td>Wetterstudio</td><td>A2</td><td><code>KH-WETT-</code></td></tr>
+        <tr><td>Arzt</td><td>Arzt / Apotheke</td><td>A1–A2</td><td><code>KH-ARZT-</code></td></tr>
+        <tr><td>Wohnen</td><td>Wohnung / Kleiderschrank / Ein Tag</td><td>A1–A2</td><td><code>KH-WOHN-</code> <code>KH-TAG-</code></td></tr>
+        <tr><td>Nachbarn</td><td>Mission: Nachbarschaft</td><td>A2</td><td><code>KH-MISS-</code></td></tr>
+        <tr><td>Schule</td><td>Common Mixups</td><td>A2</td><td><code>KH-MIX-</code></td></tr>
+        <tr><td>Läden</td><td>Supermarkt / Kaufhaus Fröhlich</td><td>A1–A2</td><td>—</td></tr>
+        <tr><td>3D-Tour</td><td>Foto-Schnitzeljagd / Lieferdienst</td><td>A2</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </details>
+  <p class="note" id="katalog-note"><strong>Alle Spiele</strong> liegen auch in der Liste rechts am Plan. Wenn die Karte unbequem ist: Tab zu „Ganze Stadt zeigen“.</p>
+</section>
+
+<footer>
+  <p>Kleinhausen ist erfunden, in der Nähe von Mainz an der Selz. Eine Datei pro Spiel, keine Cookies, kein Konto. Fortschritt gilt nur für den Besuch.</p>
+</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const PLACES = {
+  bahnhof: {
+    name:"Bahnhof Kleinhausen",
+    kicker:"Bahnhofstraße",
+    lede:"Fahrkarten, Gleise, Wegbeschreibungen. Hier fährt man weg — und liefert aus.",
+    en:"Tickets, platforms, directions. This is where you leave town — and deliver."
+  },
+  markt: {
+    name:"Marktplatz",
+    kicker:"Café Linde · Kirche · Brunnen",
+    lede:"Kaffee, Kuchen, die Kirchenuhr. Der Kreisverkehr mit Brunnen ist die Mitte der Stadt.",
+    en:"Coffee, cake, the church clock. The roundabout with the fountain is the centre of town."
+  },
+  rathaus: {
+    name:"Rathaus & Amt",
+    kicker:"Marktstraße",
+    lede:"Siegel, Schalter, Nachts im Archiv. Formell: Sie.",
+    en:"The seal, the counters, a night in the archive. Formal Sie."
+  },
+  museum: {
+    name:"Stadtmuseum",
+    kicker:"Museumsnacht",
+    lede:"Tafeln lesen, Stempel sammeln. Relativsätze und Präteritum an der Wand.",
+    en:"Read plaques, collect stamps. Relative clauses and simple past on the walls."
+  },
+  studio: {
+    name:"Lindenfernsehen",
+    kicker:"Wetterstudio",
+    lede:"Heute ist es sonnig. Morgen wird es regnen. Verbzweit auf Sendung.",
+    en:"Today it is sunny. Tomorrow it will rain. Verb-second, on air."
+  },
+  schule: {
+    name:"Gymnasium Kleinhausen",
+    kicker:"Schulstraße · Herrn Young",
+    lede:"False friends und Wortstellung. Bekommen ist nicht become.",
+    en:"False friends and word order. bekommen is not become."
+  },
+  laden: {
+    name:"Läden",
+    kicker:"Supermarkt · Kaufhaus",
+    lede:"Einkaufszettel, Kasse, Geschenke im Netz.",
+    en:"Shopping list, checkout, gifts online."
+  },
+  arzt: {
+    name:"Arztpraxis & Apotheke",
+    kicker:"Lindenallee",
+    lede:"Wo tut es weh? Rezept einlösen. Immer Sie zum Arzt.",
+    en:"Where does it hurt? Fill the prescription. Always Sie with the doctor."
+  },
+  wohnen: {
+    name:"Wohnen",
+    kicker:"WG, Schrank, ein Tag",
+    lede:"Anzeige lesen, Kleidung wählen, den Tag von Wecker bis Fest.",
+    en:"Read a listing, pick clothes, play a day from alarm clock to festival."
+  },
+  nachbarn: {
+    name:"Nachbarschaft",
+    kicker:"Rosenweg · Gemeindehaus",
+    lede:"Klingeln, einladen, du und Sie. Am Samstag Konzert.",
+    en:"Ring, invite, du and Sie. Concert on Saturday."
+  },
+  tour: {
+    name:"Stadtführung",
+    kicker:"3D · zu Fuß durch Kleinhausen",
+    lede:"Fotografiere Sehenswürdigkeiten oder folge Funksprüchen als Kurier.",
+    en:"Photograph landmarks, or follow radioed directions as a courier."
+  }
+};
+const GAMES = [
+  {name:"Fahrkartenautomat", href:"kleinhausen/fahrkartenautomat.html", place:"bahnhof", level:"A1", extra:"A2", blurb:"Ziel, Ticket, Klasse, Zeit, PIN.", en:"Destination, ticket, class, time, PIN.", code:"KH-FAHR"},
+  {name:"Lieferdienst", href:"lieferdienst-kleinhausen-offline_Delivery%20Game_Final.html", place:"bahnhof", level:"A2", extra:"3D", blurb:"Folge deutschen Wegbeschreibungen.", en:"Follow directions in German.", three:true},
+  {name:"Im Café am Markt", href:"kleinhausen/cafe-am-markt.html", place:"markt", level:"A1", extra:"A2", blurb:"Bestellen, reklamieren, Trinkgeld.", en:"Order, complain politely, tip.", code:"KH-CAFE"},
+  {name:"Uhrzeit-Chaos", href:"kleinhausen/uhrzeit-chaos.html", place:"markt", level:"A1", blurb:"Analoguhren und Fahrplan.", en:"Analog clocks and the timetable.", code:"KH-UHR"},
+  {name:"Gesprächspartner", href:"gespraechspartner_German%20Speaking%20Practice%20(1).html", place:"markt", level:"A2", blurb:"Konversation mit einer Partnerin.", en:"Conversation practice with a partner."},
+  {name:"Escape from Rathaus", href:"kleinhausen/rathaus-escape.html", place:"rathaus", level:"A2", extra:"B1", blurb:"Vier Räume, Code, Phrase.", en:"Four rooms, a code, a phrase.", code:"KH-ESC"},
+  {name:"Der/Die/Das Detektiv", href:"kleinhausen/der-die-das-detektiv.html", place:"rathaus", level:"A2", extra:"B1", blurb:"Artikel und Fälle als Krimi.", en:"Articles and cases as a mystery.", code:"KH-DET"},
+  {name:"Amtsschalter 3", href:"kleinhausen/amtsschalter.html", place:"rathaus", level:"A2", blurb:"Anmeldung, Bücherei, Fundsachen.", en:"Registration, library, lost-and-found.", code:"KH-AMT"},
+  {name:"Museumsnacht", href:"kleinhausen/museumsnacht.html", place:"museum", level:"A2", extra:"B1", blurb:"Schilder, Stempel, Motto.", en:"Plaques, stamps, a motto.", code:"KH-MUS"},
+  {name:"Wetterstudio", href:"kleinhausen/wetterstudio.html", place:"studio", level:"A2", blurb:"Karte, Skript, ON AIR.", en:"Map, script, on air.", code:"KH-WETT"},
+  {name:"Common Mixups", href:"kleinhausen/common-mixups.html", place:"schule", level:"A2", blurb:"False friends und Verbzweit.", en:"False friends and verb-second.", code:"KH-MIX", langName:"en"},
+  {name:"Ein Tag in Kleinhausen", href:"kleinhausen/ein-tag-in-kleinhausen.html", place:"schule", level:"A2", blurb:"Wecker bis Abend, vier Enden.", en:"Alarm clock to evening, four endings.", code:"KH-TAG"},
+  {name:"Einkaufen im Supermarkt", href:"supermarkt-einkauf%20(2).html", place:"laden", level:"A1", extra:"A2", blurb:"Zettel, Gänge, Kasse.", en:"List, aisles, checkout."},
+  {name:"Kaufhaus Fröhlich", href:"geschenke-online-kaufen%20(1).html", place:"laden", level:"A1", extra:"A2", blurb:"Geschenke online kaufen.", en:"Buy gifts online."},
+  {name:"Beim Arzt / In der Apotheke", href:"kleinhausen/arzt-apotheke.html", place:"arzt", level:"A1", extra:"A2", blurb:"Symptome, Körper, Rezept.", en:"Symptoms, body, prescription.", code:"KH-ARZT"},
+  {name:"Wohnung gesucht", href:"kleinhausen/wohnung-gesucht.html", place:"wohnen", level:"A2", blurb:"Anzeigen, Anfrage, Präpositionen.", en:"Listings, enquiry, prepositions.", code:"KH-WOHN"},
+  {name:"Kleiderschrank", href:"kleiderschrank-kleinhausen-fixed.html", place:"wohnen", level:"A1", extra:"A2", blurb:"Was ziehe ich an?", en:"What do I put on?"},
+  {name:"Ein Tag in Kleinhausen", href:"kleinhausen/ein-tag-in-kleinhausen.html", place:"wohnen", level:"A2", blurb:"Der Tag beginnt zu Hause.", en:"The day starts at home.", code:"KH-TAG"},
+  {name:"Mission: Nachbarschaft", href:"kleinhausen/mission-nachbarschaft.html", place:"nachbarn", level:"A2", blurb:"Einladen, du und Sie.", en:"Invite, du and Sie.", code:"KH-MISS"},
+  {name:"Schreib zurück!", href:"chat-slang-deutsch%20(1).html", place:"nachbarn", level:"A2", blurb:"Chatsprache und Abkürzungen.", en:"Chat slang and abbreviations."},
+  {name:"Foto-Schnitzeljagd 3D", href:"foto-schnitzeljagd-3d-kleinhausen%20(2).html", place:"tour", level:"A2", extra:"3D", blurb:"Sehenswürdigkeiten fotografieren.", en:"Photograph the sights.", three:true},
+  {name:"Lieferdienst", href:"lieferdienst-kleinhausen-offline_Delivery%20Game_Final.html", place:"tour", level:"A2", extra:"3D", blurb:"Kurier durch die Straßen.", en:"Courier through the streets.", three:true}
+];
+
+const S = {englisch:true, kontrast:false, size:0, level:"alle", place:null};
+
+function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
+function gloss(){
+  document.documentElement.setAttribute("data-en", S.englisch ? "an" : "aus");
+  document.querySelectorAll(".en").forEach(el => { if(!el.getAttribute("lang")) el.setAttribute("lang","en"); });
+}
+$("s-en").onclick = () => { S.englisch = !S.englisch; setToggle($("s-en"), S.englisch); gloss(); render(); };
+$("s-contrast").onclick = () => {
+  S.kontrast = !S.kontrast; setToggle($("s-contrast"), S.kontrast);
+  document.documentElement.setAttribute("data-contrast", S.kontrast ? "hoch" : "");
+};
+$("s-size").onclick = () => {
+  S.size = (S.size + 1) % 3;
+  const v = ["","gross","sehr-gross"][S.size];
+  document.documentElement.setAttribute("data-size", v);
+  $("s-size").textContent = "Schrift: " + ["A","A+","A++"][S.size];
+};
+
+function matchLevel(g){
+  if(S.level === "alle") return true;
+  if(S.level === "3D") return !!g.three || g.extra === "3D";
+  return g.level === S.level || g.extra === S.level;
+}
+function gamesFor(place){
+  const list = place ? GAMES.filter(g => g.place === place) : uniqueByHref(GAMES);
+  return list.filter(matchLevel);
+}
+function uniqueByHref(arr){
+  const seen = new Set(); const out = [];
+  arr.forEach(g => { if(!seen.has(g.href)){ seen.add(g.href); out.push(g); } });
+  return out;
+}
+function render(){
+  const place = S.place;
+  const info = place ? PLACES[place] : null;
+  $("place-kicker").textContent = info ? info.kicker : "Kleinhausen";
+  $("place-title").textContent = info ? info.name : "Ganze Stadt";
+  $("place-lede").innerHTML = info
+    ? esc(info.lede) + (S.englisch ? '<span class="en gloss" lang="en">'+esc(info.en)+"</span>" : "")
+    : 'Alle Orte. Klick ein Gebäude, um zu filtern.' + (S.englisch ? '<span class="en gloss" lang="en">All places. Click a building to filter.</span>' : "");
+  const list = gamesFor(place);
+  const ul = $("place-games"); ul.innerHTML = "";
+  $("place-empty").hidden = list.length > 0;
+  list.forEach(g => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = g.href;
+    const lvl = g.extra ? g.level+"–"+g.extra : g.level;
+    a.innerHTML = '<span class="tag">'+esc(lvl)+(g.code?" · "+g.code:"")+"</span>"+
+      "<h3"+(g.langName==="en"?' lang="en"':"")+">"+esc(g.name)+"</h3>"+
+      "<p>"+esc(g.blurb)+"</p>"+
+      (S.englisch ? '<p class="en gloss" lang="en">'+esc(g.en)+"</p>" : "");
+    li.appendChild(a); ul.appendChild(li);
+  });
+  document.querySelectorAll(".spot").forEach(el => {
+    const id = el.getAttribute("data-place");
+    const has = GAMES.some(g => g.place === id && matchLevel(g));
+    el.classList.toggle("is-dim", S.level !== "alle" && !has);
+    el.setAttribute("aria-current", place === id ? "true" : "false");
+  });
+  gloss();
+}
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function selectPlace(id){
+  S.place = id || null;
+  if(id) history.replaceState(null,"","#"+id);
+  else history.replaceState(null,"", location.pathname + location.search);
+  render();
+  $("place-title").focus({preventScroll:true});
+}
+
+document.querySelectorAll(".spot").forEach(el => {
+  const go = () => selectPlace(el.getAttribute("data-place"));
+  el.addEventListener("click", go);
+  el.addEventListener("keydown", e => {
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); }
+  });
+});
+document.querySelectorAll(".chip").forEach(btn => {
+  btn.addEventListener("click", () => {
+    S.level = btn.getAttribute("data-level");
+    document.querySelectorAll(".chip").forEach(b => setToggle(b, b === btn));
+    render();
+  });
+});
+$("btn-all").onclick = () => selectPlace(null);
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape") selectPlace(null);
+});
+
+window.addEventListener("hashchange", () => {
+  const h = (location.hash || "").replace("#","");
+  S.place = PLACES[h] ? h : null;
+  render();
+});
+{
+  const start = (location.hash || "").replace("#","");
+  if(PLACES[start]) S.place = start;
+}
+$("place-title").setAttribute("tabindex","-1");
+gloss();
+render();
+</script>
+</body>
+</html>

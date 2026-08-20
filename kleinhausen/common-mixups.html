@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="de" data-en="an">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Common Mixups — Deutsch mit Herrn Young</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --navy:#12233f;
+  --navy-2:#1b3358;
+  --chalk:#e8eef6;
+  --gold:#d4a017;
+  --gold-deep:#8a6a10;
+  --board:#1a3a6b;
+  --ok:#2f7a4a;
+  --bad:#b33a3a;
+  --card:#f7f4ea;
+  --ink:#12233f;
+  --ink-soft:#4a5a78;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1rem;
+}
+html[data-size="gross"]{--fs:1.16rem;}
+html[data-size="sehr-gross"]{--fs:1.34rem;}
+html[data-contrast="hoch"]{
+  --navy:#000;--navy-2:#111;--chalk:#fff;--gold:#ffe066;--gold-deep:#c9a000;
+  --board:#000;--ok:#00551f;--bad:#9b0000;--card:#fff;--ink:#000;--ink-soft:#000;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--navy);
+  color:var(--chalk);
+  font-family:var(--sans);
+  font-size:var(--fs);
+  line-height:1.55;
+  -webkit-text-size-adjust:100%;
+}
+.skip{position:absolute;left:-9999px;top:0;z-index:400;background:var(--gold);color:var(--navy);padding:.7em 1.1em;font-weight:700;text-decoration:none;}
+.skip:focus{left:0;}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+html[data-contrast="hoch"] :focus-visible{outline:4px solid #fff;}
+button,input{font:inherit;color:inherit;}
+button{cursor:pointer;}
+.btn,.set-btn,.choice,input[type="text"]{min-height:44px;min-width:44px;}
+.topbar{background:var(--navy-2);border-bottom:5px solid var(--gold);color:var(--chalk);}
+.topbar-in{max-width:1080px;margin:0 auto;padding:.65rem clamp(.7rem,2.4vw,1.6rem);display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;justify-content:space-between;}
+.brand h1{margin:0;font-family:var(--serif);font-size:1.18em;font-weight:600;}
+.brand .sub{font-family:var(--mono);font-size:.68em;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);}
+.settings{display:flex;flex-wrap:wrap;gap:.4rem;}
+.set-btn{background:transparent;color:var(--chalk);border:2px solid #4a6288;border-radius:999px;padding:.3em .85em;display:inline-flex;align-items:center;gap:.4em;}
+.set-btn[aria-pressed="true"]{background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700;}
+.set-btn .dot{width:.55em;height:.55em;border-radius:50%;border:2px solid currentColor;}
+.set-btn[aria-pressed="true"] .dot{background:currentColor;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(.7rem,2.4vw,1.6rem) 2.4rem;}
+.screen{display:none;padding-top:1.3rem;}
+.screen.on{display:block;}
+h2{font-family:var(--serif);font-size:1.65em;margin:0 0 .35em;}
+h2:focus{outline:none;}
+.eyebrow{font-family:var(--mono);font-size:.72em;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:0 0 .3em;}
+.lede{max-width:64ch;}
+html[data-en="aus"] .gloss{display:none !important;}
+.en{color:#9aaccc;font-style:italic;}
+.btn{font-weight:700;background:var(--gold);color:var(--navy);border:3px solid var(--gold-deep);padding:.5em 1.15em;border-radius:3px;box-shadow:0 3px 0 var(--gold-deep);}
+.btn:active{transform:translateY(2px);box-shadow:none;}
+.btn-ghost{background:transparent;color:var(--chalk);border-color:var(--chalk);box-shadow:0 3px 0 #4a6288;}
+.btn-row{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem;}
+.board{
+  background:var(--board);
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255,255,255,.06), transparent 40%),
+    repeating-linear-gradient(0deg, transparent 0 27px, rgba(255,255,255,.04) 28px);
+  border:12px solid #c4a574;
+  border-radius:6px;
+  padding:1.2rem 1.3rem;
+  min-height:220px;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.25), 0 10px 0 rgba(0,0,0,.2);
+}
+.chalk-dust{font-family:var(--mono);font-size:.78em;opacity:.75;margin:.6rem 0 0;}
+.chalk-line{font-family:var(--serif);font-size:1.25em;color:#f4f7fb;}
+.scene{background:var(--card);color:var(--ink);padding:1rem 1.1rem;border-left:8px solid var(--gold);margin:1rem 0;}
+.scene .en{color:var(--ink-soft);}
+.choices{display:flex;flex-direction:column;gap:.55rem;}
+.choice{
+  text-align:left;background:#fff;color:var(--ink);border:2px solid var(--navy);
+  padding:.6em .85em;font-weight:600;
+}
+.choice:hover{background:#fff6d6;}
+.choice.richtig{background:var(--ok);color:#fff;border-color:var(--ok);}
+.choice.falsch{background:var(--bad);color:#fff;border-color:var(--bad);}
+.prod-lab{font-weight:800;margin:.2rem 0 .35rem;color:var(--chalk)}
+.prod-in,textarea.prod-in{
+  width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;
+  padding:.55em .7em;border:3px solid var(--gold);border-radius:6px;background:#fff;color:var(--navy);
+}
+textarea.prod-in{min-height:7.2rem;line-height:1.45}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:800;cursor:pointer;background:#fff;color:var(--navy);border:2px solid var(--gold)}
+.hint-try{color:var(--gold);font-weight:700;margin:.4rem 0}
+.stamp{
+  display:none;margin:1rem 0;background:#fff;color:var(--ink);
+  border:6px double var(--gold);padding:1rem 1.1rem;max-width:36rem;
+  transform:rotate(-1.5deg);
+}
+.stamp.on{display:block;}
+.stamp h3{margin:0 0 .3em;font-family:var(--serif);color:var(--gold-deep);letter-spacing:.04em;}
+.stamp .rule{font-weight:700;}
+.pips{display:flex;flex-wrap:wrap;gap:.35rem;margin:.6rem 0 1rem;}
+.pip{width:22px;height:8px;background:#3a5078;}
+.pip.now{background:var(--gold);}
+.pip.done{background:var(--ok);}
+.speed-bar{height:10px;background:#3a5078;margin:.4rem 0 1rem;}
+.speed-bar span{display:block;height:100%;background:var(--gold);width:100%;transform-origin:left;}
+.speed-bar.run span{animation:drain 12s linear forwards;}
+@keyframes drain{to{transform:scaleX(0);}}
+.meta-card{background:var(--card);color:var(--ink);padding:1.1rem;border:4px solid var(--gold);margin:1rem 0;}
+.win-flag{
+  font-family:var(--serif);font-size:1.8em;color:var(--gold);margin:.4em 0;
+}
+.status-bar{margin:1rem 0 0;font-family:var(--mono);font-size:.85em;color:var(--gold);min-height:1.3em;}
+.name-feld label{display:block;margin-bottom:.25em;}
+.name-feld input{width:min(100%,22rem);padding:.5em .7em;border:2px solid var(--gold);background:var(--navy-2);color:var(--chalk);}
+.code-box{background:var(--navy-2);border:2px solid var(--gold);padding:1rem;margin-top:1rem;}
+.code-val{font-family:var(--mono);color:var(--gold);word-break:break-all;}
+.deck-grid{display:grid;gap:.7rem;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));margin:1rem 0;}
+.mini{background:var(--card);color:var(--ink);padding:.7rem;border-top:5px solid var(--gold);}
+.mini strong{display:block;font-family:var(--serif);}
+kbd{font-family:var(--mono);border:1px solid var(--gold);padding:.05em .35em;border-radius:3px;}
+details.scene summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center;}
+details.scene ul{margin:.5rem 0 0;}
+.gold-rule{height:4px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:1rem 0;}
+html[data-motion="aus"] .speed-bar.run span,html[data-motion="aus"] .stamp{animation:none;transform:none;}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+  .stamp{transform:none;}
+}
+
+.brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
+a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
+a.hub-home:hover{background:rgba(255,255,255,.18)}
+</style>
+</head>
+<body>
+<a class="skip" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <a class="hub-home" href="../index.html" aria-label="Zurück zum Stadtplan Kleinhausen">Kleinhausen</a>
+            <h1>Common Mixups</h1>
+      <span class="sub">Deutsch mit Herrn Young · False friends &amp; word order</span>
+    </div>
+    <div class="settings" role="group" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true"><span class="dot" aria-hidden="true"></span>English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Vorlesen</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false"><span class="dot" aria-hidden="true"></span>Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</header>
+<main class="wrap" id="hauptinhalt">
+  <section class="screen on" id="screen-start" aria-labelledby="h-start">
+    <p class="eyebrow">Klassenzimmer Kleinhausen</p>
+    <h2 id="h-start" tabindex="-1">False friends &amp; Wortstellung</h2>
+    <div class="board">
+      <p class="chalk-line">Heute mit Herrn Young: Wörter, die fast gleich klingen – und Sätze, die das Verb verschieben.</p>
+      <p class="en gloss" lang="en">Words that look like English but aren’t — plus German word order.</p>
+      <p class="chalk-dust">bekommen · Gift · Chef · aktuell · eventuell · Handy · umarmen · Haarschnitt · Verb 2 · weil · anrufen</p>
+      <svg viewBox="0 0 520 36" width="100%" height="36" aria-hidden="true" focusable="false">
+        <line x1="8" y1="20" x2="512" y2="20" stroke="#d4a017" stroke-width="3"/>
+        <circle cx="260" cy="20" r="6" fill="#e8eef6"/>
+      </svg>
+    </div>
+    <div class="deck-grid">
+      <div class="mini"><strong>bekommen ≠ become</strong>Gift, Chef, aktuell…</div>
+      <div class="mini"><strong>Verb second</strong>Heute gehe ich…</div>
+      <div class="mini"><strong>weil / dass</strong>Verb ans Ende</div>
+      <div class="mini"><strong>trennbare Verben</strong>Ich rufe dich an.</div>
+    </div>
+    <p>14 Lektionen: du <strong>schreibst</strong> den richtigen Satz (nicht antippen). Dann eine Schnellrunde, dann ein Meta-Witz von der letzten Folie.
+      <span class="en gloss" lang="en">Type the correct German sentence — no multiple choice. Then a speed round, then a joke from the last slide.</span></p>
+    <details class="scene">
+      <summary>Tastatur und Barrierefreiheit <span class="en gloss" lang="en">Keyboard &amp; accessibility</span></summary>
+      <ul>
+        <li><kbd>Tab</kbd> / <kbd>Umschalt</kbd>+<kbd>Tab</kbd> – zwischen Elementen wechseln.</li>
+        <li><kbd>Enter</kbd> prüft deine Antwort. Knöpfe <strong>ä ö ü ß</strong> setzen Umlaute.</li>
+        <li><strong>Vorlesen</strong> spricht Deutsch (de-DE). <strong>Kontrast</strong> und <strong>Schrift</strong> bleiben die ganze Stunde.</li>
+        <li>Keine Cookies, kein localStorage. Fortschritt gilt nur für diesen Besuch.</li>
+      </ul>
+    </details>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-start">Tafel aufklappen</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-play" aria-labelledby="h-play">
+    <p class="eyebrow" id="round-lab">Runde 1 von 14</p>
+    <h2 id="h-play" tabindex="-1">bekommen</h2>
+    <div class="pips" id="pips"></div>
+    <div class="speed-bar" id="timer" hidden><span></span></div>
+    <div class="scene">
+      <p id="scene-de" lang="de"></p>
+      <p class="en gloss" lang="en" id="scene-en" lang="en"></p>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="stamp" id="stamp">
+      <h3>Remember!</h3>
+      <p class="rule" id="stamp-rule"></p>
+      <p class="en gloss" lang="en" id="stamp-en" lang="en"></p>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-next" hidden>Nächste Karte</button>
+    </div>
+    <p class="status-bar" id="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="screen" id="screen-meta" aria-labelledby="h-meta">
+    <p class="eyebrow">Letzte Folie</p>
+    <h2 id="h-meta" tabindex="-1">Jedes Fehler…?</h2>
+    <div class="meta-card">
+      <p>Auf der letzten Folie schrieb Herr Young:</p>
+      <p class="chalk-line" style="color:var(--navy)">„Jedes Fehler bringt dich vorwärts.“</p>
+      <p>Was stimmt hier nicht?
+        <span class="en gloss" lang="en">Herr Young wrote “Jedes Fehler” — what’s wrong?</span></p>
+    </div>
+    <div class="choices" id="meta-choices"></div>
+    <div class="stamp" id="meta-stamp">
+      <h3>Remember!</h3>
+      <p class="rule" id="meta-rule"></p>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-meta-next" hidden>Zur Danke-Tafel</button>
+    </div>
+    <p class="status-bar" id="status-meta" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="screen" id="screen-summary" aria-labelledby="h-sum">
+    <p class="eyebrow">Ende der Stunde</p>
+    <h2 id="h-sum" tabindex="-1">Danke</h2>
+    <p class="win-flag" id="win-line">Jeder Fehler bringt dich vorwärts.</p>
+    <p id="sum-text"></p>
+    <p class="en gloss" lang="en">The slide said “Jedes Fehler” — that mix-up is the point. It’s Jeder Fehler (masculine).</p>
+    <div class="name-feld">
+      <label for="name-in">Dein Name (für den Abgabecode) <span class="en gloss" lang="en">Your name for the code</span></label>
+      <input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname">
+    </div>
+    <div class="code-box">
+      <p><strong>Abgabecode</strong></p>
+      <code class="code-val" id="code-val">Bitte gib zuerst deinen Namen ein.</code>
+      <p><button type="button" class="btn btn-ghost" id="btn-copy">Code kopieren</button></p>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-retry">Nochmal üben</button>
+    </div>
+    <details>
+      <summary>Für Lehrkräfte: Code prüfen</summary>
+      <p><label for="v-name">Name</label> <input type="text" id="v-name"></p>
+      <p><label for="v-code">Code</label> <input type="text" id="v-code"></p>
+      <p><button type="button" class="btn" id="btn-verify">Prüfen</button></p>
+      <p id="v-out" role="status" aria-live="polite"></p>
+    </details>
+  </section>
+</main>
+<footer class="wrap">
+  <p>Kleinhausen · Michael Young, Designer · Common Mixups for English Speakers Learning German · Keine Cookies.</p>
+</footer>
+<script>
+"use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=$(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      const n=a+b.dataset.c.length;
+      try{ inp.setSelectionRange(n,n); }catch(e){}
+    });
+  });
+}
+function prodBlock(id, label){
+  return '<p class="prod-lab"><label for="'+id+'">'+label+"</label></p>"+umlautsHtml(id)+
+    '<p><input class="prod-in" type="text" id="'+id+'" lang="de" autocomplete="off" spellcheck="false"></p>';
+}
+
+const S = {
+  englisch:true, audio:false, kontrast:false, size:0, motion:true,
+  i:0, speed:false, speedI:0, korrekt:0, total:0, bonus:0, answered:false
+};
+const SALT = "kleinhausen-mixups-v1";
+let speedTimer=null;
+
+const ROUNDS = [
+  { id:"bekommen", title:"bekommen ≠ become",
+    scene:"In der Bücherei Kleinhausen. Herr Young gibt dir ein Buch. Welcher Satz ist richtig?",
+    en:"At the Kleinhausen library. Herr Young gives you a book.",
+    opts:[
+      {t:"Ich become ein Buch.", ok:false},
+      {t:"Ich bekomme ein Buch.", ok:true},
+      {t:"Ich werde ein Buch.", ok:false}
+    ],
+    rule:"bekommen = to get / receive. werden = to become. „Ich werde Lehrerin.“ ≠ „Ich bekomme ein Buch.“",
+    ruleEn:"bekommen = get/receive. werden = become." },
+  { id:"gift", title:"Gift ≠ gift",
+    scene:"Geburtstag bei Familie Vogel. Du packst etwas Schönes aus. Was sagst du?",
+    en:"Birthday at the Vogels’. You unwrap something nice.",
+    opts:[
+      {t:"Ich habe ein Gift für dich.", ok:false},
+      {t:"Ich habe ein Geschenk für dich.", ok:true},
+      {t:"Ich habe ein Poison für dich.", ok:false}
+    ],
+    rule:"Gift = poison. Geschenk = gift (present). Nie „ein Gift“ zum Geburtstag sagen!",
+    ruleEn:"Gift means poison. Geschenk is a present." },
+  { id:"chef", title:"Chef ≠ chef",
+    scene:"Im Café am Marktplatz. Wer kocht, wer ist der Boss?",
+    en:"At the café. Who cooks, who is the boss?",
+    opts:[
+      {t:"Der Chef kocht immer die Suppe – er ist Koch.", ok:false},
+      {t:"Der Koch kocht. Der Chef ist der Boss.", ok:true},
+      {t:"The chef is der Chef.", ok:false}
+    ],
+    rule:"Chef = boss. Koch / Köchin = cook / chef (kitchen). „Mein Chef“ ist nicht unbedingt in der Küche.",
+    ruleEn:"Chef = boss. Koch = cook." },
+  { id:"aktuell", title:"aktuell ≠ actually",
+    scene:"Nachrichten in der Klasse. Herr Young fragt: Ist das noch wahr?",
+    en:"News in class. Is this still true?",
+    opts:[
+      {t:"Das ist aktuell die Regel – also actually.", ok:false},
+      {t:"Das ist aktuell (jetzt, zurzeit). „Actually“ heißt eigentlich.", ok:true},
+      {t:"Aktuell bedeutet eventually.", ok:false}
+    ],
+    rule:"aktuell = current / up to date. actually = eigentlich. „Was ist aktuell los in Kleinhausen?“",
+    ruleEn:"aktuell = current. actually = eigentlich." },
+  { id:"eventuell", title:"eventuell ≠ eventually",
+    scene:"Ausflug zum See. Kommt ihr vielleicht mit?",
+    en:"Trip to the lake. Might you come along?",
+    opts:[
+      {t:"Eventuell kommen wir – das heißt maybe.", ok:true},
+      {t:"Eventuell = eventually, am Ende sicher.", ok:false},
+      {t:"Eventuell bedeutet aktuell.", ok:false}
+    ],
+    rule:"eventuell = maybe / possibly. eventually = schließlich / irgendwann. Nicht vertauschen!",
+    ruleEn:"eventuell = maybe. eventually = schließlich." },
+  { id:"handy", title:"Handy ≠ handy",
+    scene:"Du suchst dein Telefon in der Tasche vor der Kirche.",
+    en:"You look for your phone before church.",
+    opts:[
+      {t:"Mein Handy ist convenient.", ok:false},
+      {t:"Ich habe mein Handy (Mobiltelefon) nicht dabei.", ok:true},
+      {t:"Handy heißt praktisch, nicht Telefon.", ok:false}
+    ],
+    rule:"Handy = cell phone. „handy“ (English: convenient) = praktisch / nützlich. Zwei verschiedene Wörter.",
+    ruleEn:"Handy = mobile phone, not ‘convenient’." },
+  { id:"umarmen", title:"umarmen ≠ umbringen",
+    scene:"SMS-Chaos in der Pause. Du willst schreiben: Ich umarme dich. Autokorrektur ist gemein – wähle den sicheren Satz.",
+    en:"Text-message mix-up. You mean a hug, not anything else. Classroom-safe.",
+    opts:[
+      {t:"Ich umarme dich. (hug)", ok:true},
+      {t:"Ich umbringe dich. (falsches Verb – bitte nie so schreiben)", ok:false},
+      {t:"Ich bringe dich um, haha. (klingt gefährlich, auch als Witz ungeeignet)", ok:false}
+    ],
+    rule:"umarmen = to hug. umbringen = to kill (bitte nicht verwechseln, auch nicht als Witz in einer Nachricht). Bei Unsicherheit: „Ich gebe dir eine Umarmung.“",
+    ruleEn:"umarmen = hug. umbringen is a different, serious verb — don’t mix them in a text." },
+  { id:"haarschnitt", title:"Haarschnitt ≠ Kaiserschnitt",
+    scene:"Termin im Salon „Schere & Kamm“, Lindenstraße. Du willst nur die Haare kürzer.",
+    en:"Salon appointment. You want a haircut, not a medical term.",
+    opts:[
+      {t:"Ich möchte einen Haarschnitt.", ok:true},
+      {t:"Ich möchte einen Kaiserschnitt, bitte.", ok:false},
+      {t:"Cut my Kaiser, please.", ok:false}
+    ],
+    rule:"Haarschnitt = haircut. Kaiserschnitt = caesarean section (medizinischer Begriff, nicht Friseur). Im Salon nur Haarschnitt sagen.",
+    ruleEn:"Haarschnitt = haircut. Kaiserschnitt is a medical term — not for the salon." },
+  { id:"v2", title:"Verb an Position 2",
+    scene:"Sonntag in Kleinhausen. Du erzählst, wohin du gehst.",
+    en:"Sunday in town. Word order: verb second.",
+    opts:[
+      {t:"Heute ich gehe in die Kirche.", ok:false},
+      {t:"Heute gehe ich in die Kirche.", ok:true},
+      {t:"Heute in die Kirche ich gehe.", ok:false}
+    ],
+    rule:"Verb second: Das konjugierte Verb steht auf Platz 2. Heute (1) gehe (2) ich in die Kirche.",
+    ruleEn:"Conjugated verb in position 2. Not: Heute ich gehe…" },
+  { id:"weil", title:"weil / dass – Verb ans Ende",
+    scene:"Du fehlst in der Stunde bei Herrn Young. Begründung bitte.",
+    en:"You miss class. Give a weil-clause.",
+    opts:[
+      {t:"Ich bleibe zu Hause, weil ich bin krank.", ok:false},
+      {t:"Ich bleibe zu Hause, weil ich krank bin.", ok:true},
+      {t:"Ich bleibe zu Hause, weil bin ich krank.", ok:false}
+    ],
+    rule:"Nach weil und dass steht das Verb am Ende: weil ich krank bin. dass du kommst.",
+    ruleEn:"In weil/dass clauses the verb goes to the end." },
+  { id:"dass", title:"dass – Verb ans Ende",
+    scene:"Herr Young sagt: Ich hoffe, dass ihr das merkt. Welcher Satz ist richtig?",
+    en:"dass-clause: verb to the end.",
+    opts:[
+      {t:"Ich hoffe, dass ihr merkt das.", ok:false},
+      {t:"Ich hoffe, dass ihr das merkt.", ok:true},
+      {t:"Ich hoffe, dass merkt ihr das.", ok:false}
+    ],
+    rule:"Nach dass steht das Verb am Satzende: dass ihr das merkt. Nicht wie im Englischen.",
+    ruleEn:"After dass the verb goes to the end: dass ihr das merkt." },
+  { id:"trennbar", title:"Trennbar: anrufen",
+    scene:"Du rufst eine Freundin in Kleinhausen an. Welcher Satz ist richtig?",
+    en:"Separable verbs: prefix at the end.",
+    opts:[
+      {t:"Ich anrufe dich morgen.", ok:false},
+      {t:"Ich rufe dich morgen an.", ok:true},
+      {t:"Ich rufe an dich morgen.", ok:false}
+    ],
+    rule:"Trennbar: Ich rufe dich an. Das Präfix an- wandert im Präsens ans Ende.",
+    ruleEn:"Separable verbs split: Ich rufe dich an." },
+  { id:"aufstehen", title:"Trennbar: aufstehen",
+    scene:"Montag, 6:45. Der Bus nach Mainz wartet. Wann stehst du auf?",
+    en:"Separable verb aufstehen.",
+    opts:[
+      {t:"Ich aufstehe um sieben.", ok:false},
+      {t:"Ich stehe um sieben auf.", ok:true},
+      {t:"Um sieben ich aufstehe.", ok:false}
+    ],
+    rule:"aufstehen → Ich stehe … auf. Erst das Verb (Position 2), dann das Präfix am Ende.",
+    ruleEn:"aufstehen splits: Ich stehe um sieben auf." },
+  { id:"mitkommen", title:"Trennbar: mitkommen",
+    scene:"Nach der Stunde. Herr Young: Kommst du zum Marktplatz mit?",
+    en:"Separable verb mitkommen.",
+    opts:[
+      {t:"Ja, ich mitkomme.", ok:false},
+      {t:"Ja, ich komme mit.", ok:true},
+      {t:"Ja, mit ich komme.", ok:false}
+    ],
+    rule:"mitkommen → Ich komme mit. Frage: Kommst du mit?",
+    ruleEn:"mitkommen splits: Ich komme mit." }
+];
+
+const SPEED = [
+  { q:"bekommen = ?", opts:["become","get / receive","begin"], a:1, rule:"bekommen = get." },
+  { q:"Gift = ?", opts:["present","poison","talent"], a:1, rule:"Gift = poison. Geschenk = gift." },
+  { q:"Chef = ?", opts:["cook","boss","ship"], a:1, rule:"Chef = boss." },
+  { q:"Heute ___ ich in die Kirche.", opts:["ich gehe","gehe ich","gehen ich"], a:1, rule:"Verb second." },
+  { q:"weil ich krank ___.", opts:["bin","ich bin","sei bin"], a:0, rule:"Verb ans Ende." },
+  { q:"Ich ___ dich morgen ___.", opts:["anrufe / (nichts)","rufe / an","an / rufe"], a:1, rule:"Ich rufe dich an." }
+];
+
+function sagen(t){ const a=$("status"); if(a) a.textContent=t; const b=$("status-meta"); if(b) b.textContent=t; }
+function sprich(text){
+  if(!S.audio || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang="de-DE"; u.rate=.9;
+    const v=window.speechSynthesis.getVoices().find(x=>/^de/i.test(x.lang));
+    if(v) u.voice=v;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function glossUpdate(){
+  document.documentElement.setAttribute("data-en", S.englisch?"an":"aus");
+  document.querySelectorAll(".gloss").forEach(el=>{ el.hidden=!S.englisch; });
+}
+function zeigeScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+  const h=document.querySelector("#"+id+" h2");
+  if(h) h.focus();
+  window.scrollTo({top:0,behavior:S.motion?"smooth":"auto"});
+}
+function setToggle(btn,on){ btn.setAttribute("aria-pressed", on?"true":"false"); }
+
+$("s-en").addEventListener("click", ()=>{
+  S.englisch=!S.englisch; setToggle($("s-en"),S.englisch); glossUpdate();
+  sagen(S.englisch?"English on.":"English aus.");
+});
+$("s-audio").addEventListener("click", ()=>{
+  S.audio=!S.audio; setToggle($("s-audio"),S.audio);
+  if(S.audio){ sprich("Vorlesen ist an."); sagen("Vorlesen ist an."); }
+  else { if("speechSynthesis" in window) window.speechSynthesis.cancel(); sagen("Vorlesen ist aus."); }
+});
+$("s-contrast").addEventListener("click", ()=>{
+  S.kontrast=!S.kontrast; setToggle($("s-contrast"),S.kontrast);
+  document.documentElement.setAttribute("data-contrast", S.kontrast?"hoch":"normal");
+  sagen(S.kontrast?"Kontrast hoch.":"Normale Farben.");
+});
+$("s-size").addEventListener("click", ()=>{
+  S.size=(S.size+1)%3;
+  const n=["normal","gross","sehr-gross"], l=["A","A+","A++"];
+  document.documentElement.setAttribute("data-size", n[S.size]);
+  $("s-size").textContent="Schrift: "+l[S.size];
+});
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  S.motion=false; document.documentElement.setAttribute("data-motion","aus");
+}
+
+function renderPips(n,now){
+  const p=$("pips"); p.innerHTML="";
+  for(let i=0;i<n;i++){
+    const d=document.createElement("span");
+    d.className="pip"+(i<now?" done":i===now?" now":"");
+    p.appendChild(d);
+  }
+}
+
+function loadRound(){
+  S.answered=false; S.speed=false; S.tries=0;
+  $("timer").hidden=true;
+  const r=ROUNDS[S.i];
+  const richtig=r.opts.find(o=>o.ok).t;
+  $("round-lab").textContent="Runde "+(S.i+1)+" von "+ROUNDS.length+" · Schreib den Satz";
+  $("h-play").textContent=r.title;
+  $("scene-de").textContent=r.scene;
+  $("scene-en").textContent=r.en+" Type the correct German sentence.";
+  $("stamp").classList.remove("on");
+  $("btn-next").hidden=true;
+  renderPips(ROUNDS.length, S.i);
+  const box=$("choices");
+  box.innerHTML = prodBlock("mix-in","Schreib den richtigen Satz.")+
+    '<p class="btn-row"><button type="button" class="btn" id="mix-ok">Prüfen</button></p><p class="hint-try" id="mix-hint" hidden></p>';
+  bindUmlauts(box);
+  const inp=$("mix-in");
+  inp.focus();
+  function check(){
+    if(S.answered) return;
+    const v=inp.value;
+    if(nearDe(v, richtig)){
+      finishMix(r, true, richtig);
+      return;
+    }
+    S.tries=(S.tries||0)+1;
+    const hint=$("mix-hint"); hint.hidden=false;
+    if(S.tries>=2){
+      inp.value=richtig;
+      finishMix(r, false, richtig);
+    } else {
+      hint.textContent="Noch nicht. Ein Versuch bleibt — ganzer Satz, deutsche Wortstellung.";
+      sagen("Noch nicht. Schreib den ganzen Satz.");
+    }
+  }
+  $("mix-ok").addEventListener("click", check);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+  glossUpdate();
+  sprich(r.scene);
+  sagen(r.title+". Schreib den Satz.");
+}
+
+function finishMix(r, ok, richtig){
+  S.answered=true; S.total++;
+  if(ok) S.korrekt++;
+  const inp=$("mix-in"); if(inp) inp.disabled=true;
+  const go=$("mix-ok"); if(go) go.disabled=true;
+  $("stamp").classList.add("on");
+  $("stamp-rule").textContent=r.rule+(ok?"":"  → "+richtig);
+  $("stamp-en").textContent=r.ruleEn;
+  glossUpdate();
+  sprich(r.rule);
+  sagen(ok?"Richtig! Remember-Stempel.":"Remember! "+r.rule);
+  $("btn-next").hidden=false;
+  $("btn-next").focus();
+}
+
+$("btn-next").addEventListener("click", ()=>{
+  if(S.speed){ nextSpeed(); return; }
+  S.i++;
+  if(S.i<ROUNDS.length) loadRound();
+  else startSpeed();
+});
+
+function startSpeed(){
+  S.speed=true; S.speedI=-1; S.answered=true;
+  $("round-lab").textContent="Schnellrunde · 6 Karten";
+  $("h-play").textContent="Tempo!";
+  $("scene-de").textContent="Sechs schnelle Karten. 12 Sekunden pro Karte. Denk an die Stempel!";
+  $("scene-en").textContent="Six rapid cards. 12 seconds each.";
+  $("stamp").classList.remove("on");
+  $("choices").innerHTML="";
+  $("timer").hidden=true;
+  $("btn-next").hidden=false;
+  $("btn-next").textContent="Los!";
+  $("btn-next").focus();
+  sagen("Schnellrunde. Sechs Karten.");
+  sprich("Schnellrunde. Sechs schnelle Karten.");
+}
+function loadSpeed(){
+  S.answered=false;
+  const c=SPEED[S.speedI];
+  const richtig=c.opts[c.a];
+  $("h-play").textContent="Schnell "+(S.speedI+1)+"/6";
+  $("scene-de").textContent=c.q;
+  $("scene-en").textContent="Type the answer. 12 seconds.";
+  renderPips(SPEED.length, S.speedI);
+  const box=$("choices");
+  box.innerHTML = prodBlock("spd-in","Schreib die Antwort.")+
+    '<p class="btn-row"><button type="button" class="btn" id="spd-ok">Prüfen</button></p>';
+  bindUmlauts(box);
+  $("stamp").classList.remove("on");
+  $("btn-next").hidden=true;
+  $("btn-next").textContent="Nächste Karte";
+  const bar=$("timer"); bar.hidden=false; bar.classList.remove("run");
+  const span=bar.querySelector("span");
+  span.style.animation="none";
+  void span.offsetWidth;
+  if(S.motion){ bar.classList.add("run"); span.style.animation=""; }
+  else bar.classList.remove("run");
+  if(speedTimer) clearTimeout(speedTimer);
+  function lock(ok){
+    if(S.answered) return;
+    S.answered=true; S.total++;
+    if(speedTimer) clearTimeout(speedTimer);
+    if(ok) S.korrekt++;
+    const inp=$("spd-in"); if(inp){ inp.disabled=true; if(!ok) inp.value=richtig; }
+    const go=$("spd-ok"); if(go) go.disabled=true;
+    showSpeedStamp(c,ok);
+  }
+  speedTimer=setTimeout(()=>{ if(!S.answered){ sagen("Zeit um!"); lock(false); } }, 12000);
+  $("spd-ok").addEventListener("click", ()=>lock(nearDe($("spd-in").value, richtig)));
+  $("spd-in").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); lock(nearDe($("spd-in").value, richtig)); } });
+  $("spd-in").focus();
+  glossUpdate();
+  sprich(c.q);
+}
+function showSpeedStamp(c,ok){
+  $("stamp").classList.add("on");
+  $("stamp-rule").textContent=c.rule;
+  $("stamp-en").textContent=ok?"Fast!":"Remember!";
+  $("btn-next").hidden=false;
+  sagen(ok?"Treffer.":"Remember: "+c.rule);
+  glossUpdate();
+}
+function nextSpeed(){
+  S.speedI++;
+  if(S.speedI<SPEED.length) loadSpeed();
+  else openMeta();
+}
+
+function openMeta(){
+  if(speedTimer) clearTimeout(speedTimer);
+  zeigeScreen("screen-meta");
+  const box=$("meta-choices");
+  box.innerHTML = '<p>Schreib die richtige Form: nicht „Jedes Fehler“.</p>'+
+    prodBlock("meta-in","Artikel + Fehler")+
+    '<p class="btn-row"><button type="button" class="btn" id="meta-ok">Prüfen</button></p>';
+  bindUmlauts(box);
+  let done=false;
+  $("meta-ok").addEventListener("click", ()=>{
+    if(done) return;
+    const v=$("meta-in").value;
+    const ok = nearDe(v, "Jeder Fehler") || foldDe(v)==="jeder fehler";
+    done=true; S.total++;
+    if(ok){ S.korrekt++; S.bonus=5; }
+    $("meta-in").disabled=true; $("meta-ok").disabled=true;
+    $("meta-stamp").classList.add("on");
+    $("meta-rule").textContent = ok
+      ? "Genau. der Fehler → jeder Fehler. +5 Bonus!"
+      : "Fehler ist maskulin: der Fehler. Deshalb jeder Fehler, nicht jedes.";
+    $("btn-meta-next").hidden=false;
+    sprich($("meta-rule").textContent);
+    sagen(ok?"Meta-Witz sitzt. Jeder Fehler.":"Fast – Jeder Fehler, nicht Jedes.");
+  });
+  $("meta-in").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); $("meta-ok").click(); } });
+  $("meta-in").focus();
+  glossUpdate();
+  sprich("Jedes Fehler bringt dich vorwärts. Was stimmt nicht?");
+}
+$("btn-meta-next").addEventListener("click", endGame);
+
+function hash32(str){
+  let h=0x811c9dc5;
+  for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=(h+((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24)))>>>0; }
+  return h>>>0;
+}
+function baueCode(name){
+  const score=S.korrekt+S.bonus;
+  const pct=S.total?Math.round(S.korrekt/S.total*100):0;
+  const norm=name.trim().toLowerCase().replace(/\s+/g," ");
+  const roh=norm+"|"+score+"|"+S.total+"|"+S.bonus;
+  const pruef=hash32(roh+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return "KH-MIX-"+score+"-"+pct+"-"+pruef;
+}
+function codeAktualisieren(){
+  const name=$("name-in").value;
+  if(!name.trim()){ $("code-val").textContent="Bitte gib zuerst deinen Namen ein."; return; }
+  $("code-val").textContent=baueCode(name);
+}
+function endGame(){
+  const pct=S.total?Math.round(S.korrekt/S.total*100):0;
+  $("win-line").textContent="Jeder Fehler bringt dich vorwärts.";
+  $("sum-text").textContent="Richtige Karten: "+S.korrekt+" von "+S.total+" ("+pct+" %). Bonus für den Meta-Witz: "+S.bonus+". Herr Young zwinkert von der Tafel.";
+  codeAktualisieren();
+  zeigeScreen("screen-summary");
+  sprich("Jeder Fehler bringt dich vorwärts. Danke.");
+}
+$("name-in").addEventListener("input", codeAktualisieren);
+$("btn-copy").addEventListener("click", async ()=>{
+  const t=$("code-val").textContent;
+  if(!/^KH-/.test(t)){ sagen("Zuerst den Namen."); return; }
+  try{ await navigator.clipboard.writeText(t); $("btn-copy").textContent="Kopiert";
+    setTimeout(()=>{ $("btn-copy").textContent="Code kopieren"; },2000); }
+  catch(e){ $("btn-copy").textContent="Strg+C"; }
+});
+$("btn-verify").addEventListener("click", ()=>{
+  const name=$("v-name").value.trim();
+  const code=$("v-code").value.trim().toUpperCase();
+  const m=/^KH-MIX-(\d+)-(\d+)-([0-9A-Z]{7})$/.exec(code);
+  const out=$("v-out");
+  if(!name||!m){ out.textContent="Name und KH-MIX-Code bitte."; return; }
+  const score=Number(m[1]), pct=Number(m[2]), pruef=m[3];
+  const norm=name.toLowerCase().replace(/\s+/g," ");
+  let ok=false;
+  for(let tot=1;tot<=40;tot++){
+    if(Math.round((score>tot?tot:Math.min(score,tot))/tot*100)!==pct && pct!==0){
+      /* score includes bonus; korrekt = score or score-5 */
+    }
+    for(let b of [0,5]){
+      const korrekt=score-b;
+      if(korrekt<0) continue;
+      if(tot<korrekt) continue;
+      if(Math.round(korrekt/tot*100)!==pct && !(korrekt===0&&pct===0)) continue;
+      const p=hash32(norm+"|"+score+"|"+tot+"|"+b+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+      if(p===pruef) ok=true;
+    }
+  }
+  out.textContent=ok?("Gültig. "+name+": Score "+score+", ca. "+pct+" %."):"Ungültig.";
+});
+$("btn-start").addEventListener("click", ()=>{
+  deal(ROUNDS); deal(SPEED);
+  S.i=0; S.korrekt=0; S.total=0; S.bonus=0; S.speed=false;
+  zeigeScreen("screen-play"); loadRound();
+});
+$("btn-retry").addEventListener("click", ()=>{
+  S.i=0; S.korrekt=0; S.total=0; S.bonus=0; S.speed=false; S.speedI=0; S.answered=false;
+  if(speedTimer) clearTimeout(speedTimer);
+  zeigeScreen("screen-start");
+});
+document.addEventListener("keydown", e=>{
+  const tag=(e.target.tagName||"").toLowerCase();
+  if(tag==="input"||tag==="textarea") return;
+  const n=Number(e.key);
+  if(n>=1&&n<=4){
+    const btns=document.querySelectorAll(".screen.on .choice");
+    if(btns[n-1] && !btns[n-1].disabled) btns[n-1].click();
+  }
+});
+glossUpdate();
+if("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged=function(){};
+</script>
+</body>
+</html>

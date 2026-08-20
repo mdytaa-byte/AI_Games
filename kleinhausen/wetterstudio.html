@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="de" data-en="an">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wetterstudio Kleinhausen – Lindenfernsehen</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+  --night:#0b1d3a;
+  --studio:#1a2744;
+  --onair:#e03131;
+  --mapg:#2f9e44;
+  --sun:#ffd43b;
+  --foam:#f4f7fb;
+  --ink:#0b1d3a;
+  --muted:#8aa0c4;
+  --ok:#2f9e44;
+  --bad:#e03131;
+  --card:#132347;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1rem;
+}
+html[data-size="gross"]{--fs:1.14rem;}
+html[data-size="sehr-gross"]{--fs:1.28rem;}
+html[data-contrast="hoch"]{
+  --night:#000;--studio:#000;--onair:#c00;--mapg:#070;--sun:#ff0;
+  --foam:#fff;--ink:#000;--muted:#000;--ok:#070;--bad:#c00;--card:#fff;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--night);
+  background-image:radial-gradient(circle at 80% 0%, rgba(224,49,49,.18), transparent 35%),
+    linear-gradient(180deg,#0b1d3a, #12284d 40%, #0b1d3a);
+  color:var(--foam);
+  font-family:var(--sans);
+  font-size:var(--fs);
+  line-height:1.5;
+  -webkit-text-size-adjust:100%;
+}
+html[data-contrast="hoch"] body{background:#000;color:#fff;}
+.skip{position:absolute;left:-9999px;top:0;z-index:200;background:var(--onair);color:#fff;padding:.75em 1.1em;font-weight:700;text-decoration:none;}
+.skip:focus{left:0;}
+:focus-visible{outline:3px solid var(--sun);outline-offset:3px;}
+html[data-contrast="hoch"] :focus-visible{outline:4px solid #fff;}
+button,input{font:inherit;}
+button,.set-btn,.btn,.card,.icon-btn,.chip,.hot,.opt{min-height:44px;}
+.en.gloss{display:block;color:var(--muted);font-style:italic;font-size:.9em;margin:.15em 0 0;}
+.en.gloss.inline{display:inline;}
+html:not([data-en="an"]) .en.gloss{display:none !important;}
+html[data-contrast="hoch"] .en.gloss{color:#ccc;}
+.topbar{background:#070f22;border-bottom:4px solid var(--onair);color:#fff;}
+.topbar-in{max-width:1140px;margin:0 auto;padding:.7rem 1rem;display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;justify-content:space-between;}
+.brand{display:flex;align-items:center;gap:.7rem;}
+.brand h1{font-family:var(--serif);font-size:1.32em;margin:0;}
+.brand small{display:block;font-family:var(--mono);font-size:.62em;letter-spacing:.18em;text-transform:uppercase;color:var(--sun);}
+.onair-pill{background:var(--onair);color:#fff;font-family:var(--mono);font-size:.7em;letter-spacing:.14em;padding:.35em .7em;border-radius:4px;}
+.settings{display:flex;flex-wrap:wrap;gap:.4rem;}
+.set-btn{background:transparent;color:#fff;border:2px solid var(--muted);border-radius:999px;padding:.35em .85em;cursor:pointer;}
+.set-btn[aria-pressed="true"]{background:var(--sun);color:var(--night);font-weight:700;border-color:var(--sun);}
+.wrap{max-width:1140px;margin:0 auto;padding:1.2rem 1rem 3rem;}
+.screen{display:none;} .screen.on{display:block;}
+h2{font-family:var(--serif);font-size:1.7em;margin:.1em 0 .4em;}
+h2:focus{outline:none;}
+h3{font-family:var(--serif);margin:.3em 0 .5em;}
+.eyebrow{font-family:var(--mono);font-size:.72em;letter-spacing:.16em;text-transform:uppercase;color:var(--sun);}
+.lede{max-width:64ch;}
+.btn{background:var(--onair);color:#fff;border:3px solid #8a1515;border-radius:8px;padding:.55em 1.2em;cursor:pointer;font-weight:700;box-shadow:0 3px 0 #8a1515;}
+.btn:hover{filter:brightness(1.08);}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none;}
+.btn-ghost{background:transparent;color:var(--foam);border-color:var(--foam);box-shadow:0 3px 0 var(--foam);}
+.btn-ghost:hover{background:var(--foam);color:var(--night);}
+.btn-sun{background:var(--sun);color:var(--night);border-color:#c9a61a;box-shadow:0 3px 0 #c9a61a;}
+.btn-row{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem;}
+.live{min-height:1.4em;margin:.6rem 0 0;font-weight:600;}
+.cards{display:grid;gap:.8rem;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));}
+.card{
+  background:var(--card);border:2px solid #2a3d68;border-radius:10px;padding:.8rem;text-align:left;cursor:pointer;color:var(--foam);
+}
+.card[aria-pressed="true"]{border-color:var(--sun);box-shadow:0 0 0 3px rgba(255,212,59,.35);}
+.card.offiziell{border-left:8px solid var(--mapg);}
+.card.zweifel{border-left:8px solid var(--onair);}
+.card .grad{font-family:var(--mono);font-size:1.6em;color:var(--sun);}
+.fb{margin:1rem 0;padding:.85rem;border-radius:8px;border-left:8px solid var(--ok);background:#14301c;}
+.fb.bad{border-left-color:var(--bad);background:#3a1518;}
+.fb[hidden]{display:none;}
+.map-grid{display:grid;gap:1rem;grid-template-columns:minmax(0,1.3fr) 280px;}
+@media (max-width:860px){.map-grid{grid-template-columns:1fr;}}
+.map-svg{width:100%;background:#0e2a18;border:3px solid var(--mapg);border-radius:12px;display:block;}
+.hot{fill:rgba(255,212,59,.15);stroke:var(--sun);stroke-width:2;cursor:pointer;}
+.hot:hover,.hot.on{fill:rgba(255,212,59,.4);}
+.icon-row{display:flex;flex-wrap:wrap;gap:.4rem;}
+.icon-btn{background:var(--card);color:var(--foam);border:2px solid #2a3d68;border-radius:8px;padding:.35em .6em;cursor:pointer;}
+.icon-btn[aria-pressed="true"]{border-color:var(--sun);background:#2a2408;}
+.chips{display:flex;flex-wrap:wrap;gap:.45rem;}
+.chip{background:var(--card);color:var(--foam);border:2px solid #2a3d68;border-radius:999px;padding:.4em .8em;cursor:pointer;}
+.chip[aria-pressed="true"]{background:var(--sun);color:var(--night);border-color:var(--sun);}
+.chip.bad{background:var(--onair);color:#fff;border-color:#8a1515;}
+.script{
+  min-height:160px;background:#07101f;border:2px solid var(--muted);border-radius:8px;padding:1rem;
+  font-family:var(--serif);font-size:1.15em;
+}
+.prompter{
+  background:#050a14;border:8px solid #222;border-radius:6px;padding:1.2rem;min-height:140px;
+  font-family:var(--mono);font-size:1.25em;color:var(--sun);
+}
+.prompter.live-on{box-shadow:0 0 0 6px var(--onair);}
+.lights{height:16px;border-radius:8px;background:linear-gradient(90deg,#222,var(--onair),var(--sun),var(--mapg),#222);margin:.6rem 0 1rem;}
+html[data-motion="aus"] .lights{background:var(--onair);}
+@media (prefers-reduced-motion:reduce){.lights{background:var(--onair);}}
+.opts{display:flex;flex-direction:column;gap:.5rem;}
+.opt{background:var(--card);color:var(--foam);border:2px solid #2a3d68;border-radius:10px;padding:.7em .9em;cursor:pointer;text-align:left;}
+.opt.good{border-color:var(--mapg);background:#14301c;}
+.opt.no{border-color:var(--onair);background:#3a1518;}
+.blooper{background:#1a1020;border:2px dashed var(--onair);padding:1rem;border-radius:8px;margin:1rem 0;}
+.code-box{background:#050a14;border:2px solid var(--sun);padding:1rem;border-radius:8px;}
+.code-val{font-family:var(--mono);color:var(--sun);word-break:break-all;}
+.name-feld{margin:1rem 0;}
+.name-feld input{min-height:44px;width:min(420px,100%);border:2px solid var(--sun);border-radius:6px;padding:.4em .6em;background:var(--studio);color:var(--foam);}
+table{width:100%;border-collapse:collapse;margin:1rem 0;background:var(--card);}
+th,td{border:1px solid #2a3d68;padding:.5em .7em;text-align:left;}
+.num{text-align:right;}
+footer{max-width:1140px;margin:0 auto;padding:0 1rem 2rem;color:var(--muted);font-size:.9em;}
+kbd{border:1px solid var(--muted);padding:.05em .35em;border-radius:4px;}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
+html[data-motion="aus"] *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+.prod-lab{font-weight:700;margin:.2rem 0 .35rem;}
+.prod-in,textarea.prod-in{
+  width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;
+  padding:.55em .7em;border:2px solid var(--muted);border-radius:6px;background:#07101f;color:var(--foam);
+}
+textarea.prod-in{min-height:7.2rem;line-height:1.45;resize:vertical;}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0;}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:700;cursor:pointer;background:var(--card);color:var(--foam);border:2px solid var(--muted);border-radius:6px;}
+.q-in-row{margin-top:.5rem;}
+
+.brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
+a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
+a.hub-home:hover{background:rgba(255,255,255,.18)}
+</style>
+</head>
+<body>
+<a class="skip" href="#hauptinhalt">Zum Hauptinhalt springen</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <a class="hub-home" href="../index.html" aria-label="Zurück zum Stadtplan Kleinhausen">Kleinhausen</a>
+            <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+        <rect width="44" height="44" rx="8" fill="#e03131"/>
+        <circle cx="22" cy="18" r="8" fill="#ffd43b"/>
+        <path d="M8 34 q14-12 28 0" fill="none" stroke="#2f9e44" stroke-width="4"/>
+      </svg>
+      <div>
+        <h1>Lindenfernsehen</h1>
+        <small>Wetterstudio Kleinhausen</small>
+      </div>
+    </div>
+    <span class="onair-pill" id="onair-flag" hidden>ON AIR</span>
+    <div class="settings" role="group" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">Vorlesen</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="hauptinhalt">
+  <p class="live" id="status" role="status" aria-live="polite"></p>
+  <section class="screen on" id="screen-start" aria-labelledby="h-start">
+    <p class="eyebrow">A1–A2 · Wetter · Abendschau</p>
+    <h2 id="h-start" tabindex="-1">Du bist die Abendmoderation</h2>
+    <p class="lede">Willkommen im Studio von <strong>Lindenfernsehen</strong>. Vier Phasen: Daten prüfen, Karte bauen, Text legen, live gehen. Manche Karten widersprechen sich – nimm die <strong>Messung vom DWD-Kasten am Markt</strong>.
+      <span class="en gloss" lang="en">You present the evening forecast. Trust the official DWD box on the market square when sources clash.</span></p>
+    <ul class="lede">
+      <li>Wortschatz: sonnig, bewölkt, Regen, Schnee, windig, Gewitter, neblig, Grad, minus, Gewitterwarnung, Schirm, Jacke.</li>
+      <li>Satzbau: Heute <em>ist</em> es… / Morgen <em>wird</em> es… — Verb an Position 2.</li>
+    </ul>
+    <div class="btn-row"><button type="button" class="btn" id="btn-go">In die Redaktion</button></div>
+    <details>
+      <summary>Tastatur <span class="en gloss" lang="en">Keyboard</span></summary>
+      <ul>
+        <li><kbd>Tab</kbd>, <kbd>Enter</kbd>, <kbd>Leertaste</kbd>. Karten und Chips sind 44 Pixel groß.</li>
+        <li><strong>Vorlesen</strong> spricht dein Skript on air (de-DE).</li>
+      </ul>
+    </details>
+  </section>
+
+  <section class="screen" id="screen-news" aria-labelledby="h-news">
+    <p class="eyebrow">Phase 1 · Redaktion</p>
+    <h2 id="h-news" tabindex="-1">Welche Daten sind offiziell?</h2>
+    <p class="lede">Sechs Karten. Markiere die, die du in die Sendung nimmst. Bei Widerspruch gilt der <strong>DWD-Kasten am Markt</strong>.
+      <span class="en gloss" lang="en">Select the official cards. Reject blog/app contradictions for the same slot.</span></p>
+    <div class="cards" id="news-cards"></div>
+    <div class="fb" id="news-fb" hidden tabindex="-1"></div>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-news">Auswahl prüfen</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-map" aria-labelledby="h-map">
+    <p class="eyebrow">Phase 2 · Wetterkarte Rheinhessen</p>
+    <h2 id="h-map" tabindex="-1">Icons auf die Karte</h2>
+    <p class="lede">Wähle ein Wetter-Icon und eine Temperatur, dann klicke Kleinhausen, Mainz oder Frankfurt.
+      <span class="en gloss" lang="en">Pick an icon and temperature, then click a town.</span></p>
+    <div class="map-grid">
+      <div>
+        <svg class="map-svg" viewBox="0 0 420 320" role="img" aria-label="Karte Rheinhessen">
+          <rect width="420" height="320" fill="#163820"/>
+          <path d="M40 40 L380 50 L400 280 L30 270 Z" fill="#2f9e44" opacity=".85"/>
+          <path d="M300 30 C 310 80, 330 140, 340 300" fill="none" stroke="#7ec8ff" stroke-width="10"/>
+          <text x="348" y="160" fill="#cfefff" font-size="12" transform="rotate(78 348 160)">Rhein</text>
+          <text x="40" y="28" fill="#ffd43b" font-size="12" font-family="ui-monospace">WESTEN</text>
+          <text x="330" y="28" fill="#ffd43b" font-size="12" font-family="ui-monospace">OSTEN</text>
+          <circle class="hot" id="hot-kh" cx="160" cy="170" r="28" data-ort="kh" tabindex="0" role="button" aria-label="Kleinhausen"/>
+          <circle class="hot" id="hot-mz" cx="210" cy="210" r="22" data-ort="mz" tabindex="0" role="button" aria-label="Mainz"/>
+          <circle class="hot" id="hot-ff" cx="300" cy="90" r="22" data-ort="ff" tabindex="0" role="button" aria-label="Frankfurt"/>
+          <text x="160" y="174" text-anchor="middle" fill="#0b1d3a" font-size="11" pointer-events="none">KH</text>
+          <text x="210" y="214" text-anchor="middle" fill="#0b1d3a" font-size="10" pointer-events="none">MZ</text>
+          <text x="300" y="94" text-anchor="middle" fill="#0b1d3a" font-size="10" pointer-events="none">FF</text>
+          <g id="map-icons"></g>
+        </svg>
+        <p id="map-legend" class="en gloss" lang="en">KH Kleinhausen · MZ Mainz · FF Frankfurt. Keyboard: buttons below the map.</p>
+        <div class="icon-row" id="map-keys" style="margin-top:.6rem;">
+          <button type="button" class="icon-btn" data-ort="kh">Kleinhausen setzen</button>
+          <button type="button" class="icon-btn" data-ort="mz">Mainz setzen</button>
+          <button type="button" class="icon-btn" data-ort="ff">Frankfurt setzen</button>
+        </div>
+      </div>
+      <div>
+        <h3>Wetter</h3>
+        <div class="icon-row" id="wx-icons"></div>
+        <h3>Temperatur</h3>
+        <div class="icon-row" id="wx-temp"></div>
+        <h3>Für morgen in Kleinhausen</h3>
+        <div class="icon-row" id="wx-morgen"></div>
+        <p id="map-status"></p>
+      </div>
+    </div>
+    <div class="fb" id="map-fb" hidden tabindex="-1"></div>
+    <div class="btn-row"><button type="button" class="btn" id="btn-map">Karte übernehmen</button></div>
+  </section>
+
+  <section class="screen" id="screen-script" aria-labelledby="h-script">
+    <p class="eyebrow">Phase 3 · Teleprompter schreiben</p>
+    <h2 id="h-script" tabindex="-1">Das Skript legen</h2>
+    <p class="lede">Schreibe den Teleprompter-Text mit <strong>Heute ist es…</strong>, <strong>Morgen wird es…</strong>, <strong>Es gibt / es regnet / die Sonne scheint</strong>, <strong>Im Westen / im Osten</strong> und <strong>18 Grad</strong>. Falsche englische Wortstellung wird abgelehnt.
+      <span class="en gloss" lang="en">Write the forecast script. Keep German verb-second.</span></p>
+    <p class="prod-lab"><label for="script-in">Dein Skript</label></p>
+    <div id="script-uml"></div>
+    <textarea class="prod-in" id="script-in" lang="de" autocomplete="off" spellcheck="false" placeholder="Heute ist es sonnig in Kleinhausen, 18 Grad. Morgen wird es regnen …"></textarea>
+    <div class="script" id="script-out" aria-live="polite"></div>
+    <div class="fb" id="script-fb" hidden tabindex="-1"></div>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-script">Skript prüfen</button>
+      <button type="button" class="btn btn-ghost" id="btn-script-clear">Leeren</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-air" aria-labelledby="h-air">
+    <p class="eyebrow">Phase 4 · ON AIR</p>
+    <h2 id="h-air" tabindex="-1">Guten Abend, Kleinhausen</h2>
+    <div class="lights" aria-hidden="true"></div>
+    <div class="prompter" id="prompter">…</div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-sun" id="btn-tele">Teleprompter starten</button>
+      <button type="button" class="btn btn-ghost" id="btn-speak-script">Skript vorlesen</button>
+    </div>
+    <div id="qbox" hidden>
+      <h3>Zuschauerfragen</h3>
+      <p id="q-text"></p>
+      <span class="en gloss" lang="en" id="q-en"></span>
+      <p class="prod-lab"><label for="q-in">Deine Antwort tippen</label></p>
+      <div id="q-uml"></div>
+      <p class="q-in-row"><input class="prod-in" type="text" id="q-in" lang="de" autocomplete="off" spellcheck="false"></p>
+      <div class="btn-row"><button type="button" class="btn btn-sun" id="btn-q-check">Antwort prüfen</button></div>
+      <div class="fb" id="q-fb" hidden></div>
+      <div class="btn-row"><button type="button" class="btn" id="btn-q-next" hidden>Nächste Frage</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-sum" aria-labelledby="h-sum">
+    <p class="eyebrow">Abspann</p>
+    <h2 id="h-sum" tabindex="-1">Sendung geschafft</h2>
+    <div id="blooper" class="blooper" hidden></div>
+    <p class="lede" id="sum-text"></p>
+    <table>
+      <caption>Punkte</caption>
+      <thead><tr><th>Phase</th><th class="num">Punkte</th><th class="num">Max</th></tr></thead>
+      <tbody id="sum-body"></tbody>
+    </table>
+    <div class="name-feld">
+      <label for="name-in">Dein Name (Abgabecode) <span class="en gloss" lang="en">Your name</span></label><br>
+      <input type="text" id="name-in" autocomplete="name" spellcheck="false">
+    </div>
+    <div class="code-box">
+      <p>Abgabecode</p>
+      <p class="code-val" id="code-val">Bitte Namen eingeben.</p>
+      <button type="button" class="btn btn-sun" id="btn-copy">Code kopieren</button>
+    </div>
+    <details>
+      <summary>Für Lehrkräfte: Code prüfen</summary>
+      <p><label for="v-name">Name</label> <input id="v-name"> <label for="v-code">Code</label> <input id="v-code">
+      <button type="button" class="btn" id="btn-verify">Prüfen</button></p>
+      <p id="v-out" role="status" aria-live="polite"></p>
+    </details>
+    <div class="btn-row"><button type="button" class="btn" id="btn-again">Neue Sendung</button></div>
+  </section>
+</main>
+<footer>
+  <p>Lindenfernsehen · Wetterstudio Kleinhausen · sonnig, bewölkt, Regen, Schnee, windig, Gewitter, neblig, Grad, Gewitterwarnung, Schirm, Jacke. Keine Cookies, kein localStorage.</p>
+</footer>
+
+<script>
+"use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      try{ inp.setSelectionRange(a+b.dataset.c.length, a+b.dataset.c.length); }catch(e){}
+    });
+  });
+}
+function typingIn(e){
+  const tag=(e.target.tagName||"").toLowerCase();
+  return tag==="input"||tag==="textarea";
+}
+const S = {
+  englisch:true, audio:false, kontrast:false, size:0, motion:true,
+  picked:{}, newsPts:0, newsOk:false,
+  holdWx:null, holdT:null, map:{kh:null,mz:null,ff:null}, morgen:{wx:null,t:null}, mapPts:0,
+  chips:[], scriptPts:0, scriptText:"",
+  q:0, qPts:0, qLocked:false, qTries:0, blooper:[]
+};
+
+const CARDS = [
+  {id:"c1", src:"Messung vom DWD-Kasten am Markt", ort:"Kleinhausen", wann:"heute", t:18, wx:"sonnig", ok:true, en:"Official DWD box — Kleinhausen today 18°, sunny."},
+  {id:"c2", src:"Nachbar-Blog „SkySelfie“", ort:"Kleinhausen", wann:"heute", t:18, wx:"regen", ok:false, en:"Contradicts the DWD box for the same slot.", warum:"Dieselbe Zeit, anderer Himmel: Der Blog sagt Regen, der DWD-Kasten Sonne. Nimm die Messung."},
+  {id:"c3", src:"DWD Mainz", ort:"Mainz", wann:"heute", t:16, wx:"bewoelkt", ok:true, en:"Official Mainz today 16°, cloudy."},
+  {id:"c4", src:"DWD Frankfurt", ort:"Frankfurt", wann:"heute", t:17, wx:"sonnig", ok:true, en:"Official Frankfurt today 17°, sunny."},
+  {id:"c5", src:"Messung vom DWD-Kasten am Markt", ort:"Kleinhausen", wann:"morgen", t:12, wx:"regen", ok:true, en:"Official tomorrow: 12°, rain in Kleinhausen."},
+  {id:"c6", src:"DWD Worms", ort:"Worms", wann:"übermorgen", t:9, wx:"neblig", ok:true, en:"Official Worms the day after tomorrow: 9°, foggy."}
+];
+
+const WX = [
+  {id:"sonnig", de:"sonnig", en:"sunny"},
+  {id:"bewoelkt", de:"bewölkt", en:"cloudy"},
+  {id:"regen", de:"Regen", en:"rain"},
+  {id:"schnee", de:"Schnee", en:"snow"},
+  {id:"windig", de:"windig", en:"windy"},
+  {id:"gewitter", de:"Gewitter", en:"thunderstorm"},
+  {id:"neblig", de:"neblig", en:"foggy"}
+];
+const TEMPS = [8,12,16,17,18,22];
+const ORTE = {kh:"Kleinhausen", mz:"Mainz", ff:"Frankfurt"};
+const SOLL = {kh:{wx:"sonnig", t:18}, mz:{wx:"bewoelkt", t:16}, ff:{wx:"sonnig", t:17}, morgen:{wx:"regen", t:12}};
+
+const CHIPDATA = [
+  {id:"h1", de:"Heute ist es", need:"heute", v2:true},
+  {id:"h2", de:"Heute es ist", need:null, bad:"svo", warum:"Englische Reststellung. Richtig: Heute IST es … (Verb an Position 2)."},
+  {id:"h3", de:"sonnig in Kleinhausen", need:"sonnig"},
+  {id:"h4", de:"18 Grad", need:"grad"},
+  {id:"m1", de:"Morgen wird es", need:"morgen", v2:true},
+  {id:"m2", de:"Morgen es wird", need:null, bad:"svo", warum:"Nicht: Morgen es wird. Sondern: Morgen WIRD es …"},
+  {id:"m3", de:"regnen", need:"regen"},
+  {id:"e1", de:"Es gibt Schauer", need:"gibt"},
+  {id:"e2", de:"es regnet", need:"regnet"},
+  {id:"e3", de:"die Sonne scheint", need:"sonne"},
+  {id:"w1", de:"Im Westen", need:"west"},
+  {id:"o1", de:"im Osten", need:"ost"},
+  {id:"u1", de:"Übermorgen wird es neblig in Worms", need:"ueber"},
+  {id:"n1", de:"in der Nacht minus zwei Grad", need:"minus"},
+  {id:"g1", de:"keine Gewitterwarnung heute", need:"warn"},
+  {id:"x1", de:"It is sunny today", need:null, bad:"en", warum:"Bleib auf Deutsch im Teleprompter."}
+];
+
+function sagen(t){ $("status").textContent = t; }
+function sprich(text){
+  if(!S.audio || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "de-DE"; u.rate = .88;
+    const v = window.speechSynthesis.getVoices().find(x => /^de/i.test(x.lang));
+    if(v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function zeige(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+  const h = document.querySelector("#"+id+" h2");
+  if(h) h.focus();
+  window.scrollTo({top:0, behavior: S.motion ? "smooth" : "auto"});
+}
+function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
+function wxIcon(id, x, y){
+  const g = {
+    sonnig:'<circle cx="'+x+'" cy="'+y+'" r="10" fill="#ffd43b"/>',
+    bewoelkt:'<ellipse cx="'+x+'" cy="'+y+'" rx="14" ry="8" fill="#cfd8e6"/>',
+    regen:'<ellipse cx="'+x+'" cy="'+(y-4)+'" rx="12" ry="7" fill="#8aa0c4"/><path d="M'+(x-6)+' '+(y+6)+' l2 8 M'+x+' '+(y+6)+' l2 8 M'+(x+6)+' '+(y+6)+' l2 8" stroke="#7ec8ff" stroke-width="2"/>',
+    schnee:'<ellipse cx="'+x+'" cy="'+y+'" rx="12" ry="7" fill="#eef"/><circle cx="'+(x-6)+'" cy="'+(y+10)+'" r="2" fill="#fff"/><circle cx="'+(x+4)+'" cy="'+(y+12)+'" r="2" fill="#fff"/>',
+    windig:'<path d="M'+(x-12)+' '+y+' h24 M'+(x-10)+' '+(y+6)+' h20" stroke="#f4f7fb" stroke-width="3"/>',
+    gewitter:'<path d="M'+(x-4)+' '+(y-10)+' l8 12 h-6 l4 10 l-10-14 h6z" fill="#ffd43b"/>',
+    neblig:'<path d="M'+(x-14)+' '+y+' h28 M'+(x-12)+' '+(y+7)+' h24" stroke="#cfd8e6" stroke-width="3" opacity=".8"/>'
+  };
+  return g[id] || "";
+}
+
+$("s-en").addEventListener("click", () => {
+  S.englisch = !S.englisch; setToggle($("s-en"), S.englisch);
+  document.documentElement.setAttribute("data-en", S.englisch ? "an" : "aus");
+  sagen(S.englisch ? "Englische Hilfe an." : "Englische Hilfe aus.");
+});
+$("s-audio").addEventListener("click", () => {
+  S.audio = !S.audio; setToggle($("s-audio"), S.audio);
+  if(S.audio){ sprich("Vorlesen ist an."); sagen("Vorlesen an."); }
+  else { if("speechSynthesis" in window) window.speechSynthesis.cancel(); sagen("Vorlesen aus."); }
+});
+$("s-contrast").addEventListener("click", () => {
+  S.kontrast = !S.kontrast; setToggle($("s-contrast"), S.kontrast);
+  document.documentElement.setAttribute("data-contrast", S.kontrast ? "hoch" : "normal");
+  sagen(S.kontrast ? "Hoher Kontrast." : "Normale Farben.");
+});
+$("s-size").addEventListener("click", () => {
+  S.size = (S.size+1)%3;
+  document.documentElement.setAttribute("data-size", ["normal","gross","sehr-gross"][S.size]);
+  $("s-size").textContent = "Schrift: "+["A","A+","A++"][S.size];
+  sagen("Schriftgröße geändert.");
+});
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  S.motion = false; document.documentElement.setAttribute("data-motion","aus");
+}
+document.documentElement.setAttribute("data-en","an");
+
+function renderNews(){
+  const box = $("news-cards"); box.innerHTML = "";
+  CARDS.forEach(c => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "card " + (c.ok ? "offiziell" : "zweifel");
+    b.setAttribute("aria-pressed", S.picked[c.id] ? "true" : "false");
+    b.innerHTML = '<svg width="56" height="40" viewBox="0 0 56 40" aria-hidden="true">'+wxIcon(c.wx,28,18)+"</svg>"+ '<div class="grad">'+c.t+'°</div>'+
+      "<strong>"+esc(c.ort)+" · "+esc(c.wann)+"</strong>"+
+      "<p>"+esc(c.src)+"</p><p>"+esc(WX.find(w=>w.id===c.wx).de)+"</p>"+
+      '<span class="en gloss" lang="en">'+esc(c.en)+"</span>";
+    b.addEventListener("click", () => {
+      S.picked[c.id] = !S.picked[c.id];
+      sprich(c.ort + ", " + c.t + " Grad, " + WX.find(w=>w.id===c.wx).de);
+      renderNews();
+    });
+    box.appendChild(b);
+  });
+}
+
+$("btn-go").addEventListener("click", () => {
+  deal(CARDS);
+  zeige("screen-news"); renderNews();
+  sagen("Wähle die offiziellen Karten.");
+  sprich("Messung vom DWD-Kasten am Markt.");
+});
+
+$("btn-news").addEventListener("click", () => {
+  const chosen = CARDS.filter(c => S.picked[c.id]);
+  const extra = chosen.filter(c => !c.ok);
+  const miss = CARDS.filter(c => c.ok && !S.picked[c.id]);
+  let pts = Math.max(0, 40 - extra.length*10 - miss.length*8);
+  if(!extra.length && !miss.length) pts = 40;
+  S.newsPts = pts;
+  const fb = $("news-fb");
+  if(!extra.length && !miss.length){
+    S.newsOk = true;
+    fb.className = "fb";
+    fb.innerHTML = "<p>Redaktion klar. Offiziell: Kleinhausen heute 18 Grad sonnig, morgen 12 Grad Regen. Mainz bewölkt 16°, Frankfurt sonnig 17°. Worms übermorgen 9 Grad neblig. Der Blog (Regen heute in KH) fliegt raus.</p>"+
+      '<span class="en gloss" lang="en">You trusted the DWD box. Next: place icons on the map.</span>'+
+      '<p class="btn-row"><button type="button" class="btn" id="btn-to-map">Zur Karte</button></p>';
+    fb.hidden = false; fb.focus();
+    $("btn-to-map").addEventListener("click", startMap);
+    sagen("Alle offiziellen Karten gewählt.");
+    sprich("Die Messung vom DWD-Kasten gilt.");
+  } else {
+    S.blooper.push("Datenchaos in der Redaktion");
+    let html = "";
+    extra.forEach(c => html += "<p>"+esc(c.warum || "Diese Quelle widerspricht der offiziellen Messung.")+' <span class="en gloss" lang="en">'+esc(c.en)+"</span></p>");
+    miss.forEach(c => html += "<p>Es fehlt: "+esc(c.src)+" – "+esc(c.ort)+" "+esc(c.wann)+".</p>");
+    fb.className = "fb bad";
+    fb.innerHTML = html + "<p>Korrigiere die Stecknadeln und prüfe noch einmal.</p>";
+    fb.hidden = false; fb.focus();
+    sagen("Noch nicht die offizielle Auswahl.");
+  }
+});
+
+function startMap(){
+  zeige("screen-map");
+  renderWxTools();
+  drawPins();
+  sagen("Lege Icons auf Kleinhausen, Mainz und Frankfurt.");
+}
+function renderWxTools(){
+  const box = $("wx-icons"); box.innerHTML = "";
+  WX.forEach(w => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "icon-btn";
+    b.setAttribute("aria-pressed", S.holdWx === w.id ? "true" : "false");
+    b.innerHTML = '<svg width="36" height="28" viewBox="0 0 36 28">'+wxIcon(w.id,18,14)+"</svg> "+esc(w.de)+
+      ' <span class="en gloss inline" lang="en">'+esc(w.en)+"</span>";
+    b.addEventListener("click", () => { S.holdWx = w.id; sprich(w.de); renderWxTools(); });
+    box.appendChild(b);
+  });
+  const tb = $("wx-temp"); tb.innerHTML = "";
+  TEMPS.forEach(n => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "icon-btn";
+    b.textContent = n + " °C";
+    b.setAttribute("aria-pressed", S.holdT === n ? "true" : "false");
+    b.addEventListener("click", () => { S.holdT = n; sprich(n + " Grad"); renderWxTools(); });
+    tb.appendChild(b);
+  });
+  const mb = $("wx-morgen"); mb.innerHTML = "";
+  ["regen","sonnig","gewitter"].forEach(id => {
+    const w = WX.find(x => x.id === id);
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "icon-btn";
+    b.setAttribute("aria-pressed", S.morgen.wx === id ? "true" : "false");
+    b.textContent = "morgen: " + w.de;
+    b.addEventListener("click", () => { S.morgen.wx = id; S.morgen.t = id==="regen"?12: (id==="sonnig"?22:14); renderWxTools(); updateLegend(); sprich("Morgen in Kleinhausen: "+w.de); });
+    mb.appendChild(b);
+  });
+  updateLegend();
+}
+function updateLegend(){
+  const parts = Object.keys(ORTE).map(k => {
+    const p = S.map[k];
+    return ORTE[k]+": " + (p ? WX.find(w=>w.id===p.wx).de+" "+p.t+"°" : "–");
+  });
+  const m = S.morgen.wx ? ("Morgen KH: "+WX.find(w=>w.id===S.morgen.wx).de+" "+S.morgen.t+"°") : "Morgen KH: –";
+  $("map-status").textContent = parts.join(" · ") + " · " + m;
+}
+function drawPins(){
+  const g = $("map-icons");
+  const pos = {kh:[160,170], mz:[210,210], ff:[300,90]};
+  let html = "";
+  Object.keys(pos).forEach(k => {
+    const p = S.map[k];
+    if(!p) return;
+    html += wxIcon(p.wx, pos[k][0], pos[k][1]-28);
+    html += '<rect x="'+(pos[k][0]+16)+'" y="'+(pos[k][1]-38)+'" width="36" height="16" rx="3" fill="#ffd43b"/>';
+    html += '<text x="'+(pos[k][0]+34)+'" y="'+(pos[k][1]-26)+'" text-anchor="middle" font-size="11" fill="#0b1d3a">'+p.t+'°</text>';
+  });
+  g.innerHTML = html;
+}
+function placeOrt(ort){
+  if(!S.holdWx || S.holdT == null){ sagen("Zuerst Wetter und Grad wählen."); return; }
+  S.map[ort] = {wx:S.holdWx, t:S.holdT};
+  const hot = document.getElementById("hot-"+ort);
+  if(hot) hot.classList.add("on");
+  drawPins(); updateLegend();
+  sprich(ORTE[ort]+", "+S.holdT+" Grad.");
+  sagen(ORTE[ort]+" gesetzt.");
+}
+document.querySelectorAll(".hot").forEach(el => {
+  el.addEventListener("click", () => placeOrt(el.getAttribute("data-ort")));
+  el.addEventListener("keydown", e => {
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); placeOrt(el.getAttribute("data-ort")); }
+  });
+});
+document.querySelectorAll("#map-keys [data-ort]").forEach(el => {
+  el.addEventListener("click", () => placeOrt(el.getAttribute("data-ort")));
+});
+$("btn-map").addEventListener("click", () => {
+  if(!S.map.kh || !S.map.mz || !S.map.ff || !S.morgen.wx){
+    sagen("Bitte alle drei Orte und morgen in Kleinhausen setzen.");
+    return;
+  }
+  let pts = 0;
+  [["kh",SOLL.kh],["mz",SOLL.mz],["ff",SOLL.ff]].forEach(([k,s]) => {
+    if(S.map[k].wx === s.wx) pts += 4;
+    else S.blooper.push("Falsches Icon über "+ORTE[k]);
+    if(S.map[k].t === s.t) pts += 3;
+  });
+  if(S.morgen.wx === SOLL.morgen.wx) pts += 6; else S.blooper.push("Morgen-Wetter für Kleinhausen weicht vom DWD ab");
+  if(S.morgen.t === SOLL.morgen.t) pts += 3;
+  S.mapPts = pts;
+  const fb = $("map-fb");
+  fb.className = pts >= 24 ? "fb" : "fb bad";
+  fb.innerHTML = "<p>Karte übernommen: "+pts+" von 30 Punkten. Offiziell heute KH sonnig 18°, Mainz bewölkt 16°, Frankfurt sonnig 17°. Morgen KH Regen 12°.</p>"+
+    '<span class="en gloss" lang="en">Scoring vs official DWD. Your map still goes on air — viewer questions follow YOUR forecast too.</span>'+
+    '<p class="btn-row"><button type="button" class="btn" id="btn-to-script">Skript schreiben</button></p>';
+  fb.hidden = false; fb.focus();
+  $("btn-to-script").addEventListener("click", startScript);
+});
+
+function startScript(){
+  zeige("screen-script");
+  $("script-in").value = "";
+  $("script-uml").innerHTML = umlautsHtml("script-in");
+  bindUmlauts($("script-uml"));
+  renderScript();
+  sagen("Schreibe das Skript für den Teleprompter.");
+}
+function renderScript(){
+  const t = $("script-in").value.trim();
+  S.scriptText = $("script-in").value;
+  $("script-out").innerHTML = t ? "<p>"+esc(t)+"</p>" : '<span class="en gloss" lang="en">Preview appears here as you type.</span>';
+}
+$("script-in").addEventListener("input", renderScript);
+$("btn-script-clear").addEventListener("click", () => { $("script-in").value = ""; renderScript(); });
+$("btn-script").addEventListener("click", () => {
+  const text = $("script-in").value;
+  const f = foldDe(text);
+  let pts = 0;
+  if(/heute/.test(f)) pts += 3;
+  if(/sonnig|scheint/.test(f)) pts += 3;
+  if(/grad/.test(f)) pts += 3;
+  if(/morgen/.test(f)) pts += 3;
+  if(/regen|regnet/.test(f)) pts += 3;
+  if(/west/.test(f)) pts += 3;
+  if(/ost/.test(f)) pts += 3;
+  if(/gibt/.test(f) || f.indexOf("es gibt")>=0) pts += 3;
+  pts = Math.min(30, pts);
+  let penalty = 0;
+  if(/today it is/i.test(text)) penalty += 10;
+  if(/heute es ist/.test(f)) penalty += 10;
+  if(/\bit is\b|\btoday\b|\btomorrow\b|\bsunny\b|\brain\b/i.test(text)) penalty += 5;
+  if(penalty) S.blooper.push("Verbzweit-Patzer im Teleprompter");
+  S.scriptPts = Math.max(0, pts - penalty);
+  S.scriptText = text;
+  const fb = $("script-fb");
+  let html = "";
+  if(penalty) html += "<p><strong>Verbzweit / Register:</strong> Englische Wortstellung oder „Heute es ist …“ – Verb an Position 2!</p>";
+  const miss = [];
+  if(!/heute/.test(f)) miss.push("heute");
+  if(!/sonnig|scheint/.test(f)) miss.push("sonnig/scheint");
+  if(!/grad/.test(f)) miss.push("Grad");
+  if(!/morgen/.test(f)) miss.push("morgen");
+  if(!/regen|regnet/.test(f)) miss.push("regen");
+  if(!/west/.test(f)) miss.push("Westen");
+  if(!/ost/.test(f)) miss.push("Osten");
+  if(!/gibt/.test(f) && f.indexOf("es gibt")<0) miss.push("es gibt");
+  if(miss.length) html += "<p>Es fehlen noch: "+esc(miss.join(", "))+"</p>";
+  if(!penalty && miss.filter(n => ["heute","sonnig/scheint","Grad","morgen","Westen","Osten"].includes(n)).length === 0){
+    fb.className = "fb";
+    html = "<p>Skript sendefähig. Heute ist es sonnig, 18 Grad. Morgen wird es regnen. Im Westen / im Osten bleibt die Karte klar.</p>"+
+      '<span class="en gloss" lang="en">Required frames are in. Going on air.</span>';
+  } else fb.className = "fb bad";
+  html += '<p class="btn-row"><button type="button" class="btn" id="btn-to-air">ON AIR</button></p>';
+  fb.innerHTML = html; fb.hidden = false; fb.focus();
+  $("btn-to-air").addEventListener("click", startAir);
+  sagen("Skript geprüft. "+S.scriptPts+" Punkte.");
+});
+
+function startAir(){
+  zeige("screen-air");
+  S.qDeck = [];
+  $("onair-flag").hidden = false;
+  $("prompter").textContent = "… Countdown …";
+  $("qbox").hidden = true;
+  sagen("Studio. Lichter an.");
+  sprich("Guten Abend, hier ist Lindenfernsehen aus Kleinhausen.");
+}
+$("btn-tele").addEventListener("click", () => {
+  const text = S.scriptText || "Heute ist es sonnig in Kleinhausen, 18 Grad. Morgen wird es regnen. Die Sonne scheint im Osten. Im Westen gibt es Schauer, es regnet.";
+  $("prompter").classList.add("live-on");
+  if(S.motion){
+    $("prompter").textContent = "";
+    let i = 0;
+    const tick = () => {
+      $("prompter").textContent = text.slice(0, i);
+      i += 2;
+      if(i <= text.length) setTimeout(tick, 28);
+      else { $("qbox").hidden = false; showQ(); }
+    };
+    tick();
+  } else {
+    $("prompter").textContent = text;
+    $("qbox").hidden = false; showQ();
+  }
+});
+$("btn-speak-script").addEventListener("click", () => {
+  if(!S.audio){ S.audio = true; setToggle($("s-audio"), true); }
+  sprich(S.scriptText || "Heute ist es sonnig in Kleinhausen.");
+});
+
+function viewerQs(){
+  const rainT = S.morgen.wx === "regen" || S.morgen.wx === "gewitter";
+  const sunNow = S.map.kh && S.map.kh.wx === "sonnig";
+  const cold = (S.morgen.t != null ? S.morgen.t : 12) <= 14;
+  return [
+    {
+      q:"Soll ich morgen in Kleinhausen einen Schirm mitnehmen?",
+      en:"Should I take an umbrella in Kleinhausen tomorrow?",
+      opts:["Ja, nimm einen Schirm.", "Nein, die Sonne scheint den ganzen Tag.", "Nur eine Badehose."],
+      ok: rainT ? 0 : 1,
+      warum: rainT ? "Dein Morgen-Icon ist Regen oder Gewitter – Schirm mitnehmen." : "Dein Morgen-Wetter ist trocken – kein Schirm nötig.",
+      fbEn:"Answer follows YOUR forecast for tomorrow in Kleinhausen."
+    },
+    {
+      q:"Brauche ich heute Abend in Kleinhausen eine Jacke gegen Gewitter?",
+      en:"Do I need a jacket against thunderstorms this evening?",
+      opts:["Ja, Gewitterwarnung für heute.", "Nein, heute ist es bei uns sonnig – keine Gewitterwarnung.", "Es schneit minus zehn Grad."],
+      ok: sunNow ? 1 : 0,
+      warum: sunNow ? "Auf deiner Karte ist Kleinhausen heute sonnig – keine Gewitterwarnung." : "Dein heutiges Icon ist nicht sonnig – vorsichtig mit der Jacke, aber keine Schnee-Meldung.",
+      fbEn:"Based on today's icon you placed on Kleinhausen."
+    },
+    {
+      q:"Wie warm wird es morgen bei uns? Jacke oder T-Shirt?",
+      en:"How warm is tomorrow — jacket or T-shirt?",
+      opts:["Eher Jacke: um die "+(S.morgen.t||12)+" Grad, eher kühl.","T-Shirt und Eis, 30 Grad.","Minus 15 Grad und Schnee in Frankfurt nur."],
+      ok: cold ? 0 : 0,
+      warum: "Laut deiner Karte: morgen "+(S.morgen.t||12)+" Grad in Kleinhausen. Das ist Jackenwetter, kein Hitzetag.",
+      fbEn:"Uses the temperature you set for tomorrow."
+    }
+  ];
+}
+function showQ(){
+  const qs = viewerQs();
+  if(!S.qDeck) S.qDeck = [];
+  if(!S.qDeck[S.q]){
+    const src = qs[S.q];
+    const packed = src.opts.map((o,i)=>({o, good:i===src.ok}));
+    const mixed = shuffled(packed);
+    S.qDeck[S.q] = Object.assign({}, src, {opts:mixed.map(x=>x.o), ok:mixed.findIndex(x=>x.good)});
+  }
+  const q = S.qDeck[S.q];
+  S.qLocked = false;
+  S.qTries = 0;
+  $("q-text").textContent = q.q;
+  $("q-en").textContent = q.en;
+  $("q-fb").hidden = true;
+  $("btn-q-next").hidden = true;
+  $("q-in").value = "";
+  $("q-in").disabled = false;
+  $("btn-q-check").disabled = false;
+  if(!$("q-uml").innerHTML){
+    $("q-uml").innerHTML = umlautsHtml("q-in");
+    bindUmlauts($("q-uml"));
+  }
+}
+function checkQ(){
+  if(S.qLocked) return;
+  const q = S.qDeck[S.q];
+  const v = $("q-in").value;
+  const right = q.opts[q.ok];
+  if(nearDe(v, right)){
+    S.qLocked = true;
+    S.qPts += 10;
+    $("q-in").disabled = true;
+    $("btn-q-check").disabled = true;
+    $("q-fb").className = "fb";
+    $("q-fb").innerHTML = "<p>Richtig. "+esc(q.warum)+'</p><span class="en gloss" lang="en">'+esc(q.fbEn)+"</span>";
+    $("q-fb").hidden = false;
+    $("btn-q-next").hidden = false;
+    $("btn-q-next").textContent = S.q < 2 ? "Nächste Frage" : "Abspann";
+    sagen("Gute Live-Antwort.");
+    sprich(q.warum);
+    return;
+  }
+  S.qTries++;
+  if(S.qTries >= 2){
+    S.qLocked = true;
+    S.blooper.push("Live-Patzer: "+q.q);
+    $("q-in").disabled = true;
+    $("btn-q-check").disabled = true;
+    $("q-fb").className = "fb bad";
+    $("q-fb").innerHTML = "<p>Nicht passend. Richtig wäre: „"+esc(right)+"“. "+esc(q.warum)+'</p><span class="en gloss" lang="en">'+esc(q.fbEn)+"</span>";
+    $("q-fb").hidden = false;
+    $("btn-q-next").hidden = false;
+    $("btn-q-next").textContent = S.q < 2 ? "Nächste Frage" : "Abspann";
+    sagen("Die Zuschauer sind verwirrt.");
+    sprich(right);
+    return;
+  }
+  $("q-fb").className = "fb bad";
+  $("q-fb").innerHTML = "<p>Noch nicht passend. Versuch es noch einmal – Ja/Nein oder kurzer Satz.</p>";
+  $("q-fb").hidden = false;
+  sagen("Noch ein Versuch.");
+}
+$("btn-q-check").addEventListener("click", checkQ);
+$("q-in").addEventListener("keydown", e => {
+  if(e.key==="Enter"){ e.preventDefault(); checkQ(); }
+});
+$("btn-q-next").addEventListener("click", () => {
+  if(S.q < 2){ S.q += 1; showQ(); }
+  else showSum();
+});
+
+function hash32(str){
+  let h = 0x811c9dc5;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = (h + ((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24))) >>> 0; }
+  return h >>> 0;
+}
+const SALT = "kleinhausen-wetter-v1";
+function totals(){
+  const ges = S.newsPts + S.mapPts + S.scriptPts + S.qPts;
+  const max = 40+30+30+30;
+  return {ges, max, pct: Math.round(ges/max*100)};
+}
+function baueCode(name){
+  const t = totals();
+  const norm = name.trim().toLowerCase().replace(/\s+/g," ");
+  const pruef = hash32(norm+"|"+t.ges+"|"+t.max+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return "KH-WETT-"+t.ges+"-"+t.pct+"-"+pruef;
+}
+function codeAkt(){
+  $("code-val").textContent = $("name-in").value.trim() ? baueCode($("name-in").value) : "Bitte Namen eingeben.";
+}
+function showSum(){
+  $("onair-flag").hidden = true;
+  const t = totals();
+  $("sum-body").innerHTML =
+    "<tr><td>Redaktion</td><td class='num'>"+S.newsPts+"</td><td class='num'>40</td></tr>"+
+    "<tr><td>Karte</td><td class='num'>"+S.mapPts+"</td><td class='num'>30</td></tr>"+
+    "<tr><td>Skript</td><td class='num'>"+S.scriptPts+"</td><td class='num'>30</td></tr>"+
+    "<tr><td>Live-Fragen</td><td class='num'>"+S.qPts+"</td><td class='num'>30</td></tr>"+
+    "<tr><th>Gesamt</th><th class='num'>"+t.ges+"</th><th class='num'>"+t.max+"</th></tr>";
+  const b = $("blooper");
+  if(t.pct < 80 && S.blooper.length){
+    b.hidden = false;
+    b.innerHTML = "<h3>Blooper-Reel</h3><ul>"+S.blooper.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul>"+
+      '<span class="en gloss" lang="en">Outtakes from this broadcast.</span>';
+    $("h-sum").textContent = "Blooper-Reel";
+  } else {
+    b.hidden = true;
+    $("h-sum").textContent = t.pct >= 80 ? "Sendung geschafft" : "Sendung im Kasten";
+  }
+  const lob = t.pct >= 80 ? "Saubere Abendschau. Kleinhausen weiß, ob der Schirm mit muss." :
+              "Die Sendung lief – mit ein paar Versprechern. Morgen Probe um 16 Uhr.";
+  $("sum-text").innerHTML = "Du hast <strong>"+t.ges+" von "+t.max+" Punkten</strong> ("+t.pct+" %). "+esc(lob)+
+    ' <span class="en gloss" lang="en">Enter your name for KH-WETT-…</span>';
+  codeAkt(); zeige("screen-sum");
+  sprich(t.pct >= 80 ? "Sendung geschafft. Gute Nacht, Kleinhausen." : "Ende der Sendung.");
+}
+$("name-in").addEventListener("input", codeAkt);
+$("btn-copy").addEventListener("click", async () => {
+  const t = $("code-val").textContent;
+  if(!/^KH-WETT-/.test(t)){ sagen("Namen eingeben."); return; }
+  try{ await navigator.clipboard.writeText(t); $("btn-copy").textContent="Kopiert";
+    setTimeout(()=>{$("btn-copy").textContent="Code kopieren";},2000);}
+  catch(e){ const r=document.createRange(); r.selectNodeContents($("code-val")); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+});
+$("btn-verify").addEventListener("click", () => {
+  const name=$("v-name").value.trim(), code=$("v-code").value.trim().toUpperCase();
+  const m=/^KH-WETT-(\d+)-(\d+)-([0-9A-Z]{7})$/.exec(code);
+  if(!name||!m){$("v-out").textContent="Name und KH-WETT-Code.";return;}
+  const [,ges,pct,pruef]=m, max=130, norm=name.toLowerCase().replace(/\s+/g," ");
+  const soll=hash32(norm+"|"+ges+"|"+max+"|"+SALT).toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  const echt=Math.round(Number(ges)/max*100);
+  $("v-out").textContent = (soll===pruef && Number(pct)===echt) ? "Gültig. "+name+": "+ges+" / "+max+" ("+echt+" %)." : "Ungültig.";
+});
+$("btn-again").addEventListener("click", () => location.reload());
+document.addEventListener("keydown", e => { if(typingIn(e)) return; });
+if("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged = () => {};
+sagen("Lindenfernsehen. Wetterstudio Kleinhausen.");
+</script>
+</body>
+</html>

@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="de" data-en="an">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fahrkartenautomat Kleinhausen</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23FFCC00'/%3E%3Crect x='4' y='4' width='24' height='24' fill='%23E30613'/%3E%3C/svg%3E">
+<style>
+:root{
+  --db-gelb:#FFCC00;
+  --db-rot:#E30613;
+  --anthrazit:#2B2B2B;
+  --anthrazit-tief:#1A1A1A;
+  --lcd:#0B2A4A;
+  --lcd-text:#D6F3FF;
+  --lcd-dim:#7AA8C4;
+  --gehaeuse:#3A3A3A;
+  --taste:#4A4A4A;
+  --papier:#F7F1DE;
+  --ok:#1F7A43;
+  --warn:#C45C00;
+  --ink:#141414;
+  --soft:#5A5A5A;
+  --fs:1rem;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+html[data-size="gross"]{--fs:1.16rem}
+html[data-size="sehr-gross"]{--fs:1.34rem}
+html[data-contrast="hoch"]{
+  --db-gelb:#FFE14D; --db-rot:#FF1A1A; --anthrazit:#000; --anthrazit-tief:#000;
+  --lcd:#000; --lcd-text:#fff; --lcd-dim:#fff; --gehaeuse:#111; --taste:#000;
+  --papier:#fff; --ok:#006B2B; --warn:#7A3A00; --ink:#000; --soft:#000;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans); font-size:var(--fs); line-height:1.5; color:var(--ink);
+  background:linear-gradient(180deg,#4a5560 0%, #2d343c 40%, #1f2429 100%);
+  min-height:100vh; -webkit-text-size-adjust:100%;
+}
+html[data-contrast="hoch"] body{background:#000}
+.skip{position:absolute;left:-9999px;top:0;z-index:300;background:var(--db-gelb);color:#000;padding:.7em 1.1em;font-weight:800;text-decoration:none}
+.skip:focus{left:0}
+:focus-visible{outline:3px solid var(--db-gelb);outline-offset:3px}
+html[data-contrast="hoch"] :focus-visible{outline:4px solid #fff}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.en.gloss{display:none;font-style:italic;color:var(--soft);font-size:.86em;margin:.15em 0 0}
+html[data-en="an"] .en.gloss{display:block}
+.topbar{background:var(--anthrazit-tief);color:#fff;border-bottom:6px solid var(--db-gelb)}
+.topbar-in{max-width:1120px;margin:0 auto;padding:.65rem 1rem;display:flex;flex-wrap:wrap;gap:.7rem 1rem;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:.7rem}
+.brand h1{margin:0;font-size:1.15em;letter-spacing:.02em}
+.brand .sub{font-family:var(--mono);font-size:.68em;letter-spacing:.16em;text-transform:uppercase;color:var(--db-gelb)}
+.settings{display:flex;flex-wrap:wrap;gap:.4rem}
+.set-btn{
+  font:inherit;font-size:.8em;min-height:44px;min-width:44px;padding:.35em .85em;cursor:pointer;
+  background:transparent;color:#fff;border:2px solid #888;border-radius:999px;
+}
+.set-btn[aria-pressed="true"]{background:var(--db-gelb);color:#000;border-color:var(--db-gelb);font-weight:800}
+.wrap{max-width:1120px;margin:0 auto;padding:1.2rem 1rem 3rem}
+.screen{display:none}
+.screen.on{display:block}
+h2{font-size:1.65em;margin:0 0 .4em}
+.lede{max-width:62ch}
+.btn{
+  font:inherit;font-weight:800;min-height:44px;min-width:44px;padding:.55em 1.1em;cursor:pointer;
+  border:0;border-radius:4px;background:var(--db-gelb);color:#111;
+}
+.btn.rot{background:var(--db-rot);color:#fff}
+.btn.ghost{background:transparent;color:#fff;border:2px solid #ccc}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.how{display:grid;gap:1rem;margin:1.2rem 0;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.how article{background:rgba(255,255,255,.92);padding:1rem;border-left:6px solid var(--db-rot);border-radius:2px}
+html[data-contrast="hoch"] .how article{background:#fff;border:2px solid #000}
+.scorechip{font-family:var(--mono);background:var(--db-gelb);color:#000;padding:.35em .7em;font-weight:800;border-radius:3px}
+.maschine{
+  display:grid;grid-template-columns:1fr 280px;gap:1.1rem;align-items:start;
+}
+@media (max-width:860px){.maschine{grid-template-columns:1fr}}
+.gehaeuse{
+  background:linear-gradient(180deg,#4a4a4a,#2c2c2c);
+  border:8px solid #111;border-radius:12px 12px 4px 4px;
+  box-shadow:0 18px 40px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.12);
+  padding:12px 12px 18px;
+}
+html[data-contrast="hoch"] .gehaeuse{background:#111;border-color:#fff}
+.streifen{height:14px;background:repeating-linear-gradient(90deg,var(--db-rot) 0 28px,var(--db-gelb) 28px 56px);margin:-12px -12px 10px;border-radius:4px 4px 0 0}
+.logo-row{display:flex;align-items:center;gap:.6rem;color:var(--db-gelb);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:.78em;margin-bottom:.6rem}
+.steps{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:.7rem}
+.step{
+  flex:1;min-width:70px;min-height:44px;font:inherit;font-size:.72em;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+  background:#222;color:#aaa;border:2px solid #111;cursor:default;
+}
+.step.jetzt{background:var(--db-gelb);color:#000}
+.step.done{background:#1d5c32;color:#fff}
+.lcd{
+  background:var(--lcd);color:var(--lcd-text);min-height:340px;padding:1rem;
+  border:4px solid #0a0a0a;box-shadow:inset 0 0 30px rgba(0,0,0,.45);
+  font-family:var(--sans);
+}
+.lcd h3{margin:0 0 .5rem;font-size:1.15em;color:#fff}
+.lcd .prompt{color:var(--lcd-dim);margin:0 0 .8rem}
+.grid-opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem}
+.opt{
+  min-height:52px;font:inherit;font-weight:700;cursor:pointer;padding:.5em .6em;
+  background:#12385c;color:#fff;border:2px solid #2a6aa0;text-align:left;
+}
+.opt:hover{background:#1a4e7c}
+.opt.wahl{outline:3px solid var(--db-gelb);background:#1f6aad}
+.opt.falsch{background:#6b1b1b;border-color:#c44}
+.opt.gut{background:#14532d;border-color:#4ade80}
+.pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;max-width:240px}
+.pin-pad button{min-height:48px;font:inherit;font-size:1.15em;font-weight:800;background:#0d3355;color:#fff;border:2px solid #3a7eb0;cursor:pointer}
+.karte-slot{
+  margin-top:.8rem;background:#111;border:3px dashed var(--db-gelb);padding:.7rem;min-height:64px;
+  display:flex;align-items:center;justify-content:center;gap:.6rem;color:var(--db-gelb);font-weight:700;
+}
+.karte-btn{min-height:52px;background:linear-gradient(180deg,#3a6ea5,#1e3f66);color:#fff;border:2px solid #9ec7ef;padding:.5em 1em;font:inherit;font-weight:800;cursor:pointer}
+.ticket-schlitz{height:18px;background:#0a0a0a;border:2px solid #000;margin-top:10px;overflow:hidden;position:relative}
+.ticket{
+  background:var(--papier);color:#111;border:1px dashed #888;padding:.7rem .9rem;font-family:var(--mono);font-size:.82em;
+  margin:0 auto;max-width:280px;transform:translateY(-120%);
+}
+.ticket.out{animation:print .9s ease forwards}
+@keyframes print{to{transform:translateY(8px)}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
+  .ticket.out{animation:none;transform:none}
+}
+.seite{display:flex;flex-direction:column;gap:.8rem}
+.zettel{
+  background:#fff8c4;border:1px solid #c9b44a;transform:rotate(-1.2deg);
+  padding:1rem;box-shadow:3px 4px 0 rgba(0,0,0,.25);
+}
+html[data-contrast="hoch"] .zettel{background:#fff;border:2px solid #000;transform:none}
+.zettel h3{margin:0 0 .3rem;font-size:1em}
+.fb{margin-top:.8rem;padding:.75rem;border-left:5px solid var(--db-rot);background:rgba(0,0,0,.35);color:#fff}
+.fb.ok{border-color:var(--ok)}
+.collage{display:flex;flex-wrap:wrap;gap:.7rem;margin:1rem 0}
+.collage .ticket{transform:none;position:relative}
+.collage .ticket:nth-child(2){transform:rotate(2deg)}
+.collage .ticket:nth-child(3){transform:rotate(-2deg)}
+.footer{margin-top:2rem;color:#ddd;font-size:.85em;border-top:1px solid #666;padding-top:1rem}
+html[data-contrast="hoch"] .footer,html[data-contrast="hoch"] .lede,html[data-contrast="hoch"] h2{color:#fff}
+.name-row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:end;margin:1rem 0}
+label span{display:block;font-size:.85em;margin-bottom:.2em}
+input[type=text]{min-height:44px;padding:.4em .6em;font:inherit;border:2px solid #333;min-width:220px}
+.code{font-family:var(--mono);background:#111;color:var(--db-gelb);padding:.8rem;word-break:break-all}
+.live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.pin-anzeige{font-family:var(--mono);letter-spacing:.4em;font-size:1.3em;margin:.4rem 0}
+.zusammenfassung{background:rgba(255,255,255,.08);padding:.7rem;margin:.5rem 0}
+.hw{background:#1f1f1f;border:3px solid #0a0a0a;padding:.8rem;color:var(--db-gelb)}
+.hw h3{margin:0 0 .4rem;font-size:.85em;letter-spacing:.12em;text-transform:uppercase}
+.grille{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin:.4rem 0}
+.grille i{display:block;height:6px;background:#111;border-radius:1px}
+.led{width:12px;height:12px;border-radius:50%;background:#1F7A43;box-shadow:0 0 8px #3ade80;display:inline-block;margin-right:.4rem}
+.led.off{background:#5a1a1a;box-shadow:none}
+.vocab{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0 1rem}
+.vocab span{background:var(--db-gelb);color:#111;padding:.35em .65em;font-weight:700;font-size:.85em}
+.verify{background:rgba(0,0,0,.35);padding:1rem;margin-top:1rem;color:#fff}
+.maschine-foot{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem}
+.preis-zeile{font-family:var(--mono);font-size:1.2em;color:var(--db-gelb)}
+.hint-k{font-size:.8em;color:#ccc;margin:.4rem 0}
+html[data-contrast="hoch"] .hw,html[data-contrast="hoch"] .verify,html[data-contrast="hoch"] .fb{background:#000;border:2px solid #fff;color:#fff}
+html[data-contrast="hoch"] .opt{background:#000;border-color:#fff}
+
+.brand{display:flex;align-items:center;flex-wrap:wrap;gap:.55rem}
+a.hub-home{flex:none;color:inherit;text-decoration:none;font:inherit;font-size:.72em;font-weight:700;letter-spacing:.12em;text-transform:uppercase;border:2px solid currentColor;border-radius:999px;padding:.35em .9em;min-height:44px;display:inline-flex;align-items:center}
+a.hub-home:hover{background:rgba(255,255,255,.18)}
+.prod-in,textarea.prod-in{width:100%;max-width:40rem;min-height:48px;font:inherit;font-size:1.05em;padding:.55em .7em;border:3px solid var(--db-gelb);border-radius:6px;background:var(--lcd);color:var(--lcd-text)}
+textarea.prod-in{min-height:7.2rem;line-height:1.45}
+.umlauts{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0}
+.uml{min-width:44px;min-height:44px;font:inherit;font-weight:800;cursor:pointer;background:var(--lcd);border:2px solid var(--db-gelb);color:var(--lcd-text)}
+.prod-lab{font-weight:800;margin:.4rem 0 .2rem;color:var(--lcd-text)}
+.hint-try{color:var(--db-gelb);font-weight:700;margin:.4rem 0}
+</style>
+</head>
+<body>
+<a class="skip" href="#inhalt">Zum Inhalt springen</a>
+<div class="live" id="status" role="status" aria-live="polite"></div>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <a class="hub-home" href="../index.html" aria-label="Zurück zum Stadtplan Kleinhausen">Kleinhausen</a>
+            <svg width="36" height="28" viewBox="0 0 36 28" aria-hidden="true"><rect width="36" height="28" fill="#FFCC00"/><rect x="2" y="2" width="32" height="24" fill="#E30613"/><text x="18" y="19" text-anchor="middle" fill="#FFCC00" font-size="11" font-weight="800" font-family="sans-serif">KH</text></svg>
+      <div>
+        <div class="sub">Kleinhausen Bahnhof</div>
+        <h1>Fahrkartenautomat</h1>
+      </div>
+    </div>
+    <div class="settings" role="toolbar" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">Vorlesen</button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
+      <button type="button" class="set-btn" id="s-size">Schrift: A</button>
+    </div>
+  </div>
+</header>
+<main class="wrap" id="inhalt">
+  <section class="screen on" id="screen-start" aria-labelledby="h-start">
+    <p class="scorechip">A1–A2 · Kleinhausen</p>
+    <h2 id="h-start" tabindex="-1">Fahrkarte lösen am Automaten</h2>
+    <p class="lede">Du stehst am Bahnhof Kleinhausen. Der Fahrkartenautomat blinkt gelb. Eine Notiz (oder die Durchsage) sagt dir, wohin du musst. Bedjene den Automaten Schritt für Schritt: Ziel, Ticket, Klasse, Zeit, Bezahlen.</p>
+    <p class="en gloss" lang="en">You are at Kleinhausen station. Operate the ticket machine: destination, ticket type, class, time, payment.</p>
+    <div class="how">
+      <article><h3>1. Notiz lesen</h3><p>Jede Fahrt hat ein Ziel und ein Ticketwort: <em>Einzelfahrschein, Hin und zurück, Tageskarte, Gruppenkarte</em>.</p><p class="en gloss" lang="en">Read the sticky note. Watch the key ticket words.</p></article>
+      <article><h3>2. Richtig tippen</h3><p>Kleinhausen ist kein Ziel – du bist schon hier. PIN für die Übungskarte: <strong>1234</strong>.</p><p class="en gloss" lang="en">Kleinhausen is invalid (you are already here). Practice PIN: 1234.</p></article>
+      <article><h3>3. Ticket drucken</h3><p>Falsche Tasten erklären das Wort auf Deutsch. Du kannst korrigieren und bekommst Teilpunkte.</p><p class="en gloss" lang="en">Wrong taps explain the missed word. Partial credit if you fix it.</p></article>
+    </div>
+    <p><button type="button" class="btn" id="btn-los">Los geht’s</button></p>
+  </section>
+
+  <section class="screen" id="screen-play" aria-labelledby="h-play">
+    <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.8rem">
+      <h2 id="h-play" tabindex="-1">Automat</h2>
+      <p><span class="scorechip" id="scorechip">Punkte: 0</span> · Fahrt <span id="fahrt-nr">1</span>/5</p>
+    </div>
+    <div class="maschine">
+      <div class="gehaeuse">
+        <div class="streifen" aria-hidden="true"></div>
+        <div class="logo-row">
+          <svg width="22" height="16" viewBox="0 0 22 16" aria-hidden="true"><rect width="22" height="16" fill="#FFCC00"/><path d="M3 8h16" stroke="#E30613" stroke-width="4"/></svg>
+          Fahrkarten · Kleinhausen
+        </div>
+        <div class="steps" id="steps" aria-label="Schritte">
+          <button type="button" class="step jetzt" data-s="ziel" disabled>Ziel</button>
+          <button type="button" class="step" data-s="ticket" disabled>Ticket</button>
+          <button type="button" class="step" data-s="klasse" disabled>Klasse</button>
+          <button type="button" class="step" data-s="zeit" disabled>Zeit</button>
+          <button type="button" class="step" data-s="zahlen" disabled>Bezahlen</button>
+        </div>
+        <div class="lcd" id="lcd" aria-live="polite"></div>
+        <div class="ticket-schlitz" id="schlitz" aria-hidden="true"></div>
+      </div>
+      <aside class="seite">
+        <div class="zettel" id="zettel"></div>
+        <div class="hw">
+          <h3>Gerät</h3>
+          <p><span class="led" id="led"></span><span id="led-txt">Bereit</span></p>
+          <div class="grille" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <p class="hint-k">Kartenleser · PIN-Pad · Thermodruck</p>
+          <svg viewBox="0 0 200 46" width="100%" height="46" aria-hidden="true"><rect x="4" y="8" width="192" height="30" rx="4" fill="#111" stroke="#FFCC00" stroke-width="2"/><text x="100" y="28" text-anchor="middle" fill="#FFCC00" font-size="11" font-family="monospace">KARTENSCHLITZ →</text></svg>
+        </div>
+        <p class="maschine-foot">
+          <button type="button" class="btn ghost" id="btn-sprich-prompt">Prompt vorlesen</button>
+          <button type="button" class="btn ghost" id="btn-zurueck">Schritt zurück</button>
+        </p>
+        <p class="hint-k">Tastatur: 1–9 wählen, Enter bestätigt die PIN, Backspace löscht. 44px-Tasten.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-summary" aria-labelledby="h-sum">
+    <h2 id="h-sum" tabindex="-1">Fahrkarten gedruckt</h2>
+    <p class="lede" id="sum-text"></p>
+    <div class="collage" id="collage"></div>
+    <h3>Wortschatz</h3>
+    <div class="vocab" id="vocab">
+      <span>hin</span><span>zurück</span><span>Gleis</span><span>Bahnhof</span><span>Klasse</span><span>Einzelfahrschein</span><span>Tageskarte</span><span>Gruppenkarte</span><span>Ziel</span>
+    </div>
+    <p class="en gloss" lang="en">there · back · platform · station · class · single ticket · day ticket · group ticket · destination</p>
+    <div class="name-row">
+      <label><span>Name (optional)</span><input type="text" id="name-in" autocomplete="name" maxlength="60"></label>
+      <button type="button" class="btn" id="btn-code">Code erzeugen</button>
+      <button type="button" class="btn ghost" id="btn-copy">Code kopieren</button>
+    </div>
+    <p class="code" id="code-val">KH-FAHR-…</p>
+    <div class="verify">
+      <h3>Prüfung (Lehrkraft)</h3>
+      <div class="name-row">
+        <label><span>Name</span><input type="text" id="v-name" maxlength="60"></label>
+        <label><span>Code</span><input type="text" id="v-code" maxlength="40"></label>
+        <button type="button" class="btn rot" id="btn-verify">Prüfen</button>
+      </div>
+      <p id="v-out" role="status"></p>
+    </div>
+    <p>
+      <button type="button" class="btn" id="btn-nochmal">Noch einmal spielen</button>
+    </p>
+  </section>
+</main>
+<footer class="footer wrap">
+  Eine Datei, keine Cookies, kein localStorage. Fortschritt nur in dieser Sitzung. Kleinhausen A1–A2 · Michael Young (Designer)
+</footer>
+<script>
+"use strict";
+
+function tagLang(){
+  document.querySelectorAll(".en").forEach(function(el){
+    if(!el.getAttribute("lang")) el.setAttribute("lang","en");
+  });
+}
+tagLang();
+if(!window.__khLangObs){
+  window.__khLangObs = new MutationObserver(tagLang);
+  window.__khLangObs.observe(document.documentElement,{childList:true,subtree:true});
+}
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+function shuffled(a){
+  const arr=a.slice();
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=arr[i]; arr[i]=arr[j]; arr[j]=t; }
+  return arr;
+}
+function deal(arr){ const next=shuffled(arr); for(let i=0;i<arr.length;i++) arr[i]=next[i]; return arr; }
+function foldDe(s){
+  return String(s||"").toLowerCase()
+    .replace(/ß/g,"ss").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue")
+    .replace(/[^a-z0-9]+/g," ").trim().replace(/\s+/g," ");
+}
+function nearDe(got, want){
+  const g=foldDe(got), t=foldDe(want);
+  if(!g||!t) return false;
+  if(g===t) return true;
+  if(t.length<=5) return false;
+  if(g.indexOf(t)>=0 || t.indexOf(g)>=0) return g.length>=Math.min(5, Math.floor(t.length*0.55));
+  const tw=t.split(" ").filter(w=>w.length>1);
+  if(!tw.length) return false;
+  const hits=tw.filter(w=>g.indexOf(w)>=0).length;
+  return hits>=Math.max(1, Math.ceil(tw.length*0.65));
+}
+function umlautsHtml(id){
+  return '<div class="umlauts" role="group" aria-label="Umlaute">'+
+    ["ä","ö","ü","ß"].map(c=>'<button type="button" class="uml" data-in="'+id+'" data-c="'+c+'">'+c+"</button>").join("")+
+    "</div>";
+}
+function bindUmlauts(scope){
+  (scope||document).querySelectorAll(".uml").forEach(b=>{
+    if(b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.addEventListener("click", ()=>{
+      const inp=document.getElementById(b.dataset.in);
+      if(!inp||inp.disabled) return;
+      const a=inp.selectionStart??inp.value.length, z=inp.selectionEnd??a;
+      inp.value=inp.value.slice(0,a)+b.dataset.c+inp.value.slice(z);
+      inp.focus();
+      const n=a+b.dataset.c.length;
+      try{ inp.setSelectionRange(n,n); }catch(e){}
+    });
+  });
+}
+function prodBlock(id, label){
+  return '<p class="prod-lab"><label for="'+id+'">'+label+"</label></p>"+umlautsHtml(id)+
+    '<p><input class="prod-in" type="text" id="'+id+'" lang="de" autocomplete="off" spellcheck="false"></p>';
+}
+function matchTicket(v, id){
+  const t=TICKETS.find(x=>x.id===id);
+  if(nearDe(v, t.de)) return true;
+  const g=foldDe(v);
+  const keys={einzel:["einzel","einzelfahrschein"],hinzurueck:["hin und zurueck","hin zurueck","hinzurueck"],tag:["tageskarte"],gruppe:["gruppenkarte","gruppe"]};
+  return (keys[id]||[]).some(k=>g.indexOf(k)>=0);
+}
+function matchKlasse(v, want){
+  const g=foldDe(v);
+  if(want==="1") return g==="1" || g.indexOf("erste")>=0 || g.indexOf("1 klasse")>=0;
+  if(want==="2") return g==="2" || g.indexOf("zweite")>=0 || g.indexOf("2 klasse")>=0;
+  return false;
+}
+function matchZeit(v, id){
+  if(id==="heute") return nearDe(v, "heute");
+  if(id==="morgen") return nearDe(v, "morgen");
+  if(id==="wochenende") return nearDe(v, "am Wochenende") || foldDe(v).indexOf("wochenende")>=0;
+  return false;
+}
+function setToggle(btn, on){ btn.setAttribute("aria-pressed", on ? "true" : "false"); }
+function sprich(text){ if(!S.audio || !("speechSynthesis" in window)) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang="de-DE"; speechSynthesis.speak(u); }
+
+const ZIELE = [
+  {id:"Mainz", gleis:"3"},
+  {id:"Frankfurt", gleis:"1"},
+  {id:"Wiesbaden", gleis:"4"},
+  {id:"Darmstadt", gleis:"2"},
+  {id:"Worms", gleis:"5"},
+  {id:"Kleinhausen", gleis:"—"}
+];
+const TICKETS = [
+  {id:"einzel", de:"Einzelfahrschein", en:"single ticket", erkl:"Ein Einzelfahrschein gilt für eine Fahrt in eine Richtung."},
+  {id:"hinzurueck", de:"Hin und zurück", en:"return / round trip", erkl:"Hin und zurück bedeutet: du fährst hin und wieder zurück."},
+  {id:"tag", de:"Tageskarte", en:"day ticket", erkl:"Eine Tageskarte gilt den ganzen Tag, hin und zurück so oft du willst."},
+  {id:"gruppe", de:"Gruppenkarte", en:"group ticket", erkl:"Eine Gruppenkarte ist für zwei oder mehr Personen zusammen."}
+];
+const MISSIONS = [
+  {
+    titel:"Besuch bei Oma",
+    zettel:"Oma wartet in Mainz. Fahr heute hin und wieder zurück. 2. Klasse reicht.",
+    zettelEn:"Grandma is waiting in Mainz. Go today and come back. 2nd class is enough.",
+    ziel:"Mainz", ticket:"hinzurueck", klasse:"2", zeit:"heute", personen:1,
+    preis:"22,40 €", grund:"Oma"
+  },
+  {
+    titel:"Vorstellungsgespräch",
+    zettel:"Morgen Vorstellungsgespräch in Frankfurt. Nur hin. 1. Klasse – du willst ruhig sitzen.",
+    zettelEn:"Job interview in Frankfurt tomorrow. One way. 1st class — you want a quiet seat.",
+    ziel:"Frankfurt", ticket:"einzel", klasse:"1", zeit:"morgen", personen:1,
+    preis:"31,90 €", grund:"Bewerbung"
+  },
+  {
+    titel:"Dom in Worms",
+    zettel:"Am Wochenende den Dom in Worms anschauen. Tageskarte, 2. Klasse.",
+    zettelEn:"At the weekend look at the cathedral in Worms. Day ticket, 2nd class.",
+    ziel:"Worms", ticket:"tag", klasse:"2", zeit:"wochenende", personen:1,
+    preis:"19,00 €", grund:"Dom"
+  },
+  {
+    titel:"Mit einer Freundin",
+    zettel:"Heute mit einer Freundin nach Wiesbaden. Zwei Personen, Gruppenkarte, 2. Klasse.",
+    zettelEn:"Today to Wiesbaden with a friend. Two people, group ticket, 2nd class.",
+    ziel:"Wiesbaden", ticket:"gruppe", klasse:"2", zeit:"heute", personen:2,
+    preis:"27,50 €", grund:"Freundin"
+  },
+  {
+    titel:"TU-Tag Darmstadt",
+    zettel:"Morgen TU-Tag in Darmstadt. Hin und zurück, 2. Klasse.",
+    zettelEn:"Tomorrow TU open day in Darmstadt. Return ticket, 2nd class.",
+    ziel:"Darmstadt", ticket:"hinzurueck", klasse:"2", zeit:"morgen", personen:1,
+    preis:"18,60 €", grund:"Universität"
+  }
+];
+const STEPS = ["ziel","ticket","klasse","zeit","zahlen"];
+const STEP_DE = {ziel:"Wohin fährst du?", ticket:"Welche Fahrkarte?", klasse:"Erste oder zweite Klasse?", zeit:"Wann fährst du?", zahlen:"Bitte bezahlen."};
+
+const S = {
+  englisch:true, audio:false, kontrast:false, size:0, motion:!window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  i:0, step:0, wahl:{}, fehler:0, punkte:0, max:100, tickets:[], pin:"", karte:false, fertig:false, pinOk:false, name:""
+};
+
+function sagen(t){ $("status").textContent = t; }
+function glossUpdate(){
+  document.documentElement.setAttribute("data-en", S.englisch ? "an" : "aus");
+  document.querySelectorAll(".en.gloss").forEach(el => { el.hidden = !S.englisch; });
+}
+$("s-en").addEventListener("click", ()=>{
+  S.englisch = !S.englisch; setToggle($("s-en"), S.englisch); glossUpdate();
+  sagen(S.englisch ? "English is on." : "Englisch ist aus.");
+});
+$("s-audio").addEventListener("click", ()=>{
+  S.audio = !S.audio; setToggle($("s-audio"), S.audio);
+  if(S.audio){ sprich("Vorlesen ist an."); sagen("Vorlesen ist an."); }
+  else { if("speechSynthesis" in window) speechSynthesis.cancel(); sagen("Vorlesen ist aus."); }
+});
+$("s-contrast").addEventListener("click", ()=>{
+  S.kontrast = !S.kontrast; setToggle($("s-contrast"), S.kontrast);
+  document.documentElement.setAttribute("data-contrast", S.kontrast ? "hoch" : "normal");
+  sagen(S.kontrast ? "Hoher Kontrast." : "Normaler Kontrast.");
+});
+$("s-size").addEventListener("click", ()=>{
+  S.size = (S.size + 1) % 3;
+  const n = ["normal","gross","sehr-gross"], l = ["A","A+","A++"];
+  document.documentElement.setAttribute("data-size", n[S.size]);
+  $("s-size").textContent = "Schrift: " + l[S.size];
+  sagen("Schriftgröße " + l[S.size]);
+});
+
+function zeige(id){
+  document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id));
+  const h = document.querySelector("#"+id+" h2");
+  if(h) h.focus();
+  window.scrollTo({top:0, behavior: S.motion ? "smooth" : "auto"});
+}
+
+function hash32(str){
+  let h = 0x811c9dc5;
+  for(let i=0;i<str.length;i++){ h ^= str.charCodeAt(i); h = (h + ((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24))) >>> 0; }
+  return h >>> 0;
+}
+function baueCode(name){
+  const pct = S.max ? Math.round(S.punkte / S.max * 100) : 0;
+  const norm = String(name||"gast").trim().toLowerCase().replace(/\s+/g," ") || "gast";
+  const pruef = hash32(norm+"|"+S.punkte+"|"+S.max+"|"+pct+"|kleinhausen-fahr-v1").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  return "KH-FAHR-"+S.punkte+"-"+pct+"-"+pruef;
+}
+
+function startGame(){
+  deal(MISSIONS);
+  S.i = 0; S.punkte = 0; S.tickets = []; S.fertig = false;
+  startMission();
+  zeige("screen-play");
+}
+function startMission(){
+  S.step = 0; S.wahl = {}; S.fehler = 0; S.pin = ""; S.karte = false; S.fertig = false; S.pinOk = false;
+  $("fahrt-nr").textContent = String(S.i+1);
+  $("scorechip").textContent = "Punkte: " + S.punkte;
+  $("schlitz").innerHTML = "";
+  setLed(true, "Fahrt "+(S.i+1));
+  renderZettel();
+  render();
+}
+function renderZettel(){
+  const m = MISSIONS[S.i];
+  $("zettel").innerHTML = "<p style=\"font-family:var(--mono);font-size:.72em;letter-spacing:.12em;text-transform:uppercase;margin:0 0 .3em\">Dispatch / Notiz</p><h3>"+esc(m.titel)+"</h3><p>"+esc(m.zettel)+"</p><p class=\"en gloss\" lang=\"en\">"+esc(m.zettelEn)+"</p>";
+  glossUpdate();
+}
+function stepButtons(){
+  document.querySelectorAll(".step").forEach((b,i)=>{
+    b.classList.toggle("jetzt", i === S.step);
+    b.classList.toggle("done", i < S.step);
+  });
+}
+function render(){
+  stepButtons();
+  const key = STEPS[S.step];
+  const prompt = STEP_DE[key];
+  if(key === "ziel") renderZiel(prompt);
+  else if(key === "ticket") renderTicket(prompt);
+  else if(key === "klasse") renderKlasse(prompt);
+  else if(key === "zeit") renderZeit(prompt);
+  else renderZahlen(prompt);
+  sprich(prompt);
+  sagen(prompt);
+}
+function optBtn(label, id, extra){
+  return "<button type=\"button\" class=\"opt\" data-id=\""+esc(id)+"\">"+esc(label)+(extra||"")+"</button>";
+}
+function bindOpts(fn){
+  $("lcd").querySelectorAll(".opt").forEach((b,i)=>{
+    b.addEventListener("click", ()=>fn(b.dataset.id, b));
+    b.dataset.k = String(i+1);
+  });
+}
+function fehlerBox(de, en, wort){
+  return "<div class=\"fb\" id=\"err\"><strong>"+esc(de)+"</strong><p class=\"en gloss\" lang=\"en\">"+esc(en)+"</p>"+(wort?"<p>Wort: <em>"+esc(wort)+"</em></p>":"")+"</div>";
+}
+
+function renderZiel(prompt){
+  const m = MISSIONS[S.i];
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Schreib das Ziel. Nicht Kleinhausen – du bist schon hier.</p><p class=\"en gloss\" lang=\"en\">Type the destination. Not Kleinhausen — you are already here.</p><div id=\"prod\"></div><div id=\"fbslot\"></div>";
+  $("lcd").querySelector("#prod").innerHTML = prodBlock("ziel-in", "Stadt / Ziel")+
+    '<p><button type="button" class="btn" id="ziel-ok">Prüfen</button></p>';
+  bindUmlauts($("lcd"));
+  glossUpdate();
+  let tries=0;
+  const inp=$("ziel-in");
+  inp.focus();
+  function done(id){
+    inp.disabled=true; $("ziel-ok").disabled=true;
+    S.wahl.ziel=id;
+    weiter();
+  }
+  function check(){
+    const v=inp.value;
+    if(foldDe(v).indexOf("kleinhausen")>=0){
+      S.fehler++; tries++;
+      $("fbslot").innerHTML = fehlerBox("Dieses Ziel ist ungültig. Du bist schon in Kleinhausen.","This destination is invalid. You are already in Kleinhausen.","Ziel / Bahnhof");
+      sprich("Dieses Ziel ist ungültig. Du bist schon in Kleinhausen.");
+      if(tries>=2){ inp.value=m.ziel; setTimeout(()=>done(m.ziel), S.motion?600:0); }
+      glossUpdate();
+      return;
+    }
+    if(foldDe(v)===foldDe(m.ziel) || nearDe(v, m.ziel)){
+      done(m.ziel);
+      return;
+    }
+    tries++; S.fehler++;
+    if(tries>=2){
+      inp.value=m.ziel;
+      $("fbslot").innerHTML = fehlerBox("Falsches Ziel. Richtig: "+m.ziel+".","Wrong destination. Correct: "+m.ziel+".","Ziel");
+      sprich("Richtig wäre: "+m.ziel+".");
+      setTimeout(()=>done(m.ziel), S.motion?600:0);
+    } else {
+      $("fbslot").innerHTML = fehlerBox("Falsches Ziel. Lies die Notiz.","Wrong destination. Read the note.","Ziel");
+      glossUpdate();
+    }
+  }
+  $("ziel-ok").addEventListener("click", check);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+}
+function renderTicket(prompt){
+  const m = MISSIONS[S.i];
+  const richtig = TICKETS.find(x=>x.id===m.ticket);
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Einzelfahrschein, Hin und zurück, Tageskarte oder Gruppenkarte?</p><p class=\"en gloss\" lang=\"en\">Single, return, day ticket or group ticket?</p><div id=\"prod\"></div><div id=\"fbslot\"></div>";
+  $("lcd").querySelector("#prod").innerHTML = prodBlock("ticket-in", "Fahrkarte")+
+    '<p><button type="button" class="btn" id="ticket-ok">Prüfen</button></p>';
+  bindUmlauts($("lcd"));
+  glossUpdate();
+  let tries=0;
+  const inp=$("ticket-in");
+  inp.focus();
+  function done(id){ inp.disabled=true; $("ticket-ok").disabled=true; S.wahl.ticket=id; weiter(); }
+  function check(){
+    if(matchTicket(inp.value, m.ticket)){ done(m.ticket); return; }
+    tries++; S.fehler++;
+    const t=TICKETS.find(x=>x.id!==m.ticket && matchTicket(inp.value, x.id));
+    if(tries>=2){
+      inp.value=richtig.de;
+      $("fbslot").innerHTML = fehlerBox("Hier brauchst du: "+richtig.de+". "+(t?t.erkl:""), "You need: "+richtig.en+".", richtig.de);
+      sprich("Richtig wäre: "+richtig.de+".");
+      setTimeout(()=>done(m.ticket), S.motion?600:0);
+    } else {
+      $("fbslot").innerHTML = fehlerBox((t?t.erkl+" ":"")+"Noch ein Versuch.","Try again.", richtig.de);
+      glossUpdate();
+    }
+  }
+  $("ticket-ok").addEventListener("click", check);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+}
+function renderKlasse(prompt){
+  const m = MISSIONS[S.i];
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><p class=\"prompt\">Schreib 1 / erste / 1. Klasse oder 2 / zweite / 2. Klasse.</p><p class=\"en gloss\" lang=\"en\">Type 1st or 2nd class.</p><div id=\"prod\"></div><div id=\"fbslot\"></div>";
+  $("lcd").querySelector("#prod").innerHTML = prodBlock("klasse-in", "Klasse")+
+    '<p><button type="button" class="btn" id="klasse-ok">Prüfen</button></p>';
+  bindUmlauts($("lcd"));
+  glossUpdate();
+  let tries=0;
+  const inp=$("klasse-in");
+  inp.focus();
+  const reveal = m.klasse+". Klasse";
+  function done(id){ inp.disabled=true; $("klasse-ok").disabled=true; S.wahl.klasse=id; weiter(); }
+  function check(){
+    if(matchKlasse(inp.value, m.klasse)){ done(m.klasse); return; }
+    tries++; S.fehler++;
+    if(tries>=2){
+      inp.value=reveal;
+      $("fbslot").innerHTML = fehlerBox("Falsche Klasse. Die Notiz sagt "+m.klasse+". Klasse.","Wrong class. The note says class "+m.klasse+".","Klasse");
+      sprich("Richtig wäre: "+m.klasse+". Klasse.");
+      setTimeout(()=>done(m.klasse), S.motion?600:0);
+    } else {
+      $("fbslot").innerHTML = fehlerBox("Falsche Klasse. Noch ein Versuch.","Wrong class. Try again.","Klasse");
+      glossUpdate();
+    }
+  }
+  $("klasse-ok").addEventListener("click", check);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); check(); } });
+}
+function renderZeit(prompt){
+  const m = MISSIONS[S.i];
+  let extra = "";
+  if(m.ticket === "gruppe"){
+    extra = "<p class=\"prompt\">Wie viele Personen? (Gruppenkarte)</p><p class=\"en gloss\" lang=\"en\">How many people?</p><div class=\"grid-opts\" id=\"pers\">"+[1,2,3,4].map(n=>"<button type=\"button\" class=\"opt\" data-id=\""+n+"\">"+n+" Person"+(n>1?"en":"")+"</button>").join("")+"</div>";
+  }
+  const zeitDe = m.zeit==="wochenende"?"am Wochenende":m.zeit;
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3><div id=\"prod\"></div>"+extra+"<div id=\"fbslot\"></div>";
+  $("lcd").querySelector("#prod").innerHTML = prodBlock("zeit-in", "Wann? (heute / morgen / Wochenende)")+
+    '<p><button type="button" class="btn" id="zeit-ok">Prüfen</button></p>';
+  bindUmlauts($("lcd"));
+  glossUpdate();
+  let tries=0, zeitOk=false;
+  const inp=$("zeit-in");
+  inp.focus();
+  function maybeWeiter(){
+    if(zeitOk && (m.ticket!=="gruppe" || S.wahl.personen)) weiter();
+  }
+  function doneZeit(id){
+    inp.disabled=true; $("zeit-ok").disabled=true;
+    S.wahl.zeit=id; zeitOk=true; maybeWeiter();
+  }
+  function checkZeit(){
+    if(matchZeit(inp.value, m.zeit)){ doneZeit(m.zeit); return; }
+    tries++; S.fehler++;
+    if(tries>=2){
+      inp.value=zeitDe;
+      $("fbslot").innerHTML = fehlerBox("Falsche Zeit. Richtig: "+zeitDe+".","Wrong time. Correct: "+zeitDe+".","heute / morgen / Wochenende");
+      sprich("Richtig wäre: "+zeitDe+".");
+      setTimeout(()=>doneZeit(m.zeit), S.motion?600:0);
+    } else {
+      $("fbslot").innerHTML = fehlerBox("Falsche Zeit. Schau auf die Notiz.","Wrong time. Check the note.","heute / morgen / Wochenende");
+      glossUpdate();
+    }
+  }
+  $("zeit-ok").addEventListener("click", checkZeit);
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); checkZeit(); } });
+  if(m.ticket==="gruppe"){
+    $("lcd").querySelectorAll("#pers .opt").forEach(b=>{
+      b.addEventListener("click", ()=>{
+        const id=Number(b.dataset.id);
+        if(id !== m.personen){
+          S.fehler++;
+          b.classList.add("falsch");
+          $("fbslot").innerHTML = fehlerBox("Die Notiz sagt zwei Personen.","The note says two people.","Gruppenkarte");
+          sprich("Zwei Personen, bitte.");
+          glossUpdate();
+          return;
+        }
+        S.wahl.personen=id;
+        b.classList.add("gut");
+        maybeWeiter();
+      });
+    });
+  }
+}
+function renderZahlen(prompt){
+  const m = MISSIONS[S.i];
+  const t = TICKETS.find(x=>x.id===m.ticket);
+  const zeitDe = m.zeit==="wochenende"?"am Wochenende":m.zeit;
+  $("lcd").innerHTML = "<h3>"+esc(prompt)+"</h3>"+
+    "<div class=\"zusammenfassung\"><p><strong>Ziel:</strong> "+esc(m.ziel)+" · Gleis "+ZIELE.find(z=>z.id===m.ziel).gleis+"</p>"+
+    "<p><strong>Ticket:</strong> "+esc(t.de)+(m.ticket==="gruppe"?" ("+m.personen+" Personen)":"")+"</p>"+
+    "<p><strong>Klasse:</strong> "+m.klasse+". Klasse · <strong>Wann:</strong> "+esc(zeitDe)+"</p>"+
+    "<p><strong>Preis:</strong> "+m.preis+"</p></div>"+
+    "<div class=\"karte-slot\" id=\"kslot\">Karte einführen</div>"+
+    "<p><button type=\"button\" class=\"karte-btn\" id=\"btn-karte\">Karte einstecken</button></p>"+
+    "<div id=\"pinbox\" hidden><p>PIN eingeben (Übung: 1234)</p><p class=\"pin-anzeige\" id=\"pindots\">____</p><div class=\"pin-pad\" id=\"pad\"></div></div>"+
+    "<p id=\"printrow\" hidden><button type=\"button\" class=\"btn\" id=\"btn-print\">Ticket drucken</button></p>"+
+    "<div id=\"fbslot\"></div>";
+  glossUpdate();
+  $("btn-karte").addEventListener("click", ()=>{
+    S.karte = true;
+    zeigeKarte();
+    sprich("Bitte PIN eingeben.");
+    sagen("PIN eingeben. Übung: 1234.");
+  });
+  if(S.karte) zeigeKarte();
+  if(S.pinOk){
+    $("printrow").hidden = false;
+    $("fbslot").innerHTML = "<div class=\"fb ok\">PIN richtig. Bitte Ticket drucken.</div>";
+    $("btn-print").addEventListener("click", drucke, {once:true});
+    const pad = $("pad");
+    if(pad) pad.querySelectorAll("button").forEach(b => { b.disabled = true; });
+  }
+}
+function zeigeKarte(){
+  $("kslot").innerHTML = "<svg width=\"86\" height=\"52\" viewBox=\"0 0 86 52\" aria-hidden=\"true\"><rect width=\"86\" height=\"52\" rx=\"6\" fill=\"#1e4a78\" stroke=\"#9ec7ef\" stroke-width=\"2\"/><rect x=\"8\" y=\"12\" width=\"28\" height=\"18\" fill=\"#d4c48a\"/><text x=\"12\" y=\"44\" fill=\"#fff\" font-size=\"9\" font-family=\"monospace\">KH-BANK</text></svg> Karte erkannt";
+  $("pinbox").hidden = false;
+  $("btn-karte").disabled = true;
+  bauePad();
+  $("pindots").textContent = "•".repeat(S.pin.length) + "_".repeat(4-S.pin.length);
+}
+function bauePad(){
+  const pad = $("pad");
+  pad.innerHTML = "";
+  [1,2,3,4,5,6,7,8,9,"C",0,"OK"].forEach(n=>{
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = String(n);
+    b.addEventListener("click", ()=>pinTaste(n));
+    pad.appendChild(b);
+  });
+}
+function pinTaste(n){
+  if(S.pinOk || S.fertig) return;
+  if(n === "C"){ S.pin = ""; }
+  else if(n === "BS"){ S.pin = S.pin.slice(0, -1); }
+  else if(n === "OK"){ pruefePin(); return; }
+  else if(S.pin.length < 4){ S.pin += String(n); }
+  const dots = $("pindots");
+  if(dots) dots.textContent = "•".repeat(S.pin.length) + "_".repeat(4-S.pin.length);
+}
+function setLed(ok, txt){
+  const led = $("led");
+  if(led){ led.classList.toggle("off", !ok); }
+  const t = $("led-txt");
+  if(t) t.textContent = txt;
+}
+function pruefePin(){
+  if(S.pinOk) return;
+  if(S.pin !== "1234"){
+    S.fehler++;
+    S.pin = "";
+    $("pindots").textContent = "____";
+    $("fbslot").innerHTML = fehlerBox("Falsche PIN. Die Übungskarte hat die PIN 1234.","Wrong PIN. The practice card uses 1234.","PIN");
+    sprich("Falsche PIN. Versuche eins zwei drei vier.");
+    setLed(false, "PIN falsch");
+    glossUpdate();
+    return;
+  }
+  S.pinOk = true;
+  $("printrow").hidden = false;
+  $("fbslot").innerHTML = "<div class=\"fb ok\">PIN richtig. Bitte Ticket drucken.</div>";
+  sprich("PIN richtig. Bitte Ticket drucken.");
+  setLed(true, "PIN ok · drucken");
+  $("btn-print").addEventListener("click", drucke, {once:true});
+  const pad = $("pad");
+  if(pad) pad.querySelectorAll("button").forEach(b => { b.disabled = true; });
+}
+function ticketHTML(m, small){
+  const t = TICKETS.find(x=>x.id===m.ticket);
+  const zeitDe = m.zeit==="wochenende"?"Wochenende":m.zeit;
+  return "<article class=\"ticket"+(small?" out":"")+"\"><strong>DB · Kleinhausen</strong><br>Nach "+esc(m.ziel)+"<br>"+esc(t.de)+"<br>"+m.klasse+". Klasse · "+esc(zeitDe)+"<br>Gleis "+ZIELE.find(z=>z.id===m.ziel).gleis+" · "+m.preis+
+    "<svg width=\"160\" height=\"28\" viewBox=\"0 0 160 28\" aria-hidden=\"true\">"+[0,4,7,9,12,14,20,22,28,40,42,50,55,70,72,80,88,100,102,110,118,130,140,148].map((x,i)=>"<rect x=\""+x+"\" y=\"4\" width=\""+(i%3===0?3:2)+"\" height=\"20\" fill=\"#111\"/>").join("")+"</svg></article>";
+}
+function drucke(){
+  if(S.fertig) return;
+  S.fertig = true;
+  const m = MISSIONS[S.i];
+  const roh = 20;
+  const abzug = Math.min(16, S.fehler * 4);
+  const p = Math.max(4, roh - abzug);
+  S.punkte += p;
+  S.tickets.push({m:m, p:p, fehler:S.fehler});
+  const printBtn = $("btn-print");
+  if(printBtn) printBtn.disabled = true;
+  $("schlitz").innerHTML = ticketHTML(m, true);
+  const gleis = ZIELE.find(z=>z.id===m.ziel).gleis;
+  $("lcd").insertAdjacentHTML("beforeend", "<div class=\"fb ok\"><p>Fahrkarte gedruckt. Bitte zu <strong>Gleis "+gleis+"</strong> gehen.</p><p class=\"en gloss\" lang=\"en\">Please go to platform "+gleis+".</p><p>+"+p+" Punkte"+(S.fehler? " (Abzug wegen "+S.fehler+" Korrektur"+(S.fehler===1?"":"en")+")":"")+".</p><p><button type=\"button\" class=\"btn\" id=\"btn-next\">"+(S.i<MISSIONS.length-1?"Nächste Fahrt":"Zur Auswertung")+"</button></p></div>");
+  setLed(true, "Gleis "+gleis);
+  glossUpdate();
+  $("scorechip").textContent = "Punkte: " + S.punkte;
+  sprich("Fahrkarte gedruckt. Nach "+m.ziel+".");
+  sagen("Ticket nach "+m.ziel+". +"+p+" Punkte.");
+  $("btn-next").addEventListener("click", ()=>{
+    if(S.i < MISSIONS.length-1){ S.i++; startMission(); $("h-play").focus(); }
+    else zeigeSumme();
+  });
+}
+function weiter(){
+  S.step = Math.min(S.step+1, STEPS.length-1);
+  render();
+}
+function zeigeSumme(){
+  const pct = Math.round(S.punkte / S.max * 100);
+  let lob = "Ein guter Anfang am Automaten.";
+  if(pct>=90) lob = "Ausgezeichnet. Der Automat hat Respekt vor dir.";
+  else if(pct>=70) lob = "Sehr gut. Die Ticketwörter sitzen fast.";
+  else if(pct>=50) lob = "Gut. Übe noch Hin und zurück gegen Einzelfahrschein.";
+  $("sum-text").innerHTML = "Du hast <strong>"+S.punkte+" von "+S.max+" Punkten</strong> ("+pct+" %). "+esc(lob);
+  $("collage").innerHTML = S.tickets.map(t => ticketHTML(t.m,false)).join("");
+  $("code-val").textContent = baueCode($("name-in").value);
+  zeige("screen-summary");
+  sprich("Alle Fahrkarten gedruckt. "+S.punkte+" Punkte.");
+}
+$("btn-los").addEventListener("click", startGame);
+$("btn-nochmal").addEventListener("click", ()=>{ startGame(); });
+$("btn-code").addEventListener("click", ()=>{ $("code-val").textContent = baueCode($("name-in").value); sagen("Abgabecode erzeugt."); });
+$("name-in").addEventListener("input", ()=>{ $("code-val").textContent = baueCode($("name-in").value); });
+$("btn-sprich-prompt").addEventListener("click", ()=>{
+  if(!S.audio){ S.audio = true; setToggle($("s-audio"), true); }
+  sprich(STEP_DE[STEPS[S.step]]);
+});
+$("btn-zurueck").addEventListener("click", ()=>{
+  if(S.fertig) return;
+  if(S.step<=0){ sagen("Du bist schon beim Ziel."); return; }
+  S.step--;
+  if(S.step===0) S.wahl.ziel=undefined;
+  if(S.step<=1) S.wahl.ticket=undefined;
+  if(S.step<=2) S.wahl.klasse=undefined;
+  if(S.step<=3){ S.wahl.zeit=undefined; S.wahl.personen=undefined; S.pin=""; S.karte=false; S.pinOk=false; }
+  render();
+  sagen("Ein Schritt zurück.");
+});
+$("btn-copy").addEventListener("click", async ()=>{
+  const t=$("code-val").textContent;
+  if(!/^KH-FAHR-/.test(t)){ sagen("Zuerst Name eingeben."); return; }
+  try{ await navigator.clipboard.writeText(t); sagen("Code kopiert."); $("btn-copy").textContent="Kopiert"; }
+  catch(e){ sagen("Bitte markieren und kopieren."); }
+});
+$("btn-verify").addEventListener("click", ()=>{
+  const name=$("v-name").value.trim();
+  const code=$("v-code").value.trim().toUpperCase();
+  const m=/^KH-FAHR-(\d+)-(\d+)-([0-9A-Z]{7})$/.exec(code);
+  if(!name||!m){ $("v-out").textContent="Name und Code im Format KH-FAHR-Punkte-Prozent-Hash."; return; }
+  const ges=Number(m[1]), pct=Number(m[2]), pruef=m[3];
+  const norm=name.toLowerCase().replace(/\s+/g," ");
+  const soll=hash32(norm+"|"+ges+"|"+S.max+"|"+pct+"|kleinhausen-fahr-v1").toString(36).toUpperCase().padStart(7,"0").slice(-7);
+  $("v-out").textContent = (soll===pruef)
+    ? "Gültig. "+name+": "+ges+" Punkte ("+pct+" %)."
+    : "Ungültig. Name und Code passen nicht.";
+});
+
+document.addEventListener("keydown", e=>{
+  if(!$("screen-play").classList.contains("on")) return;
+  const tag = (e.target.tagName||"").toLowerCase();
+  if(tag === "input" || tag === "textarea") return;
+  if(STEPS[S.step]==="zahlen" && S.karte && $("pad")){
+    if(/^[0-9]$/.test(e.key)){ pinTaste(Number(e.key)); e.preventDefault(); return; }
+    if(e.key==="Backspace"){ pinTaste("BS"); e.preventDefault(); return; }
+    if(e.key==="Enter"){ pinTaste("OK"); e.preventDefault(); return; }
+  }
+});
+
+glossUpdate();
+if("speechSynthesis" in window){ window.speechSynthesis.onvoiceschanged = function(){}; }
+</script>
+</body>
+</html>

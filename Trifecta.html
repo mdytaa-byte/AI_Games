@@ -219,10 +219,11 @@
     .title-link:hover{color:#f0d796}
     .title-hint{margin:14px 0 0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#8e8270}
     .tutor-card{
-      position:absolute;left:50%;bottom:16px;transform:translateX(-50%);width:min(540px,calc(100% - 28px));
-      z-index:8;background:linear-gradient(145deg,#191c21f5,#0c0e11f7);border:1px solid var(--gold);
+      position:fixed;left:50%;bottom:20px;transform:translateX(-50%);width:min(540px,calc(100% - 28px));
+      z-index:20;background:linear-gradient(145deg,#191c21f7,#0c0e11fa);border:1px solid var(--gold);
       box-shadow:0 18px 50px #000c,inset 0 0 0 1px #d3a75225;padding:16px 18px 14px;border-radius:6px;text-align:left;
     }
+    body.tutorial-on .game-shell{padding-bottom:170px}
     .tutor-progress{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
     .tutor-card h2{font-size:18px;margin:0 0 8px;color:#efd99e;letter-spacing:.1em}
     .tutor-card p{margin:0;color:#d2c6ad;line-height:1.45;font-size:15px}
@@ -245,7 +246,7 @@
       .title-sigil{width:min(340px,94vw)}
       .title-actions{flex-direction:column;align-items:stretch}
       .title-actions .gold-btn,.title-actions .ghost-btn{min-width:0;width:100%}
-      .tutor-card{bottom:8px;padding:12px 14px}
+      .tutor-card{bottom:8px;padding:12px 14px;width:calc(100% - 16px)}
       .title-screen{padding:12px}
       .title-filigree{inset:8px}
       .title-torch{opacity:.55}
@@ -1157,7 +1158,7 @@
       {
         id:'sight', title:'Sight',
         body:'Instead of moving, a Mage Fowl may change aspect. Sight leaps two links and stays on the same color. Choose Sight.',
-        prompt:'Select your Fowl, then choose Sight.',
+        prompt:'Choose Sight.',
         piece:'pupil', aspect:'sight', expect:'aspect', hint:'Choose Sight.',
         pieces:['pupil']
       },
@@ -1170,7 +1171,7 @@
       {
         id:'strength', title:'Surrounding',
         body:'An Ember Fowl holds the Ember gate. Strength counts as two surrounding pressure — enough to capture a Fowl. Restore Strength.',
-        prompt:'Select your Fowl, then choose Strength.',
+        prompt:'Choose Strength.',
         piece:'pupil', aspect:'strength', expect:'aspect', hint:'Choose Strength.',
         pieces:['pupil','emberGate'], setup:'gateRival'
       },
@@ -1269,16 +1270,33 @@
       skip.textContent=step.id==='done'?'Title Screen':'Skip';
     }
 
+    function tutorialReselect(){
+      const step=currentStep();
+      if(!(step?.expect==='move'||step?.expect==='aspect')||!step.piece){
+        state.selected=null; state.legal=[]; state.legalMoves=[];
+        return;
+      }
+      const p=state.pieces.find(x=>x.id===step.piece);
+      if(!p||p.f!==state.turn){
+        state.selected=null; state.legal=[]; state.legalMoves=[];
+        return;
+      }
+      state.selected=p.id;
+      state.legalMoves=legalMovesFor(p);
+      filterTutorialMoves();
+      state.legal=[...new Set(state.legalMoves.flatMap(m=>m.cells))];
+    }
+
     function tutorialAdvance(){
       if(!state.tutorial) return;
       if(state.tutorial.step>=TUTORIAL_STEPS.length-1){ updateTutorCard(); render(); return; }
       state.tutorial.step++;
       const step=currentStep();
       if(step.setup) tutorialApplySetup(step.setup);
-      state.selected=null; state.legal=[]; state.legalMoves=[];
       if(state.winner && step.id!=='done'){
         while(currentStep()&&currentStep().id!=='done') state.tutorial.step++;
       }
+      tutorialReselect();
       updateTutorCard();
       render();
       if(currentStep()?.next) $('#tutorNext').focus();

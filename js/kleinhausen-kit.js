@@ -133,14 +133,18 @@
     },
     parkett: function () {
       return tex(function (g, s) {
-        var cols = 4, rows = 8, pw = s / cols, ph = s / rows;
-        for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) {
-          var v = 118 + ((x * 13 + y * 9) % 28);
-          g.fillStyle = 'rgb(' + (v + 20) + ',' + (v - 20) + ',' + (v - 55) + ')';
-          g.fillRect(x * pw + 1, y * ph + 1, pw - 2, ph - 2);
-          g.strokeStyle = 'rgba(40,20,8,.35)'; g.strokeRect(x * pw + 0.5, y * ph + 0.5, pw - 1, ph - 1);
+        var rows = 10, ph = s / rows, bw = s / 3.2;
+        for (var y = 0; y < rows; y++) {
+          var off = (y % 2) * (bw * 0.5);
+          for (var x = -bw; x < s + bw; x += bw) {
+            var v = 128 + Math.abs((x * 3 + y * 17) % 34);
+            g.fillStyle = 'rgb(' + (v + 32) + ',' + (v - 6) + ',' + (v - 52) + ')';
+            g.fillRect(x + off + 1, y * ph + 1, bw - 2, ph - 2);
+            g.strokeStyle = 'rgba(48,22,8,.32)';
+            g.strokeRect(x + off + 0.5, y * ph + 0.5, bw - 1, ph - 1);
+          }
         }
-        grain(g, s, 12);
+        grain(g, s, 14);
       });
     },
     putz: function (col) {

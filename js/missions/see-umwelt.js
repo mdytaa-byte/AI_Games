@@ -53,8 +53,9 @@ KH.start({
     w.hotspot({ id: 'baum', x: -6.2, z: 5.1, r: 1.5, label: 'ein Baum' });
     /* ducks */
     [[3.3, -0.55], [2.6, -0.95], [4.1, -0.2]].forEach(function (d) {
-      w.cyl(0.16, 0.14, { x: d[0], y: 0.12, z: d[1], color: 0xc9a227, collide: false, seg: 8 });
-      w.cyl(0.07, 0.1, { x: d[0] + 0.14, y: 0.22, z: d[1] + 0.1, color: 0x3a2a10, collide: false, seg: 6 });
+      w.cyl(0.16, 0.12, { x: d[0], y: 0.12, z: d[1], color: 0xf4ead4, collide: false, seg: 8 });
+      w.cyl(0.08, 0.1, { x: d[0] + 0.12, y: 0.22, z: d[1] + 0.08, color: 0x3a2a10, collide: false, seg: 8 });
+      w.cyl(0.035, 0.05, { x: d[0] + 0.18, y: 0.2, z: d[1] + 0.14, color: 0xe07020, collide: false, seg: 6 });
     });
     w.hotspot({ id: 'ente', x: 3.4, z: -0.5, r: 1.3, label: 'die Ente' });
     [-3.4, -2.6, -3.0].forEach(function (rx, i) {

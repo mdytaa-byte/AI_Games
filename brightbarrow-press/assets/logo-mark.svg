@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280" fill="none" role="img" aria-labelledby="bbp-logo-title">
+  <title id="bbp-logo-title">Brightbarrow Press</title>
+  <defs>
+    <linearGradient id="bbp-hill" x1="110" y1="90" x2="300" y2="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7A8B45"/>
+      <stop offset="0.42" stop-color="#5E7036"/>
+      <stop offset="1" stop-color="#3F4C24"/>
+    </linearGradient>
+    <linearGradient id="bbp-hill-lit" x1="160" y1="110" x2="230" y2="180" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8B9A52" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#8B9A52" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="bbp-page-left" x1="50" y1="190" x2="200" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F4EFE3"/>
+      <stop offset="1" stop-color="#D9D3C6"/>
+    </linearGradient>
+    <linearGradient id="bbp-page-right" x1="200" y1="188" x2="350" y2="250" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E8E4DA"/>
+      <stop offset="1" stop-color="#C9C4B8"/>
+    </linearGradient>
+    <radialGradient id="bbp-sun" cx="200" cy="102" r="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F6C15A"/>
+      <stop offset="0.55" stop-color="#EE9A32"/>
+      <stop offset="1" stop-color="#E07A22"/>
+    </radialGradient>
+    <linearGradient id="bbp-path" x1="200" y1="110" x2="200" y2="176" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFDF7"/>
+      <stop offset="1" stop-color="#F3EBDA"/>
+    </linearGradient>
+    <filter id="bbp-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3.5" flood-color="#2A3142" flood-opacity="0.14"/>
+    </filter>
+  </defs>
+
+  <g fill="#E8943A">
+    <polygon points="160.00,99.45 114.00,98.65 114.00,101.35 160.00,100.55"/>
+    <polygon points="162.13,87.12 118.63,72.14 117.79,74.71 161.79,88.16"/>
+    <polygon points="167.96,76.04 131.22,48.36 129.63,50.54 167.32,76.93"/>
+    <polygon points="176.93,67.32 150.54,29.63 148.36,31.22 176.04,67.96"/>
+    <polygon points="188.16,61.79 174.71,17.79 172.14,18.63 187.12,62.13"/>
+    <polygon points="200.55,60.00 201.35,14.00 198.65,14.00 199.45,60.00"/>
+    <polygon points="212.88,62.13 227.86,18.63 225.29,17.79 211.84,61.79"/>
+    <polygon points="223.96,67.96 251.64,31.22 249.46,29.63 223.07,67.32"/>
+    <polygon points="232.68,76.93 270.37,50.54 268.78,48.36 232.04,76.04"/>
+    <polygon points="238.21,88.16 282.21,74.71 281.37,72.14 237.87,87.12"/>
+    <polygon points="240.00,100.55 286.00,101.35 286.00,98.65 240.00,99.45"/>
+  </g>
+
+  <circle cx="200" cy="102" r="38" fill="url(#bbp-sun)"/>
+
+  <g filter="url(#bbp-soft)">
+    <path fill="url(#bbp-hill)" d="M78 198
+      C98 168 132 122 200 112
+      C268 122 302 168 322 198
+      C280 190 200 186 78 198 Z"/>
+    <path fill="url(#bbp-hill-lit)" d="M120 186
+      C148 148 176 122 200 114
+      C210 128 198 158 186 186
+      C164 190 140 190 120 186 Z"/>
+  </g>
+
+  <path fill="url(#bbp-path)" stroke="#F7F1E4" stroke-width="0.6" d="M200 176
+    C184 166 218 156 194 144
+    C176 134 220 124 198 116
+    C190 112 206 110 200 108
+    C192 112 180 122 196 132
+    C214 144 186 156 200 166
+    C206 170 204 174 200 176 Z"/>
+
+  <g filter="url(#bbp-soft)">
+    <path fill="url(#bbp-page-left)" d="M44 202
+      C88 188 148 182 200 188
+      L200 252
+      C142 262 82 258 50 248
+      C38 236 36 216 44 202 Z"/>
+    <path fill="url(#bbp-page-right)" d="M356 202
+      C312 188 252 182 200 188
+      L200 252
+      C258 262 318 258 350 248
+      C362 236 364 216 356 202 Z"/>
+    <path fill="#C5C0B4" opacity="0.45" d="M200 188 L200 252 C188 254 188 190 200 188 Z"/>
+  </g>
+
+  <path fill="none" stroke="#B9B3A6" stroke-width="1.1" opacity="0.7" d="M62 214 C110 202 156 198 196 202"/>
+  <path fill="none" stroke="#B9B3A6" stroke-width="1.1" opacity="0.55" d="M68 228 C114 216 156 212 196 216"/>
+  <path fill="none" stroke="#A8A296" stroke-width="1.1" opacity="0.7" d="M338 214 C290 202 244 198 204 202"/>
+  <path fill="none" stroke="#A8A296" stroke-width="1.1" opacity="0.55" d="M332 228 C286 216 244 212 204 216"/>
+</svg>

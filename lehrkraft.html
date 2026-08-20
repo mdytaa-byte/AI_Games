@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="de" data-en="an">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kleinhausen — Lehrblatt</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230E3A44'/%3E%3Crect y='24' width='32' height='8' fill='%23FFCC00'/%3E%3C/svg%3E">
+<meta name="description" content="Ein Blatt für Lehrkräfte: Spiele, Niveau, Wortschatz, Abgabecodes und wie man sie prüft.">
+<style>
+:root{
+  --petrol:#0E3A44; --gelb:#FFCC00; --papier:#F7F1E3; --ink:#142028; --soft:#4A5C62;
+  --ziegel:#C25B4A; --line:#d4cbb6; --card:#fff;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --fs:1rem;
+}
+html[data-size="gross"]{--fs:1.12rem}
+html[data-contrast="hoch"]{--papier:#fff;--ink:#000;--soft:#000;--petrol:#000;--line:#000}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans); font-size:var(--fs); line-height:1.45; color:var(--ink);
+  background:var(--papier); -webkit-text-size-adjust:100%;
+}
+.skip{position:absolute;left:-9999px;top:0;z-index:20;background:var(--gelb);color:var(--petrol);padding:.7em 1em;font-weight:800;text-decoration:none}
+.skip:focus{left:8px;top:8px}
+:focus-visible{outline:4px solid var(--ziegel);outline-offset:3px}
+.en.gloss{display:none;font-style:italic;color:var(--soft);font-size:.9em;margin:.15em 0 0}
+html[data-en="an"] .en.gloss{display:block}
+.topbar{background:var(--petrol);color:var(--papier);border-bottom:8px solid var(--gelb)}
+.topbar-in{max-width:920px;margin:0 auto;padding:.7rem 1.1rem;display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;justify-content:space-between}
+.brand h1{font-family:var(--serif);margin:0;font-size:1.45rem;font-weight:600}
+.brand .sub{display:block;font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--gelb)}
+.tools{display:flex;flex-wrap:wrap;gap:.4rem}
+.set-btn,.btn{
+  font:inherit;font-size:.82em;font-weight:700;min-height:44px;padding:.35em .9em;cursor:pointer;
+  border-radius:999px;border:2px solid #7a9298;background:transparent;color:var(--papier);text-decoration:none;display:inline-flex;align-items:center;
+}
+.set-btn[aria-pressed="true"]{background:var(--gelb);color:var(--ink);border-color:var(--gelb)}
+.btn{background:var(--gelb);color:var(--ink);border-color:var(--gelb)}
+.btn:hover{filter:brightness(.95)}
+.wrap{max-width:920px;margin:0 auto;padding:1.2rem 1.1rem 2.6rem}
+.stamp{
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ziegel);border:3px solid var(--ziegel);display:inline-block;padding:.2em .55em;margin:0 0 .6rem;
+  transform:rotate(-3deg);
+}
+h2{font-family:var(--serif);font-size:1.35rem;margin:1.4rem 0 .45rem}
+h2:first-of-type{margin-top:.2rem}
+.lede{max-width:64ch}
+.grid{display:grid;gap:.8rem;grid-template-columns:1fr 1fr}
+@media (max-width:700px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:3px solid var(--petrol);border-radius:10px;padding:.85rem 1rem;break-inside:avoid}
+.card h3{font-family:var(--serif);margin:0 0 .35rem;font-size:1.08rem}
+.card ol,.card ul{margin:.3rem 0 0;padding-left:1.2rem}
+.card li{margin:.25rem 0}
+code{font-family:var(--mono);background:#fff;border:1px solid var(--line);padding:.05em .35em;border-radius:3px;font-size:.92em}
+table{width:100%;border-collapse:collapse;font-size:.86rem;background:var(--card);border:3px solid var(--petrol)}
+th,td{text-align:left;padding:.42rem .5rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;background:var(--petrol);color:var(--gelb)}
+tr:last-child td{border-bottom:0}
+.num{white-space:nowrap;font-family:var(--mono);font-size:.82em}
+.path{display:flex;flex-wrap:wrap;gap:.35rem;margin:.4rem 0 0}
+.path span{background:var(--gelb);color:var(--ink);font-weight:700;font-size:.8em;padding:.25em .55em;border-radius:4px}
+.note{border-left:8px solid var(--gelb);background:var(--card);padding:.8rem 1rem;margin:1rem 0}
+footer{max-width:920px;margin:0 auto;padding:0 1.1rem 2rem;color:var(--soft);font-size:.88rem}
+@media print{
+  @page{size:A4;margin:10mm}
+  body{background:#fff;font-size:9.5pt}
+  .topbar{border-bottom:4px solid #000;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .no-print{display:none !important}
+  .wrap{max-width:none;padding:0}
+  .grid{grid-template-columns:1fr 1fr;gap:.5rem}
+  .card,.note,table{box-shadow:none;break-inside:avoid}
+  table{font-size:8.2pt}
+  th,td{padding:.28rem .35rem}
+  h2{break-after:avoid;margin:0.7rem 0 .3rem}
+  a{color:inherit;text-decoration:none}
+  a[href]::after{content:""}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#blatt">Zum Lehrblatt</a>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <h1>Kleinhausen</h1>
+      <span class="sub">Lehrblatt · Abgabecodes · A1–B1</span>
+    </div>
+    <div class="tools no-print">
+      <a class="set-btn" href="index.html">Stadtplan</a>
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
+      <button type="button" class="btn" id="s-print">Drucken</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="blatt">
+  <p class="stamp">Für Lehrkräfte · nicht für die Klasse</p>
+  <p class="lede">Ein Blatt für Canvas: was jedes Spiel übt, welcher Code zurückkommt, und wie du ihn prüfst. Die Lernenden öffnen den <a href="index.html">Stadtplan</a> oder eine einzelne HTML-Datei. Kein Konto, keine Cookies — Fortschritt gilt nur für den Besuch.
+    <span class="en gloss" lang="en">One sheet for Canvas: what each game practises, which code comes back, and how to verify it. Students open the town map or a single HTML file. No accounts, no cookies.</span></p>
+
+  <div class="grid">
+    <article class="card">
+      <h3>So kommen die Codes an</h3>
+      <ol>
+        <li>Spiel zu Ende spielen.</li>
+        <li>Namen eingeben — denselben Namen wie in Canvas.</li>
+        <li>Code kopieren (<code>KH-…</code>) und in die Aufgabe kleben.</li>
+      </ol>
+      <p class="en gloss" lang="en">Finish → type the Canvas name → paste the KH- code into the assignment.</p>
+    </article>
+    <article class="card">
+      <h3>So prüfst du einen Code</h3>
+      <ol>
+        <li>Dasselbe Spiel öffnen.</li>
+        <li>Unten: <strong>Für Lehrkräfte: Code prüfen</strong>.</li>
+        <li>Name + Code. Die Prüfsumme hängt am Namen — vertauschte Namen fallen auf.</li>
+      </ol>
+      <p class="en gloss" lang="en">Open the same game → teacher details → name + code. The checksum is tied to the name.</p>
+    </article>
+    <article class="card">
+      <h3>Was „gut“ heißt</h3>
+      <p><strong>75&nbsp;%+</strong> oder das vorgesehene Ende (Held, Nacht, alle Stempel) gilt als geschafft. Unter 50&nbsp;%: noch einmal, Erklärungen lesen. Codes sind kein Hochsicherheitsschloss — der Quelltext ist lesbar.</p>
+      <p class="en gloss" lang="en">Treat 75%+ or the intended ending as a pass. Below 50%: replay. Codes deter casual fakes; they are not crypto.</p>
+    </article>
+    <article class="card">
+      <h3>Einstellungen in jedem Spiel</h3>
+      <p><strong>English</strong> (Standard an) · <strong>Vorlesen</strong> (de-DE) · <strong>Kontrast</strong> · <strong>Schrift</strong>. Oben links: zurück zum Stadtplan.</p>
+      <p class="en gloss" lang="en">English on by default, German speech, contrast, type size. Hub pill top-left.</p>
+    </article>
+  </div>
+
+  <h2>Vier fertige Aufträge</h2>
+  <div class="grid">
+    <article class="card">
+      <h3>A1 — Erster Nachmittag</h3>
+      <div class="path"><span>Uhrzeit</span><span>Fahrkarte</span><span>Café</span></div>
+      <p>Uhren, Automat (PIN <code>1234</code>), bestellen mit <em>Sie</em>. Codes: <code>KH-UHR</code>, <code>KH-FAHR</code>, <code>KH-CAFE</code>.</p>
+    </article>
+    <article class="card">
+      <h3>A2 — In der Stadt erledigen</h3>
+      <div class="path"><span>Amt</span><span>Wohnung</span><span>Wetter</span></div>
+      <p>Formulare, Anzeige + Anfrage, Verbzweit in der Sendung. Codes: <code>KH-AMT</code>, <code>KH-WOHN</code>, <code>KH-WETT</code>.</p>
+    </article>
+    <article class="card">
+      <h3>Grammatik &amp; Geschichte</h3>
+      <div class="path"><span>Mixups</span><span>Detektiv</span><span>Ein Tag</span></div>
+      <p>False friends, Fälle, Register den ganzen Tag. Codes: <code>KH-MIX</code>, <code>KH-DET</code>, <code>KH-TAG</code> plus Ende.</p>
+    </article>
+    <article class="card">
+      <h3>Länger, eine Sitzung</h3>
+      <div class="path"><span>Rathaus</span><span>Museum</span><span>Nachbarn</span></div>
+      <p>Escape, Schnitzeljagd, Tür-zu-Tür. Codes: <code>KH-ESC</code>, <code>KH-MUS</code>, <code>KH-MISS</code>.</p>
+    </article>
+  </div>
+
+  <h2>Die dreizehn neuen Spiele</h2>
+  <table>
+    <caption class="skip">Spiele, Ort, Niveau, Wortschatz, Code</caption>
+    <thead>
+      <tr>
+        <th>Spiel</th>
+        <th>Ort</th>
+        <th>Niv.</th>
+        <th>Min.</th>
+        <th>Wortschatz / Fokus</th>
+        <th>Code · Bestanden</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a href="kleinhausen/uhrzeit-chaos.html">Uhrzeit-Chaos</a></td>
+        <td>Markt / Kirche</td>
+        <td>A1</td>
+        <td class="num">10–15</td>
+        <td>Viertel nach/vor, halb, um, Mittag</td>
+        <td><code>KH-UHR-</code> Punkte-% · 75&nbsp;%+</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/fahrkartenautomat.html">Fahrkartenautomat</a></td>
+        <td>Bahnhof</td>
+        <td>A1–A2</td>
+        <td class="num">12–18</td>
+        <td>hin, zurück, Gleis, Einzelfahrschein, Klasse. PIN <code>1234</code></td>
+        <td><code>KH-FAHR-</code> Punkte-% · 75&nbsp;%+</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/arzt-apotheke.html">Beim Arzt / Apotheke</a></td>
+        <td>Arzt</td>
+        <td>A1–A2</td>
+        <td class="num">12–18</td>
+        <td>Körper, Schmerzen, Rezept, <em>Sie</em></td>
+        <td><code>KH-ARZT-</code> Punkte-% · 75&nbsp;%+</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/cafe-am-markt.html">Café Linde</a></td>
+        <td>Markt</td>
+        <td>A1–A2</td>
+        <td class="num">12–20</td>
+        <td>Speisekarte, bestellen, Rechnung, Trinkgeld, <em>Sie</em></td>
+        <td><code>KH-CAFE-</code> Punkte-% · 3 Besuche</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/amtsschalter.html">Amtsschalter 3</a></td>
+        <td>Rathaus</td>
+        <td>A2</td>
+        <td class="num">15–20</td>
+        <td>Formular, TT.MM.JJJJ, PLZ, <em>Sie</em></td>
+        <td><code>KH-AMT-</code> Punkte-% · 3 Stempel</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/wohnung-gesucht.html">Wohnung gesucht</a></td>
+        <td>Wohnen</td>
+        <td>A2</td>
+        <td class="num">15–20</td>
+        <td>Kaltmiete, möbliert, Anfrage, auf/neben/in/unter</td>
+        <td><code>KH-WOHN-</code> Punkte-% · 3 passende Anzeigen</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/wetterstudio.html">Wetterstudio</a></td>
+        <td>Studio</td>
+        <td>A2</td>
+        <td class="num">12–18</td>
+        <td>sonnig, Regen, Grad, Verbzweit: Heute <em>ist</em> es…</td>
+        <td><code>KH-WETT-</code> Punkte-% · 75&nbsp;%+</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/common-mixups.html">Common Mixups</a></td>
+        <td>Schule</td>
+        <td>A2</td>
+        <td class="num">12–18</td>
+        <td>bekommen, Gift, Chef, Handy, Verb 2, weil, trennbare Verben</td>
+        <td><code>KH-MIX-</code> Punkte-% · 75&nbsp;%+</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/der-die-das-detektiv.html">Der/Die/Das Detektiv</a></td>
+        <td>Rathaus</td>
+        <td>A2–B1</td>
+        <td class="num">15–25</td>
+        <td>Artikel, Akk/Dat, ein Genitiv</td>
+        <td><code>KH-DET-</code> · Siegel + 3 Beweise</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/rathaus-escape.html">Escape from Rathaus</a></td>
+        <td>Rathaus</td>
+        <td>A2–B1</td>
+        <td class="num">20–30</td>
+        <td>Bürowörter, weil/dass, Datum, Dativ, Höflichkeitsphrase</td>
+        <td><code>KH-ESC-</code> plus Ende (DAWN/HELD/…)</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/ein-tag-in-kleinhausen.html">Ein Tag in Kleinhausen</a></td>
+        <td>Wohnen / Schule</td>
+        <td>A2</td>
+        <td class="num">15–25</td>
+        <td>Register du/Sie, Akk/Dat, Verbzweit</td>
+        <td><code>KH-TAG-</code> plus Ende (HELD/CHAOS/STAMM/NACH)</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/mission-nachbarschaft.html">Mission: Nachbarschaft</a></td>
+        <td>Nachbarn</td>
+        <td>A2</td>
+        <td class="num">15–20</td>
+        <td>sich vorstellen, einladen, gerne, leider, Tschüss / Auf Wiedersehen</td>
+        <td><code>KH-MISS-</code> Höflichkeit + Häuser</td>
+      </tr>
+      <tr>
+        <td><a href="kleinhausen/museumsnacht.html">Museumsnacht</a></td>
+        <td>Museum</td>
+        <td>A2–B1</td>
+        <td class="num">20–30</td>
+        <td>Relativsätze, Präteritum (wurde, stand), Kultur Rheinhessen</td>
+        <td><code>KH-MUS-</code> NACHT/WACH + 6 Stempel</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="note"><strong>Ältere Welten</strong> (ohne KH-Code, trotzdem auf dem Stadtplan): Supermarkt, Kleiderschrank, Kaufhaus Fröhlich, Schreib zurück!, Gesprächspartner, Lieferdienst 3D, Foto-Schnitzeljagd 3D. Für Canvas dort Screenshot, Satz oder mündliche Abgabe.</p>
+
+  <h2>Kurz notiert</h2>
+  <ul>
+    <li>Englisch-Glossen sind an, bis die Klasse sie ausknipst — gut für den ersten Durchgang, später aus.</li>
+    <li>Fahrkartenautomat: Übungs-PIN <code>1234</code> steht auch auf dem Startbildschirm.</li>
+    <li>Amt: Datum <strong>TT.MM.JJJJ</strong>, Vorname/Nachname nicht tauschen, PLZ 55299.</li>
+    <li>Café und Amt: grobes <em>du</em> zum Personal ist falsch.</li>
+    <li>Canva: eine HTML-Datei in Canva Code, oder GitHub Pages einbetten. Vorlesen kann in iframes stumm bleiben.</li>
+  </ul>
+</main>
+<footer>
+  <p>Kleinhausen · Deutsch mit Herrn Young · Michael Young, Designer. Eine Datei, keine Cookies. Drucken: A4, zwei Seiten sind in Ordnung.</p>
+</footer>
+<script>
+document.getElementById("s-print").onclick = () => window.print();
+const en = document.getElementById("s-en");
+en.onclick = () => {
+  const on = document.documentElement.getAttribute("data-en") !== "an";
+  document.documentElement.setAttribute("data-en", on ? "an" : "aus");
+  en.setAttribute("aria-pressed", on ? "true" : "false");
+};
+</script>
+</body>
+</html>

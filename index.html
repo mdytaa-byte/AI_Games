@@ -50,7 +50,9 @@ html[data-en="an"] .en.gloss{display:block}
 .set-btn{
   font:inherit;font-size:.8em;min-height:44px;padding:.35em .9em;cursor:pointer;
   background:transparent;color:var(--papier);border:2px solid #6e8890;border-radius:999px;
+  text-decoration:none;display:inline-flex;align-items:center;
 }
+a.set-btn{background:var(--gelb);color:var(--ink);border-color:var(--gelb);font-weight:800}
 .set-btn[aria-pressed="true"]{background:var(--gelb);color:var(--ink);border-color:var(--gelb);font-weight:800}
 .hero{max-width:1180px;margin:0 auto;padding:1.3rem 1.1rem .4rem}
 .kicker{font-family:var(--mono);letter-spacing:.18em;text-transform:uppercase;font-size:.72rem;color:var(--petrol-hell);margin:0 0 .35rem}
@@ -150,6 +152,7 @@ footer{max-width:1180px;margin:0 auto;padding:0 1.1rem 2.6rem;color:var(--soft);
       <span class="sub">Stadtplan · Deutsch üben · A1–B1</span>
     </div>
     <div class="settings" role="group" aria-label="Einstellungen">
+      <a class="set-btn" href="lehrkraft.html" title="Lehrblatt zum Drucken">Lehrblatt</a>
       <button type="button" class="set-btn" id="s-en" aria-pressed="true">English</button>
       <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">Kontrast</button>
       <button type="button" class="set-btn" id="s-size">Schrift: A</button>
@@ -381,6 +384,8 @@ footer{max-width:1180px;margin:0 auto;padding:0 1.1rem 2.6rem;color:var(--soft);
 
 <section class="catalog">
   <h2>So nutzt du den Plan</h2>
+  <p class="note"><strong>Lehrkräfte:</strong> <a href="lehrkraft.html">Ein Blatt zum Drucken</a> — Aufträge, Wortschatz, Minuten, Codes, 75&nbsp;%-Regel.
+    <span class="en gloss" lang="en">Teachers: one printable sheet — packs, vocab, minutes, codes, 75% pass.</span></p>
   <details class="how">
     <summary>Canva, Canvas und Tastatur</summary>
     <p>Jedes Spiel ist <strong>eine HTML-Datei</strong> ohne externe Schriften oder Bilder. In Canva Code einfügen oder von GitHub Pages einbetten. In den Spielen: English, Vorlesen, Kontrast, Schrift.</p>
@@ -389,6 +394,8 @@ footer{max-width:1180px;margin:0 auto;padding:0 1.1rem 2.6rem;color:var(--soft);
   </details>
   <details class="teach">
     <summary>Für Lehrkräfte: Orte und Abgabecodes</summary>
+    <p><a href="lehrkraft.html" style="font-weight:800">→ Vollständiges Lehrblatt (drucken)</a>
+      <span class="en gloss" lang="en">Full teacher one-pager to print.</span></p>
     <p>Die Lernenden geben am Ende vieler Spiele Name plus Code ab. Die Prüfsumme hängt am Namen. Alte Spiele (Supermarkt, 3D) haben zum Teil kein KH-Kürzel.</p>
     <table>
       <thead><tr><th>Ort</th><th>Spiel</th><th>Niveau</th><th>Code</th></tr></thead>

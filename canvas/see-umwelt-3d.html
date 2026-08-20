@@ -343,13 +343,15 @@ html[data-hud="0"] #kh-hud{ display:none; }
     },
     wasser: function () {
       return tex(function (g, s) {
-        g.fillStyle = '#2e6a9a'; g.fillRect(0, 0, s, s);
-        g.strokeStyle = 'rgba(220,240,255,.28)'; g.lineWidth = 2;
-        for (var i = 0; i < 5; i++) {
-          g.beginPath(); g.moveTo(0, 18 + i * 22);
-          g.bezierCurveTo(32, 8 + i * 22, 80, 28 + i * 22, s, 16 + i * 22); g.stroke();
+        g.fillStyle = '#1f5f92'; g.fillRect(0, 0, s, s);
+        g.strokeStyle = 'rgba(210,235,255,.45)'; g.lineWidth = 3;
+        for (var i = 0; i < 7; i++) {
+          g.beginPath(); g.moveTo(0, 14 + i * 18);
+          g.bezierCurveTo(40, 4 + i * 18, 90, 24 + i * 18, s, 12 + i * 18); g.stroke();
         }
-        grain(g, s, 10);
+        g.fillStyle = 'rgba(180,220,255,.12)';
+        g.fillRect(0, 0, s, s * 0.35);
+        grain(g, s, 12);
       });
     },
     ziegel: function () {
@@ -368,11 +370,15 @@ html[data-hud="0"] #kh-hud{ display:none; }
     himmel: function () {
       return tex(function (g, s) {
         var gr = g.createLinearGradient(0, 0, 0, s);
-        gr.addColorStop(0, '#8ec6e8'); gr.addColorStop(0.55, '#c5dff0'); gr.addColorStop(1, '#e8dcc0');
+        gr.addColorStop(0, '#6eb0dc'); gr.addColorStop(0.45, '#b7d7ee'); gr.addColorStop(1, '#f0e2c4');
         g.fillStyle = gr; g.fillRect(0, 0, s, s);
-        g.fillStyle = 'rgba(255,255,255,.55)';
-        g.beginPath(); g.arc(40, 36, 18, 0, Math.PI * 2); g.arc(58, 38, 14, 0, Math.PI * 2); g.arc(28, 40, 12, 0, Math.PI * 2); g.fill();
-      }, 128);
+        g.fillStyle = 'rgba(255,255,255,.62)';
+        [[40, 30, 22], [70, 34, 18], [28, 36, 14], [96, 48, 16], [18, 52, 12]].forEach(function (c) {
+          g.beginPath(); g.arc(c[0], c[1], c[2], 0, Math.PI * 2); g.fill();
+        });
+        g.fillStyle = '#ffe7a0';
+        g.beginPath(); g.arc(s * 0.78, s * 0.18, 10, 0, Math.PI * 2); g.fill();
+      }, 256);
     }
   };
   KH.tile = function (maker, rx, ry) {
@@ -498,7 +504,7 @@ html[data-hud="0"] #kh-hud{ display:none; }
     y = y == null ? 2.85 : y;
     this.cyl(0.015, 0.55, { x: x, y: y - 0.2, z: z, color: 0x3a2a18, collide: false, seg: 6 });
     this.cyl(0.18, 0.16, { x: x, y: y - 0.52, z: z, color: 0xf2c230, r2: 0.28, collide: false, seg: 10, emissive: 0x442200 });
-    this.lamps.push({ x: x, y: y - 0.55, z: z, color: 0xffd9a0, int: 0.7, dist: 7 });
+    this.lamps.push({ x: x, y: y - 0.55, z: z, color: 0xffd9a0, int: 0.85, dist: 8 });
   };
   World.prototype.hotspot = function (spec) {
     spec.r = spec.r || 1.15;
@@ -556,7 +562,7 @@ html[data-hud="0"] #kh-hud{ display:none; }
     var wallTex = spec.wallMap || KH.tex.putz(wallHex);
     var floorMap = spec.floorMap || KH.tex.parkett();
     this.box(w, 0.06, d, { x: x, y: 0.03, z: z, map: floorMap, repeat: [w / 1.6, d / 1.6], collide: false });
-    if (spec.ceiling !== false) this.box(w, 0.06, d, { x: x, y: h, z: z, color: spec.ceil || 0xf3ebe0, collide: false });
+    if (spec.ceiling !== false) this.box(w, 0.06, d, { x: x, y: h, z: z, color: spec.ceil || 0xf7efe4, collide: false, emissive: 0x4a4034 });
     var t = 0.18;
     var wall = spec.wall || 0xe4d5c0;
     var doors = spec.doors || [];
@@ -962,11 +968,15 @@ html[data-hud="0"] #kh-hud{ display:none; }
       renderer.setClearColor(cfg.sky || 0xb9d4e4, 1);
       stage.appendChild(renderer.domElement);
     }
-    scene.add(new THREE.HemisphereLight(cfg.hemiTop || 0xfff1d6, cfg.hemiBot || 0x4a5a48, cfg.hemi || 0.72));
-    var sun = new THREE.DirectionalLight(cfg.sun || 0xffe6c4, cfg.sunInt || 0.48);
+    scene.add(new THREE.HemisphereLight(
+      cfg.hemiTop || 0xfff3dc,
+      cfg.hemiBot || (cfg.outdoor ? 0x6a7a52 : 0xcbb79a),
+      cfg.hemi || (cfg.outdoor ? 0.78 : 0.9)
+    ));
+    var sun = new THREE.DirectionalLight(cfg.sun || 0xffe6c4, cfg.sunInt || (cfg.outdoor ? 0.58 : 0.42));
     sun.position.set(6, 12, 5);
     scene.add(sun);
-    scene.add(new THREE.AmbientLight(0xfff5ea, 0.18));
+    scene.add(new THREE.AmbientLight(0xfff5ea, cfg.ambient || (cfg.outdoor ? 0.22 : 0.38)));
 
     var world = new World(scene);
     state.world = world;
@@ -1511,7 +1521,7 @@ KH.start({
   ],
   build: function (w) {
     w.box(34, 0.08, 18, { x: 0, y: 0.02, z: 4, map: KH.tex.gras(), repeat: [16, 8], collide: false });
-    var water = w.box(34, 0.04, 16, { x: 0, y: 0.01, z: -10, map: KH.tex.wasser(), repeat: [8, 4], collide: false, transparent: true, opacity: 0.92 });
+    var water = w.box(34, 0.08, 16, { x: 0, y: 0.02, z: -10, map: KH.tex.wasser(), repeat: [6, 3], collide: false });
     w.tickers.push(function (now) {
       if (water && water.material && water.material.map) {
         water.material.map.offset.x = Math.sin(now * 0.00035) * 0.04;

@@ -31,7 +31,7 @@ KH.start({
   ],
   build: function (w) {
     w.box(34, 0.08, 18, { x: 0, y: 0.02, z: 4, map: KH.tex.gras(), repeat: [16, 8], collide: false });
-    var water = w.box(34, 0.04, 16, { x: 0, y: 0.01, z: -10, map: KH.tex.wasser(), repeat: [8, 4], collide: false, transparent: true, opacity: 0.92 });
+    var water = w.box(34, 0.08, 16, { x: 0, y: 0.02, z: -10, map: KH.tex.wasser(), repeat: [6, 3], collide: false });
     w.tickers.push(function (now) {
       if (water && water.material && water.material.map) {
         water.material.map.offset.x = Math.sin(now * 0.00035) * 0.04;

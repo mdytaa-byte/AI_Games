@@ -1,0 +1,263 @@
+# Default metadata applied to every title unless a manuscript overrides it.
+defaults:
+  author: Michael D. Young
+  language: en
+  publisher: Independently published
+  rights: All rights reserved. Copyright © Michael D. Young.
+
+# Conversion queue in the order Michael listed.
+# Age of Archangels appeared twice in the source list; it is stored once.
+# The Song of the Saints and The Songs of the Saints are kept as separate titles
+# until a manuscript confirms whether they are the same book.
+books:
+  - slug: tales-from-the-promised-land
+    title: Tales from the Promised Land
+    subtitle: Book of Mormon Stories Your Teacher Didn’t Tell You
+    genre: Historical fiction
+    series: null
+    description: >
+      A promised land. A divided people. A legacy of faith, fear, and war.
+      Historical-fiction short stories inspired by the Book of Mormon,
+      imagining life among the Nephites and Lamanites in the ancient Americas.
+    status: awaiting_manuscript
+    queue: 1
+
+  - slug: wally-the-web-wizard
+    title: Wally the Web Wizard
+    subtitle: How to Avoid Being Caught in the World Wide Web
+    genre: Family fantasy
+    series: null
+    description: >
+      A medieval wizard connects his crystal ball to the internet and must
+      learn to navigate its wonders and dangers with help from Sir Brows.
+    status: awaiting_manuscript
+    queue: 2
+
+  - slug: the-song-of-the-saints
+    title: The Song of the Saints
+    subtitle: null
+    genre: Music history
+    series: null
+    description: >
+      A history of Latter-day Saint hymnbooks and the musical heritage they preserve.
+    status: awaiting_manuscript
+    queue: 3
+
+  - slug: in-the-quiet-heart
+    title: In the Quiet Heart
+    subtitle: null
+    genre: Practical / inspirational
+    series: null
+    description: >
+      Gospel-centered tools for understanding bullying, responding with courage,
+      and finding peace.
+    status: awaiting_manuscript
+    queue: 4
+
+  - slug: before-sunset
+    title: Before Sunset
+    subtitle: null
+    genre: Practical / inspirational
+    series: null
+    description: >
+      A practical invitation to use time meaningfully and become anxiously
+      engaged in good causes.
+    status: awaiting_manuscript
+    queue: 5
+
+  - slug: the-lost-barge
+    title: The Lost Barge
+    subtitle: null
+    genre: Historical fantasy
+    series: Lost Tribes Trilogy
+    series_index: 1
+    description: >
+      On the way to the promised land, one Jaredite barge is shipwrecked.
+      Captain Omer must rescue his people and discover why there may be more
+      than one promised land.
+    status: awaiting_manuscript
+    queue: 6
+
+  - slug: the-adventures-of-mr-e
+    title: The Adventures of Mr. E
+    subtitle: null
+    genre: Children’s fantasy
+    series: null
+    description: >
+      One brave eraser faces an origami overlord and a desk full of trouble.
+    status: awaiting_manuscript
+    queue: 7
+
+  - slug: songs-for-all-seasons
+    title: Songs for All Seasons
+    subtitle: null
+    genre: Music history
+    series: null
+    description: >
+      The histories behind beloved songs for seasons of celebration, gratitude,
+      and anticipation.
+    status: awaiting_manuscript
+    queue: 8
+
+  - slug: age-of-archangels
+    title: Age of Archangels
+    subtitle: null
+    genre: Apocalyptic fantasy
+    series: The Last Archangel
+    series_index: 0.5
+    description: >
+      Prequel to The Last Archangel series. When the Archangel assigns a
+      special group a lunar-base watch over humanity, the age that follows
+      shapes Xandir’s long exile.
+    status: awaiting_manuscript
+    queue: 9
+
+  - slug: new-frontiers
+    title: New Frontiers
+    subtitle: The Short Fiction of Michael D. Young
+    genre: Short fiction
+    series: null
+    description: >
+      A collection of short fiction spanning Michael D. Young’s fantasy,
+      science-fantasy, and speculative worlds.
+    status: awaiting_manuscript
+    queue: 10
+
+  - slug: the-canticle-prelude
+    title: The Canticle Prelude
+    subtitle: null
+    genre: Historical fantasy
+    series: The Canticle Chronicles
+    series_index: 0.5
+    description: >
+      Prequel to The Canticle Chronicles. In World War I Germany, brothers
+      Jorgen and Karsten begin the story of a music box whose melody will
+      open a door between worlds.
+    status: awaiting_manuscript
+    queue: 11
+
+  - slug: the-song-of-the-righteous
+    title: The Song of the Righteous
+    subtitle: null
+    genre: Music history
+    series: null
+    description: >
+      Stories, context, and inspiration behind treasured sacred songs.
+    status: awaiting_manuscript
+    queue: 12
+
+  - slug: the-boss-level-vol-i
+    title: The Boss Level, Vol I
+    subtitle: null
+    genre: Inspirational nonfiction
+    series: The Boss Level
+    series_index: 1
+    description: >
+      True, uplifting accounts of ordinary people encountering extraordinary
+      help, hope, and grace.
+    status: awaiting_manuscript
+    queue: 13
+
+  - slug: the-boss-level-vol-ii
+    title: The Boss Level, Vol II
+    subtitle: null
+    genre: Inspirational nonfiction
+    series: The Boss Level
+    series_index: 2
+    description: >
+      The second collection of modern miracle stories.
+    status: awaiting_manuscript
+    queue: 14
+
+  - slug: the-boss-level-vol-iii
+    title: The Boss Level, Vol III
+    subtitle: null
+    genre: Inspirational nonfiction
+    series: The Boss Level
+    series_index: 3
+    description: >
+      The third collection of modern miracle stories.
+    status: awaiting_manuscript
+    queue: 15
+
+  - slug: the-songs-of-the-saints
+    title: The Songs of the Saints
+    subtitle: null
+    genre: Music / sacred song
+    series: null
+    description: >
+      Listed separately from The Song of the Saints. Confirm with the
+      manuscript whether this is a distinct title (songbook vs. history)
+      or the same book under a variant name.
+    status: awaiting_manuscript
+    note: Possible duplicate of the-song-of-the-saints
+    queue: 16
+
+  - slug: first-things-first
+    title: First Things First
+    subtitle: null
+    genre: Practical / inspirational
+    series: null
+    description: >
+      Practical, uplifting guidance on putting first things first.
+    status: awaiting_manuscript
+    queue: 17
+
+  - slug: christmas-with-henry
+    title: Christmas With Henry
+    subtitle: A Tale of Holiday Hope
+    genre: Christmas fiction
+    series: null
+    description: >
+      A tale of holiday hope in which an unexpected hospital Christmas
+      becomes an unlikely friendship.
+    status: awaiting_manuscript
+    queue: 18
+
+  - slug: the-frozen-globe
+    title: The Frozen Globe
+    subtitle: null
+    genre: Historical fantasy
+    series: The Canticle Chronicles
+    series_index: 2
+    description: >
+      Book Two of The Canticle Chronicles. An old evil resurfaces as the
+      adventure expands across the Canticle Kingdom and postwar Europe.
+    status: awaiting_manuscript
+    queue: 19
+
+  - slug: the-last-kingdom
+    title: The Last Kingdom
+    subtitle: null
+    genre: Apocalyptic fantasy
+    series: The Last Archangel
+    series_index: 2
+    description: >
+      The end draws near. Xandir searches to restore lost memories while
+      Ridnax threatens to bring about a new world and destroy mankind.
+    status: awaiting_manuscript
+    queue: 20
+
+  - slug: the-last-dawn
+    title: The Last Dawn
+    subtitle: null
+    genre: Apocalyptic fantasy
+    series: The Last Archangel
+    series_index: 3
+    description: >
+      Xandir sets his sights on the Prince of Darkness and a quest to forge
+      the only chain that can bind him — at the cost of immortality itself.
+    status: awaiting_manuscript
+    queue: 21
+
+  - slug: the-skyward-isle
+    title: The Skyward Isle
+    subtitle: null
+    genre: Historical fantasy
+    series: The Canticle Chronicles
+    series_index: 3
+    description: >
+      Book Three of The Canticle Chronicles. The magic of the music box
+      continues into the skies and the later adventures of the kingdom.
+    status: awaiting_manuscript
+    queue: 22

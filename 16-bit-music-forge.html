@@ -642,7 +642,8 @@
       timer: 0,
       step: 0,
       nextTime: 0,
-      paint: null
+      paint: null,
+      raf: 0
     };
 
     function $(id) { return document.getElementById(id); }
@@ -992,16 +993,21 @@
       return { master, filter, delay, feedback, wet, dry, analyser, channels, comp };
     }
 
+    function finite(value, fallback) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
     function applyMix(channels, master, filter, delay, feedback, wet, dry, song) {
       const anySolo = CHANNELS.some((n) => song.channels[n].solo);
-      const echo = song.echo / 100;
-      const stepDur = 60 / song.tempo / 4;
-      delay.delayTime.value = clamp(stepDur * 4 * song.echoSync, 0.08, 1.1);
+      const echo = clamp(finite(song.echo, 28) / 100, 0, 0.9);
+      const stepDur = 60 / Math.max(40, finite(song.tempo, 120)) / 4;
+      delay.delayTime.value = clamp(stepDur * 4 * finite(song.echoSync, 0.5), 0.08, 1.1);
       feedback.gain.value = echo * 0.62;
       wet.gain.value = echo * 0.55;
       dry.gain.value = 1;
-      filter.frequency.value = song.brightness;
-      master.gain.value = song.master / 100 * 0.55;
+      filter.frequency.value = clamp(finite(song.brightness, 3400), 200, 12000);
+      master.gain.value = clamp(finite(song.master, 72) / 100 * 0.55, 0, 1);
       for (const name of CHANNELS) {
         const ch = song.channels[name];
         const silent = ch.mute || (anySolo && !ch.solo);
@@ -1020,40 +1026,47 @@
       const ctx = audio.ctx;
       const gain = ctx.createGain();
       gain.connect(dest);
-      const dur = spec.dur;
-      const peak = Math.max(0.0008, spec.vel * spec.amp);
-      const a = spec.a || 0.008;
-      const d = spec.d || 0.06;
-      const s = spec.s == null ? 0.55 : spec.s;
-      const r = spec.r || 0.08;
-      gain.gain.setValueAtTime(0.0001, when);
-      gain.gain.exponentialRampToValueAtTime(peak, when + a);
-      gain.gain.exponentialRampToValueAtTime(Math.max(0.0008, peak * s), when + a + d);
-      gain.gain.exponentialRampToValueAtTime(0.0001, when + dur + r);
+      const start = Math.max(0, finite(when, 0));
+      const dur = Math.max(0.02, finite(spec.dur, 0.08));
+      const peak = Math.max(0.0008, finite(spec.vel, 0.8) * finite(spec.amp, 0.5));
+      const a = Math.max(0.001, finite(spec.a, 0.008));
+      const d = Math.max(0.001, finite(spec.d, 0.06));
+      const s = clamp(finite(spec.s, 0.55), 0.05, 1);
+      const r = Math.max(0.01, finite(spec.r, 0.08));
+      const freq = Math.max(20, finite(spec.freq, 440));
+      const freq2 = spec.freq2 == null ? null : Math.max(20, finite(spec.freq2, freq));
+      gain.gain.setValueAtTime(0.0001, start);
+      const t1 = start + a;
+      const t2 = t1 + d;
+      const t3 = Math.max(t2 + 0.02, start + dur + r);
+      gain.gain.exponentialRampToValueAtTime(peak, t1);
+      gain.gain.exponentialRampToValueAtTime(Math.max(0.0008, peak * s), t2);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t3);
       const oscs = [];
-      const stopAt = when + dur + r + 0.03;
+      const stopAt = t3 + 0.03;
       if (spec.kind === "noise") {
         const src = ctx.createBufferSource();
         src.buffer = audio.noise;
         src.loop = true;
         const filt = ctx.createBiquadFilter();
         filt.type = spec.filter || "highpass";
-        filt.frequency.value = spec.freq || 2000;
+        filt.frequency.value = freq;
         src.connect(filt);
         filt.connect(gain);
-        src.start(when);
+        src.start(start);
         src.stop(stopAt);
         oscs.push(src);
       } else {
         const waves = Array.isArray(spec.wave) ? spec.wave : [spec.wave];
         waves.forEach((wave, i) => {
           const osc = ctx.createOscillator();
+          osc.type = "square";
           applyWave(osc, audio, wave);
-          osc.frequency.setValueAtTime(Math.max(20, spec.freq), when);
-          if (spec.freq2) osc.frequency.exponentialRampToValueAtTime(Math.max(20, spec.freq2), when + dur * 0.7);
-          if (spec.detune && i === 1) osc.detune.value = spec.detune;
+          osc.frequency.setValueAtTime(freq, start);
+          if (freq2) osc.frequency.exponentialRampToValueAtTime(freq2, start + dur * 0.7);
+          if (spec.detune && i === 1) osc.detune.value = finite(spec.detune, 0);
           osc.connect(gain);
-          osc.start(when);
+          osc.start(start);
           osc.stop(stopAt);
           oscs.push(osc);
         });
@@ -1088,8 +1101,8 @@
     }
 
     function playChannelNote(audio, dest, channel, note, song, when) {
-      const stepDur = 60 / song.tempo / 4;
-      const dur = note.length * stepDur * 0.92;
+      const stepDur = 60 / Math.max(40, finite(song.tempo, 120)) / 4;
+      const dur = Math.max(0.03, finite(note.length, 1) * stepDur * 0.92);
       if (channel === "drums") {
         playDrum(audio, dest, drumKind(note.midi), note.vel, when);
         return;
@@ -1119,7 +1132,11 @@
       for (const name of CHANNELS) {
         const ch = song.channels[name];
         for (const note of notesAtStep(ch, step)) {
-          playChannelNote(audio, graph.channels[name].gain, name, note, song, when);
+          try {
+            playChannelNote(audio, graph.channels[name].gain, name, note, song, when);
+          } catch (err) {
+            throw new Error(name + "@" + step + " midi=" + note.midi + " when=" + when + " " + (err.message || err));
+          }
         }
       }
     }
@@ -1165,7 +1182,7 @@
       ui.play.textContent = "Playing";
       setStatus("Playing " + state.song.title);
       scheduler();
-      drawWave();
+      requestDraw();
     }
 
     function stopPlayback(updateUi = true) {
@@ -1182,6 +1199,7 @@
       if (updateUi) {
         ui.play.textContent = "Play";
         setStatus("Stopped.");
+        requestDraw();
       }
     }
 
@@ -1643,7 +1661,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
       return mode;
     }
 
-    function drawWave() {
+    function paintVisualizer() {
       const canvas = ui.wave;
       const ctx = canvas.getContext("2d");
       const w = canvas.width;
@@ -1678,8 +1696,16 @@ window.BitForgePlay = async function BitForgePlay(song) {
         ctx.font = "12px monospace";
         ctx.fillText("SIGNAL IDLE — PRESS PLAY", 16, h / 2 - 10);
       }
-      drawRoll();
-      requestAnimationFrame(drawWave);
+    }
+
+    function requestDraw() {
+      if (state.raf) return;
+      state.raf = requestAnimationFrame(() => {
+        state.raf = 0;
+        paintVisualizer();
+        drawRoll();
+        if (state.playing) requestDraw();
+      });
     }
 
     function bindRoll() {
@@ -1797,12 +1823,96 @@ window.BitForgePlay = async function BitForgePlay(song) {
       }
       highlightMood();
       syncLabels();
-      drawWave();
       bind();
+      if (new URLSearchParams(location.search).get("selftest")) {
+        return runSelfTest();
+      }
+      requestDraw();
+    }
+
+    async function runSelfTest() {
+      const report = { ok: true, checks: [] };
+      const check = (name, cond, extra) => {
+        report.checks.push({ name, ok: Boolean(cond), extra: extra == null ? undefined : extra });
+        if (!cond) report.ok = false;
+      };
+      for (const mood of Object.keys(MOODS)) {
+        const song = generateSong({
+          mood,
+          seed: "forge-test",
+          bars: 8,
+          tempo: 140,
+          energy: 80,
+          swing: 8,
+          key: 0,
+          scale: MOODS[mood].scales[0]
+        });
+        check(mood + ":lead", song.channels.lead.notes.length >= 8, song.channels.lead.notes.length);
+        check(mood + ":bass", song.channels.bass.notes.length >= 8, song.channels.bass.notes.length);
+        check(mood + ":drums", song.channels.drums.notes.length >= 8, song.channels.drums.notes.length);
+        check(mood + ":loop", songDuration(song) > 2 && Number.isFinite(songDuration(song)), songDuration(song));
+      }
+      const a = generateSong({ mood: "overworld", seed: "same", bars: 8, tempo: 120, energy: 50, key: 0, scale: "major" });
+      const b = generateSong({ mood: "overworld", seed: "same", bars: 8, tempo: 120, energy: 50, key: 0, scale: "major" });
+      check("seed-stable", JSON.stringify(a.channels) === JSON.stringify(b.channels));
+      try {
+        const basic = new OfflineAudioContext(1, 8000, 22050);
+        const osc = basic.createOscillator();
+        osc.connect(basic.destination);
+        osc.start(0);
+        osc.stop(0.05);
+        const basicBuf = await basic.startRendering();
+        check("offline-basic", basicBuf.length === 8000, basicBuf.length);
+
+        const song = generateSong({ mood: "battle", seed: "probe", bars: 4, tempo: 160, energy: 90, swing: 0, key: 0, scale: "minor", echo: 20, echoSync: 0.5, brightness: 4000, master: 70 });
+        check("song-fields", [song.tempo, song.echo, song.echoSync, song.brightness, song.master].every(Number.isFinite), {
+          tempo: song.tempo, echo: song.echo, echoSync: song.echoSync, brightness: song.brightness, master: song.master
+        });
+        const sr = 22050;
+        const seconds = Math.min(1.5, songDuration(song));
+        const offline = new OfflineAudioContext(1, Math.ceil(sr * seconds), sr);
+        const audio = {
+          ctx: offline,
+          pulse: {
+            12: createPulseWave(offline, 0.125),
+            25: createPulseWave(offline, 0.25),
+            50: createPulseWave(offline, 0.5)
+          },
+          noise: noiseBuffer(offline)
+        };
+        const graph = makeGraph(audio, song, offline.destination);
+        check("graph", Boolean(graph && graph.master));
+        const total = song.bars * 16;
+        for (let step = 0; step < total; step++) {
+          const t = stepTime(song, step);
+          if (t >= seconds - 0.05) break;
+          scheduleStep(song, graph, audio, step, t + 0.01);
+        }
+        const rendered = await offline.startRendering();
+        const data = rendered.getChannelData(0);
+        let peak = 0;
+        let sum = 0;
+        for (let i = 0; i < data.length; i++) {
+          const amp = Math.abs(data[i]);
+          if (amp > peak) peak = amp;
+          sum += amp;
+        }
+        const avg = sum / data.length;
+        check("render-peak", peak > 0.02, Number(peak.toFixed(4)));
+        check("render-signal", avg > 0.001, Number(avg.toFixed(5)));
+      } catch (err) {
+        check("render-peak", false, String(err && err.message ? err.message : err));
+      }
+      document.title = report.ok ? "SELFTEST_PASS" : "SELFTEST_FAIL";
+      document.body.dataset.selftest = JSON.stringify(report);
+      console.log("SELFTEST", JSON.stringify(report));
+      setStatus((report.ok ? "Self-test passed. " : "Self-test failed. ") + report.checks.filter((c) => !c.ok).map((c) => c.name).join(", "));
+      return report;
     }
 
     window.BitForge = {
       generateSong,
+      runSelfTest,
       get song() { return state.song; },
       play,
       stop: () => stopPlayback(true)

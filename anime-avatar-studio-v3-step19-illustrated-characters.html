@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Anime Avatar Studio — Japanese Classroom Edition v3 Step 19 · Unified Contour</title>
+<title>Anime Avatar Studio — Japanese Classroom Edition v3 Step 19 · Teen Proportions</title>
 <style>
 :root{
   --bg:#f4f7fb; --panel:#ffffff; --ink:#1b2940; --muted:#6a768a; --line:#e5e9f1;
@@ -214,7 +214,7 @@ button{cursor:pointer}
       <div class="flower">🌸</div>
       <div>
         <h1>Anime Avatar Studio</h1>
-        <small>Japanese Classroom Edition — v3 Step 19: Unified Contour</small>
+        <small>Japanese Classroom Edition — v3 Step 19: Teen Proportions</small>
       </div>
     </div>
     <div class="toolbar">
@@ -644,9 +644,11 @@ How are you today?</textarea>
       <h2>What improved in v3 — Step 19?</h2>
       <button class="close" data-close>✕</button>
     </div>
-    <p>Step 19 rebuilds the character silhouettes so they read as illustrated school-anime figures instead of assembled polygons. Masses now share one outer ink contour: overlapping fills hide joint strokes, and only interior seams (collar, lapel, cuff, hairline) stay drawn.</p>
+    <p>Step 19 rebuilds the character silhouettes so they read as illustrated school-anime figures instead of assembled polygons. Masses share one outer ink contour, and the default teen proportion is a fuller torso and sleeve against a smaller hair globe — not a bobblehead on tapering tubes.</p>
     <ul>
       <li>Hair, face, sleeve, torso, and hand no longer each stroke themselves, so overlaps are not double-outlined</li>
+      <li>Head and hair scale sit smaller against broader shoulders, so the jacket — not the hair mass — reads as the widest form</li>
+      <li>Sleeves keep volume from deltoid to cuff, with a rounded cap where the arm leaves the jacket</li>
       <li>Torso, neck, and limb paths use anatomical tapers, hidden joint roots, and soft end-caps instead of capsule tubes</li>
       <li>Collars, lapels, sailor yokes, cuffs, and pockets are redrawn with cubic construction instead of clip-art polygons</li>
       <li>Hands use tapered finger silhouettes and a fill-only wrist bridge rather than sausage strokes and washer joints</li>
@@ -871,15 +873,15 @@ function styleProfile(s){
   const amount=Math.max(0,Math.min(100,Number(s.exaggeration ?? 65)));
   return {
     amount,
-    headX:anchoredStyleValue(amount,0.88,1,1.13),
-    headY:anchoredStyleValue(amount,0.92,1,1.10),
+    headX:anchoredStyleValue(amount,0.86,0.94,1.06),
+    headY:anchoredStyleValue(amount,0.90,0.96,1.05),
     eyeScale:anchoredStyleValue(amount,0.82,1,1.16),
     irisScale:anchoredStyleValue(amount,0.88,1,1.12),
     highlightScale:anchoredStyleValue(amount,0.72,1,1.42),
     noseY:anchoredStyleValue(amount,1.26,1,0.68),
     noseX:anchoredStyleValue(amount,1.06,1,0.86),
-    hairX:anchoredStyleValue(amount,0.94,1,1.12),
-    hairY:anchoredStyleValue(amount,0.95,1,1.10),
+    hairX:anchoredStyleValue(amount,0.86,0.88,0.98),
+    hairY:anchoredStyleValue(amount,0.88,0.90,0.99),
     jaw:anchoredStyleValue(amount,-1,0,1),
     limbLength:anchoredStyleValue(amount,1.018,1,0.972),
     kneeSimplify:anchoredStyleValue(amount,-0.04,0,0.12)
@@ -929,9 +931,9 @@ function faceAnatomyProfile(s){
     browY:-faceParam(s.browHeight)*6,
     noseLength:1+faceParam(s.noseLength)*0.22,
     mouthWidth:1+faceParam(s.mouthWidth)*0.22,
-    // Step 19: keep the face substantial under illustrated hair without overscaling the jaw.
-    faceCoreX:1.07,
-    faceCoreY:1.04
+    // Step 19: face stays readable under hair without inflating the head into a bobble.
+    faceCoreX:1.02,
+    faceCoreY:1.01
   };
 }
 function gazeProfile(s){
@@ -1928,19 +1930,19 @@ function rotatePoint(p, angleDeg, pivot={x:210,y:455}, dx=0, dy=0){
 function poseRig(pose){
   const specs = {
     neutral:{angle:0,dx:0,dy:0, headAngle:0,
-      elbows:{left:{x:154,y:394},right:{x:266,y:394}}, wrists:{left:{x:157,y:467},right:{x:263,y:467}},
-      knees:{left:{x:174,y:548},right:{x:246,y:548}}, ankles:{left:{x:173,y:647},right:{x:247,y:647}}},
+      elbows:{left:{x:146,y:392},right:{x:274,y:392}}, wrists:{left:{x:150,y:466},right:{x:270,y:466}},
+      knees:{left:{x:170,y:548},right:{x:250,y:548}}, ankles:{left:{x:169,y:647},right:{x:251,y:647}}},
     wave:{angle:-1,dx:0,dy:0, headAngle:0,
-      elbows:{left:{x:125,y:278},right:{x:269,y:393}}, wrists:{left:{x:106,y:220},right:{x:266,y:466}},
-      knees:{left:{x:173,y:548},right:{x:247,y:548}}, ankles:{left:{x:172,y:647},right:{x:248,y:647}}, handGestures:{left:'wave'}},
+      elbows:{left:{x:118,y:276},right:{x:276,y:392}}, wrists:{left:{x:100,y:218},right:{x:274,y:466}},
+      knees:{left:{x:169,y:548},right:{x:251,y:548}}, ankles:{left:{x:168,y:647},right:{x:252,y:647}}, handGestures:{left:'wave'}},
     bow:{angle:9,dx:0,dy:8, headAngle:7,
-      elbows:{left:{x:153,y:401},right:{x:267,y:401}}, wrists:{left:{x:168,y:474},right:{x:252,y:474}},
+      elbows:{left:{x:146,y:400},right:{x:274,y:400}}, wrists:{left:{x:162,y:474},right:{x:258,y:474}},
       knees:{left:{x:171,y:550},right:{x:249,y:550}}, ankles:{left:{x:168,y:647},right:{x:252,y:647}}},
     point:{angle:0,dx:0,dy:0, headAngle:0,
-      elbows:{left:{x:151,y:394},right:{x:315,y:335}}, wrists:{left:{x:154,y:467},right:{x:372,y:333}},
+      elbows:{left:{x:146,y:394},right:{x:322,y:335}}, wrists:{left:{x:149,y:467},right:{x:378,y:333}},
       knees:{left:{x:174,y:548},right:{x:246,y:548}}, ankles:{left:{x:173,y:647},right:{x:247,y:647}}, handGestures:{right:'point'}},
     think:{angle:0,dx:0,dy:0, headAngle:-3,
-      elbows:{left:{x:151,y:394},right:{x:302,y:345}}, wrists:{left:{x:154,y:467},right:{x:255,y:258}},
+      elbows:{left:{x:146,y:394},right:{x:308,y:345}}, wrists:{left:{x:149,y:467},right:{x:255,y:258}},
       knees:{left:{x:174,y:548},right:{x:246,y:548}}, ankles:{left:{x:173,y:647},right:{x:247,y:647}}, handGestures:{right:'chin'}},
     crossed:{angle:0,dx:0,dy:0, headAngle:0,
       elbows:{left:{x:145,y:382},right:{x:275,y:382}}, wrists:{left:{x:242,y:398},right:{x:178,y:405}},
@@ -1949,10 +1951,10 @@ function poseRig(pose){
       elbows:{left:{x:130,y:370},right:{x:290,y:370}}, wrists:{left:{x:165,y:431},right:{x:255,y:431}},
       knees:{left:{x:174,y:548},right:{x:246,y:548}}, ankles:{left:{x:173,y:647},right:{x:247,y:647}}, handGestures:{left:'hip',right:'hip'}},
     hold:{angle:0,dx:0,dy:0, headAngle:0,
-      elbows:{left:{x:154,y:396},right:{x:266,y:396}}, wrists:{left:{x:186,y:448},right:{x:234,y:448}},
+      elbows:{left:{x:148,y:396},right:{x:272,y:396}}, wrists:{left:{x:182,y:448},right:{x:238,y:448}},
       knees:{left:{x:174,y:548},right:{x:246,y:548}}, ankles:{left:{x:173,y:647},right:{x:247,y:647}}, handGestures:{left:'grip',right:'grip'}, twoHanded:true},
     seated:{angle:0,dx:0,dy:18, headAngle:0,
-      elbows:{left:{x:155,y:414},right:{x:265,y:414}}, wrists:{left:{x:170,y:477},right:{x:250,y:477}},
+      elbows:{left:{x:148,y:414},right:{x:272,y:414}}, wrists:{left:{x:164,y:477},right:{x:256,y:477}},
       knees:{left:{x:151,y:555},right:{x:269,y:555}}, ankles:{left:{x:132,y:636},right:{x:288,y:636}}, seated:true},
     walk:{angle:-2,dx:0,dy:0, headAngle:1,
       elbows:{left:{x:137,y:380},right:{x:285,y:365}}, wrists:{left:{x:115,y:445},right:{x:306,y:425}},
@@ -1960,8 +1962,8 @@ function poseRig(pose){
   };
   const sp = specs[pose] || specs.wave;
   const pivot={x:210,y:455};
-  const baseShoulders={left:{x:152,y:304},right:{x:268,y:304}};
-  const baseHips={left:{x:180,y:448},right:{x:240,y:448}};
+  const baseShoulders={left:{x:140,y:302},right:{x:280,y:302}};
+  const baseHips={left:{x:174,y:448},right:{x:246,y:448}};
   const shoulder={
     left:rotatePoint(baseShoulders.left,sp.angle,pivot,sp.dx,sp.dy),
     right:rotatePoint(baseShoulders.right,sp.angle,pivot,sp.dx,sp.dy)
@@ -2131,11 +2133,37 @@ function toward(a,b,amount){
   return {x:a.x+d.x*amount,y:a.y+d.y*amount,z:Number(a.z||0)+(Number(b.z||0)-Number(a.z||0))*t};
 }
 
+// Rounded sleeve cap at the jacket seam so the deltoid reads as volume, not a tube exit.
+function deltoidCapPath(shoulder, elbow, torsoCenter, halfWidth, along=26){
+  const d=norm(vec(shoulder, elbow));
+  let n=perp(vec(shoulder, elbow));
+  const away=vec(torsoCenter, shoulder);
+  if(n.x*away.x + n.y*away.y < 0) n={x:-n.x, y:-n.y};
+  const root=toward(shoulder, torsoCenter, 12);
+  const inner={x:root.x - n.x*halfWidth*0.08, y:root.y - n.y*halfWidth*0.08};
+  const peak={
+    x:shoulder.x + n.x*halfWidth + d.x*along*0.32,
+    y:shoulder.y + n.y*halfWidth + d.y*along*0.32
+  };
+  const mid={
+    x:shoulder.x + n.x*halfWidth*0.78 + d.x*along*0.70,
+    y:shoulder.y + n.y*halfWidth*0.78 + d.y*along*0.70
+  };
+  const join={
+    x:shoulder.x + d.x*along + n.x*halfWidth*0.16,
+    y:shoulder.y + d.y*along + n.y*halfWidth*0.16
+  };
+  const innerJoin=toward(join, torsoCenter, 7);
+  const p=q=>`${q.x.toFixed(1)} ${q.y.toFixed(1)}`;
+  const lift={x:peak.x - d.x*7 + n.x*2, y:peak.y - d.y*7 + n.y*2};
+  return `M${p(inner)} C${p({x:inner.x+n.x*halfWidth*0.45-d.x*4,y:inner.y+n.y*halfWidth*0.45-d.y*4})} ${p(lift)} ${p(peak)} C${p({x:peak.x+d.x*10,y:peak.y+d.y*10})} ${p(mid)} ${p(join)} C${p({x:join.x-n.x*halfWidth*0.22,y:join.y-n.y*halfWidth*0.22})} ${p(innerJoin)} ${p(inner)} Z`;
+}
+
 // Cover the transverse wrist seam with fill only so arm and hand share one outer contour.
 function smoothWristJointMarkup(wrist,from,fill,stroke,width=2.15){
   const g=svgEl('g');
   const d=norm(vec(from,wrist)), n={x:-d.y,y:d.x};
-  const rx=6.4, ry=4.1;
+  const rx=7.8, ry=5.0;
   const oval=`M${(wrist.x-d.x*ry+n.x*rx).toFixed(1)} ${(wrist.y-d.y*ry+n.y*rx).toFixed(1)}
     C${(wrist.x+n.x*rx*1.15).toFixed(1)} ${(wrist.y+n.y*rx*1.15).toFixed(1)} ${(wrist.x+d.x*ry+n.x*rx).toFixed(1)} ${(wrist.y+d.y*ry+n.y*rx).toFixed(1)} ${(wrist.x+d.x*ry).toFixed(1)} ${(wrist.y+d.y*ry).toFixed(1)}
     C${(wrist.x+d.x*ry-n.x*rx).toFixed(1)} ${(wrist.y+d.y*ry-n.y*rx).toFixed(1)} ${(wrist.x-n.x*rx*1.15).toFixed(1)} ${(wrist.y-n.y*rx*1.15).toFixed(1)} ${(wrist.x-d.x*ry-n.x*rx).toFixed(1)} ${(wrist.y-d.y*ry-n.y*rx).toFixed(1)}
@@ -2349,18 +2377,18 @@ function foldMarksAtJoint(joint,a,c,color,width=1.25,scale=1){
   return g;
 }
 function sleeveSpec(profile){
-  if(profile.sleeve==='short') return {where:'upper',t:.58,endWidth:26,upperWidth:32,elbowWidth:27};
-  if(profile.sleeve==='threeQuarter') return {where:'forearm',t:.48,endWidth:18,upperWidth:31,elbowWidth:24};
-  if(profile.sleeve==='kimono') return {where:'forearm',t:.86,endWidth:34,upperWidth:44,elbowWidth:50};
-  return {where:'forearm',t:.82,endWidth:15,upperWidth:31,elbowWidth:23};
+  if(profile.sleeve==='short') return {where:'upper',t:.58,endWidth:30,upperWidth:42,elbowWidth:34};
+  if(profile.sleeve==='threeQuarter') return {where:'forearm',t:.48,endWidth:24,upperWidth:42,elbowWidth:32};
+  if(profile.sleeve==='kimono') return {where:'forearm',t:.86,endWidth:38,upperWidth:48,elbowWidth:54};
+  return {where:'forearm',t:.82,endWidth:22,upperWidth:44,elbowWidth:33};
 }
 
 function torsoPath(gender, fit='structured'){
   const feminine = gender === 'feminine';
   const fits = {
-    structured:{shoulder:148, chest:156, waist:170, hem:157},
-    fitted:{shoulder:150, chest:154, waist:176, hem:155},
-    relaxed:{shoulder:145, chest:153, waist:164, hem:154}
+    structured:{shoulder:134, chest:144, waist:166, hem:152},
+    fitted:{shoulder:138, chest:142, waist:172, hem:150},
+    relaxed:{shoulder:132, chest:142, waist:160, hem:149}
   };
   const f = fits[fit] || fits.structured;
   const shoulderL = f.shoulder + (feminine ? 3 : 0);
@@ -2371,15 +2399,15 @@ function torsoPath(gender, fit='structured'){
   const waistR = 420 - waistL;
   const hemL = f.hem + (feminine ? 3 : 0);
   const hemR = 420 - hemL;
-  return `M${shoulderL} 300
-    C${shoulderL+10} 286 188 272 210 272
-    C232 272 ${shoulderR-10} 286 ${shoulderR} 300
-    C${shoulderR+6} 328 ${chestR+3} 356 ${waistR} 398
+  return `M${shoulderL} 298
+    C${shoulderL+8} 282 186 270 210 270
+    C234 270 ${shoulderR-8} 282 ${shoulderR} 298
+    C${shoulderR+8} 328 ${chestR+2} 356 ${waistR} 398
     C${waistR-1} 424 ${hemR-1} 446 ${hemR} 460
     C248 470 228 474 210 474
     C192 474 172 470 ${hemL} 460
     C${hemL+1} 446 ${waistL+1} 424 ${waistL} 398
-    C${chestL-3} 356 ${shoulderL-6} 328 ${shoulderL} 300 Z`;
+    C${chestL-2} 356 ${shoulderL-8} 328 ${shoulderL} 298 Z`;
 }
 
 function neckPath(){
@@ -2419,7 +2447,7 @@ function sockMarkup(side, rig, profile, lines, pair=null){
   const top=pointAlong(knee,ankle,profile.lower==='skirt'?.42:.78);
   const fill=profile.sock==='white'?'#f6f7fa':'#303744';
   const topS=jointDepthScale(top), ankleS=jointDepthScale(ankle);
-  silhouette(pair || g, limbSegmentPath(top,ankle,(profile.lower==='skirt'?18:19)*topS,14*ankleS,0), fill);
+  silhouette(pair || g, limbSegmentPath(top,ankle,(profile.lower==='skirt'?20:22)*topS,16*ankleS,0), fill);
   g.appendChild(svgEl('path',{d:bandPath(top,vec(knee,ankle),8.6*topS,2.8*topS),fill:mixHex(fill,'#ffffff',0.08),stroke:'none'}));
   return g;
 }
@@ -2432,11 +2460,11 @@ function legMarkup(side, rig, color, lights, lines, s, profile, pair=null){
   const stroke=lines?lines.lower:mixHex(color,'#111827',0.45);
   if(profile.lower==='skirt'){
     const hipRoot=pointAlong(hip,knee,0.08);
-    silhouette(mass, smoothBentLimbPath(hipRoot,knee,ankle,28*hs,21*ks,14*as), lights.skinFill);
+    silhouette(mass, smoothBentLimbPath(hipRoot,knee,ankle,32*hs,24*ks,16*as), lights.skinFill);
     g.appendChild(sockMarkup(side,rig,profile,lines,pair));
   } else {
     const hipRoot=toward(hip,{x:210,y:420},12);
-    silhouette(mass, smoothBentLimbPath(hipRoot,knee,ankle,33*hs,24*ks,16*as), lights.lowerFill);
+    silhouette(mass, smoothBentLimbPath(hipRoot,knee,ankle,40*hs,30*ks,20*as), lights.lowerFill);
     const n1=perp(vec(hip,knee)), n2=perp(vec(knee,ankle));
     g.appendChild(svgEl('path',{d:`M${hip.x+n1.x*5*hs} ${hip.y+n1.y*5*hs} Q${(hip.x+knee.x)/2+n1.x*3*ks} ${(hip.y+knee.y)/2+n1.y*3*ks} ${knee.x+n1.x*2*ks} ${knee.y+n1.y*2*ks} Q${(knee.x+ankle.x)/2+n2.x*2*as} ${(knee.y+ankle.y)/2+n2.y*2*as} ${ankle.x+n2.x*3*as} ${ankle.y+n2.y*3*as}`,fill:'none',stroke:mixHex(color,'#ffffff',0.22),'stroke-width':'1.0','stroke-linecap':'round',opacity:'0.45'}));
     g.appendChild(foldMarksAtJoint(knee,hip,ankle,lines.lower,1.1,.8*ks));
@@ -2464,17 +2492,21 @@ function armMarkup(side, rig, s, pal, lights, lines, profile, pair=null){
 
   // Width now follows z-depth as well as anatomy, creating near/far limb scale without raster distortion.
   const torsoCenter={x:210,y:360};
-  const buriedShoulder=toward(shoulder,torsoCenter,10);
+  const buriedShoulder=toward(shoulder,torsoCenter,14);
   const mass=pair || contourPair().mount(g);
   if(spec.where==='upper'){
     const skinStart=toward(cuff,shoulder,8), skinS=jointDepthScale(skinStart);
-    silhouette(mass, smoothBentLimbPath(skinStart,elbow,wrist,22*skinS,20*elS,13*wrS), skinFill);
-    silhouette(mass, limbSegmentPath(buriedShoulder,cuff,spec.upperWidth*shS,spec.endWidth*cuffS,side==='left'?-1.5:1.5), sleeveFill);
+    silhouette(mass, smoothBentLimbPath(skinStart,elbow,wrist,26*skinS,22*elS,16*wrS), skinFill);
+    silhouette(mass, limbSegmentPath(buriedShoulder,cuff,spec.upperWidth*shS,spec.endWidth*cuffS,side==='left'?-2.2:2.2), sleeveFill);
   } else {
-    fillMass(mass, smoothBentLimbPath(buriedShoulder,elbow,wrist,24*shS,19*elS,13*wrS), skinFill);
+    fillMass(mass, smoothBentLimbPath(buriedShoulder,elbow,wrist,30*shS,24*elS,16*wrS), skinFill);
     const skinStart=toward(cuff,elbow,6), skinS=jointDepthScale(skinStart);
-    silhouette(mass, limbSegmentPath(skinStart,wrist,16*skinS,13*wrS,side==='left'?1:-1), skinFill);
+    silhouette(mass, limbSegmentPath(skinStart,wrist,20*skinS,16*wrS,side==='left'?1:-1), skinFill);
     silhouette(mass, smoothBentLimbPath(buriedShoulder,elbow,cuff,spec.upperWidth*shS,spec.elbowWidth*elS,spec.endWidth*cuffS), sleeveFill);
+  }
+  if(profile.sleeve!=='kimono'){
+    const deltoidW=spec.upperWidth*0.58*shS;
+    silhouette(mass, deltoidCapPath(shoulder, elbow, torsoCenter, deltoidW, spec.upperWidth*0.70), sleeveFill);
   }
 
   if(profile.cuff || profile.sleeve==='kimono'){
@@ -2876,7 +2908,7 @@ function renderAvatar(){
   headGroup.appendChild(renderHairBack(s, hair, st, ft, hd));
 
   // Step 19 keeps the facial stack grouped so the new jaw curve, eyes, and hair framing stay coherent.
-  const faceCore = svgEl('g',{transform:scaleAround(210,202,faceAnatomyProfile(s).faceCoreX,faceAnatomyProfile(s).faceCoreY),'data-face-core-scale':'1.10x'});
+  const faceCore = svgEl('g',{transform:scaleAround(210,202,faceAnatomyProfile(s).faceCoreX,faceAnatomyProfile(s).faceCoreY),'data-face-core-scale':'1.02x'});
   headGroup.appendChild(faceCore);
   silhouette(faceCore, facePath(s.faceShape,s.exaggeration,s.headTurn,faceAnatomyProfile(s)), lights.skinFill);
   faceCore.appendChild(earMarkup(s.skin, lines, ft, faceAnatomyProfile(s)));
@@ -3061,7 +3093,7 @@ function randomize(){
   renderAvatar();
 }
 function saveStateFile(){
-  const data = {version:3, rendererStep:19, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', silhouetteModel:'unified-outer-contour-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'articulated-anime-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'unified-outer-contour-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'anatomy-aware-v1', activeVariant, variants};
+  const data = {version:3, rendererStep:19, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', silhouetteModel:'teen-proportion-unified-contour-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'articulated-anime-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'unified-outer-contour-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'anatomy-aware-v1', activeVariant, variants};
   const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);

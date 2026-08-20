@@ -1,0 +1,3011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Chess Quest — Paladin's Path</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0a1240;--navy2:#16206a;--gold:#e6c86a;--gold2:#b8892e;--parch:#f4e6b8;
+  --ink:#0b0e22;--red:#d4453a;--blue:#4aa3ff;--green:#3ecf7a;--gray:#8a93a8;
+}
+*{box-sizing:border-box;image-rendering:pixelated}
+html,body{margin:0;height:100%;background:#05070f;color:var(--parch);font-family:"Press Start 2P",ui-monospace,monospace;overflow:hidden;user-select:none;-webkit-user-select:none}
+button{font-family:inherit;cursor:pointer}
+.hidden{display:none!important}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:
+  radial-gradient(ellipse at 50% 40%,#1a2458 0%,#05070f 70%)}
+#stage{position:relative;width:256px;height:224px;background:#000;box-shadow:0 0 0 3px #e6c86a,0 0 0 6px #3a2a0a,0 18px 50px #000a;overflow:hidden}
+#cv{display:block;width:256px;height:224px;image-rendering:pixelated}
+#overlay{position:absolute;inset:0;pointer-events:none}
+#overlay>*{pointer-events:auto}
+.win{background:linear-gradient(#1c2a7a,#101850);border:3px solid #e6c86a;box-shadow:inset 0 0 0 2px #6a4818,4px 4px 0 #0008;padding:8px}
+#hud{position:absolute;left:6px;top:6px;display:flex;gap:6px;pointer-events:none}
+.hpbox{min-width:92px;padding:5px 6px 6px;font-size:6px;line-height:1.5;background:linear-gradient(#1c2a7acc,#101850cc);border:2px solid #e6c86a}
+.hpbox b{color:#e6c86a;display:block;margin-bottom:2px;font-size:6px}
+.bar{height:4px;background:#1a1020;border:1px solid #000;margin-top:2px}
+.bar>i{display:block;height:100%;background:#3ecf7a}
+.bar.mp>i{background:#4aa3ff}
+#loc{position:absolute;right:6px;top:6px;font-size:6px;padding:5px 7px;background:#101850cc;border:2px solid #e6c86a;max-width:120px;line-height:1.4;pointer-events:none}
+#dlg{position:absolute;left:8px;right:8px;bottom:8px;min-height:58px;padding:8px 10px 10px;font-size:8px;line-height:1.55;display:none}
+#dlg.show{display:block}
+#dname{color:#e6c86a;font-size:7px;margin-bottom:5px;letter-spacing:1px}
+#dtext{color:#f4e6b8;min-height:28px}
+#dnext{position:absolute;right:8px;bottom:4px;color:#e6c86a;animation:blink 1s steps(2) infinite;font-size:8px}
+@keyframes blink{50%{opacity:0}}
+#choices{position:absolute;right:12px;bottom:72px;display:none;flex-direction:column;gap:4px;min-width:140px}
+#choices.show{display:flex}
+#choices button{background:#101850;color:#f4e6b8;border:2px solid #e6c86a;padding:7px 8px;font-size:7px;text-align:left}
+#choices button:hover,#choices button.sel{background:#2a3a90;color:#fff}
+#menu{position:absolute;inset:8px;display:none;grid-template-columns:92px 1fr;gap:5px}
+#menu.show{display:grid}
+#menu nav{display:flex;flex-direction:column;gap:2px}
+#menu nav button,#menu .gold{background:#101850;color:#e6c86a;border:2px solid #c9a24a;padding:4px 5px;font-size:6px}
+#menu nav button.sel,#menu nav button:hover{background:#2a3a90;color:#fff}
+#mpane{overflow:auto;font-size:7px;line-height:1.6;color:#f4e6b8}
+#title{position:absolute;inset:0;background:linear-gradient(#070b22cc 0 22%,#070b2200 38% 58%,#070b22f2 78%);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:10px}
+#title h1{position:absolute;top:18px;margin:0;font-size:14px;color:#e6c86a;text-shadow:2px 2px 0 #000,0 0 12px #e6c86a88;letter-spacing:2px;text-align:center;line-height:1.4}
+#title h1 small{display:block;font-size:6px;color:#b8c4ff;letter-spacing:1px;margin-top:6px;font-weight:400}
+#tmenu{display:flex;flex-direction:column;gap:5px;margin-bottom:8px;width:180px}
+#tmenu button{background:#101850;border:2px solid #e6c86a;color:#f4e6b8;padding:8px;font-size:8px}
+#tmenu button:hover,#tmenu button.sel{background:#e6c86a;color:#101850}
+#credits,#help,#endscr{position:absolute;inset:0;background:#070b22ee;padding:16px 14px;overflow:auto;font-size:7px;line-height:1.7;display:none}
+#credits.show,#help.show,#endscr.show{display:block}
+#credits h2,#help h2,#endscr h2{color:#e6c86a;font-size:10px;margin:0 0 10px}
+#pad{display:none;position:fixed;left:0;right:0;bottom:0;height:150px;padding:8px 16px 12px;justify-content:space-between;align-items:center;background:linear-gradient(transparent,#000a);pointer-events:none}
+#pad>*{pointer-events:auto}
+.dpad{display:grid;grid-template-columns:42px 42px 42px;grid-template-rows:42px 42px 42px;gap:2px}
+.dpad b{background:#1c2458aa;border:2px solid #e6c86a66;border-radius:4px}
+.dpad button{background:#243070;border:2px solid #e6c86a;color:#fff;font-size:12px;border-radius:4px}
+.ab{display:flex;gap:12px}
+.ab button{width:56px;height:56px;border-radius:50%;border:3px solid #e6c86a;background:#8a3028;color:#fff;font-size:14px;font-weight:700}
+.ab button.b{background:#2850a0}
+#toast{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);background:#101850;border:2px solid #e6c86a;padding:8px 12px;font-size:7px;display:none;z-index:20;text-align:center;line-height:1.5}
+@media(max-width:720px){
+  #pad{display:flex}
+  body{padding-bottom:150px}
+}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="stage">
+    <canvas id="cv" width="256" height="224" aria-label="Chess Quest game screen"></canvas>
+    <div id="overlay">
+      <div id="hud" class="hidden"></div>
+      <div id="loc" class="hidden"></div>
+      <div id="dlg" class="win"><div id="dname"></div><div id="dtext"></div><div id="dnext">▼</div></div>
+      <div id="choices"></div>
+      <div id="menu" class="hidden">
+        <nav id="mnav"></nav>
+        <div id="mpane" class="win"></div>
+      </div>
+      <div id="title">
+        <h1>CHESS QUEST<small>PALADIN'S PATH</small></h1>
+        <div id="tmenu">
+          <button data-act="new">NEW GAME</button>
+          <button data-act="cont">CONTINUE</button>
+          <button data-act="help">HOW TO PLAY</button>
+          <button data-act="cred">THE SERIES</button>
+        </div>
+      </div>
+      <div id="help">
+        <h2>HOW TO PLAY</h2>
+        <p>Arrow keys / WASD — walk</p>
+        <p>Z / Enter — talk, confirm, attack</p>
+        <p>X / Shift — cancel</p>
+        <p>C / Esc — menu (one save slot, items, quests, lore, Sanctuary gate map)</p>
+        <p>In battle: FIGHT, SKILL, ITEM, GUARD, RUN, LOOK (named skills and a weakness hint)</p>
+        <p>On a phone, use the d-pad and A / B.</p>
+        <p style="margin-top:10px;color:#e6c86a">You are Heinrich “Rich” Witz, a Paladin pawn in an ancient war of order and chaos. Complete the five books of the Chess Quest: Pawn, Knight, Rook, Bishop, and Sovereign. Optional side paths (spelling bee, fairgrounds, Duel of Sixty-four, Master Gigas, Sand-lantis) add items and lore from the novels.</p>
+        <p style="margin-top:10px"><button class="gold" id="helpBack" style="background:#101850;color:#e6c86a;border:2px solid #e6c86a;padding:8px 10px;font-size:7px">BACK</button></p>
+      </div>
+      <div id="credits">
+        <h2>THE CHESS QUEST</h2>
+        <p>A 16-bit RPG adapted from the novels by Michael D. Young.</p>
+        <p style="margin-top:8px">Book I — Paladin: Pawn</p>
+        <p>Book II — Nemesis: Knight</p>
+        <p>Book III — Rook: Revenge</p>
+        <p>Book IV — Bishop: Betrayal</p>
+        <p>Book V — Sovereigns: Song</p>
+        <p style="margin-top:10px;color:#b8c4ff">Rich Witz receives a chess set and learns he is heir to the Paladins, knights of order. With his guide Aaron he faces Nemesis knights, the Gray Queen Temperance, and the Corridor of Keys — where his father vanished. Palad and Nemes, thirteen seats at one table, three stones, and the Sovereign Song.</p>
+        <p style="margin-top:10px">Fan adaptation for play. Story, characters, and setting belong to their author.</p>
+        <p style="margin-top:10px"><button id="credBack" style="background:#101850;color:#e6c86a;border:2px solid #e6c86a;padding:8px 10px;font-size:7px">BACK</button></p>
+      </div>
+      <div id="endscr">
+        <h2>CHECKMATE</h2>
+        <div id="endtxt"></div>
+        <p style="margin-top:12px"><button id="endBack" style="background:#101850;color:#e6c86a;border:2px solid #e6c86a;padding:8px 10px;font-size:7px">TITLE</button></p>
+      </div>
+      <div id="toast"></div>
+    </div>
+  </div>
+</div>
+<div id="pad">
+  <div class="dpad">
+    <b></b><button data-k="ArrowUp">▲</button><b></b>
+    <button data-k="ArrowLeft">◀</button><b></b><button data-k="ArrowRight">▶</button>
+    <b></b><button data-k="ArrowDown">▼</button><b></b>
+  </div>
+  <div class="ab">
+    <button class="b" data-k="KeyX">B</button>
+    <button data-k="KeyZ">A</button>
+  </div>
+</div>
+<script>
+(() => {
+"use strict";
+
+const TILE=16, VW=256, VH=224;
+const cv=document.getElementById("cv");
+const ctx=cv.getContext("2d");
+ctx.imageSmoothingEnabled=false;
+
+const el={
+  title:document.getElementById("title"),
+  hud:document.getElementById("hud"),
+  loc:document.getElementById("loc"),
+  dlg:document.getElementById("dlg"),
+  dname:document.getElementById("dname"),
+  dtext:document.getElementById("dtext"),
+  choices:document.getElementById("choices"),
+  menu:document.getElementById("menu"),
+  mnav:document.getElementById("mnav"),
+  mpane:document.getElementById("mpane"),
+  help:document.getElementById("help"),
+  credits:document.getElementById("credits"),
+  endscr:document.getElementById("endscr"),
+  endtxt:document.getElementById("endtxt"),
+  toast:document.getElementById("toast"),
+};
+
+let mode="title"; // title world dlg battle menu end
+let keys={};
+let tsel=0;
+const TACTS=["new","cont","help","cred"];
+
+function fit(){
+  const s=Math.max(1, Math.floor(Math.min(
+    (window.innerWidth-16)/VW,
+    (window.innerHeight-(window.innerWidth<720?170:16))/VH
+  )));
+  const st=document.getElementById("stage");
+  st.style.width=(VW*s)+"px";
+  st.style.height=(VH*s)+"px";
+  cv.style.width=(VW*s)+"px";
+  cv.style.height=(VH*s)+"px";
+}
+window.addEventListener("resize", fit);
+fit();
+
+/* ---------- audio ---------- */
+let AC=null, muted=false, musicTimer=null, musicKind=null;
+function audio(){
+  if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==="suspended") AC.resume();
+  return AC;
+}
+function beep(freq, dur, type="square", vol=0.04){
+  if(muted) return;
+  try{
+    const a=audio();
+    const o=a.createOscillator(), g=a.createGain();
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol, a.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime+dur);
+    o.connect(g); g.connect(a.destination);
+    o.start(); o.stop(a.currentTime+dur);
+  }catch(e){}
+}
+function sfx(name){
+  if(name==="ok") beep(520,.06);
+  if(name==="no") beep(180,.08,"triangle");
+  if(name==="hit") beep(220,.07,"sawtooth",.05);
+  if(name==="crit") {beep(880,.05); setTimeout(()=>beep(1320,.08),40);}
+  if(name==="heal") beep(660,.12,"triangle",.05);
+  if(name==="win") {beep(523,.1); setTimeout(()=>beep(659,.1),90); setTimeout(()=>beep(784,.18),180);}
+  if(name==="step") beep(90,.03,"triangle",.02);
+  if(name==="open") beep(392,.08,"triangle");
+}
+const THEMES={
+  overworld:[392,440,494,392,330,349,392,0,392,440,494,523,494,440,392,0,330,392,440,494,440,392,330,294,262,330,392,0,523,494,440,392,349,392,440,0,294,330,349,392],
+  sanctuary:[523,659,784,659,523,392,330,392,523,0,494,523,587,523,392,330,262,330,392,523,659,587,523,0,784,659,523,440,392,330,392,523,659,784,880,784,659,523,392,0,440,523,659,523,392,330,262,330],
+  battle:[196,196,247,196,165,196,247,294,196,0,185,196,147,165,196,247,165,196,247,294,330,294,247,0,196,247,294,196,165,147,165,196,247,196,165,147,131,147,165,196],
+  dark:[155,165,185,155,123,155,185,0,147,155,123,110,123,155,185,196,155,0,185,165,147,123,155,165,185,0,147,155,110,123,147,0,98,110,123,155,147,123,110,0,185,155,123,110,98,82,98,110],
+  gray:[220,220,196,196,185,185,165,0,196,185,165,147,165,185,196,0,220,196,185,165,147,165,185,196,165,0,185,165,208,196,185,185,196,196,185,0,165,165,147,147,139,139,147,0,185,165,147,139],
+  title:[330,392,440,523,440,392,330,262,294,330,392,0,523,494,440,392,330,294,262,294,330,392,440,0,523,587,523,440,392,330,294,330,392,440,494,523,440,392,330,0]
+};
+function playMusic(kind){
+  if(musicKind===kind) return;
+  musicKind=kind;
+  if(musicTimer) clearInterval(musicTimer);
+  const seq=THEMES[kind]||THEMES.overworld;
+  let i=0;
+  musicTimer=setInterval(()=>{
+    if(mode==="title" && kind!=="title") return;
+    const n=seq[i%seq.length];
+    if(n) beep(n, kind==="battle"?0.09:0.14, kind==="sanctuary"?"triangle":"square", 0.025);
+    i++;
+  }, kind==="battle"?160:280);
+}
+
+/* ---------- helpers ---------- */
+function clamp(v,a,b){return v<a?a:v>b?b:v}
+function rand(a,b){return a+Math.floor(Math.random()*(b-a+1))}
+function mulberry(a){return function(){let t=a+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296}}
+function toast(msg, ms=1400){
+  if(mode==="end" || (el.endscr && el.endscr.classList.contains("show"))) return;
+  el.toast.textContent=msg; el.toast.style.display="block";
+  clearTimeout(toast._t); toast._t=setTimeout(()=>el.toast.style.display="none", ms);
+}
+
+const SOLID=new Set("#~@&\"HBTKW{}|");
+const RANK_NAME=["PAWN","KNIGHT","ROOK","BISHOP","KING"];
+
+/* ---------- game state ---------- */
+function newHero(id, name, role){
+  return {id,name,role,lv:1,exp:0,hp:1,mhp:1,mp:1,mmp:1,atk:1,def:1,spd:1,alive:true};
+}
+function applyStats(p){
+  const L=p.lv;
+  if(p.role==="rich"){
+    const r=G.rank||0;
+    p.mhp=26+6*L+r*8; p.mmp=10+3*L+r*4; p.atk=7+2*L+r*2+(G.keys&&G.keys.clairvoyance?2:0); p.def=4+L+r+(G.keys&&G.keys.amulet?2:0)+(G.keys&&G.keys.locket?2:0); p.spd=6+L;
+  } else if(p.role==="aaron"){
+    p.mhp=22+4*L; p.mmp=16+5*L; p.atk=5+L; p.def=3+L; p.spd=7+L;
+  } else if(p.role==="nadia"){
+    p.mhp=24+5*L; p.mmp=12+4*L; p.atk=8+2*L; p.def=4+L; p.spd=8+L;
+  } else {
+    p.mhp=22+5*L; p.mmp=14+4*L; p.atk=6+2*L; p.def=4+L; p.spd=9+L;
+  }
+  if(p.hp>p.mhp) p.hp=p.mhp;
+  if(p.mp>p.mmp) p.mp=p.mmp;
+}
+function healFull(p){ applyStats(p); p.hp=p.mhp; p.mp=p.mmp; p.alive=true; }
+
+let G=null;
+function fresh(){
+  const rich=newHero("rich","Rich","rich");
+  const aaron=newHero("aaron","Aaron","aaron");
+  const nadia=newHero("nadia","Nadia","nadia");
+  const angela=newHero("angela","Angela","angela");
+  G={
+    map:"bedroom", px:8, py:8, dir:2, gold:20,
+    rank:0, steps:0, flags:{}, items:{potion:5, ether:2, hi:1, phoenix:1, ration:1},
+    keys:{}, party:[rich,aaron], bench:nadia, benchA:angela, chests:{},
+    saveAt:{map:"bedroom",x:8,y:8}, noEnc:false, journal:[]
+  };
+  healFull(rich); healFull(aaron); healFull(nadia); healFull(angela);
+}
+
+function fl(k){return !!G.flags[k]}
+function setf(k,v){G.flags[k]=v!==false}
+function jot(line){
+  if(!G.journal) G.journal=[];
+  if(!G.journal.includes(line)) G.journal.push(line);
+}
+
+/* ---------- maps ---------- */
+const MAPS={};
+
+function defMap(id, spec){
+  MAPS[id]={
+    id, name:spec.name, rows:spec.rows, w:spec.rows[0].length, h:spec.rows.length,
+    bg:spec.bg||"#2d6a3a", music:spec.music||"overworld",
+    npcs:spec.npcs||[], warps:spec.warps||[],
+    events:spec.events||[], chests:spec.chests||[],
+    enc:spec.enc||null, dark:!!spec.dark
+  };
+}
+
+defMap("bedroom",{
+  name:"Rich's Bedroom", bg:"#3a2a1a", music:"overworld",
+  rows:[
+    "################",
+    "#..............#",
+    "#..B...........#",
+    "#..............#",
+    "#...........C..#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#.......T......#",
+    "#..............#",
+    "#######D########"
+  ],
+  warps:[{x:7,y:11,to:"house",tx:6,ty:2}],
+  chests:[{x:12,y:4,id:"card",need:"knighted",item:"card",name:"Mickey Mantle card"}],
+  npcs:[
+    {x:5,y:6,spr:"box",name:"Package", vis:()=>!fl("pkg"),
+      talk:async()=>{ await openPackage(); }},
+    {x:9,y:4,spr:"aaron",name:"Aaron", vis:()=>fl("pkg"),
+      talk:async()=>{ await aaronTalk(); }},
+    {x:2,y:3,spr:"binoc",name:"Binoculars", talk:async()=>binocTalk()},
+    {x:11,y:6,spr:"box",name:"Silver Box", vis:()=>fl("pkg"), talk:async()=>silverBoxTalk()},
+    {x:11,y:8,spr:"box",name:"Black Box", vis:()=>fl("pkg")&&fl("sanctuary")&&!fl("blackpawn"),
+      talk:async()=>blackBoxTalk()},
+    {x:14,y:2,spr:"hydra",name:"Hydra Model", vis:()=>fl("hydra"), talk:async()=>{
+      await say("","A painted hydra from the Model of Evil. Lemonade, of all things, once spoiled its defenses.");
+      jot("The hydra helm is more than a costume. Nemesis knights wear living chaos.");
+    }}
+  ]
+});
+
+defMap("house",{
+  name:"Witz Home", bg:"#4a3420", music:"overworld",
+  rows:[
+    "##############",
+    "#............#",
+    "#......D.....#",
+    "#............#",
+    "#..T....T....#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#P...........#",
+    "######D#######"
+  ],
+  warps:[
+    {x:7,y:2,to:"bedroom",tx:7,ty:10},
+    {x:6,y:9,to:"street",tx:8,ty:6}
+  ],
+  npcs:[
+    {x:3,y:5,spr:"helena",name:"Helena", talk:async()=>helenaTalk()},
+    {x:10,y:5,spr:"laura",name:"Aunt Laura", vis:()=>fl("sanctuary"), talk:async()=>{
+      await say("Aunt Laura","Your mother needs you. Don't vanish on her the way Phillip did.");
+    }},
+    {x:7,y:4,spr:"paint",name:"Painting", vis:()=>fl("spike"),
+      talk:async()=>enterPainting()}
+  ]
+});
+
+defMap("street",{
+  name:"Maple Street", bg:"#3c8a4a", music:"overworld",
+  rows:[
+    "&&&&&&&&&&&&&&&&&&&&&&",
+    "&,,,,,,,,,,HHH,,,,,,,&",
+    "&,,,,,,,,,,HHH,,,,,,,&",
+    "&,,,,,,,,,,H,H,,,,,,,&",
+    "&,,,,,,,,,,,,,,,,,,,,&",
+    "&========,=======,,,,&",
+    "&,,,,,,,,,,,,,,,,,,,,&",
+    "&,,,,&&&,,,,,,,SSS,,,&",
+    "&,,,,&&&,,,,,,,SSS,,,&",
+    "&,,,,,,,,,,,,,,S,S,,,&",
+    "&,,,,,,,,,,,,,,,,,,,,&",
+    "&,,,,===,,,,,,,,,,,,,=",
+    "&,,,,,,,,,,,,,,,,,,,,&",
+    "&&&&&&&&&&&&&&&&&&&&&&"
+  ],
+  warps:[
+    {x:12,y:3,to:"house",tx:6,ty:8},
+    {x:16,y:9,to:"school",tx:2,ty:8,need:"pkg"},
+    {x:21,y:11,to:"street2",tx:1,ty:6}
+  ],
+  npcs:[
+    {x:6,y:6,spr:"axle",name:"Axel", talk:async()=>axelTalk()},
+    {x:4,y:10,spr:"kid",name:"Neighbor", talk:async()=>{
+      await say("Kid","Rich Witz? The chess nerd? Cool package, I guess.");
+    }},
+    {x:9,y:10,spr:"mail",name:"Mailman", talk:async()=>mailTalk()}
+  ]
+});
+
+defMap("street2",{
+  name:"Elder Lane", bg:"#3c8a4a", music:"overworld",
+  rows:[
+    "&&&&&&&&&&&&&&&&",
+    "&,,,,,,,,,,,,,,&",
+    "&,,,,HHHH,,,,,,&",
+    "&,,,,H,,H,,,,,,&",
+    "&,,,,,,,,,,,,,,&",
+    "D==============&",
+    "&,,,,,,,,,,,,,,&",
+    "&,,,,,,,,,,,,,,&",
+    "&&&&&&&&&&&&&&&&"
+  ],
+  warps:[{x:0,y:5,to:"street",tx:20,ty:11}],
+  npcs:[
+    {x:6,y:3,spr:"elder",name:"Mr. Alfonds", talk:async()=>elderTalk()}
+  ]
+});
+
+defMap("school",{
+  name:"Lincoln High", bg:"#5a5340", music:"overworld",
+  rows:[
+    "####################",
+    "#]]D]...D....]].D..#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#.................D#",
+    "D..................#",
+    "#..T...............#",
+    "#...D.....D........#",
+    "####################"
+  ],
+  warps:[
+    {x:0,y:8,to:"street",tx:14,ty:11},
+    {x:3,y:1,to:"lockers",tx:6,ty:8},
+    {x:8,y:1,to:"classroom",tx:7,ty:7},
+    {x:16,y:1,to:"gym",tx:6,ty:8},
+    {x:18,y:7,to:"cafeteria",tx:8,ty:7},
+    {x:4,y:10,to:"chessclub",tx:6,ty:7},
+    {x:10,y:10,to:"detention",tx:4,ty:6, need:"detention_open"}
+  ],
+  npcs:[
+    {x:8,y:6,spr:"spike",name:"Spike", vis:()=>!fl("spike"), talk:async()=>spikeTalk()},
+    {x:14,y:5,spr:"nadia",name:"Nadia", talk:async()=>nadiaSchool()},
+    {x:5,y:9,spr:"angela",name:"Angela", vis:()=>!fl("angela_join"), talk:async()=>angelaTalk()},
+    {x:12,y:3,spr:"joe",name:"Joe", talk:async()=>{
+      await say("Joe","Heiny. Nice glasses. Want me to break them in?");
+    }},
+    {x:2,y:4,spr:"kid",name:"Freshman", talk:async()=>{
+      await say("Freshman","Lockers up front. Cafeteria east. Chess club by the table. Gym is the far door.");
+    }},
+    {x:17,y:8,spr:"teacher",name:"Mr. Bickmann", talk:async()=>{
+      await say("Mr. Bickmann","Detention is down the hall. Try staying out of it, Witz.");
+      if(fl("q_race") && !fl("q_detention")) setf("detention_open");
+    }}
+  ]
+});
+
+defMap("gym",{
+  name:"South Gym", bg:"#6a5a30", music:"overworld",
+  rows:[
+    "##############",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#......D.....#",
+    "##############"
+  ],
+  warps:[{x:7,y:10,to:"school",tx:16,ty:3}],
+  npcs:[
+    {x:7,y:3,spr:"coach",name:"Mr. Green", talk:async()=>raceTalk()},
+    {x:4,y:6,spr:"mallory",name:"Mallory", vis:()=>fl("four")&&!fl("mallory1"), talk:async()=>malloryFight()}
+  ]
+});
+
+defMap("detention",{
+  name:"Detention", bg:"#3a3040", music:"dark",
+  rows:[
+    "##########",
+    "#........#",
+    "#.[.[.[..#",
+    "#........#",
+    "#........#",
+    "#........#",
+    "#...D....#",
+    "##########"
+  ],
+  warps:[{x:4,y:6,to:"school",tx:10,ty:9}],
+  npcs:[
+    {x:3,y:3,spr:"nadia",name:"Nadia", talk:async()=>detentionTalk()}
+  ]
+});
+
+defMap("sanctuary",{
+  name:"Paladin Sanctuary", bg:"#2a3060", music:"sanctuary",
+  rows:[
+    "############################",
+    "#..........................#",
+    "#...........KK.............#",
+    "#..........................#",
+    "#..TTTTTTTTTTTTTTTTTTTTT...#",
+    "#..........................#",
+    "#..........................#",
+    "#..........................#",
+    "#..........................#",
+    "#..........................#",
+    "#D..........*...........D..#",
+    "#..........................#",
+    "#..........................#",
+    "##############D#############"
+  ],
+  warps:[
+    {x:14,y:13,to:"house",tx:7,ty:5},
+    {x:1,y:10,to:"trial",tx:6,ty:18, need:"quests_given"},
+    {x:24,y:10,to:"corridor",tx:1,ty:14, need:"card"},
+    {x:14,y:10,to:"hub",tx:8,ty:7, need:"four"}
+  ],
+  npcs:[
+    {x:13,y:3,spr:"minerva",name:"Minerva", talk:async()=>minervaTalk()},
+    {x:16,y:3,spr:"arlenen",name:"Arlenen", talk:async()=>arlenenTalk()},
+    {x:6,y:6,spr:"paladin",name:"Sir Karsten", talk:async()=>{
+      await say("Sir Karsten","The empty chair was your grandfather's. Order remembers its kings.");
+      await say("Sir Karsten","Thirteen knights once sat this table. Palad first. The rest of us keep the files honest.");
+    }},
+    {x:10,y:6,spr:"palad",name:"Palad", vis:()=>fl("knighted"), talk:async()=>paladTalk()},
+    {x:18,y:6,spr:"lectern",name:"Quest Log", talk:async()=>lecternTalk()},
+    {x:20,y:8,spr:"shop",name:"Quartermaster", talk:async()=>shopTalk()},
+    {x:8,y:11,spr:"save",name:"White Pawn", talk:async()=>restTalk()}
+  ]
+});
+
+defMap("hub",{
+  name:"Sanctuary Gates", bg:"#243050", music:"sanctuary",
+  rows:[
+    "##################",
+    "#................#",
+    "#..D....D.....D..#",
+    "#................#",
+    "#................#",
+    "#................#",
+    "#..D....D.....D..#",
+    "#................#",
+    "#........D.......#",
+    "##################"
+  ],
+  warps:[
+    {x:8,y:8,to:"sanctuary",tx:14,ty:11},
+    {x:3,y:2,to:"arena",tx:6,ty:10, need:"four"},
+    {x:8,y:2,to:"fairgrounds",tx:9,ty:8, need:"four"},
+    {x:14,y:2,to:"finland",tx:5,ty:12, need:"nadia_taken"},
+    {x:3,y:6,to:"stronghold",tx:2,ty:14, need:"bishop"},
+    {x:8,y:6,to:"stlouis",tx:9,ty:7, need:"mist"},
+    {x:14,y:6,to:"middlespace",tx:12,ty:20, need:"mist"}
+  ],
+  npcs:[
+    {x:8,y:4,spr:"aaron",name:"Aaron", talk:async()=>aaronHub()}
+  ]
+});
+
+defMap("trial",{
+  name:"Fire and Ice", bg:"#402020", music:"dark",
+  rows:[
+    "#############",
+    "#*****#^^^^^#",
+    "#*****#^^^^^#",
+    "#*****#^^^^^#",
+    "#*****#^^^^^#",
+    "#*****.......",
+    "#*****#^^^^^#",
+    "#*****#^^^^^#",
+    "#######^^^^^#",
+    "#...........#",
+    "#...........#",
+    "#...........#",
+    "#...........#",
+    "#...........#",
+    "#...........#",
+    "#...........#",
+    "#...........#",
+    "#...........#",
+    "#.....D.....#",
+    "#############"
+  ],
+  warps:[{x:6,y:18,to:"sanctuary",tx:2,ty:10}],
+  enc:{rate:18, foes:["ember","frostling","spark"]},
+  npcs:[
+    {x:3,y:3,spr:"ice",name:"Ice Warden", vis:()=>!fl("q_ice"), talk:async()=>iceBoss()},
+    {x:10,y:3,spr:"fire",name:"Fire Warden", vis:()=>!fl("q_fire"), talk:async()=>fireBoss()}
+  ]
+});
+
+defMap("arena",{
+  name:"Paladin Arena", bg:"#4a3a20", music:"battle",
+  rows:[
+    "##############",
+    "#++++++++++++#",
+    "#+----------+#",
+    "#+----------+#",
+    "#+----------+#",
+    "#+----------+#",
+    "#+----------+#",
+    "#+----------+#",
+    "#++++++++++++#",
+    "#............#",
+    "#......D.....#",
+    "##############"
+  ],
+  warps:[{x:7,y:10,to:"hub",tx:3,ty:3}],
+  npcs:[
+    {x:7,y:4,spr:"hydra",name:"Black Knight", vis:()=>!fl("hydra"), talk:async()=>hydraFight()}
+  ]
+});
+
+defMap("finland",{
+  name:"Fjords of Jan", bg:"#1a3048", music:"sanctuary",
+  rows:[
+    "################",
+    "#**************#",
+    "#*~~********~~*#",
+    "#**************#",
+    "#****....******#",
+    "#****....******#",
+    "#******@*******#",
+    "#**************#",
+    "#**************#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#......D.......#",
+    "################"
+  ],
+  warps:[{x:7,y:12,to:"hub",tx:14,ty:3}],
+  npcs:[
+    {x:8,y:6,spr:"jan",name:"Jan", talk:async()=>janTalk()},
+    {x:5,y:10,spr:"helena",name:"Helena", vis:()=>fl("finland"), talk:async()=>{
+      await say("Helena","A bishop restores order. Fire, flood, fear — I set them right.");
+    }},
+    {x:10,y:10,spr:"phillip",name:"Phillip", vis:()=>fl("phillip_seen"), talk:async()=>{
+      await say("Phillip","A rook is a wall. Castling is not retreat, son. It is covering the ones you love.");
+    }}
+  ]
+});
+
+defMap("stronghold",{
+  name:"Nemesis Stronghold", bg:"#1a1018", music:"dark", dark:true,
+  rows:[
+    "##################",
+    "#................#",
+    "#..####....####..#",
+    "#..#D.#....#..#..#",
+    "#..#..#....#..#..#",
+    "#................#",
+    "#................#",
+    "#....##..####....#",
+    "#....#......#....#",
+    "#....#......#....#",
+    "#................#",
+    "#................#",
+    "#................#",
+    "#................#",
+    "#.D..............#",
+    "##################"
+  ],
+  warps:[
+    {x:2,y:14,to:"hub",tx:3,ty:6},
+    {x:4,y:3,to:"cell",tx:3,ty:5}
+  ],
+  enc:{rate:16, foes:["darkpawn","fellhound","neme"]},
+  npcs:[
+    {x:9,y:8,spr:"mallory",name:"Mallory", vis:()=>!fl("mallory2"), talk:async()=>mallory2Fight()}
+  ]
+});
+
+defMap("cell",{
+  name:"Black Cell", bg:"#10080e", music:"dark", dark:true,
+  rows:[
+    "########",
+    "#......#",
+    "#..B...#",
+    "#......#",
+    "#......#",
+    "#..D...#",
+    "########"
+  ],
+  warps:[{x:3,y:5,to:"stronghold",tx:4,ty:4}],
+  npcs:[
+    {x:3,y:2,spr:"nadia",name:"Nadia", vis:()=>!fl("nadia_join"), talk:async()=>rescueNadia()}
+  ]
+});
+
+defMap("middlespace",{
+  name:"Middlespace", bg:"#d8e8f0", music:"sanctuary",
+  rows:[
+    "#########################",
+    "#.......................#",
+    "#.......................#",
+    "#..........@............#",
+    "#.......................#",
+    "#.......................#",
+    "#...@..............@....#",
+    "#.......................#",
+    "#.......................#",
+    "#.......................#",
+    "#.......................#",
+    "#..........@............#",
+    "#.......................#",
+    "#.......................#",
+    "#.......................#",
+    "#.......................#",
+    "#.......................#",
+    "#.......................#",
+    "#.D.....................#",
+    "#.......................#",
+    "#...........D...........#",
+    "#########################"
+  ],
+  warps:[
+    {x:12,y:20,to:"hub",tx:14,ty:6},
+    {x:12,y:3,to:"grayrealm",tx:10,ty:16, need:"three_stones"},
+    {x:2,y:18,to:"sandlantis",tx:6,ty:10}
+  ],
+  npcs:[
+    {x:12,y:11,spr:"snow",name:"Snowman", talk:async()=>snowTalk()},
+    {x:4,y:6,spr:"stone",name:"Sunstone", vis:()=>!fl("sunstone"), talk:async()=>takeStone("sunstone","Sunstone")},
+    {x:20,y:6,spr:"stone",name:"Moonstone", vis:()=>!fl("moonstone"), talk:async()=>takeStone("moonstone","Moonstone")},
+    {x:12,y:3,spr:"stone",name:"Starstone", vis:()=>!fl("starstone")&&fl("sunstone")&&fl("moonstone"),
+      talk:async()=>takeStone("starstone","Starstone")}
+  ]
+});
+
+defMap("grayrealm",{
+  name:"Court of Temperance", bg:"#4a4a52", music:"gray",
+  rows:[
+    "#####################",
+    "#-+-+-+-+-+-+-+-+-+-#",
+    "#+-+-+-+-+-+-+-+-+-+#",
+    "#-+-+-+-+-+-+-+-+-+-#",
+    "#+-+-+-+-+-+-+-+-+-+#",
+    "#-+-+-+-+-+-+-+-+-+-#",
+    "#+-+-+-+-+-+-+-+-+-+#",
+    "#-+-+-+-+-+-+-+-+-+-#",
+    "#+-+-+-+-+-+-+-+-+-+#",
+    "#-+-+-+-+-+-+-+-+-+-#",
+    "#+-+-+-+-+-+-+-+-+-+#",
+    "#-+-+-+-+-+-+-+-+-+-#",
+    "#+-+-+-+-+-+-+-+-+-+#",
+    "#...................#",
+    "#...................#",
+    "#...................#",
+    "#.........D.........#",
+    "#####################"
+  ],
+  warps:[{x:10,y:16,to:"middlespace",tx:12,ty:4}],
+  enc:{rate:20, foes:["graypawn","bonesoldier","umbratum"]},
+  npcs:[
+    {x:10,y:4,spr:"queen",name:"Temperance", vis:()=>!fl("ending"), talk:async()=>finalBattle()},
+    {x:3,y:13,spr:"lance",name:"Lancelot", vis:()=>fl("angela_join")||fl("mist"), talk:async()=>lanceTalk()}
+  ]
+});
+
+function generateCorridor(){
+  defMap("corridor",{
+    name:"Corridor of Keys", bg:"#2a2040", music:"dark", dark:true,
+    rows:[
+      "#########################",
+      "#.................#######",
+      "#.................#.....#",
+      "#.................#.....#",
+      "#.......###########.....#",
+      "#.......#...............#",
+      "#.......#...............#",
+      "#.......#...............#",
+      "#.......#######.#########",
+      "#.......................#",
+      "#.......................#",
+      "#.......................#",
+      "#.......................#",
+      "#.......................#",
+      "#.......D...............#",
+      "#D......................#",
+      "#########################"
+    ],
+    warps:[
+      {x:1,y:15,to:"sanctuary",tx:24,ty:10},
+      {x:8,y:14,to:"duel64",tx:8,ty:10, need:"knighted"}
+    ],
+    enc:{rate:22, foes:["lostkey","graypawn","garg"]},
+    npcs:[
+      {x:3,y:4,spr:"garg",name:"Gargoyle Twins", vis:()=>!fl("gargoyles"), talk:async()=>gargFight()},
+      {x:12,y:6,spr:"golem",name:"Golf Golem", vis:()=>!fl("golem"), talk:async()=>golemFight()},
+      {x:20,y:2,spr:"grayk",name:"Gray Knight", vis:()=>!fl("grayknight"), talk:async()=>grayFight()},
+      {x:22,y:2,spr:"phillip",name:"Phillip", vis:()=>fl("grayknight")&&!fl("phillip_seen"), talk:async()=>fatherTalk()},
+      {x:8,y:10,spr:"gigas",name:"Hall of Gigas", talk:async()=>{
+        await say("Aaron","A Master Gigas keeps a true skeleton key. Three of them oversee the maze.");
+        warp("gigahall",7,12);
+      }}
+    ]
+  });
+}
+generateCorridor();
+
+defMap("classroom",{
+  name:"Lincoln Auditorium", bg:"#4a4030", music:"overworld",
+  rows:[
+    "##############",
+    "#............#",
+    "#............#",
+    "#.[.[.[.[.[..#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#............#",
+    "#......D.....#",
+    "##############"
+  ],
+  warps:[{x:7,y:8,to:"school",tx:8,ty:2}],
+  npcs:[
+    {x:7,y:2,spr:"teacher",name:"Bee Judge", talk:async()=>spellingBee()},
+    {x:3,y:5,spr:"nadia",name:"Nadia", vis:()=>fl("bee")&&!fl("nadia_taken"), talk:async()=>{
+      await say("Nadia","Don't look so shocked. I can spell. I just don't advertise it next to you.");
+    }}
+  ]
+});
+
+defMap("lockers",{
+  name:"Locker Hall", bg:"#4a4538", music:"overworld",
+  rows:[
+    "##############",
+    "#]]].]]].]]].#",
+    "#............#",
+    "#]]].]]].]]].#",
+    "#............#",
+    "#]]].]]].]]].#",
+    "#............#",
+    "#............#",
+    "#......D.....#",
+    "##############"
+  ],
+  warps:[{x:7,y:8,to:"school",tx:3,ty:2}],
+  npcs:[
+    {x:3,y:2,spr:"axle",name:"Axel", talk:async()=>{
+      if(!fl("spike")) await say("Axel","Spike dunks heads in these. Not mine. Not today.");
+      else await say("Axel","You didn't run. That's new. I like it.");
+    }},
+    {x:10,y:4,spr:"kid",name:"Locker Note", talk:async()=>{
+      await say("","A taped scrap: HEINY. NICE GLASSES. The handwriting is Joe's, and it is not a compliment.");
+    }},
+    {x:6,y:6,spr:"angela",name:"Angela", vis:()=>!fl("angela_join")&&fl("spike"), talk:async()=>angelaTalk()}
+  ]
+});
+
+defMap("cafeteria",{
+  name:"Lincoln Cafeteria", bg:"#5a4a30", music:"overworld",
+  rows:[
+    "################",
+    "#..............#",
+    "#.[.[.[.[.[.[..#",
+    "#..............#",
+    "#.[.[.[.[.[.[..#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#.......D......#",
+    "################"
+  ],
+  warps:[{x:8,y:8,to:"school",tx:17,ty:7}],
+  npcs:[
+    {x:3,y:2,spr:"teacher",name:"Lunch Lady", talk:async()=>{
+      await say("Lunch Lady","Stroganoff day. Your mother called it beef. We call it Tuesday.");
+      if(!G.items.ration){ G.items.ration=1; await say("","She slides you a tray. It is edible. That is the praise it gets."); }
+    }},
+    {x:8,y:4,spr:"nadia",name:"Nadia", vis:()=>fl("spike")&&!fl("nadia_taken"), talk:async()=>nadiaSchool()},
+    {x:12,y:2,spr:"joe",name:"Joe", talk:async()=>{
+      await say("Joe","Chess nerd eats lunch now? Don't get gravy on the rank.");
+    }}
+  ]
+});
+
+defMap("chessclub",{
+  name:"Chess Club", bg:"#3a3a28", music:"overworld",
+  rows:[
+    "############",
+    "#..........#",
+    "#..T....T..#",
+    "#..........#",
+    "#..T....T..#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#.....D....#",
+    "############"
+  ],
+  warps:[{x:6,y:8,to:"school",tx:4,ty:9}],
+  npcs:[
+    {x:3,y:2,spr:"kid",name:"Club President", talk:async()=>chessClubTalk()},
+    {x:8,y:4,spr:"aaron",name:"Aaron", vis:()=>fl("pkg"), talk:async()=>{
+      await say("Aaron","A board is a board. These children play at war. You are in one.");
+    }}
+  ]
+});
+
+defMap("fairgrounds",{
+  name:"County Fairgrounds", bg:"#3c7a40", music:"overworld",
+  rows:[
+    "##################",
+    "#,,,,,,,,,,,,,,,,#",
+    "#,,,,HHHH,,,,,,,,#",
+    "#,,,,H,,H,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#,,,,SSS,,,,,,,,,#",
+    "#,,,,S,S,========#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#........D.......#",
+    "##################"
+  ],
+  warps:[{x:9,y:9,to:"hub",tx:8,ty:3}],
+  npcs:[
+    {x:6,y:3,spr:"hydra",name:"Model of Evil", talk:async()=>fairHydraTalk()},
+    {x:12,y:5,spr:"teacher",name:"Miss Spelling", vis:()=>!fl("misspell"), talk:async()=>misspellFight()},
+    {x:4,y:7,spr:"kid",name:"Vendor", talk:async()=>{
+      await say("Vendor","Hydra models, lemonade, and a spelling-bee trophy that isn't yours yet.");
+      setf("fair");
+      if(!G.items.lemonade){
+        G.items.lemonade=1;
+        jot("County-fair lemonade. Sugar, citrus, and a rumor that hydras cannot abide either.");
+        await say("","A paper cup of fair lemonade. Sugar, citrus, and a rumor about hydras.");
+      } else await say("Vendor","You already took the cup. Don't spill it before the arena.");
+    }}
+  ]
+});
+
+defMap("duel64",{
+  name:"Duel of Sixty-four", bg:"#2a2038", music:"battle",
+  rows:[
+    "##################",
+    "#-+-+-+-+-+-+-+-+#",
+    "#+-+-+-+-+-+-+-+-#",
+    "#-+-+-+-+-+-+-+-+#",
+    "#+-+-+-+-+-+-+-+-#",
+    "#-+-+-+-+-+-+-+-+#",
+    "#+-+-+-+-+-+-+-+-#",
+    "#-+-+-+-+-+-+-+-+#",
+    "#+-+-+-+-+-+-+-+-#",
+    "#................#",
+    "#........D.......#",
+    "##################"
+  ],
+  warps:[{x:9,y:10,to:"corridor",tx:8,ty:13}],
+  npcs:[
+    {x:9,y:3,spr:"palad",name:"Palad", talk:async()=>duelPaladTalk()},
+    {x:4,y:5,spr:"mallory",name:"Mallory", vis:()=>fl("mallory1")&&!fl("duel64"), talk:async()=>duelMallory()}
+  ]
+});
+
+defMap("gigahall",{
+  name:"Hall of the Master Gigas", bg:"#1a1810", music:"dark", dark:true,
+  rows:[
+    "################",
+    "#..............#",
+    "#..####..####..#",
+    "#..............#",
+    "#..............#",
+    "#......@.......#",
+    "#..............#",
+    "#..............#",
+    "#..####..####..#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#.......D......#",
+    "################"
+  ],
+  warps:[{x:8,y:12,to:"corridor",tx:8,ty:11}],
+  enc:{rate:18, foes:["gigantaur","lostkey"]},
+  npcs:[
+    {x:8,y:5,spr:"gigas",name:"Master Gigas", vis:()=>!fl("gigas"), talk:async()=>gigasFight()}
+  ]
+});
+
+defMap("sandlantis",{
+  name:"Sand-lantis", bg:"#c2a060", music:"sanctuary",
+  rows:[
+    "################",
+    "#**************#",
+    "#****....******#",
+    "#****.@..******#",
+    "#****....******#",
+    "#**************#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#......D.......#",
+    "################"
+  ],
+  warps:[{x:7,y:10,to:"middlespace",tx:3,ty:18}],
+  enc:{rate:22, foes:["ember","lostkey"]},
+  npcs:[
+    {x:7,y:3,spr:"stone",name:"Buried Locket", vis:()=>!fl("locket"), talk:async()=>locketTalk()},
+    {x:4,y:7,spr:"angela",name:"Angela", vis:()=>fl("mist")&&!fl("angela_join"), talk:async()=>angelaTalk()}
+  ]
+});
+
+defMap("stlouis",{
+  name:"St. Louis Mists", bg:"#6a7080", music:"gray",
+  rows:[
+    "##################",
+    "#,,,,,,,,,,,,,,,,#",
+    "#,,,,SSSS,,,,,,,,#",
+    "#,,,,S,,S,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#========,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,#",
+    "#........D.......#",
+    "##################"
+  ],
+  warps:[{x:9,y:8,to:"hub",tx:8,ty:5}],
+  enc:{rate:20, foes:["graypawn","fellchariot"]},
+  npcs:[
+    {x:6,y:3,spr:"paint",name:"Museum of Modern Terrors", talk:async()=>museumTalk()},
+    {x:12,y:6,spr:"angela",name:"Angela", vis:()=>fl("mist")&&!fl("angela_join"), talk:async()=>angelaTalk()}
+  ]
+});
+
+/* ---------- drawing ---------- */
+function palRect(x,y,w,h,c){ctx.fillStyle=c; ctx.fillRect(x|0,y|0,w,h)}
+
+function drawTile(ch, sx, sy){
+  const x=sx, y=sy;
+  switch(ch){
+    case "#":
+      palRect(x,y,16,16,"#2a2438");
+      palRect(x,y,16,1,"#4a4460"); palRect(x,y+8,16,1,"#1a1428");
+      palRect(x+4,y,1,16,"#3a3450");
+      break;
+    case ".":
+      palRect(x,y,16,16, MAPS[G.map]&&MAPS[G.map].bg==="#d8e8f0" ? "#e8f4fa" : "#c2a070");
+      palRect(x+3,y+5,1,1,"#a88858");
+      break;
+    case ",":
+      palRect(x,y,16,16,"#3cb06a");
+      palRect(x+2,y+3,2,2,"#2a8a4e"); palRect(x+9,y+10,2,2,"#5ad08a");
+      palRect(x+11,y+4,1,1,"#2a8a4e");
+      break;
+    case "=":
+      palRect(x,y,16,16,"#c8b46a"); palRect(x,y+7,16,2,"#a89450");
+      break;
+    case "&":
+      palRect(x,y,16,16,"#2e7a48");
+      palRect(x+3,y+2,10,10,"#1e5a30"); palRect(x+6,y+10,4,6,"#5a3a18");
+      break;
+    case "H":
+      palRect(x,y,16,16,"#8a4a30"); palRect(x+2,y+6,12,10,"#d0b070");
+      palRect(x,y,16,6,"#6a3020"); palRect(x+6,y+10,4,6,"#4a2810");
+      break;
+    case "S":
+      palRect(x,y,16,16,"#8a8a70"); palRect(x+1,y+1,14,14,"#b0a888");
+      palRect(x+6,y+8,4,8,"#5a5040");
+      break;
+    case "B":
+      palRect(x,y,16,16,"#c2a070"); palRect(x+1,y+4,14,10,"#4a60a0"); palRect(x+1,y+2,14,4,"#e8e0d0");
+      break;
+    case "T":
+      palRect(x,y,16,16,"#c2a070"); palRect(x+2,y+6,12,6,"#6a4420"); palRect(x+7,y+12,2,4,"#4a3010");
+      break;
+    case "C":
+      palRect(x,y,16,16,"#c2a070"); palRect(x+3,y+5,10,9,"#c9a24a"); palRect(x+3,y+5,10,3,"#e6c86a");
+      break;
+    case "D":
+      palRect(x,y,16,16,"#5a3a20"); palRect(x+3,y+2,10,14,"#8a5a30"); palRect(x+11,y+9,2,2,"#e6c86a");
+      break;
+    case "P":
+      palRect(x,y,16,16,"#4a3420"); palRect(x+4,y+2,8,12,"#6a90c0"); palRect(x+2,y,12,4,"#d8c090");
+      break;
+    case "[":
+      palRect(x,y,16,16,"#5a5340"); palRect(x+2,y+6,12,8,"#3a3428"); palRect(x+2,y+2,12,4,"#8a7a60");
+      break;
+    case "]":
+      palRect(x,y,16,16,"#4a6080"); palRect(x+2,y+1,12,14,"#3a4a68"); palRect(x+3,y+3,10,2,"#8ab0d0");
+      break;
+    case "K":
+      palRect(x,y,16,16,"#2a3060"); palRect(x+3,y+4,10,12,"#e6c86a"); palRect(x+5,y+1,6,5,"#f4e6b8");
+      break;
+    case "*":
+      palRect(x,y,16,16,"#b8e0f0"); palRect(x+4,y+4,2,2,"#fff"); palRect(x+10,y+9,2,2,"#8ab8d0");
+      break;
+    case "^":
+      palRect(x,y,16,16,"#8a2010"); palRect(x+3,y+4,3,6,"#e05020"); palRect(x+8,y+2,4,8,"#ff8030");
+      palRect(x+5,y+8,2,4,"#ffcc40");
+      break;
+    case "~":
+      palRect(x,y,16,16,"#2060a0"); palRect(x+2,y+6,12,2,"#40a0e0"); palRect(x+4,y+11,8,2,"#3080c0");
+      break;
+    case "@":
+      palRect(x,y,16,16, MAPS[G.map]&&MAPS[G.map].id==="middlespace"?"#e8f4fa":"#1a3048");
+      palRect(x+4,y+2,8,12,"#d0d8e8"); palRect(x+6,y+4,4,4,"#e6c86a");
+      break;
+    case "+":
+      palRect(x,y,16,16,"#e8dcc0"); palRect(x,y,16,16,"#efe4c8");
+      break;
+    case "-":
+      palRect(x,y,16,16,"#3a3028");
+      break;
+    case "{": case "}": case "|": case "W":
+      palRect(x,y,16,16,"#1a1018");
+      break;
+    default:
+      palRect(x,y,16,16,"#203040");
+  }
+}
+
+function drawChar(kind, x, y, frame, dir){
+  const f=(frame|0)%2;
+  const bob=f?1:0;
+  const skin="#f0c8a0", hair="#4a3018";
+  function body(shirt, pants, hcol){
+    palRect(x+5,y+2+bob,6,4,hcol||hair);
+    palRect(x+6,y+5+bob,4,4,skin);
+    palRect(x+5,y+9+bob,6,5,shirt);
+    palRect(x+5,y+14,6,2,pants);
+    if(dir===1) palRect(x+3,y+10+bob,2,3,shirt);
+    if(dir===3) palRect(x+11,y+10+bob,2,3,shirt);
+    palRect(x+7,y+6+bob,2,1,"#202020");
+  }
+  switch(kind){
+    case "rich": {
+      const r=G?G.rank:0;
+      if(r===0) body("#3a70c0","#2a3a58","#5a3a18");
+      else if(r===1) { body("#d8dce8","#3a70c0","#5a3a18"); palRect(x+4,y+8,8,2,"#3a70c0"); }
+      else if(r===2) { body("#a8b0c0","#4a5058","#5a3a18"); palRect(x+3,y+7,10,8,"#8a9098"); }
+      else if(r===3) { body("#f4e6b8","#e6c86a","#5a3a18"); palRect(x+4,y+8,8,6,"#fff8e0"); }
+      else { body("#e6c86a","#f4e6b8","#5a3a18"); palRect(x+5,y+1,6,3,"#ffd24a"); }
+      break;
+    }
+    case "aaron":
+      body("#3a7a48","#2a5030","#c8a060"); palRect(x+4,y+8,8,7,"#2e6a3c");
+      break;
+    case "nadia":
+      body(fl("nadia_join")?"#101018":"#4a2060","#1a1020","#1a1010");
+      palRect(x+4,y+2,8,5,"#1a1010");
+      break;
+    case "helena":
+      body("#6a4088","#3a2048","#6a4028"); palRect(x+4,y+2,8,5,"#6a4028");
+      break;
+    case "minerva":
+      body("#e6c86a","#f4e6b8","#e8e0d0"); palRect(x+5,y+1,6,3,"#ffd24a");
+      break;
+    case "arlenen":
+      body("#c8b070","#8a7040","#d0c0a0"); palRect(x+4,y+3,8,3,skin);
+      break;
+    case "mallory":
+      body("#101018","#000","#1a1010"); palRect(x+4,y+2,8,6,"#1a1010"); palRect(x+3,y+8,10,2,"#8a2030");
+      break;
+    case "spike":
+      body("#8a3030","#2a2020","#2a1810"); palRect(x+4,y+9,8,2,"#c0c0c0");
+      break;
+    case "angela":
+      body("#e07090","#7a3050","#c89050");
+      break;
+    case "axle":
+      body("#4060a0","#303850","#3a2818");
+      break;
+    case "joe":
+      body("#d0a040","#5a4020","#3a2810");
+      break;
+    case "laura":
+      body("#c07070","#6a3040","#8a5040");
+      break;
+    case "coach":
+      body("#d04030","#202020","#3a2810");
+      break;
+    case "teacher":
+      body("#505868","#303038","#c8c0b0");
+      break;
+    case "elder":
+      body("#8a8a70","#4a4a40","#e0e0d0");
+      break;
+    case "kid":
+      body("#40a060","#306040","#5a3a18");
+      break;
+    case "paladin":
+      body("#d8dce8","#3a70c0","#c8a060");
+      break;
+    case "shop":
+      body("#c9a24a","#6a4818","#4a3018");
+      break;
+    case "save":
+      palRect(x+5,y+4,6,10,"#f4e6b8"); palRect(x+6,y+2,4,4,"#e6c86a"); palRect(x+7,y+6,2,4,"#3a70c0");
+      break;
+    case "box":
+      palRect(x+3,y+6,10,9,"#e6c84a"); palRect(x+3,y+6,10,3,"#fff080"); palRect(x+7,y+5,2,10,"#d0a020");
+      break;
+    case "paint":
+      palRect(x+3,y+2,10,13,"#6a4818"); palRect(x+5,y+4,6,8,"#2a3060"); palRect(x+6,y+6,4,4,"#e6c86a");
+      break;
+    case "fire":
+      palRect(x+5,y+6,6,9,"#e05020"); palRect(x+6,y+3,4,6,"#ffcc40");
+      break;
+    case "ice":
+      palRect(x+5,y+4,6,11,"#a0e0ff"); palRect(x+6,y+6,4,6,"#fff");
+      break;
+    case "hydra":
+      palRect(x+3,y+6,10,10,"#101018"); palRect(x+2,y+2,3,6,"#8a2030"); palRect(x+6,y+1,4,6,"#8a2030"); palRect(x+11,y+2,3,6,"#8a2030");
+      break;
+    case "jan":
+      body("#d0c090","#6a5040","#e8d080"); palRect(x+4,y+2,8,4,"#e8d080");
+      break;
+    case "phillip":
+      body("#8a9098","#3a4048","#6a6a60"); palRect(x+4,y+3,8,3,"#c8c8b0");
+      break;
+    case "garg":
+      palRect(x+3,y+5,10,10,"#5a6050"); palRect(x+1,y+7,4,4,"#3a4038"); palRect(x+11,y+7,4,4,"#3a4038"); palRect(x+6,y+3,4,4,"#8a9080");
+      break;
+    case "golem":
+      palRect(x+4,y+3,8,13,"#6a7a50"); palRect(x+2,y+8,12,4,"#8aaa40"); palRect(x+6,y+5,4,3,"#202020");
+      break;
+    case "grayk":
+      body("#808890","#505860","#a0a8b0"); palRect(x+4,y+3,8,5,"#707880");
+      break;
+    case "snow":
+      palRect(x+5,y+8,6,7,"#eef6ff"); palRect(x+6,y+3,4,6,"#eef6ff"); palRect(x+7,y+4,1,1,"#202020"); palRect(x+9,y+4,1,1,"#202020");
+      break;
+    case "stone":
+      palRect(x+5,y+4,6,10,"#e6c86a"); palRect(x+6,y+6,4,6,"#fff0a0");
+      break;
+    case "queen":
+      body("#909498","#c8ccd0","#d0d4d8"); palRect(x+4,y+1,8,4,"#e8e8ea"); palRect(x+6,y+0,4,3,"#b0b4b8");
+      break;
+    case "palad":
+      body("#e6c86a","#f4e6b8","#e8e0d0"); palRect(x+5,y+1,6,3,"#ffd24a"); palRect(x+4,y+8,8,2,"#fff8e0");
+      break;
+    case "lectern":
+      palRect(x+3,y+6,10,9,"#6a4420"); palRect(x+4,y+3,8,5,"#d8c090"); palRect(x+5,y+4,6,2,"#3a70c0");
+      break;
+    case "binoc":
+      palRect(x+3,y+7,4,4,"#3a3a48"); palRect(x+9,y+7,4,4,"#3a3a48"); palRect(x+6,y+8,4,2,"#c9a24a");
+      break;
+    case "mail":
+      body("#2a4a8a","#303850","#3a2818"); palRect(x+10,y+8,5,6,"#8a3030");
+      break;
+    case "gigas":
+      palRect(x+2,y+2,12,14,"#5a6a48"); palRect(x+4,y+5,8,4,"#202018"); palRect(x+6,y+1,4,4,"#8aaa40");
+      break;
+    case "lance":
+      body("#d8dce8","#3a70c0","#c8a060"); palRect(x+4,y+1,8,4,"#e6c86a"); palRect(x+3,y+8,10,2,"#e6c86a");
+      break;
+    default:
+      body("#888","#444","#222");
+  }
+}
+
+function drawPortrait(kind, x, y, dir){
+  ctx.save();
+  ctx.imageSmoothingEnabled=false;
+  ctx.translate(x,y);
+  ctx.scale(2,2);
+  drawChar(kind, 0, 0, 0, dir||2);
+  ctx.restore();
+}
+
+/* ---------- world ---------- */
+function curMap(){return MAPS[G.map]}
+function tileAt(x,y){
+  const m=curMap();
+  if(y<0||x<0||y>=m.h||x>=m.w) return "#";
+  return m.rows[y][x];
+}
+function npcAt(x,y){
+  return curMap().npcs.find(n=>n.x===x&&n.y===y&&(!n.vis||n.vis()));
+}
+function walkable(x,y){
+  if(npcAt(x,y)) return false;
+  const t=tileAt(x,y);
+  return !SOLID.has(t);
+}
+
+let walkF=0, moving=0, mdx=0, mdy=0;
+
+function tryMove(dx,dy){
+  if(mode!=="world"||moving) return false;
+  if(dx===1) G.dir=3; else if(dx===-1) G.dir=1; else if(dy===1) G.dir=2; else if(dy===-1) G.dir=0;
+  const nx=G.px+dx, ny=G.py+dy;
+  if(!walkable(nx,ny)){ return false; }
+  mdx=dx; mdy=dy; moving=G.fast?1:8; G.px=nx; G.py=ny;
+  G.steps++;
+  sfx("step");
+  if(G.fast){ moving=0; afterStep(); }
+  return true;
+}
+
+function afterStep(){
+  const m=curMap();
+  const w=m.warps.find(w=>w.x===G.px&&w.y===G.py);
+  if(w){
+    if(w.need && !fl(w.need)){
+      G.px-=mdx; G.py-=mdy;
+      const msgs={
+        pkg:"School can wait. The yellow box is still sitting on your floor.",
+        detention_open:"Detention is locked. Win the gym heat first.",
+        quests_given:"Arlenen has not yet named your quests.",
+        rook_gate:"Only a knight may open this gate.",
+        card:"The Corridor wants something lost and found. Check the chest in your bedroom.",
+        knighted:"The gates open after you are knighted.",
+        four:"Complete the four quests first.",
+        knighted:"A paladin's rank opens this door.",
+        nadia_taken:"No call to Finland yet. Speak with Aaron at the gates.",
+        bishop:"Jan must finish your bishop's test.",
+        mist:"The Middlespace opens when Nadia is free and the gray mist falls.",
+        three_stones:"The three stones must sing together first."
+      };
+      say("", msgs[w.need]||"The way is sealed. The next rank of the quest is not yet yours.");
+      return;
+    }
+    warp(w.to,w.tx,w.ty);
+    return;
+  }
+  if(m.enc && !G.noEnc && ["trial","corridor","stronghold","grayrealm","gigahall","stlouis","sandlantis"].includes(m.id)){
+    if(G.steps%m.enc.rate===0 && Math.random()<0.4){
+      const id=m.enc.foes[rand(0,m.enc.foes.length-1)];
+      startBattle([makeEnemy(id)], false);
+    }
+  }
+}
+
+function warp(id,x,y){
+  G.map=id; G.px=x; G.py=y; moving=0;
+  const m=MAPS[id];
+  if(m) playMusic(m.music);
+  el.loc.textContent=m?m.name:id;
+}
+
+let busy=false;
+async function interact(){
+  if(mode!=="world"||busy) return;
+  const dx=[0,-1,0,1][G.dir], dy=[-1,0,1,0][G.dir];
+  const spots=[[G.px+dx,G.py+dy],[G.px,G.py],[G.px+1,G.py],[G.px-1,G.py],[G.px,G.py+1],[G.px,G.py-1]];
+  for(const [tx,ty] of spots){
+    const n=npcAt(tx,ty);
+    if(n && n.talk){
+      if(tx!==G.px||ty!==G.py){
+        if(tx>G.px) G.dir=3; else if(tx<G.px) G.dir=1; else if(ty>G.py) G.dir=2; else G.dir=0;
+      }
+      busy=true;
+      try{ await n.talk(); } finally{ busy=false; }
+      return;
+    }
+  }
+  const ch=curMap().chests.find(c=>spots.some(([x,y])=>c.x===x&&c.y===y));
+  if(ch){ busy=true; try{ await openChest(ch); } finally{ busy=false; } return; }
+  const t=tileAt(G.px+dx, G.py+dy);
+  if(t==="D"){
+    const w=curMap().warps.find(w=>w.x===G.px+dx&&w.y===G.py+dy);
+    if(w){
+      if(w.need && !fl(w.need)){ await say("","Sealed."); return; }
+      warp(w.to,w.tx,w.ty);
+    }
+  }
+}
+
+async function openChest(ch){
+  if(G.chests[ch.id]){ await say("","Empty."); return; }
+  if(ch.need && !fl(ch.need)){ await say("","A locked box. It wants a knight's hand."); return; }
+  G.chests[ch.id]=true;
+  if(ch.item==="card"){ G.keys.card=true; setf("card"); await say("","You take the Mickey Mantle card — something lost, then found."); }
+  else { G.items[ch.item]=(G.items[ch.item]||0)+1; await say("", "Got "+ch.name+"."); }
+  sfx("open");
+}
+
+/* ---------- dialogue ---------- */
+let dlgResolve=null, dlgChoices=null, csel=0, typing=false;
+
+function say(name, text){
+  return new Promise(resolve=>{
+    mode="dlg";
+    el.dlg.classList.add("show");
+    el.dname.textContent=name||"";
+    el.dtext.textContent="";
+    el.choices.classList.remove("show");
+    dlgChoices=null;
+    typewrite(text, ()=>{ dlgResolve=resolve; });
+  });
+}
+function choose(opts){
+  return new Promise(resolve=>{
+    mode="dlg";
+    el.dlg.classList.add("show");
+    if(!el.dtext.textContent) el.dtext.textContent="What do you do?";
+    el.choices.innerHTML="";
+    opts.forEach((o,i)=>{
+      const b=document.createElement("button");
+      b.textContent=o;
+      b.className=i===0?"sel":"";
+      b.onclick=()=>{ sfx("ok"); finishChoose(i); };
+      el.choices.appendChild(b);
+    });
+    el.choices.classList.add("show");
+    dlgChoices=opts; csel=0; dlgResolve=resolve;
+  });
+}
+function finishChoose(i){
+  el.choices.classList.remove("show");
+  const r=dlgResolve; dlgResolve=null; dlgChoices=null;
+  if(r) r(i);
+  if(mode==="dlg") closeDlg();
+}
+function typewrite(text, done){
+  let i=0, finished=false;
+  typing=true;
+  el.dtext.textContent="";
+  const finish=()=>{
+    if(finished) return;
+    finished=true; typing=false;
+    el.dtext.textContent=text;
+    done();
+  };
+  const tick=()=>{
+    if(finished) return;
+    i++;
+    el.dtext.textContent=text.slice(0,i);
+    if(i<text.length){
+      if(G && G.fast){ finish(); return; }
+      if(!muted && i%2===0) beep(700,.01,"square",.01);
+      typewrite._t=setTimeout(tick, 16);
+    } else finish();
+  };
+  typewrite.skip=()=>{ clearTimeout(typewrite._t); finish(); };
+  tick();
+}
+function closeDlg(){
+  el.dlg.classList.remove("show");
+  el.choices.classList.remove("show");
+  if(mode==="dlg") mode="world";
+}
+function advanceDlg(){
+  if(dlgChoices){ finishChoose(csel); return; }
+  if(typing){ typewrite.skip(); return; }
+  if(dlgResolve){
+    const r=dlgResolve; dlgResolve=null;
+    closeDlg();
+    r();
+  }
+}
+
+/* ---------- story ---------- */
+async function openPackage(){
+  setf("pkg");
+  jot("Day eleven. The yellow box arrived. Two knights, packing peanuts, and a summons.");
+  await say("Rich","Eleven days. The website lied. But the yellow box is finally mine.");
+  await say("","Two knights spill from the packing peanuts — one silver, one black.");
+  await say("","Beside them, a smaller silver case. Inside: a hand-carved white pawn. The letters HWW are etched in the base.");
+  await say("","Grandmother's script on a slip of paper. The pawn begins to glow.");
+  await say("Aaron","Easy, Heinrich. Try not to drop me. I am Aaron, and I have been waiting in that pawn longer than is polite.");
+  await say("Aaron","You are a Paladin — a knight of order. The set was not a toy. It was a summons.");
+  await say("Aaron","Speak with your mother. Then school. The first trials never wait for summer to end.");
+  toast("Aaron joined the party!");
+}
+
+async function aaronTalk(){
+  if(!fl("spike")) await say("Aaron","School first. Bullies are a kind of dark knight. Smaller armor.");
+  else if(!fl("sanctuary")) await say("Aaron","The painting downstairs is a door. Paladin blood opens it.");
+  else if(!fl("four")) await say("Aaron","Four quests. Fire, ice, an elder, a race, a damsel. Arlenen counts oddly, but he is old.");
+  else if(!fl("knighted")){
+    await say("Aaron","The Black Knight in the arena wears a hydra helm. That is no costume.");
+    if(G.items.lemonade) await say("Aaron","Bring the lemonade. Yes, the lemonade. I have waited centuries to say that.");
+    else await say("Aaron","County fair, north gate. A Model of Evil and cups of yellow spite. Hydras hate citrus.");
+  }
+  else if(!fl("grayknight")) await say("Aaron","The Corridor of Keys holds your father. Bring something lost and found.");
+  else if(!fl("ending")) await say("Aaron","Temperance would paint the world gray. Order and chaos both starve in gray.");
+  else await say("Aaron","The next move is yours, Rich. It always was.");
+}
+
+async function helenaTalk(){
+  if(!fl("pkg")) await say("Helena","Eat something, Rich. I tried a new stroganoff. Don't make a face until you've finished it.");
+  else if(!fl("sanctuary")){
+    await say("Helena","Your father was declared missing in Iraq. Minerva was the last person who understood.");
+    await say("Helena","Mutti hasn't been herself. Finish your dinner. Then we keep this house standing.");
+  } else if(!fl("bishop")){
+    await say("Helena","I am a bishop of the Paladins. I put broken things back in order. Including, someday, this family.");
+    if(G.keys.locket) await say("Helena","You found my locket. The Homeland still remembers both families.");
+  } else await say("Helena","Go. I'll keep the house standing. That is a kind of quest too.");
+}
+
+async function enterPainting(){
+  if(fl("sanctuary")){ warp("sanctuary",14,12); return; }
+  await say("Minerva","Welcome, Heinrich. We expected you'd make your way here eventually.");
+  await say("Minerva","This is the Paladin Sanctuary. Knights of order. Your grandfather's chair is empty. Your father's is empty. Yours is not.");
+  await say("Minerva","Thirteen seats. One table. Palad sat first. Virtue is our armor — if we drop it, Nemesis picks us off for free.");
+  await say("Aaron","Told you the painting was a door.");
+  setf("sanctuary");
+  jot("The painting downstairs is a door. Minerva leads the Paladins from an empty king's chair.");
+  G.saveAt={map:"sanctuary",x:8,y:11};
+  warp("sanctuary",14,12);
+}
+
+async function minervaTalk(){
+  await say("Minerva","I am Minerva Witz, and I have led this order since your grandfather passed.");
+  if(!fl("quests_given")){
+    await say("Minerva","Arlenen will name your four quests. Complete them, and you may yet be more than a pawn.");
+  } else if(!fl("four")){
+    await say("Minerva","Fire and ice. An elder. A race. A girl in detention. The board is already in motion.");
+  } else if(!fl("knighted")){
+    await say("Minerva","The Black Knight has been seen in the arena. Unmask him, and I will knight you.");
+    await say("Minerva","Old notes say a hydra cannot abide lemon and sugar. Paladins have used stranger weapons.");
+  } else if(!fl("rook")){
+    await say("Minerva","Phillip went into the Corridor of Keys. Doors beyond counting. Keys for each. Most who enter do not return.");
+  } else if(!fl("mist")){
+    await say("Minerva","The Corridor is turning gray. The Gray Knight no longer leans on his sword.");
+  } else {
+    await say("Minerva","Temperance, the Gray Queen, would end the war by ending the board. Do not let her.");
+  }
+}
+
+async function arlenenTalk(){
+  if(!fl("quests_given")){
+    await say("Arlenen","I am Arlenen. I was sent at this critical time to help you on your way.");
+    await say("Arlenen","Long ago mankind was given three stones — sunstone, moonstone, starstone — to keep the day, the tides, the seasons.");
+    await say("Arlenen","Paladins keep order. Nemesis knights keep chaos. You will walk between them.");
+    await say("Arlenen","Four quests, pawn: master fire and ice in the western trial. Respect an elder on Elder Lane. Win the gym race. Aid the damsel in detention.");
+    await say("Arlenen","Pride slammed the door yesterday. Humility opens it. And Heinrich — your strength is your behavior. Live loosely, and you fall as easy prey.");
+    setf("quests_given");
+    jot("Four quests: fire and ice, an elder, a gym race, detention.");
+    toast("Four quests added");
+  } else if(!fl("four")){
+    const n=[fl("q_fire")&&fl("q_ice"),fl("q_elder"),fl("q_race"),fl("q_detention")].filter(Boolean).length;
+    await say("Arlenen", n+"/4 quests complete. Humility first. Pride slammed the door yesterday.");
+    checkFour();
+  } else {
+    await say("Arlenen","The stones will matter again. Remember them when the Middlespace goes white.");
+  }
+}
+
+function checkFour(){
+  if(fl("q_fire")&&fl("q_ice")&&fl("q_elder")&&fl("q_race")&&fl("q_detention")){
+    setf("four");
+    toast("Four quests complete!");
+  }
+}
+
+async function restTalk(){
+  G.party.forEach(healFull);
+  if(G.bench) healFull(G.bench);
+  if(G.benchA) healFull(G.benchA);
+  G.saveAt={map:G.map,x:G.px,y:G.py};
+  save();
+  await say("","The white pawn shines. HP and MP restored. Progress recorded.");
+  sfx("heal");
+}
+
+async function shopTalk(){
+  await say("Quartermaster","Gold buys order in small bottles.");
+  const i=await choose(["Potion  15g","Hi-Potion  40g","Ether  30g","Phoenix  80g","Leave"]);
+  const stock=[["potion",15],["hi",40],["ether",30],["phoenix",80]];
+  if(i===4) return;
+  const [id,cost]=stock[i];
+  if(G.gold<cost){ await say("Quartermaster","Come back when the board is richer."); return; }
+  G.gold-=cost; G.items[id]=(G.items[id]||0)+1;
+  await say("Quartermaster","Use it before you need it. That's Paladin thinking.");
+}
+
+async function spikeTalk(){
+  await say("Spike","Heiny. Pocket money. Now. Axel already tried being a hero.");
+  const i=await choose(["Stand your ground","Hand over gold"]);
+  if(i===1){ G.gold=Math.max(0,G.gold-10); await say("Spike","Smart. Still ugly."); return; }
+  const won=await startBattle([makeEnemy("spike")], true);
+  if(won){
+    setf("spike");
+    await say("Axel","He's not a rat. I know him. He's all right.");
+    await say("Aaron","First capture. Pawns take diagonally, Rich. Remember that.");
+  }
+}
+
+async function axelTalk(){
+  if(!fl("spike")) await say("Axel","Spike's in the hallway. Don't go alone if you can help it.");
+  else await say("Axel","You didn't run. That's new. I like it.");
+}
+
+async function elderTalk(){
+  if(fl("q_elder")){ await say("Mr. Alfonds","The young still knock. That's how orders survive."); return; }
+  await say("Mr. Alfonds","No one visits. My chess partner moved away. Sit. Play a pawn to e4.");
+  const i=await choose(["Sit and listen","I'm busy"]);
+  if(i===1){ await say("Mr. Alfonds","Haste is a Nemesis virtue."); return; }
+  await say("Mr. Alfonds","Good. Respect is a kind of order. Tell Minerva an old knight still knows the opening.");
+  setf("q_elder"); checkFour();
+  G.party[0].exp+=20; toast("Respected an elder");
+}
+
+async function raceTalk(){
+  if(fl("q_race")){ await say("Mr. Green","Top heat. Don't let it go to your head."); return; }
+  await say("Mr. Green","Sprint tryouts. Top two in each heat come back tomorrow.");
+  const i=await choose(["Run the heat","Not today"]);
+  if(i===1) return;
+  const won=await startBattle([makeEnemy("fatigue")], true);
+  if(won){
+    setf("q_race"); setf("detention_open"); checkFour();
+    await say("Mr. Green","Heat winner. Breathtaking, even. Get water.");
+  }
+}
+
+async function nadiaSchool(){
+  if(!fl("q_detention")) await say("Nadia","Move it, Heiny. Some of us have a reputation to maintain.");
+  else if(!fl("nadia_taken")){
+    await say("Nadia","Don't make a thing of detention. I didn't need saving. But... thanks.");
+    if(fl("bee")) await say("Nadia","And don't tell Joe I spelled labyrinth right. I have a brand.");
+  } else await say("Nadia","If Mallory thinks I'll wear all black forever, she can eat a rook.");
+}
+
+async function angelaTalk(){
+  if(fl("angela_join")){
+    await say("Angela","I'm with you. Stutter-step, water balloons, and looking where the mist is thin.");
+    return;
+  }
+  await say("Angela","H-hey Rich. I'm fine. The water balloons missed, mostly. Are you okay?");
+  if(fl("bee")) await say("Angela","You spelled labyrinth. I heard it from the hall. That's... really you.");
+  if(fl("mist") && G.benchA){
+    await say("Angela","The mist over the city... it feels like the maze. I can help in the Middlespace.");
+    const i=await choose(["Come with us","Stay safe"]);
+    if(i===1){ await say("Angela","I'll be at Lincoln, or in the mists. Call if the board tilts."); return; }
+    G.benchA.lv=G.party[0].lv;
+    applyStats(G.benchA); healFull(G.benchA);
+    G.party.push(G.benchA); G.benchA=null;
+    setf("angela_join");
+    jot("Angela joined. A new Paladin — water balloons and all.");
+    await say("","Angela joins the party.");
+  }
+}
+
+async function detentionTalk(){
+  if(fl("q_detention")){ await say("Nadia","Go away before Bickmann thinks we're friends."); return; }
+  await say("Nadia","You followed me into detention. That's either brave or stupid.");
+  await say("Aaron","Damsel is a rude word. Ally is better.");
+  const won=await startBattle([makeEnemy("boredom")], true);
+  if(won){
+    setf("q_detention"); checkFour();
+    await say("Nadia","...You're weirder than I thought. Not in a bad way. Don't tell anyone I said that.");
+  }
+}
+
+async function iceBoss(){
+  const won=await startBattle([makeEnemy("icewarden")], true);
+  if(won){ setf("q_ice"); checkFour(); await say("","The ice remembers your name. Trial of winter complete."); }
+}
+async function fireBoss(){
+  const won=await startBattle([makeEnemy("firewarden")], true);
+  if(won){ setf("q_fire"); checkFour(); await say("","The flame bows. Trial of summer complete."); }
+}
+
+async function malloryFight(){
+  await say("Mallory","Hi. I'm Mallory. Cute chess club. Shame it's on the wrong side of the board.");
+  const won=await startBattle([makeEnemy("mallory")], true);
+  if(won){
+    setf("mallory1");
+    await say("Mallory","A pawn that bites. Fine. Next time I bring a hydra.");
+    await say("Aaron","Nemesis blood. Daughter of Nemes. Remember her face.");
+    jot("Mallory of the Nemesis line. Cute chess club. Wrong side of the board.");
+  }
+}
+
+async function hydraFight(){
+  await say("","A black knight, impossibly tall. The hydra-helm breathes — three necks, one glittering broadsword.");
+  await say("Aaron","Living chaos, not costume. Cut a head and another grows, unless you spoil what it drinks.");
+  if(G.items.lemonade) await say("Aaron","That fair cup. Citrus and sugar. Hydras hate both.");
+  else if(fl("fair")) await say("Aaron","You saw the Model of Evil. You did not bring the lemonade.");
+  let hyd=makeEnemy("hydra");
+  if(G.items.lemonade){
+    const i=await choose(["Draw steel","Douse it with lemonade"]);
+    if(i===1){
+      G.items.lemonade--;
+      setf("lemoned");
+      hyd.def=Math.max(1, Math.floor(hyd.def/2));
+      hyd.atk=Math.max(6, hyd.atk-4);
+      hyd.hp=Math.floor(hyd.hp*0.65); hyd.mhp=hyd.hp;
+      await say("","The cup hits the visor. Heads hiss. The helm slumps like a week-old balloon.");
+    }
+  }
+  const won=await startBattle([hyd], true);
+  if(won){
+    setf("hydra");
+    await say("","The helm comes off in gray-green steam. Under it: a Nemesis knight, coughing.");
+    await say("","Arena sluices dump a cold tower-shower. The last hiss dies. You are dripping, and still standing.");
+    await say("Minerva","Kneel, Heinrich Wulfrich Witz.");
+    await say("Minerva","I knight you Paladin. Rise, Sir Rich.");
+    G.rank=Math.max(G.rank,1); setf("knighted"); setf("rook_gate");
+    G.party.forEach(p=>{p.lv++; applyStats(p); healFull(p);});
+    jot(fl("lemoned")
+      ? "Lemonade spoiled the hydra. Then a tower-shower. Then a sword on your shoulder."
+      : "Sir Heinrich the Paladin. The hydra helm came off. The Corridor will open.");
+    await say("","Rank up: KNIGHT. The Corridor of Keys will open to a paladin.");
+    await say("Aaron","Your father is inside. Bring the baseball card — lost, then found.");
+  }
+}
+
+async function aaronHub(){
+  if(!fl("hydra")) await say("Aaron","The arena first. Hydras do not RSVP.");
+  else if(!fl("card") && !G.keys.card) await say("Aaron","Bedroom chest. Mickey Mantle. Lost-and-found is the Corridor's password.");
+  else if(!fl("phillip_seen")) await say("Aaron","Corridor. Gargoyles, a golem, then gray. Stay on the files and ranks.");
+  else if(!fl("nadia_taken")){
+    setf("nadia_taken");
+    await say("Messenger","The Corridor is changing. A section shattered. It's all... gray.");
+    await say("Messenger","The Gray Knight says the world will not end in light or darkness. Everything will end in gray.");
+    await say("Aaron","Nadia was taken to the Stronghold. Mallory offered her both bloodlines.");
+    await say("Aaron","Finland first. Your mother will teach you the bishop's order. Then we storm the black stones.");
+    jot("Nadia taken. Both bloodlines. Finland, then the Stronghold.");
+  } else await say("Aaron","I'm still your guide. Even when the board gets ugly. C, then MAP, if a gate went missing.");
+}
+
+async function gargFight(){
+  const won=await startBattle([makeEnemy("garg"), makeEnemy("garg")], true);
+  if(won){ setf("gargoyles"); await say("","The twins crumble. Stone wings, silent."); }
+}
+async function golemFight(){
+  await say("","A golf golem blocks the fairway of the Corridor. This architecture had Picasso for an architect, and a country club for a punchline.");
+  const won=await startBattle([makeEnemy("golem")], true);
+  if(won){ setf("golem"); await say("","The golem splits like a bad drive."); }
+}
+async function grayFight(){
+  await say("Gray Knight","Not white. Not black. Gray. The war is a waste of good silence.");
+  const won=await startBattle([makeEnemy("grayk")], true);
+  if(won){
+    setf("grayknight"); G.rank=Math.max(G.rank,2); setf("rook");
+    await say("","Rank up: ROOK. Stone-skin stirs in your blood — your father's gift.");
+  }
+}
+async function fatherTalk(){
+  setf("phillip_seen");
+    await say("Phillip","Heinrich. You shouldn't have come. I'm in check, not captured. There's a difference.");
+    await say("Phillip","Take the skeleton key. Get out. Tell Helena I kept my rank.");
+    G.keys.skeleton=true;
+    jot("Phillip Witz — a rook covering his king from inside the Corridor.");
+    await say("","You obtain the Skeleton Key.");
+    await say("Phillip","Go. A rook covers the king. That's all I can do from here.");
+}
+
+async function janTalk(){
+  if(fl("finland")){ await say("Jan","The stone fit. Imagination is a Paladin muscle. Use it."); return; }
+  await say("Jan","I am Jan. The first test: imagine a stone that fits the hole. Order is exact.");
+  const i=await choose(["Focus on the shape","Force a boulder"]);
+  if(i===1){ await say("Jan","A boulder is chaos with ambitions. Try again."); return; }
+  const won=await startBattle([makeEnemy("doubt")], true);
+  if(won){
+    setf("finland"); G.rank=Math.max(G.rank,3); setf("bishop");
+    G.party.forEach(p=>{p.lv++; applyStats(p); healFull(p);});
+    await say("Helena","A bishop brings order. Fire collapses. Rivers calm. That is our work.");
+    jot("Bishop's test: imagination is a Paladin muscle. The stone fit.");
+    await say("","Rank up: BISHOP. The Stronghold will open.");
+  }
+}
+
+async function mallory2Fight(){
+  await say("Mallory","You're late, Richie. Time crawls here. I promised Nadia a family reunion.");
+  const won=await startBattle([makeEnemy("mallory2")], true);
+  if(won){
+    setf("mallory2");
+    await say("Mallory","She has both bloodlines. Paladin and Nemesis. That's rare. That's dangerous.");
+    await say("Mallory","Fine. Take her. Gray is coming for all of us anyway.");
+  }
+}
+
+async function rescueNadia(){
+  await say("Nadia","If this is a rescue, you're a week of Stronghold-time late. Also, the dress code here is a crime.");
+  await say("Nadia","Mallory said I could join chaos and they'd let everyone go. I told her to prune herself.");
+  setf("nadia_join");
+  G.bench.lv=G.party[0].lv;
+  applyStats(G.bench); healFull(G.bench);
+  G.party.push(G.bench); G.bench=null;
+  setf("mist");
+  await say("","Nadia Petrenko joins the party.");
+  jot("Nadia refused chaos. The gray mist is already over St. Louis.");
+  await say("Aaron","The mists are already over St. Louis. Middlespace next. Three stones. Then Temperance.");
+  await say("Aaron","If you have time — the museum in the mist, Sand-lantis in the white, Angela if she'll come.");
+}
+
+async function snowTalk(){
+  await say("Snowman","Welcome to the Middlespace. Think a bridge, and a bridge is. Order-energy is thick as cream.");
+  await say("Snowman","Sun, moon, star. Palad had the first. The Gray Queen wants all three silent.");
+  await say("Snowman","West, if you wander: dunes that remember the Homeland. Angela named them Sand-lantis, and the name stuck.");
+  if(fl("sunstone")&&fl("moonstone")&&fl("starstone")){
+    setf("three_stones");
+    await say("Snowman","The north pedestal is a door now. Temperance is already singing the quiet song.");
+  }
+}
+async function takeStone(flag, name){
+  setf(flag); G.keys[flag]=true;
+  await say("", "You claim the "+name+".");
+  if(fl("sunstone")&&fl("moonstone")&&fl("starstone")){
+    setf("three_stones");
+    await say("","The three stones hum together. A banishing crystal forms in your pack.");
+    G.keys.crystal=true;
+  }
+}
+
+function optionalDepth(){
+  let n=0;
+  if(fl("bee")) n++;
+  if(fl("fair")||G.items.lemonade) n++;
+  if(fl("lemoned")) n++;
+  if(G.keys.clairvoyance) n++;
+  if(fl("gigas")||G.keys.skeleton) n++;
+  if(fl("locket")) n++;
+  if(fl("angela_join")) n++;
+  if(fl("museum")) n++;
+  if(fl("blackpawn")||G.keys.amulet) n++;
+  return n;
+}
+
+async function finalBattle(){
+  await say("Temperance","Light. Dark. Noise. I am Temperance, Gray Queen. I will still the board.");
+  await say("Temperance","Your Corridor is ash. Your song is off-key. Kneel in gray.");
+  if(fl("mallory2")) await say("Mallory","Not a chance. I didn't pick chaos so a queen could pick nothing.");
+  if(G.keys.clairvoyance) await say("Rich","I heard the quiet a move ago. We brought a louder song.");
+  if(fl("angela_join")) await say("Angela","The mist is thin here. I can see the squares. We stay.");
+  if(G.keys.locket) await say("","The locket ticks once, like a house remembering its walls. Order steadies.");
+  if(fl("lemoned")) await say("Aaron","You once beat a hydra with a fair cup. Do not get shy now.");
+  const t=makeEnemy("temperance"), u=makeEnemy("umbratum");
+  const n=optionalDepth();
+  if(n>=3){
+    t.hp=t.mhp=Math.floor(t.mhp*0.78); t.atk=Math.max(10,t.atk-2);
+    u.hp=u.mhp=Math.floor(u.mhp*0.8);
+  }
+  if(n>=6){ t.def=Math.max(4,t.def-2); t.hp=t.mhp=Math.floor(t.mhp*0.9); }
+  const won=await startBattle([t,u], true);
+  if(won){
+    await say("Rich","The Sovereign Song is not silence. It's everyone on the same rank.");
+    await say("","The banishing crystal drinks the gray. Checkmate.");
+    setf("ending"); G.rank=4;
+    ending();
+  }
+}
+
+function ending(){
+  mode="end";
+  el.toast.style.display="none";
+  el.endscr.classList.add("show");
+  el.hud.classList.add("hidden");
+  el.loc.classList.add("hidden");
+  const n=optionalDepth();
+  const bits=[
+    "<p>Phillip walks out of the last door of the Corridor. Helena stops shaking. The stroganoff can wait.</p>",
+    "<p>Minerva sets a fifth chair at the table of thirteen. Nadia refuses to wear only black. Mallory refuses to wear only white.</p>"
+  ];
+  if(fl("angela_join")) bits.push("<p>Angela keeps a water balloon in her pack, just in case. A new Paladin, stutter-step and all. Lancelot claims the next flight is his treat.</p>");
+  else bits.push("<p>Angela writes from Lincoln. The water balloons missed, mostly. She is practicing labyrinth anyway.</p>");
+  if(fl("locket")) bits.push("<p>Helena wears the Homeland locket. Both families have a house again, even if the dunes are only memory.</p>");
+  if(G.keys.clairvoyance) bits.push("<p>Palad's sight still hums a half-move early. Rich uses it to pass the salt before anyone asks.</p>");
+  if(fl("lemoned")) bits.push("<p>The arena still smells faintly of lemon. Sir Rich does not explain the hydra to anyone who was not there.</p>");
+  else if(fl("fair")) bits.push("<p>The Model of Evil gathers dust at the fair. Rich never did throw the cup. He still wonders.</p>");
+  if(fl("bee")) bits.push("<p>Labyrinth. He spelled it. Nadia still pretends she did not hear.</p>");
+  if(fl("gigas")||G.keys.skeleton) bits.push("<p>A skeleton key copies any door. Phillip says the Corridor has fewer jokes now.</p>");
+  if(fl("museum")) bits.push("<p>The Museum of Modern Terrors rehangs its signs. Art, mostly. A little gray in the corners.</p>");
+  if(fl("blackpawn")||G.keys.amulet) bits.push("<p>Grandmother's black box sits empty. The amulet stays over his heart.</p>");
+  bits.push("<p>Aaron yawns, which is his way of saying he is proud.</p>");
+  if(n>=6) bits.push("<p style='margin-top:10px;color:#e6c86a'>Sir Rich Witz — Paladin King. The Sovereign Song has every voice on the rank.</p>");
+  else if(n>=3) bits.push("<p style='margin-top:10px;color:#e6c86a'>Sir Rich Witz — Paladin King. Palad's gift still hums. The song has room for more voices.</p>");
+  else bits.push("<p style='margin-top:10px;color:#e6c86a'>Sir Rich Witz — Paladin King. The board is saved. Some squares he never walked.</p>");
+  bits.push("<p>The next move is waiting. It always is.</p>");
+  bits.push("<p style='margin-top:10px'>Based on Paladin: Pawn, Nemesis: Knight, Rook: Revenge, Bishop: Betrayal, and Sovereigns: Song by Michael D. Young.</p>");
+  el.endtxt.innerHTML=bits.join("");
+  playMusic("sanctuary");
+}
+
+async function binocTalk(){
+  await say("","Your binoculars still smell like window glass and impatience. Day eleven. White-and-blue truck. Fragile. Yours.");
+  jot("You watched the mail truck with binoculars until the yellow box was yours.");
+}
+async function silverBoxTalk(){
+  await say("","The silver case. A white pawn, initials HWW. Heinrich Wulfrich Witz — and every Heinrich before you.");
+  await say("Aaron","I fit rather well, if I do say so. Don't put me back in velvet. It itches.");
+  G.keys.hww=true;
+}
+async function blackBoxTalk(){
+  await say("","The second box your grandmother left. It would not open. It does now.");
+  const i=await choose(["Open the black box","Leave it"]);
+  if(i===1) return;
+  const won=await startBattle([makeEnemy("blackpawn")], true);
+  if(won){
+    setf("blackpawn");
+    G.keys.amulet=true;
+    applyStats(G.party[0]);
+    jot("The black pawn was a challenge-box. Paladin's amulet now sits over your heart.");
+    await say("","A paladin amulet rests in the velvet. Defense settles into your bones.");
+  }
+}
+async function mailTalk(){
+  if(!fl("pkg")) await say("Mailman","Package for Witz. Fragile. Don't snatch.");
+  else await say("Mailman","You already grabbed it out of my hand. Website said seven to ten. I don't make the weather.");
+}
+async function lecternTalk(){
+  await say("","A lectern of quest names. Fire. Ice. Elder. Race. Damsel. Corridor. Bishop. Stronghold. Song.");
+  await say("","C opens the menu. MAP lists every Sanctuary gate you have unlocked. One save. No atlas.");
+  if(fl("quests_given") && !fl("four")){
+    const n=[fl("q_fire")&&fl("q_ice"),fl("q_elder"),fl("q_race"),fl("q_detention")].filter(Boolean).length;
+    await say("", n+"/4 of Arlenen's first list. Humility first.");
+  } else if(G.journal && G.journal.length){
+    await say("", G.journal[G.journal.length-1]);
+  }
+}
+async function paladTalk(){
+  await say("Palad","I sat the first of thirteen chairs. You carry my line, Heinrich, and a rarer blessing besides.");
+  await say("Palad","Virtue is the Paladin's strength. Drop it, and Nemesis spends no swords.");
+  if(!G.keys.clairvoyance){
+    await say("Palad","If you would see a move ahead, meet me on the board of sixty-four, in the Corridor.");
+  } else {
+    await say("Palad","Clairvoyance is not cheating. It is listening to the file before the piece arrives.");
+  }
+  jot("Palad himself still walks the sanctuary when a knight is willing to look.");
+}
+async function chessClubTalk(){
+  if(fl("chessclub")){
+    await say("Club President","e4. Best by test. You already knew.");
+    return;
+  }
+  await say("Club President","Lincoln High Chess Club. We have a board, three chairs, and no budget. Want a game?");
+  const i=await choose(["Open e4","Not today"]);
+  if(i===1){ await say("Club President","Coward's opening. Come back."); return; }
+  await say("Club President","e4. Best by test. You're in. Don't let Spike eat the knights.");
+  G.gold+=15; setf("chessclub");
+  jot("Lincoln chess club. A real board. No hydras. Yet.");
+  toast("+15G chess club");
+}
+async function spellingBee(){
+  if(fl("bee")){
+    await say("Judge","Labyrinth. You spelled it. Some of us are still recovering.");
+    return;
+  }
+  await say("Judge","Lincoln High Spelling Bee. French has already claimed rendezvous. Your word is older.");
+  await say("Judge","A maze of doors. Keys for each. Your father's image sits at a long table.");
+  const i=await choose(["Labyrinth","Labrynth","Liberinth"]);
+  if(i!==0){
+    await say("Judge","Incorrect. Sit down, Witz.");
+    return;
+  }
+  await say("Judge","L-A-B-Y-R-I-N-T-H. Correct.");
+  const won=await startBattle([makeEnemy("misspell")], true);
+  if(won){
+    setf("bee");
+    G.gold+=25; G.items.ether=(G.items.ether||0)+1;
+    jot("Spelling bee: labyrinth. The word that boiled. Nadia pretended not to notice.");
+    await say("","The auditorium claps, mostly. You pocket an ether and a little pride.");
+  }
+}
+async function fairHydraTalk(){
+  await say("","The Model of Evil: three painted necks, a helm you have seen on a living knight.");
+  await say("Aaron","Lemonade once ruined a hydra's day. Do not tell the quartermaster. He prices by myth.");
+  await say("Aaron","Buy the cup. Bring it to the arena. Hydras cannot abide citrus.");
+  setf("fair");
+  jot("County fair: Model of Evil. Lemonade spoils a hydra. Take a cup to the arena.");
+}
+async function misspellFight(){
+  await say("Miss Spelling","Rendez-vous is two words in my country. Sit down.");
+  const won=await startBattle([makeEnemy("misspell")], true);
+  if(won){
+    setf("misspell");
+    G.gold+=20;
+    await say("Miss Spelling","Fine. Labyrinth has a y. I always forget the y.");
+  }
+}
+async function duelPaladTalk(){
+  if(G.keys.clairvoyance){
+    await say("Palad","Sixty-four squares. You already see two moves out. Do not waste them on pride.");
+    return;
+  }
+  await say("Palad","This is the Duel of Sixty-four. I used it to teach kings to listen.");
+  const i=await choose(["Accept Palad's sight","Not yet"]);
+  if(i===1) return;
+  const won=await startBattle([makeEnemy("doubt"), makeEnemy("graypawn")], true);
+  if(won){
+    G.keys.clairvoyance=true;
+    applyStats(G.party[0]);
+    jot("Palad's clairvoyance: danger hums a half-move early.");
+    await say("Palad","See the fork before it is played. This gift has not been held since I held it.");
+    await say("","Clairvoyance settles behind your eyes. Attack rises.");
+  }
+}
+async function duelMallory(){
+  await say("Mallory","Spelling bee, tournament, now sixty-four. I wanted a tiebreaker, Richie.");
+  const won=await startBattle([makeEnemy("mallory"), makeEnemy("ember")], true);
+  if(won){
+    setf("duel64");
+    jot("Duel of Sixty-four: Mallory changed shape. Stone-skin held.");
+    await say("Mallory","You turned into a statue. Rude. Fine — keep your squares.");
+  }
+}
+async function gigasFight(){
+  await say("Aaron","Master Gigas. It grows to the ceiling. The skeleton key on its belt opens any door — even the lock that holds it together.");
+  const won=await startBattle([makeEnemy("gigas"), makeEnemy("gigantaur")], true);
+  if(won){
+    setf("gigas");
+    G.keys.skeleton=true;
+    G.gold+=80;
+    jot("A Master Gigas fell. The skeleton key on its belt is yours to copy.");
+    await say("","The giant unlocks. A skeleton key, bone in a glass tube, is yours.");
+  }
+}
+async function locketTalk(){
+  await say("","Dunes that remember the first headquarters of Palad and Nemes. Angela called it Sand-lantis.");
+  await say("","A locket in the sand: Helena, younger, and Phillip's arm around her.");
+  G.keys.locket=true; setf("locket");
+  applyStats(G.party[0]);
+  jot("Lost locket of the Homeland. Both families started here.");
+  await say("","You pocket the lost locket. Defense settles, like a house that will not fall.");
+}
+async function museumTalk(){
+  await say("","Museum of Modern Terrors. The placard wanted Museum of Modern Art. The mist disagreed.");
+  await say("","Gray exhibits: a corridor door that leads nowhere, a hydra neck in a vitrine, a chess table with thirteen chairs.");
+  setf("museum");
+  jot("St. Louis: the mist turned MoMA into a museum of terrors. Temperance is already cataloguing the world.");
+}
+async function lanceTalk(){
+  await say("Lancelot","I sat Arthur's table. I have slept since. The Paladins woke every old knight they could find.");
+  await say("Lancelot","Pawns and bishops on the diagonal. Knights in an L. Queens from anywhere. Tell your friends.");
+  if(fl("angela_join")) await say("Lancelot","Your Angela saved me once already. I am in her debt. The next lance is mine to throw.");
+  jot("Lancelot of the Round Table flies for the Paladins now.");
+}
+
+/* ---------- battle ---------- */
+const ENEMY={
+  spike:{name:"Spike",hp:32,atk:8,def:3,spd:6,exp:18,gold:12,spr:"spike",tint:"#8a3030"},
+  fatigue:{name:"Winded Rival",hp:22,atk:6,def:2,spd:9,exp:14,gold:6,spr:"kid",tint:"#4080c0"},
+  boredom:{name:"Detention Haze",hp:20,atk:5,def:1,spd:4,exp:12,gold:4,spr:"grayk",tint:"#667"},
+  ember:{name:"Ember",hp:24,atk:9,def:2,spd:7,exp:10,gold:6,spr:"fire",tint:"#e05020"},
+  frostling:{name:"Frostling",hp:26,atk:7,def:4,spd:5,exp:10,gold:6,spr:"ice",tint:"#80d0ff"},
+  spark:{name:"Spark Imp",hp:18,atk:8,def:1,spd:10,exp:8,gold:5,spr:"fire",tint:"#ffcc40"},
+  icewarden:{name:"Ice Warden",hp:52,atk:11,def:5,spd:6,exp:40,gold:30,spr:"ice",tint:"#a0e0ff"},
+  firewarden:{name:"Fire Warden",hp:52,atk:12,def:4,spd:7,exp:40,gold:30,spr:"fire",tint:"#ff6020"},
+  mallory:{name:"Mallory",hp:64,atk:12,def:5,spd:10,exp:50,gold:40,spr:"mallory",tint:"#201018"},
+  hydra:{name:"Black Knight",hp:110,atk:14,def:7,spd:8,exp:80,gold:60,spr:"hydra",tint:"#100818"},
+  lostkey:{name:"Lost Key",hp:28,atk:10,def:3,spd:8,exp:12,gold:8,spr:"save",tint:"#c9a24a"},
+  graypawn:{name:"Gray Pawn",hp:30,atk:11,def:4,spd:6,exp:14,gold:9,spr:"grayk",tint:"#888"},
+  garg:{name:"Gargoyle",hp:40,atk:12,def:8,spd:4,exp:18,gold:12,spr:"garg",tint:"#5a6050"},
+  golem:{name:"Golf Golem",hp:90,atk:14,def:8,spd:3,exp:70,gold:50,spr:"golem",tint:"#6a7a50"},
+  grayk:{name:"Gray Knight",hp:100,atk:16,def:7,spd:9,exp:100,gold:80,spr:"grayk",tint:"#909498"},
+  doubt:{name:"Scattered Focus",hp:50,atk:10,def:3,spd:6,exp:30,gold:20,spr:"aaron",tint:"#8090a0"},
+  darkpawn:{name:"Dark Pawn",hp:34,atk:13,def:4,spd:7,exp:16,gold:10,spr:"mallory",tint:"#301020"},
+  fellhound:{name:"Fell Hound",hp:38,atk:15,def:3,spd:11,exp:18,gold:11,spr:"hydra",tint:"#401018"},
+  neme:{name:"Nemesis Rook",hp:48,atk:14,def:9,spd:5,exp:22,gold:16,spr:"mallory",tint:"#101018"},
+  mallory2:{name:"Mallory",hp:110,atk:17,def:8,spd:12,exp:120,gold:90,spr:"mallory",tint:"#100808"},
+  graypawn2:{name:"Gray Warrior",hp:44,atk:16,def:6,spd:8,exp:20,gold:14,spr:"grayk",tint:"#777"},
+  bonesoldier:{name:"Bone Soldier",hp:36,atk:14,def:5,spd:7,exp:18,gold:12,spr:"paladin",tint:"#d0d0c0"},
+  umbratum:{name:"Umbratum",hp:90,atk:18,def:6,spd:10,exp:50,gold:30,spr:"queen",tint:"#201830"},
+  temperance:{name:"Temperance",hp:150,atk:18,def:8,spd:11,exp:200,gold:0,spr:"queen",tint:"#c8ccd0"},
+  gigantaur:{name:"Gigantaur",hp:55,atk:16,def:10,spd:4,exp:28,gold:18,spr:"golem",tint:"#6a7a50"},
+  blackpawn:{name:"Black Pawn Spirit",hp:48,atk:12,def:6,spd:7,exp:36,gold:24,spr:"save",tint:"#201018"},
+  misspell:{name:"Miss Spelling",hp:36,atk:10,def:3,spd:9,exp:22,gold:16,spr:"teacher",tint:"#7050a0"},
+  fellchariot:{name:"Fell Chariot",hp:70,atk:17,def:7,spd:12,exp:40,gold:28,spr:"hydra",tint:"#401018"},
+  gigas:{name:"Master Gigas",hp:130,atk:18,def:12,spd:5,exp:140,gold:90,spr:"gigas",tint:"#5a6a48"}
+};
+function makeEnemy(id){
+  const e=ENEMY[id];
+  const mv=FOE_MOVE[id]||{skill:"Strike",look:"A piece on the wrong side of the board."};
+  if(!e) return {id, name:id, hp:20, mhp:20, atk:6, def:2, spd:5, exp:8, gold:4, spr:"grayk", tint:"#888", alive:true, skill:mv.skill, look:mv.look};
+  return {id, name:e.name, hp:e.hp, mhp:e.hp, atk:e.atk, def:e.def, spd:e.spd, exp:e.exp, gold:e.gold, spr:e.spr, tint:e.tint, alive:true, skill:mv.skill, look:mv.look};
+}
+
+const FOE_MOVE={
+  spike:{skill:"Locker Slam", look:"A hallway bully. Pride is his only armor."},
+  fatigue:{skill:"Winded Sprint", look:"Out of breath. Speed is all it has left."},
+  boredom:{skill:"Clock Stare", look:"Detention haze. It hates anything interesting."},
+  ember:{skill:"Cinder Spit", look:"A live coal. Ice would douse it."},
+  frostling:{skill:"Rime Bite", look:"Winter given teeth. Fire would thaw it."},
+  spark:{skill:"Static Snap", look:"A jittering spark. Ground it and it dies."},
+  icewarden:{skill:"Winter Wall", look:"Trial of ice. Heat is the answer."},
+  firewarden:{skill:"Summer Lash", look:"Trial of fire. Cold is the answer."},
+  mallory:{skill:"Chaos Grin", look:"Nemesis blood. Cute chess club. Wrong side."},
+  hydra:{skill:"Hydra Bite", look:"Heads grow back unless lemonade spoils the helm."},
+  lostkey:{skill:"Wrong Ward", look:"A key that opens nothing useful."},
+  graypawn:{skill:"Gray Advance", look:"Neither side. It wants the board still."},
+  garg:{skill:"Stone Wing", look:"Corridor twin. Blunt force, brittle pride."},
+  golem:{skill:"Bad Drive", look:"Picasso built a country club. Aim for the seams."},
+  grayk:{skill:"Silent File", look:"The Gray Knight. Order and chaos both starve in him."},
+  doubt:{skill:"Scatter", look:"Unfocused thought. A clear shape defeats it."},
+  darkpawn:{skill:"Black Push", look:"Nemesis rank-and-file."},
+  fellhound:{skill:"Fell Lunge", look:"A chaos hound. It hunts first, thinks never."},
+  neme:{skill:"Rook Crush", look:"A Nemesis castle. Slow. Heavy. Honest."},
+  mallory2:{skill:"Both Bloods", look:"Mallory, grown. She offered Nadia a family. Refuse her."},
+  graypawn2:{skill:"Ash March", look:"Gray infantry. They want quiet."},
+  bonesoldier:{skill:"Rattle Step", look:"Bone and duty. Strike the joints."},
+  umbratum:{skill:"Quiet Veil", look:"Temperance's shadow. Light and dark both feed it. Song does not."},
+  temperance:{skill:"Still the Board", look:"The Gray Queen. The Sovereign Song — every voice — is her checkmate."},
+  gigantaur:{skill:"Ceiling Grow", look:"It fits the room by becoming the room."},
+  blackpawn:{skill:"Velvet Check", look:"Grandmother's challenge. Meet it."},
+  misspell:{skill:"Wrong Letter", look:"She always forgets the y in labyrinth."},
+  fellchariot:{skill:"Gray Trace", look:"A chariot of mist. Stay off its file."},
+  gigas:{skill:"Skeleton Unlock", look:"The key on its belt opens even the lock that holds it together."}
+};
+
+let B=null, battleResolve=null, bsel=0, bphase="cmd", bmenu="main", bActor=0, bLog="";
+
+function startBattle(foes, boss){
+  return new Promise(resolve=>{
+    battleResolve=resolve;
+    B={foes, boss, turn:"party", idx:0, def:new Set(), over:false};
+    bphase="cmd"; bmenu="main"; bsel=0; bActor=firstLiveParty();
+    bLog=foes.length>1? "Enemies draw near!" : foes[0].name+" draws near!";
+    mode="battle";
+    playMusic("battle");
+    sfx("ok");
+  });
+}
+function firstLiveParty(){ return G.party.findIndex(p=>p.alive&&p.hp>0); }
+function liveFoes(){ return B.foes.filter(f=>f.alive&&f.hp>0); }
+
+const SKILLS={
+  rich:[
+    {name:"Advance", mp:0, minRank:0, desc:"Pawn's push", fn:(u,t)=>dmg(u,t,1.0)},
+    {name:"L-Strike", mp:6, minRank:1, desc:"Knight's fork", fn:(u,t)=>dmg(u,t,1.45)},
+    {name:"File Charge", mp:8, minRank:2, desc:"Rook's file", fn:(u)=>{ liveFoes().forEach(t=>dmg(u,t,0.85)); return true; }},
+    {name:"Order Touch", mp:10, minRank:3, desc:"Bishop heal", fn:(u)=>{ const a=G.party.find(p=>p.alive); heal(a, 28+u.lv*3); return true; }},
+    {name:"Sovereign Song", mp:18, minRank:4, desc:"The true song", fn:(u)=>{ liveFoes().forEach(t=>dmg(u,t,1.3)); G.party.forEach(p=>{if(p.alive) heal(p,20);}); return true; }}
+  ],
+  aaron:[
+    {name:"Advise", mp:0, minRank:0, desc:"Guide's word", fn:(u,t)=>dmg(u,t,0.8)},
+    {name:"Gift of Sight", mp:5, minRank:0, desc:"Heal ally", fn:(u)=>{ const a=G.party.reduce((b,p)=>p.hp<b.hp?p:b); heal(a, 22+u.lv*2); return true; }},
+    {name:"Ancient Tale", mp:8, minRank:0, desc:"Lore damage", fn:(u,t)=>dmg(u,t,1.3)}
+  ],
+  nadia:[
+    {name:"Knuckle", mp:0, minRank:0, desc:"Sandwich", fn:(u,t)=>dmg(u,t,1.1)},
+    {name:"Dual Lineage", mp:8, minRank:0, desc:"Both bloods", fn:(u,t)=>dmg(u,t,1.6)},
+    {name:"Queen Guard", mp:10, minRank:0, desc:"Cover Rich", fn:()=>{ B.def.add("rich"); bLog="Nadia covers Rich."; return true; }},
+    {name:"Water Globes", mp:7, minRank:0, desc:"Balloon volley", fn:(u)=>{ liveFoes().forEach(t=>dmg(u,t,0.75)); return true; }}
+  ],
+  angela:[
+    {name:"Stutter-step", mp:0, minRank:0, desc:"Sidestep hit", fn:(u,t)=>dmg(u,t,1.05)},
+    {name:"Water Balloon", mp:5, minRank:0, desc:"Fairgrounds special", fn:(u,t)=>dmg(u,t,1.35)},
+    {name:"Keen Sight", mp:8, minRank:0, desc:"Spot the thin mist", fn:(u)=>{ const a=G.party.reduce((b,p)=>p.hp<b.hp?p:b); heal(a, 18+u.lv*2); return true; }}
+  ]
+};
+
+function dmg(u,t,mult){
+  if(!t||!t.alive) t=liveFoes()[0];
+  if(!t) return false;
+  const defB=B.def.has(t.id)?0.5:1;
+  let n=Math.max(1, Math.floor((u.atk*mult - t.def*0.5)*defB + rand(0,3)));
+  t.hp-=n; bLog=u.name+" hits "+t.name+" for "+n+"!";
+  sfx(n>u.atk?"crit":"hit");
+  if(t.hp<=0){ t.hp=0; t.alive=false; bLog+=" "+t.name+" falls!"; }
+  return true;
+}
+function heal(p,n){
+  p.hp=Math.min(p.mhp, p.hp+n); p.alive=true;
+  bLog=p.name+" recovers "+n+" HP!"; sfx("heal");
+}
+
+function skillsFor(p){
+  return (SKILLS[p.role]||[]).filter(s=> (p.role!=="rich"|| G.rank>=s.minRank));
+}
+
+function battleCmd(which){
+  if(!B || B.over || mode!=="battle") return;
+  const p=G.party[bActor];
+  if(!p) return;
+  if(bmenu==="main"){
+    if(which==="ok"){
+      if(bsel===0){ pickFoeThen(t=>dmg(p,t,1)); }
+      else if(bsel===1){ bmenu="skill"; bsel=0; }
+      else if(bsel===2){ bmenu="item"; bsel=0; }
+      else if(bsel===3){ B.def.add(p.id); bLog=p.name+" guards."; nextActor(); }
+      else if(bsel===4){
+        if(B.boss){ bLog="Can't run from a named piece!"; sfx("no"); }
+        else if(Math.random()<0.55){ endBattle(false, true); }
+        else { bLog="Can't escape!"; nextActor(); }
+      }
+      else if(bsel===5){
+        pickFoeThen(t=>{
+          bLog="LOOK: "+t.name+" — "+(t.skill||"Strike")+". "+(t.look||"A piece on the board.")+(t.id==="hydra"&&(G.items.lemonade||fl("lemoned"))?" Lemonade would spoil it.":"");
+        }, true);
+      }
+    }
+  } else if(bmenu==="skill"){
+    const sk=skillsFor(p);
+    if(which==="cancel"){ bmenu="main"; bsel=1; return; }
+    if(which==="ok"){
+      const s=sk[bsel]; if(!s) return;
+      if(p.mp<s.mp){ bLog="Not enough MP!"; sfx("no"); return; }
+      p.mp-=s.mp;
+      if(s.fn.length>=2) pickFoeThen(t=>s.fn(p,t));
+      else { s.fn(p); nextActor(); }
+    }
+  } else if(bmenu==="item"){
+    const list=usableItems();
+    if(which==="cancel"){ bmenu="main"; bsel=2; return; }
+    if(which==="ok"){
+      const it=list[bsel]; if(!it) return;
+      useItem(it.id, p);
+      nextActor();
+    }
+  } else if(bmenu==="foe"){
+    const L=liveFoes();
+    if(which==="cancel"){ bmenu="main"; bsel=B._stay?5:0; B._stay=false; return; }
+    if(which==="ok"){
+      const fn=B._foeFn; const stay=B._stay; B._foeFn=null; B._stay=false;
+      fn(L[bsel]);
+      if(!stay) nextActor();
+      else { bmenu="main"; bsel=5; }
+    }
+  }
+}
+
+function pickFoeThen(fn, stay){
+  const L=liveFoes();
+  if(!L.length){ winBattle(); return; }
+  if(L.length===1){ fn(L[0]); if(!stay) nextActor(); return; }
+  bmenu="foe"; bsel=0; B._foeFn=fn; B._stay=!!stay;
+}
+
+function nextActor(){
+  bmenu="main"; bsel=0;
+  if(!liveFoes().length){ winBattle(); return; }
+  let i=bActor+1;
+  while(i<G.party.length){
+    if(G.party[i].alive && G.party[i].hp>0){ bActor=i; return; }
+    i++;
+  }
+  enemyTurns();
+}
+
+function enemyTurns(){
+  for(const f of liveFoes()){
+    const targets=G.party.filter(p=>p.alive&&p.hp>0);
+    if(!targets.length) break;
+    let extra="";
+    if(f.id==="hydra" && !B.lemoned && !fl("lemoned")){
+      const grow=Math.max(5, Math.floor(f.mhp*0.12));
+      if(f.hp<f.mhp){ f.hp=Math.min(f.mhp, f.hp+grow); extra="A hydra head returns. "; }
+    }
+    const t=targets[rand(0,targets.length-1)];
+    const n=Math.max(1, f.atk - Math.floor(t.def/2) + rand(0,2));
+    const red=B.def.has(t.id)?Math.floor(n/2):n;
+    t.hp-=red;
+    bLog=extra+f.name+" "+(f.skill||"strikes")+"! "+t.name+" takes "+red+"!";
+    if(t.hp<=0){ t.hp=0; t.alive=false; bLog+=" "+t.name+" is down!"; }
+  }
+  B.def=new Set();
+  if(!G.party.some(p=>p.alive&&p.hp>0)){ loseBattle(); return; }
+  if(!liveFoes().length){ winBattle(); return; }
+  bActor=firstLiveParty();
+  bphase="cmd";
+}
+
+function winBattle(){
+  if(!B || B.over) return;
+  B.over=true;
+  const exp=B.foes.reduce((s,f)=>s+f.exp,0);
+  const gold=B.foes.reduce((s,f)=>s+f.gold,0);
+  G.gold+=gold;
+  G.party.forEach(p=>{ if(p.alive) p.exp+=exp; levelCheck(p); });
+  sfx("win");
+  bLog="Victory! +"+exp+" EXP  +"+gold+"G";
+  const res=battleResolve; battleResolve=null;
+  setTimeout(()=>{
+    if(mode==="battle") mode="world";
+    playMusic(curMap().music||"overworld");
+    if(res) res(true);
+  }, (G&&G.fast)?40:500);
+}
+function loseBattle(){
+  if(!B || B.over) return;
+  B.over=true;
+  sfx("no");
+  G.party.forEach(p=>{ p.hp=Math.max(1, Math.floor(p.mhp/2)); p.alive=true; });
+  const sa=G.saveAt; warp(sa.map, sa.x, sa.y);
+  mode="world"; playMusic(curMap().music||"overworld");
+  const res=battleResolve; battleResolve=null;
+  if(res) res(false);
+  toast("Defeated... returned to a safe pawn.");
+}
+function endBattle(win, ran){
+  if(B) B.over=true;
+  mode="world"; playMusic(curMap().music||"overworld");
+  const res=battleResolve; battleResolve=null;
+  if(res) res(win);
+  if(ran) toast("Ran away!");
+}
+function levelCheck(p){
+  let guard=0;
+  while(p.exp>=12*p.lv*(p.lv+1) && guard++<20){
+    p.lv++; applyStats(p); p.hp=p.mhp; p.mp=p.mmp;
+    toast(p.name+" reached LV "+p.lv+"!");
+  }
+}
+
+function usableItems(){
+  const out=[];
+  if(G.items.potion) out.push({id:"potion",name:"Potion x"+G.items.potion});
+  if(G.items.hi) out.push({id:"hi",name:"Hi-Potion x"+G.items.hi});
+  if(G.items.ether) out.push({id:"ether",name:"Ether x"+G.items.ether});
+  if(G.items.phoenix) out.push({id:"phoenix",name:"Phoenix x"+G.items.phoenix});
+  if(G.items.ration) out.push({id:"ration",name:"Ration x"+G.items.ration});
+  if(G.items.lemonade) out.push({id:"lemonade",name:"Fair lemonade x"+G.items.lemonade});
+  return out;
+}
+function useItem(id, target){
+  if(id==="potion"){ G.items.potion--; heal(target,40); }
+  if(id==="hi"){ G.items.hi--; heal(target,90); }
+  if(id==="ether"){ G.items.ether--; target.mp=Math.min(target.mmp,target.mp+25); bLog=target.name+" restores MP."; }
+  if(id==="phoenix"){ G.items.phoenix--; target.hp=Math.floor(target.mhp/2); target.alive=true; bLog=target.name+" rises!"; }
+  if(id==="ration"){ G.items.ration--; G.party.forEach(p=>heal(p,35)); }
+  if(id==="lemonade"){
+    G.items.lemonade--;
+    const hyd=mode==="battle" && B ? liveFoes().find(f=>f.id==="hydra") : null;
+    if(hyd){
+      B.lemoned=true; setf("lemoned");
+      hyd.def=Math.max(1, Math.floor(hyd.def/2));
+      hyd.atk=Math.max(6, hyd.atk-4);
+      hyd.hp=Math.max(1, Math.floor(hyd.hp*0.7));
+      bLog="Lemonade hits the hydra helm! The heads sputter.";
+    } else {
+      G.party.forEach(p=>heal(p,12));
+      bLog="Tart. Sticky. Not a strategy.";
+    }
+  }
+}
+
+/* ---------- menu ---------- */
+let msel=0;
+const MITEMS=["PARTY","ITEMS","QUESTS","LORE","MAP","SAVE","SOUND","CLOSE"];
+function openMenu(){
+  if(mode!=="world") return;
+  mode="menu"; msel=0;
+  el.menu.classList.remove("hidden");
+  el.menu.classList.add("show");
+  renderMenu();
+}
+function closeMenu(){
+  el.menu.classList.remove("show");
+  el.menu.classList.add("hidden");
+  if(mode==="menu") mode="world";
+}
+function renderMenu(){
+  el.mnav.innerHTML="";
+  MITEMS.forEach((n,i)=>{
+    const b=document.createElement("button");
+    b.textContent=n; if(i===msel) b.className="sel";
+    b.onclick=()=>{ msel=i; menuAct(); };
+    el.mnav.appendChild(b);
+  });
+  const p=el.mpane;
+  if(msel===0){
+    p.innerHTML=G.party.map(h=>`<div><b style="color:#e6c86a">${h.name}</b> LV${h.lv} ${h.role==="rich"?RANK_NAME[G.rank]:""}<br>HP ${h.hp}/${h.mhp}  MP ${h.mp}/${h.mmp}<br>ATK ${h.atk} DEF ${h.def}</div>`).join("<hr style='border-color:#e6c86a44'>")+`<div style="margin-top:8px">GOLD ${G.gold}</div>`;
+  } else if(msel===1){
+    const its=usableItems();
+    const KEYN={card:"Mickey Mantle card",skeleton:"Skeleton Key",crystal:"Banishing crystal",
+      sunstone:"Sunstone",moonstone:"Moonstone",starstone:"Starstone",
+      clairvoyance:"Palad's sight",amulet:"Paladin amulet",locket:"Lost locket",hww:"HWW white pawn"};
+    p.innerHTML=(its.length?its.map(i=>i.name).join("<br>"):"No items.")+"<br><br>KEY:<br>"+
+      (Object.keys(G.keys).filter(k=>G.keys[k]).map(k=>KEYN[k]||k).join("<br>")||"—");
+  } else if(msel===2){
+    p.innerHTML=questText();
+  } else if(msel===3){
+    p.innerHTML=loreText();
+  } else if(msel===4){
+    p.innerHTML=mapText();
+  } else if(msel===5){
+    p.innerHTML="Z to save at this square.<br>White pawns in the Sanctuary also save and heal.";
+  } else if(msel===6){
+    p.innerHTML="Sound is "+(muted?"OFF":"ON")+". Z to toggle.";
+  } else {
+    p.innerHTML="Close menu.";
+  }
+}
+function menuAct(){
+  if(msel===5){ save(); toast("Saved."); }
+  if(msel===6){ muted=!muted; toast(muted?"Sound off":"Sound on"); renderMenu(); }
+  if(msel===7) closeMenu();
+}
+function questText(){
+  const lines=[];
+  lines.push("ACT "+(fl("ending")?5: fl("mist")?5: fl("bishop")?4: fl("rook")?3: fl("knighted")?2:1)+" — "+RANK_NAME[G.rank]);
+  if(!fl("pkg")) lines.push("• Open the yellow package.");
+  else if(!fl("spike")) lines.push("• Go to school. Deal with Spike.");
+  else if(!fl("sanctuary")) lines.push("• The painting downstairs is a door.");
+  else if(!fl("four")){
+    lines.push("• Fire trial: "+(fl("q_fire")?"done":"west gate"));
+    lines.push("• Ice trial: "+(fl("q_ice")?"done":"west gate"));
+    lines.push("• Respect elder: "+(fl("q_elder")?"done":"Elder Lane"));
+    lines.push("• Gym race: "+(fl("q_race")?"done":"south gym"));
+    lines.push("• Detention: "+(fl("q_detention")?"done":"after the race"));
+  } else if(!fl("mallory1")) lines.push("• Mallory is waiting in the south gym.");
+  else if(!fl("knighted")){
+    lines.push("• Face the Black Knight in the arena (Sanctuary Gates).");
+    if(G.items.lemonade) lines.push("• You have fair lemonade. Douse the hydra helm.");
+    else lines.push("• Optional: fairgrounds lemonade spoils a hydra.");
+  }
+  else if(!G.keys.card) lines.push("• Take the baseball card from your room.");
+  else if(!fl("phillip_seen")) lines.push("• Enter the Corridor of Keys (east Sanctuary).");
+  else if(!fl("nadia_taken")) lines.push("• Report to Aaron at the Sanctuary Gates.");
+  else if(!fl("bishop")) lines.push("• Train with Jan in Finland.");
+  else if(!fl("nadia_join")) lines.push("• Storm the Nemesis Stronghold. Rescue Nadia.");
+  else if(!fl("three_stones")) lines.push("• Middlespace: claim Sun, Moon, and Star stones.");
+  else if(!fl("ending")) lines.push("• Face Temperance, the Gray Queen.");
+  else lines.push("• Checkmate. The next move is yours.");
+  if(fl("four") && !fl("fair")) lines.push("• Optional: fairgrounds (north gate).");
+  if(fl("knighted") && !G.keys.clairvoyance) lines.push("• Optional: Duel of Sixty-four (Corridor).");
+  if(fl("card") && !fl("gigas")) lines.push("• Optional: Hall of Gigas (Corridor).");
+  if(fl("mist") && !fl("museum")) lines.push("• Optional: St. Louis mists (center gate).");
+  if(fl("mist") && !fl("locket")) lines.push("• Optional: Sand-lantis (Middlespace west).");
+  if(fl("mist") && !fl("angela_join")) lines.push("• Optional: ask Angela to join.");
+  return lines.join("<br>");
+}
+function loreText(){
+  const bits=["THE BOARD"];
+  bits.push("Paladins keep order. Nemesis keeps chaos. Gray would starve both.");
+  if(fl("pkg")) bits.push("HWW: grandmother's white pawn. Aaron was waiting inside.");
+  if(fl("sanctuary")) bits.push("Thirteen knights, one table. Palad sat first.");
+  if(fl("bee")) bits.push("Labyrinth — the word that showed Phillip at the long table.");
+  if(fl("knighted")) bits.push(fl("lemoned")
+    ? "Sir Heinrich Wulfrich Witz. The hydra helm came off after a fair cup and a tower-shower."
+    : "Sir Heinrich Wulfrich Witz. Hydra helm, living chaos, a sword on the shoulder.");
+  if(fl("lemoned")) bits.push("Lemonade: citrus and sugar. The one thing a hydra cannot abide.");
+  if(fl("rook")) bits.push("A rook is a wall. Castling covers the ones you love.");
+  if(fl("phillip_seen")) bits.push("Corridor of Keys: doors beyond counting. Phillip is in check, not captured.");
+  if(G.keys.clairvoyance) bits.push("Palad's clairvoyance: a blessing unheld since Palad himself.");
+  if(fl("bishop")) bits.push("A bishop restores order. Imagination is a Paladin muscle.");
+  if(fl("nadia_join")) bits.push("Nadia Petrenko: Paladin and Nemesis blood. She told chaos to prune itself.");
+  if(fl("locket")) bits.push("Sand-lantis / the Homeland: first headquarters of both families.");
+  if(fl("museum")) bits.push("The mist catalogued St. Louis. MoMA became Modern Terrors.");
+  if(fl("angela_join")) bits.push("Angela: stutter-step, water balloons, and a new Paladin's sight.");
+  if(fl("gigas")) bits.push("Three Master Gigas keep skeleton keys and grow to the ceiling.");
+  if(G.journal && G.journal.length){
+    bits.push("","JOURNAL");
+    G.journal.slice(-8).forEach(j=>bits.push("• "+j));
+  }
+  return bits.join("<br>");
+}
+function mapText(){
+  const here=G.map;
+  const you=ids=>ids.includes(here)?' <span style="color:#e6c86a">&lt;- here</span>':'';
+  const gate=(open,name,maps,locked)=>{
+    if(open) return "O "+name+you(maps);
+    return "X "+name+" <span style='color:#8a93a8'>("+locked+")</span>";
+  };
+  return [
+    "One save. No world atlas. The gates you have earned:",
+    "",
+    "<b style='color:#e6c86a'>SANCTUARY</b>",
+    gate(true,"Paladin hall",["sanctuary"],""),
+    gate(fl("quests_given"),"West: Fire &amp; Ice",["trial"],"talk to Arlenen"),
+    gate(fl("four"),"South: Gates",["hub"],"four quests"),
+    gate(fl("card")||!!(G.keys&&G.keys.card),"East: Corridor",["corridor","gigahall","duel64"],"Mickey Mantle card"),
+    "",
+    "<b style='color:#e6c86a'>GATES</b>",
+    gate(fl("four"),"Arena",["arena"],"four quests"),
+    gate(fl("four"),"Fairgrounds",["fairgrounds"],"four quests"),
+    gate(fl("nadia_taken"),"Finland",["finland"],"speak to Aaron"),
+    gate(fl("bishop"),"Stronghold",["stronghold","cell"],"bishop rank"),
+    gate(fl("mist"),"St. Louis",["stlouis"],"after Nadia is free"),
+    gate(fl("mist"),"Middlespace",["middlespace","grayrealm","sandlantis"],"after Nadia is free"),
+    "",
+    "<b style='color:#e6c86a'>TOWN</b>",
+    "O Lincoln High"+you(["school","gym","detention","classroom","lockers","cafeteria","chessclub"]),
+    "  Lockers · Cafeteria · Chess club · Gym",
+    "O Maple Street"+you(["street","street2","house","bedroom"])
+  ].join("<br>");
+}
+
+function save(){
+  try{ localStorage.setItem("chessquest_save", JSON.stringify(G)); }catch(e){}
+}
+function load(){
+  try{
+    const s=localStorage.getItem("chessquest_save");
+    if(!s) return false;
+    G=JSON.parse(s);
+    if(!G.party) return false;
+    if(!G.journal) G.journal=[];
+    if(!G.keys) G.keys={};
+    if(!G.flags) G.flags={};
+    if(!G.party.find(p=>p.role==="angela") && !G.benchA){
+      G.benchA=newHero("angela","Angela","angela");
+      healFull(G.benchA);
+    }
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ---------- render ---------- */
+function renderWorld(){
+  const m=curMap();
+  ctx.fillStyle=m.bg; ctx.fillRect(0,0,VW,VH);
+  const mw=m.w*TILE, mh=m.h*TILE;
+  const camx=mw<=VW ? -((VW-mw)/2) : clamp(G.px*TILE+8 - VW/2, 0, mw-VW);
+  const camy=mh<=VH ? -((VH-mh)/2) : clamp(G.py*TILE+8 - VH/2, 0, mh-VH);
+  const ox=-moving*(mdx)*(TILE/8), oy=-moving*(mdy)*(TILE/8);
+  for(let y=0;y<m.h;y++){
+    for(let x=0;x<m.w;x++){
+      const sx=x*TILE-camx, sy=y*TILE-camy;
+      if(sx>-16&&sy>-16&&sx<VW&&sy<VH) drawTile(m.rows[y][x], sx, sy);
+    }
+  }
+  const ents=[];
+  m.npcs.forEach(n=>{ if(!n.vis||n.vis()) ents.push({x:n.x,y:n.y,spr:n.spr,dir:2}); });
+  ents.push({x:G.px,y:G.py,spr:"rich",dir:G.dir,player:true});
+  ents.sort((a,b)=>a.y-b.y);
+  ents.forEach(e=>{
+    let sx=e.x*TILE-camx, sy=e.y*TILE-camy-4;
+    if(e.player && moving){ sx+=ox; sy+=oy; }
+    drawChar(e.spr, sx, sy, walkF, e.dir||2);
+  });
+  if(m.dark){
+    ctx.fillStyle="rgba(0,0,0,0.28)"; ctx.fillRect(0,0,VW,VH);
+  }
+}
+
+function renderBattle(){
+  if(!B) return;
+  ctx.fillStyle="#140818"; ctx.fillRect(0,0,VW,VH);
+  for(let i=0;i<16;i++) for(let j=0;j<8;j++){
+    ctx.fillStyle=(i+j)%2?"#1c1028":"#241830";
+    ctx.fillRect(i*16, 8+j*12, 16, 12);
+  }
+  palRect(0,108,256,116,"#101428");
+  B.foes.forEach((f,i)=>{
+    if(!f.alive) return;
+    drawPortrait(f.spr, 176, 6+i*36, 1);
+    ctx.fillStyle="#f4e6b8"; ctx.font="7px monospace";
+    ctx.fillText(f.name, 8, 18+i*36);
+    ctx.fillStyle="#8a93a8"; ctx.font="6px monospace";
+    ctx.fillText(f.skill||"Strike", 8, 28+i*36);
+    ctx.fillStyle="#3a2030"; ctx.fillRect(8,32+i*36,90,4);
+    ctx.fillStyle="#d4453a"; ctx.fillRect(8,32+i*36,90*(f.hp/f.mhp),4);
+  });
+  G.party.forEach((p,i)=>{
+    if(!p.alive) return;
+    drawPortrait(p.role==="rich"?"rich":p.role, 8+i*40, 112, 3);
+    ctx.fillStyle=i===bActor?"#e6c86a":"#b8c4ff";
+    ctx.font="6px monospace";
+    ctx.fillText(p.name.slice(0,7), 8+i*40, 148);
+  });
+  palRect(8,156,240,62,"#101850");
+  ctx.strokeStyle="#e6c86a"; ctx.strokeRect(8.5,156.5,239,61);
+  ctx.fillStyle="#f4e6b8"; ctx.font="7px monospace";
+  ctx.fillText((bLog||"").slice(0,42), 14, 170);
+  const p=G.party[bActor];
+  if(p){
+    if(bmenu==="main"){
+      const cmds=["FIGHT","SKILL","ITEM","GUARD","RUN","LOOK"];
+      cmds.forEach((c,i)=>{
+        ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8";
+        ctx.fillText((i===bsel?">":" ")+c, 14+(i%3)*72, 186+(i>2?12:0));
+      });
+    } else if(bmenu==="skill"){
+      skillsFor(p).forEach((s,i)=>{
+        ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8";
+        ctx.fillText((i===bsel?">":" ")+s.name+" "+s.mp+"mp", 14, 184+i*10);
+      });
+    } else if(bmenu==="item"){
+      const L=usableItems();
+      if(!L.length) ctx.fillText("No items",14,184);
+      L.forEach((s,i)=>{ ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8"; ctx.fillText((i===bsel?">":" ")+s.name,14,184+i*10); });
+    } else if(bmenu==="foe"){
+      liveFoes().forEach((f,i)=>{ ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8"; ctx.fillText((i===bsel?">":" ")+f.name,14,184+i*10); });
+    }
+    ctx.fillStyle="#b8c4ff";
+    ctx.fillText(p.name+" HP "+p.hp+"/"+p.mhp+"  MP "+p.mp, 128, 210);
+  }
+}
+
+function renderTitle(){
+  // joust silhouette
+  ctx.fillStyle="#070b22"; ctx.fillRect(0,0,VW,VH);
+  for(let i=0;i<8;i++) for(let j=0;j<8;j++){
+    ctx.fillStyle=(i+j)%2?"#1a1830":"#2a2650";
+    ctx.fillRect(i*32, 40+j*16, 32, 16);
+  }
+  ctx.fillStyle="rgba(7,11,34,0.45)"; ctx.fillRect(0,0,VW,VH);
+  drawChar("rich", 40, 90, 0, 3);
+  drawChar("mallory", 200, 90, 0, 1);
+  palRect(70,100,8,2,"#e6c86a"); palRect(178,100,8,2,"#8a2030");
+}
+
+function renderHUD(){
+  if(mode==="world"||mode==="dlg"||mode==="menu"){
+    el.hud.classList.remove("hidden");
+    el.loc.classList.remove("hidden");
+    const p=G.party[0];
+    el.hud.innerHTML=`<div class="hpbox win"><b>${p.name} LV${p.lv}</b>HP ${p.hp}/${p.mhp}<div class="bar"><i style="width:${100*p.hp/p.mhp}%"></i></div>MP ${p.mp}/${p.mmp}<div class="bar mp"><i style="width:${100*p.mp/p.mmp}%"></i></div></div>`;
+    el.loc.textContent=(curMap().name)+"  "+RANK_NAME[G.rank];
+  } else {
+    el.hud.classList.add("hidden");
+    el.loc.classList.add("hidden");
+  }
+}
+
+function frame(){
+  if(moving>0){ moving--; if(moving===0) afterStep(); }
+  if(mode==="world" && (keys.ArrowLeft||keys.KeyA||keys.ArrowRight||keys.KeyD||keys.ArrowUp||keys.KeyW||keys.ArrowDown||keys.KeyS)){
+    walkF++;
+    if(!moving){
+      if(keys.ArrowLeft||keys.KeyA) tryMove(-1,0);
+      else if(keys.ArrowRight||keys.KeyD) tryMove(1,0);
+      else if(keys.ArrowUp||keys.KeyW) tryMove(0,-1);
+      else if(keys.ArrowDown||keys.KeyS) tryMove(0,1);
+    }
+  }
+  if(mode==="title") renderTitle();
+  else if(mode==="battle") renderBattle();
+  else if(G) { renderWorld(); renderHUD(); }
+  requestAnimationFrame(frame);
+}
+
+/* ---------- input ---------- */
+function onOk(){
+  audio();
+  if(mode==="title"){
+    const act=TACTS[tsel];
+    if(act==="new") startNew();
+    else if(act==="cont"){ if(load()){ beginPlay(); } else toast("No save."); }
+    else if(act==="help") el.help.classList.add("show");
+    else el.credits.classList.add("show");
+    sfx("ok"); return;
+  }
+  if(el.help.classList.contains("show")||el.credits.classList.contains("show")) return;
+  if(mode==="dlg"){ sfx("ok"); advanceDlg(); return; }
+  if(mode==="menu"){ sfx("ok"); menuAct(); return; }
+  if(mode==="battle"){ sfx("ok"); battleCmd("ok"); return; }
+  if(mode==="world") interact();
+}
+function onCancel(){
+  if(el.help.classList.contains("show")){ el.help.classList.remove("show"); return; }
+  if(el.credits.classList.contains("show")){ el.credits.classList.remove("show"); return; }
+  if(mode==="menu"){ closeMenu(); return; }
+  if(mode==="battle") battleCmd("cancel");
+  if(mode==="world") openMenu();
+}
+function onMenu(){ if(mode==="world") openMenu(); else if(mode==="menu") closeMenu(); }
+
+function startNew(){
+  fresh(); beginPlay();
+  setTimeout(async ()=>{
+    await say("","Day eleven. The website promised seven to ten. You watch the white-and-blue truck with binoculars.");
+    await say("","A yellow box. Fragile. Yours.");
+  }, 200);
+}
+function beginPlay(){
+  el.title.classList.add("hidden");
+  mode="world";
+  playMusic(curMap().music||"overworld");
+  el.loc.classList.remove("hidden");
+}
+
+window.addEventListener("keydown", e=>{
+  if(e.repeat && (e.code==="KeyZ"||e.code==="Enter"||e.code==="Space")) return;
+  keys[e.code]=true;
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Space"].includes(e.code)) e.preventDefault();
+  if(mode==="title"){
+    if(e.code==="ArrowUp"||e.code==="KeyW"){ tsel=(tsel+3)%4; paintTitle(); }
+    if(e.code==="ArrowDown"||e.code==="KeyS"){ tsel=(tsel+1)%4; paintTitle(); }
+  }
+  if(mode==="dlg" && dlgChoices){
+    if(e.code==="ArrowUp"||e.code==="KeyW"){ csel=(csel+dlgChoices.length-1)%dlgChoices.length; paintChoices(); }
+    if(e.code==="ArrowDown"||e.code==="KeyS"){ csel=(csel+1)%dlgChoices.length; paintChoices(); }
+  }
+  if(mode==="menu"){
+    if(e.code==="ArrowUp"||e.code==="KeyW"){ msel=(msel+MITEMS.length-1)%MITEMS.length; renderMenu(); }
+    if(e.code==="ArrowDown"||e.code==="KeyS"){ msel=(msel+1)%MITEMS.length; renderMenu(); }
+  }
+  if(mode==="battle"){
+    const max=bmenu==="main"?6: bmenu==="skill"?skillsFor(G.party[bActor]).length: bmenu==="item"?Math.max(1,usableItems().length): liveFoes().length;
+    if(e.code==="ArrowUp"||e.code==="KeyW") bsel=(bsel+max-1)%max;
+    if(e.code==="ArrowDown"||e.code==="KeyS") bsel=(bsel+1)%max;
+    if(e.code==="ArrowLeft"||e.code==="KeyA") bsel=(bsel+max-1)%max;
+    if(e.code==="ArrowRight"||e.code==="KeyD") bsel=(bsel+1)%max;
+  }
+  if(e.code==="KeyZ"||e.code==="Enter"||e.code==="Space") onOk();
+  if(e.code==="KeyX"||e.code==="ShiftLeft"||e.code==="ShiftRight") onCancel();
+  if(e.code==="KeyC"||e.code==="Escape") onMenu();
+});
+window.addEventListener("keyup", e=>{ keys[e.code]=false; });
+
+function paintTitle(){
+  [...document.querySelectorAll("#tmenu button")].forEach((b,i)=>b.classList.toggle("sel", i===tsel));
+}
+function paintChoices(){
+  [...el.choices.children].forEach((b,i)=>b.classList.toggle("sel", i===csel));
+}
+paintTitle();
+document.querySelectorAll("#tmenu button").forEach((b,i)=>{
+  b.onmouseenter=()=>{ tsel=i; paintTitle(); };
+  b.onclick=()=>{ tsel=i; onOk(); };
+});
+document.getElementById("helpBack").onclick=()=>el.help.classList.remove("show");
+document.getElementById("credBack").onclick=()=>el.credits.classList.remove("show");
+document.getElementById("endBack").onclick=()=>{ el.endscr.classList.remove("show"); el.title.classList.remove("hidden"); mode="title"; playMusic("title"); };
+
+document.querySelectorAll("#pad button").forEach(b=>{
+  const k=b.dataset.k;
+  const down=ev=>{ ev.preventDefault(); keys[k]=true; if(k==="KeyZ") onOk(); if(k==="KeyX") onCancel(); };
+  const up=ev=>{ keys[k]=false; };
+  b.addEventListener("touchstart", down, {passive:false});
+  b.addEventListener("touchend", up);
+  b.addEventListener("mousedown", down);
+  b.addEventListener("mouseup", up);
+});
+
+cv.addEventListener("click", ()=>{ audio(); if(mode==="world") interact(); });
+el.dlg.addEventListener("click", ()=>{ if(mode==="dlg") onOk(); });
+
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+async function waitUntil(fn, ms=6000){
+  const t0=Date.now();
+  while(!fn()){
+    if(Date.now()-t0>ms) throw new Error("wait "+ms+"ms");
+    await sleep(16);
+  }
+}
+async function clearDlg(){
+  let n=0;
+  while(mode==="dlg" && n++<100){
+    if(dlgChoices) finishChoose(0);
+    else advanceDlg();
+    await sleep(20);
+  }
+}
+async function waitIdle(){
+  const t0=Date.now();
+  while(Date.now()-t0<15000){
+    if(mode==="battle" && B && !B.over){
+      B.foes.forEach(f=>{ f.hp=0; f.alive=false; });
+      winBattle();
+      await sleep(560);
+      continue;
+    }
+    if(mode==="dlg"){ await clearDlg(); continue; }
+    if(moving){ await sleep(16); continue; }
+    if(mode==="world" && !busy) return;
+    if(mode==="end") return;
+    await sleep(16);
+  }
+  throw new Error("idle timeout mode="+mode+" map="+(G&&G.map)+" @"+(G?G.px+","+G.py:""));
+}
+function bfsTo(tx,ty){
+  const m=curMap();
+  const isWarp=(x,y)=>m.warps.some(w=>w.x===x&&w.y===y);
+  const walk=(x,y)=>{
+    if(x===tx && y===ty) return !SOLID.has(tileAt(x,y)) || tileAt(x,y)==="D";
+    if(isWarp(x,y)) return false;
+    if(npcAt(x,y) && !(x===G.px && y===G.py)) return false;
+    return !SOLID.has(tileAt(x,y));
+  };
+  const q=[[G.px,G.py]], prev={}, k=(x,y)=>x+","+y;
+  prev[k(G.px,G.py)]=null;
+  while(q.length){
+    const [x,y]=q.shift();
+    if(x===tx && y===ty) break;
+    for(const [dx,dy] of [[0,-1],[0,1],[-1,0],[1,0]]){
+      const nx=x+dx, ny=y+dy, id=k(nx,ny);
+      if(id in prev) continue;
+      if(nx<0||ny<0||nx>=m.w||ny>=m.h) continue;
+      if(!walk(nx,ny)) continue;
+      prev[id]=[x,y,dx,dy]; q.push([nx,ny]);
+    }
+  }
+  if(!(k(tx,ty) in prev)) return null;
+  const steps=[]; let cx=tx, cy=ty;
+  while(prev[k(cx,cy)]){
+    const [px,py,dx,dy]=prev[k(cx,cy)];
+    steps.push([dx,dy]); cx=px; cy=py;
+  }
+  steps.reverse(); return steps;
+}
+async function walkTo(tx,ty){
+  const startMap=G.map;
+  if(npcAt(tx,ty)){
+    const adj=[[tx,ty-1],[tx,ty+1],[tx-1,ty],[tx+1,ty]].filter(([x,y])=> (x===G.px&&y===G.py) || walkable(x,y));
+    if(!adj.length) throw new Error("no adj to "+tx+","+ty+" on "+G.map);
+    adj.sort((a,b)=>Math.abs(a[0]-G.px)+Math.abs(a[1]-G.py)-(Math.abs(b[0]-G.px)+Math.abs(b[1]-G.py)));
+    tx=adj[0][0]; ty=adj[0][1];
+  }
+  if(G.px===tx && G.py===ty) return;
+  const steps=bfsTo(tx,ty);
+  if(!steps) throw new Error("no path "+G.map+" "+G.px+","+G.py+" -> "+tx+","+ty);
+  if(!steps.length) throw new Error("empty path "+G.map+" "+G.px+","+G.py+" -> "+tx+","+ty);
+  for(const [dx,dy] of steps){
+    await waitIdle();
+    const fromMap=G.map;
+    if(!tryMove(dx,dy)) throw new Error("blocked "+dx+","+dy+" at "+G.map+" "+G.px+","+G.py);
+    await waitUntil(()=>moving===0, 1500);
+    await waitIdle();
+    if(G.map!==fromMap) return;
+  }
+  if(G.map===startMap && (G.px!==tx || G.py!==ty)){
+    throw new Error("stuck "+G.map+" "+G.px+","+G.py+" want "+tx+","+ty);
+  }
+}
+async function expectMap(id){
+  await waitIdle();
+  if(G.map!==id) throw new Error("expected "+id+" got "+G.map+" @"+G.px+","+G.py);
+}
+async function talkAt(x,y){
+  await walkTo(x,y);
+  await waitIdle();
+  await interact();
+  await waitIdle();
+}
+
+async function runAutotest(){
+  const log=[];
+  const rec=s=>{ log.push(s); console.log("[autotest]", s); };
+  try{
+    muted=true;
+    startNew();
+    await sleep(280);
+    G.noEnc=true;
+    G.fast=true;
+    window.__cqAuto=true;
+    (async function pump(){
+      while(window.__cqAuto){
+        try{
+          if(mode==="dlg"){
+            if(dlgChoices) finishChoose(0);
+            else advanceDlg();
+          } else if(mode==="battle" && B && !B.over){
+            B.foes.forEach(f=>{ f.hp=0; f.alive=false; });
+            winBattle();
+          }
+        }catch(e){}
+        await sleep(8);
+      }
+    })();
+    await waitIdle();
+    rec("start "+G.map);
+    await talkAt(5,6);
+    if(!fl("pkg")) throw new Error("package failed");
+    rec("package");
+    await walkTo(7,11);
+    await waitIdle();
+    rec("map "+G.map);
+    await walkTo(6,9);
+    await waitIdle();
+    rec("street "+G.map);
+    await walkTo(16,9);
+    await waitIdle();
+    rec("school "+G.map);
+    await talkAt(8,6);
+    if(!fl("spike")) throw new Error("spike");
+    rec("spike");
+    await walkTo(0,8);
+    await expectMap("street");
+    await walkTo(12,3);
+    await expectMap("house");
+    await talkAt(7,4);
+    await expectMap("sanctuary");
+    await talkAt(16,3);
+    if(!fl("quests_given")) throw new Error("quests");
+    rec("quests given");
+    await talkAt(8,11);
+    rec("rested");
+    await walkTo(1,10);
+    await waitIdle();
+    rec("trial "+G.map);
+    await talkAt(3,3);
+    await talkAt(10,3);
+    if(!fl("q_ice")||!fl("q_fire")) throw new Error("trial");
+    rec("fire ice");
+    await walkTo(6,18);
+    await waitIdle();
+    await walkTo(14,13);
+    await waitIdle();
+    rec("back "+G.map);
+    await walkTo(6,9);
+    await waitIdle();
+    await walkTo(21,11);
+    await waitIdle();
+    rec("lane "+G.map);
+    await talkAt(6,3);
+    if(!fl("q_elder")) throw new Error("elder");
+    rec("elder");
+    await walkTo(0,5);
+    await waitIdle();
+    await walkTo(16,9);
+    await waitIdle();
+    await walkTo(16,1);
+    await waitIdle();
+    rec("gym "+G.map);
+    await talkAt(7,3);
+    if(!fl("q_race")) throw new Error("race");
+    rec("race");
+    await walkTo(7,10);
+    await waitIdle();
+    await walkTo(10,10);
+    await waitIdle();
+    rec("detention "+G.map);
+    await talkAt(3,3);
+    if(!fl("q_detention")) throw new Error("detention");
+    rec("detention");
+    checkFour();
+    await walkTo(4,6);
+    await waitIdle();
+    await walkTo(16,1);
+    await waitIdle();
+    await talkAt(4,6);
+    rec("mallory "+fl("mallory1"));
+    await walkTo(7,10);
+    await waitIdle();
+    await walkTo(0,8);
+    await waitIdle();
+    await walkTo(12,3);
+    await waitIdle();
+    await talkAt(7,4);
+    rec("sanctuary2 "+G.map);
+    await walkTo(14,10);
+    await waitIdle();
+    rec("hub "+G.map);
+    await walkTo(3,2);
+    await waitIdle();
+    rec("arena "+G.map);
+    await talkAt(7,4);
+    if(!fl("knighted")) throw new Error("knight");
+    rec("knighted rank "+G.rank);
+    await walkTo(7,10);
+    await waitIdle();
+    await walkTo(8,8);
+    await waitIdle();
+    await walkTo(14,13);
+    await waitIdle();
+    await walkTo(7,2);
+    await waitIdle();
+    rec("bedroom? "+G.map);
+    await talkAt(12,4);
+    if(!fl("card")) throw new Error("card");
+    rec("card");
+    await walkTo(7,11);
+    await waitIdle();
+    await talkAt(7,4);
+    await walkTo(24,10);
+    await waitIdle();
+    rec("corridor "+G.map);
+    await talkAt(3,4);
+    await talkAt(12,6);
+    await talkAt(20,2);
+    await talkAt(22,2);
+    if(!fl("phillip_seen")) throw new Error("father");
+    rec("corridor done");
+    await walkTo(1,15);
+    await waitIdle();
+    await walkTo(14,10);
+    await waitIdle();
+    rec("hub2 "+G.map);
+    await talkAt(8,4);
+    if(!fl("nadia_taken")) throw new Error("taken");
+    rec("nadia taken");
+    await walkTo(14,2);
+    await waitIdle();
+    rec("finland "+G.map);
+    await talkAt(8,6);
+    if(!fl("bishop")) throw new Error("bishop");
+    rec("bishop");
+    await walkTo(7,12);
+    await waitIdle();
+    await walkTo(3,6);
+    await waitIdle();
+    rec("stronghold "+G.map);
+    await talkAt(9,8);
+    rec("mallory2 "+fl("mallory2"));
+    await walkTo(4,3);
+    await waitIdle();
+    rec("cell "+G.map);
+    await talkAt(3,2);
+    if(!fl("nadia_join")) throw new Error("nadia");
+    rec("nadia join party "+G.party.length);
+    await walkTo(3,5);
+    await waitIdle();
+    await walkTo(2,14);
+    await waitIdle();
+    await walkTo(14,6);
+    await waitIdle();
+    rec("middlespace "+G.map);
+    await talkAt(4,6);
+    await talkAt(20,6);
+    await talkAt(12,3);
+    if(!fl("three_stones")) throw new Error("stones");
+    rec("stones");
+    await walkTo(12,3);
+    await waitIdle();
+    rec("gray "+G.map);
+    await talkAt(10,4);
+    rec("ending "+fl("ending")+" mode="+mode);
+    if(!fl("ending") && mode!=="end") throw new Error("final boss");
+    rec("PASS");
+    window.__cqAuto=false;
+    window.__testResult={ok:true, log};
+    document.title="AUTOTEST PASS";
+    const d=document.createElement("div");
+    d.id="autotest-result"; d.textContent="PASS "+log.join(" | ");
+    d.style.cssText="position:fixed;left:8px;bottom:8px;z-index:99;background:#041;color:#9f8;font:12px monospace;padding:8px;max-width:90%";
+    document.body.appendChild(d);
+  }catch(err){
+    window.__cqAuto=false;
+    rec("FAIL "+err.message);
+    window.__testResult={ok:false, error:err.message, log, map:G&&G.map, xy:G&&[G.px,G.py], mode, flags:G&&G.flags};
+    document.title="AUTOTEST FAIL: "+err.message;
+    const d=document.createElement("div");
+    d.id="autotest-result"; d.textContent="FAIL "+err.message+" :: "+log.join(" | ");
+    d.style.cssText="position:fixed;left:8px;bottom:8px;z-index:99;background:#400;color:#fbb;font:12px monospace;padding:8px;max-width:90%";
+    document.body.appendChild(d);
+  }
+}
+
+window.__cqDump=()=>({mode, map:G&&G.map, xy:G&&[G.px,G.py], flags:G&&G.flags, party:G&&G.party&&G.party.map(p=>({name:p.name,hp:p.hp,mhp:p.mhp,lv:p.lv})), rank:G&&G.rank, bmenu, bsel, moving});
+playMusic("title");
+requestAnimationFrame(frame);
+if(/\bautotest=1\b/.test(location.search)) setTimeout(runAutotest, 400);
+})();
+</script>
+</body>
+</html>

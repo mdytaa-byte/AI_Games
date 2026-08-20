@@ -193,7 +193,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     </div>
     <div class="section" style="border-top:1px solid var(--line)">
       <h2>Game kit</h2>
-      <p style="margin:8px 0 10px;color:var(--muted);font-size:12px;line-height:1.4">Start from a genre, then customize.</p>
+      <p style="margin:8px 0 10px;color:var(--muted);font-size:12px;line-height:1.4">Start from a genre or traditional dress, then customize for class.</p>
     </div>
     <div class="genre-rail" id="genreRail"></div>
   </aside>
@@ -272,7 +272,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     <p>Highbit draws true pixel art at 128×192 — large enough for eyelid tension, iris catchlights, and mouth shapes, small enough to drop into a game as a sprite. Faces also render as 96×96 portraits for dialogue.</p>
     <div class="grid-2">
       <div class="card"><strong>Customize</strong><small>Swap body, face, hair, outfit, and extras. Colors generate a five-stop shade ramp automatically.</small></div>
-      <div class="card"><strong>Game kits</strong><small>Start from Fantasy, Wild West, Futuristic, Noir, Pirate, Horror, or Modern, then customize.</small></div>
+      <div class="card"><strong>Game kits</strong><small>Start from Traditional dress, Fantasy, Wild West, Futuristic, and more — then tailor for the lesson.</small></div>
       <div class="card"><strong>Perform</strong><small>Fourteen expressions and directional poses, including a four-frame walk cycle.</small></div>
       <div class="card"><strong>Paint</strong><small>The paint layer lets you add unique pixels on top of the generated sprite.</small></div>
       <div class="card"><strong>Export</strong><small>PNG at 1×/2×/4×, pose sheets, walk strips, expression grids, and JSON metadata.</small></div>
@@ -285,7 +285,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
 <div class="modal-bg hidden" id="libModal" role="dialog" aria-modal="true">
   <div class="modal">
     <h2>Game kits & library</h2>
-    <p>Pick a genre for the kind of game you’re making, then load a character and tailor them. Saves stay in this browser.</p>
+    <p>Pick a genre for the kind of game or lesson you’re making. Traditional looks are classroom starting points inspired by folk dress — built from this atelier’s tops, skirts, and extras — so you can recolor them for German, Spanish, and other culture units. Saves stay in this browser.</p>
     <div class="genre-tabs" id="genreTabs"></div>
     <div style="display:flex;gap:8px;margin:10px 0;flex-wrap:wrap">
       <button class="btn mint" id="btnSaveLib">Save current</button>
@@ -1717,6 +1717,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   }
 
   const GENRES = [
+    {id:"traditional", label:"Traditional", hint:"Folk dress for language and culture lessons"},
     {id:"fantasy", label:"Fantasy", hint:"Knights, mages, rangers"},
     {id:"western", label:"Wild West", hint:"Frontier towns and outlaws"},
     {id:"future", label:"Futuristic", hint:"Neon streets and chrome"},
@@ -1803,6 +1804,17 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
       bottomColor:["#1f2430","#4a5560","#2a1a22","#2b4c7e"],
       hairColor:["#1a1210","#2a1810","#c45a8a","#4a2a14","#8a8a92"],
       eyeColor:["#3a6b4a","#2a4a7a","#4a2a4a","#5a3a22"]
+    },
+    traditional:{
+      top:["shirt","vest","tunic","sweater","jacket"],
+      bottom:["skirt","pants","shorts"],
+      shoes:["loafers","sandals","boots"],
+      extra:["scarf","earrings","necklace","cap","headband","none"],
+      hairStyle:["bun","braids","long","wavy","crop","bob"],
+      topColor:["#d8d2c8","#7a2e2e","#2d5a45","#c9a227","#3d2a58","#c45a2a","#2b4c7e","#6b5344"],
+      bottomColor:["#7a2e2e","#2d5a45","#1f2430","#2b4c7e","#3d2a58","#c9a227","#3a2a22"],
+      hairColor:["#1a1210","#2a1810","#4a2a14","#8a4a1c","#1a1210","#f5f0e6"],
+      eyeColor:["#3a6b4a","#2a4a7a","#5a3a22","#1a1a1a","#6a8aaa"]
     }
   };
 
@@ -1841,7 +1853,31 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     {genre:"modern", role:"Lead", name:"Aurel Vale", bodyType:"average", skin:"#e4b894", hairStyle:"crop", hairColor:"#2a1810", bangs:false, top:"jacket", topColor:"#2b4c7e", bottom:"pants", bottomColor:"#1f2430", shoes:"boots", shoeColor:"#3a2a22", extra:"none", eyeColor:"#3a6b4a", expression:"neutral"},
     {genre:"modern", role:"Student", name:"Nim Solace", bodyType:"slim", skin:"#f0d0b0", hairStyle:"pixie", hairColor:"#c45a8a", bangs:true, top:"hoodie", topColor:"#3d2a58", bottom:"skirt", bottomColor:"#2a1a22", shoes:"sneakers", shoeColor:"#d8d2c8", extra:"round-glasses", accColor:"#1a1a1d", eyeColor:"#4a2a4a", expression:"smile"},
     {genre:"modern", role:"Coach", name:"Bram Forge", bodyType:"athletic", skin:"#8d5524", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tee", topColor:"#c45a2a", bottom:"shorts", bottomColor:"#1f2430", shoes:"sneakers", shoeColor:"#1a1a1d", extra:"none", eyeColor:"#5a3a22", browStyle:"thick", expression:"determined"},
-    {genre:"modern", role:"Neighbor", name:"Orrin Marsh", bodyType:"sturdy", skin:"#6d3b22", hairStyle:"afro", hairColor:"#1a1210", bangs:false, top:"tee", topColor:"#2d5a45", bottom:"jeans", bottomColor:"#1f2430", shoes:"sandals", shoeColor:"#6b5344", extra:"none", eyeColor:"#3a6b4a", expression:"grin", mouth:"full"}
+    {genre:"modern", role:"Neighbor", name:"Orrin Marsh", bodyType:"sturdy", skin:"#6d3b22", hairStyle:"afro", hairColor:"#1a1210", bangs:false, top:"tee", topColor:"#2d5a45", bottom:"jeans", bottomColor:"#1f2430", shoes:"sandals", shoeColor:"#6b5344", extra:"none", eyeColor:"#3a6b4a", expression:"grin", mouth:"full"},
+
+    {genre:"traditional", role:"Dirndl · Bavaria", name:"Lena Huber", bodyType:"average", skin:"#f0d0b0", hairStyle:"bun", hairColor:"#4a2a14", bangs:true, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#2d5a45", shoes:"loafers", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#3a6b4a", expression:"smile", faceShape:"oval"},
+    {genre:"traditional", role:"Tracht · Alps", name:"Andreas Berger", bodyType:"sturdy", skin:"#e4b894", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"vest", topColor:"#6b5344", bottom:"shorts", bottomColor:"#3a2a22", shoes:"loafers", shoeColor:"#6b5344", extra:"none", eyeColor:"#5a3a22", browStyle:"thick", expression:"grin", mouth:"full"},
+    {genre:"traditional", role:"Dirndl · Austria", name:"Greta Vogel", bodyType:"slim", skin:"#f6e0c8", hairStyle:"braids", hairColor:"#8a4a1c", bangs:true, top:"shirt", topColor:"#fff6ea", bottom:"skirt", bottomColor:"#7a2e2e", shoes:"loafers", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#2a4a7a", expression:"smile"},
+    {genre:"traditional", role:"Flamenco · Andalusia", name:"Carmen Ruiz", bodyType:"slim", skin:"#d9a06a", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"loafers", shoeColor:"#1a1a1d", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"proud", faceShape:"heart"},
+    {genre:"traditional", role:"Charro · Mexico", name:"Mateo Herrera", bodyType:"athletic", skin:"#c68654", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"jacket", topColor:"#1a1a1d", bottom:"pants", bottomColor:"#1a1a1d", shoes:"boots", shoeColor:"#1a1a1d", extra:"cap", accColor:"#c9a227", eyeColor:"#5a3a22", browStyle:"straight", expression:"determined"},
+    {genre:"traditional", role:"Folklórico · Mexico", name:"Lupita Santos", bodyType:"average", skin:"#b56b3d", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#c45a2a", shoes:"loafers", shoeColor:"#7a2e2e", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile"},
+    {genre:"traditional", role:"Andean · Andes", name:"Inti Quispe", bodyType:"average", skin:"#8d5524", hairStyle:"braids", hairColor:"#1a1210", bangs:false, top:"sweater", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"loafers", shoeColor:"#3a2a22", extra:"cap", accColor:"#1a1a1d", eyeColor:"#3a6b4a", expression:"neutral"},
+    {genre:"traditional", role:"Gaucho · Argentina", name:"Valentina Rocha", bodyType:"athletic", skin:"#e4b894", hairStyle:"wavy", hairColor:"#4a2a14", bangs:true, top:"shirt", topColor:"#d8d2c8", bottom:"pants", bottomColor:"#1f2430", shoes:"boots", shoeColor:"#3a2a22", extra:"scarf", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"smirk"},
+    {genre:"traditional", role:"Guayabera · Caribbean", name:"Diego Morel", bodyType:"average", skin:"#6d3b22", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"shirt", topColor:"#d8d2c8", bottom:"pants", bottomColor:"#4a5560", shoes:"loafers", shoeColor:"#3a2a22", extra:"none", eyeColor:"#3a6b4a", expression:"smile"},
+    {genre:"traditional", role:"Kimono · Japan", name:"Yuki Tanaka", bodyType:"slim", skin:"#f0d0b0", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#1a1a1d", shoes:"sandals", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"neutral", faceShape:"oval"},
+    {genre:"traditional", role:"Hanbok · Korea", name:"Min-seo Park", bodyType:"slim", skin:"#f6e0c8", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#8aa0b8", bottom:"skirt", bottomColor:"#3d2a58", shoes:"loafers", shoeColor:"#d8d2c8", extra:"none", eyeColor:"#5a3a22", expression:"smile"},
+    {genre:"traditional", role:"Qipao · China", name:"Wei Chen", bodyType:"average", skin:"#d9a06a", hairStyle:"bob", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#c9a227", shoes:"loafers", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"proud"},
+    {genre:"traditional", role:"Boubou · West Africa", name:"Amina Diallo", bodyType:"average", skin:"#6d3b22", hairStyle:"braids", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#c9a227", bottom:"pants", bottomColor:"#2d5a45", shoes:"sandals", shoeColor:"#6b5344", extra:"earrings", accColor:"#c9a227", eyeColor:"#3a6b4a", expression:"smile"},
+    {genre:"traditional", role:"Kente · Ghana", name:"Kwame Mensah", bodyType:"athletic", skin:"#4a2714", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#c45a2a", bottom:"pants", bottomColor:"#2d5a45", shoes:"sandals", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", browStyle:"thick", expression:"proud"},
+    {genre:"traditional", role:"Sari · India", name:"Priya Sharma", bodyType:"slim", skin:"#c68654", hairStyle:"long", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#3d2a58", bottom:"skirt", bottomColor:"#c9a227", shoes:"sandals", shoeColor:"#c9a227", extra:"scarf", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart"},
+    {genre:"traditional", role:"Thobe · Levant", name:"Omar Haddad", bodyType:"average", skin:"#d9a06a", hairStyle:"crop", hairColor:"#1a1210", bangs:false, top:"tunic", topColor:"#d8d2c8", bottom:"pants", bottomColor:"#d8d2c8", shoes:"loafers", shoeColor:"#3a2a22", extra:"scarf", accColor:"#2d5a45", eyeColor:"#5a3a22", expression:"neutral"},
+    {genre:"traditional", role:"Kilt · Scotland", name:"Eilidh MacLeod", bodyType:"athletic", skin:"#f0d0b0", hairStyle:"wavy", hairColor:"#8a4a1c", bangs:true, top:"vest", topColor:"#1f2430", bottom:"skirt", bottomColor:"#2d5a45", shoes:"loafers", shoeColor:"#3a2a22", extra:"none", eyeColor:"#3a6b4a", expression:"smile"},
+    {genre:"traditional", role:"Breton · Brittany", name:"Anne Le Gall", bodyType:"average", skin:"#f6e0c8", hairStyle:"bob", hairColor:"#1a1210", bangs:true, top:"sweater", topColor:"#2b4c7e", bottom:"pants", bottomColor:"#d8d2c8", shoes:"loafers", shoeColor:"#1a1a1d", extra:"cap", accColor:"#2b4c7e", eyeColor:"#2a4a7a", expression:"neutral"},
+    {genre:"traditional", role:"Tarantella · Italy", name:"Giulia Rossi", bodyType:"slim", skin:"#e4b894", hairStyle:"bun", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#2d5a45", shoes:"loafers", shoeColor:"#3a2a22", extra:"earrings", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile", faceShape:"heart"},
+    {genre:"traditional", role:"Festa Junina · Brazil", name:"Camila Souza", bodyType:"average", skin:"#c68654", hairStyle:"braids", hairColor:"#1a1210", bangs:true, top:"shirt", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#c45a2a", shoes:"sandals", shoeColor:"#6b5344", extra:"scarf", accColor:"#7a2e2e", eyeColor:"#5a3a22", expression:"grin"},
+    {genre:"traditional", role:"Áo dài · Vietnam", name:"Linh Nguyen", bodyType:"slim", skin:"#f0d0b0", hairStyle:"long", hairColor:"#1a1210", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"pants", bottomColor:"#d8d2c8", shoes:"sandals", shoeColor:"#3a2a22", extra:"none", eyeColor:"#5a3a22", expression:"neutral", faceShape:"oval"},
+    {genre:"traditional", role:"Sarafan · Russia", name:"Anya Petrova", bodyType:"average", skin:"#f6e0c8", hairStyle:"braids", hairColor:"#8a4a1c", bangs:true, top:"tunic", topColor:"#7a2e2e", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"loafers", shoeColor:"#3a2a22", extra:"scarf", accColor:"#c9a227", eyeColor:"#2a4a7a", expression:"smile"},
+    {genre:"traditional", role:"Island folk · Greece", name:"Eleni Papadopoulos", bodyType:"average", skin:"#e4b894", hairStyle:"bun", hairColor:"#1a1210", bangs:false, top:"vest", topColor:"#d8d2c8", bottom:"skirt", bottomColor:"#2b4c7e", shoes:"sandals", shoeColor:"#3a2a22", extra:"necklace", accColor:"#c9a227", eyeColor:"#5a3a22", expression:"smile"}
   ];
 
   function presetChar(p){
@@ -1883,10 +1919,10 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
     brushOn:true,
     frame:0,
     breath:0,
-    genre:"modern",
+    genre:"traditional",
     libFilter:null
   };
-  let ch = defaultChar();
+  let ch = presetChar(PRESETS.find(p=>p.genre==="traditional")||PRESETS[0]);
   let undo=[], redo=[];
   const view=$("#view"), vctx=view.getContext("2d");
 
@@ -2133,7 +2169,7 @@ select.quiet{height:32px;background:var(--panel);border:1px solid var(--line);bo
   $("#btnRandom").onclick=()=>{
     snapshot();
     const keepName=ch.name, keepExpr=ch.expression;
-    const genre=ui.genre||ch.genre||"modern";
+    const genre=ui.genre||ch.genre||"traditional";
     const kit=KITS[genre]||KITS.modern;
     const base=randFrom(PRESETS.filter(p=>p.genre===genre))||randFrom(PRESETS);
     const next=presetChar(base);

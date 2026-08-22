@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Simon sagt am Sportplatz Kleinhausen: ein Animationsspiel zum Üben deutscher Befehle (du-, ihr- und Sie-Imperativ).">
 <title lang="de">Simon sagt — Sportplatz Kleinhausen</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c62828'/%3E%3Cellipse cx='32' cy='36' rx='16' ry='15' fill='%23f4a261'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
@@ -73,7 +74,8 @@ body.zeige-en .hero .en,
 body.zeige-en .mode .en,
 body.zeige-en .mission .en,
 body.zeige-en .feedback .en,
-body.zeige-en .modal .en{
+body.zeige-en .modal .en,
+body.zeige-en .coach-card .en{
   margin-top:4px;padding-left:8px;border-left:3px solid var(--gold);
 }
 .skip{
@@ -367,6 +369,7 @@ kbd{
 }
 .cmd.good{background:var(--ok-wash)}
 .cmd.bad{background:var(--err-wash)}
+.cmd.hint{box-shadow:0 0 0 4px var(--gold);background:#fff4cc}
 .play-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .end-log{
   text-align:left;max-width:520px;margin:18px auto 0;background:#f6f0de;
@@ -409,6 +412,7 @@ kbd{
 }
 .feedback.ok{background:var(--ok-wash);color:var(--ok)}
 .feedback.err{background:var(--err-wash);color:var(--err)}
+.feedback.tip{background:#fff4cc;color:var(--ink)}
 .feedback .en{margin-top:2px}
 
 .ref{font-size:.82rem;font-weight:700;overflow-x:auto}
@@ -522,6 +526,9 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
       </button>
       <button type="button" class="mini" id="btnAudio" aria-pressed="true">
         <span lang="de">Ton</span><span class="sr" lang="en"> (sound)</span>
+      </button>
+      <button type="button" class="mini" id="btnSlow" aria-pressed="false">
+        <span lang="de">Langsam</span><span class="sr" lang="en"> (slow speech)</span>
       </button>
       <button type="button" class="mini" id="btnMotion" aria-pressed="true">
         <span lang="de">Animation</span><span class="sr" lang="en"> (motion)</span>
@@ -668,6 +675,12 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
           <button type="button" class="mini" id="hearBtn" disabled>
             <span lang="de">Noch mal hören</span><span class="sr" lang="en"> (hear again)</span>
           </button>
+          <button type="button" class="mini" id="hintBtn" hidden>
+            <span lang="de">Tipp</span><span class="sr" lang="en"> (hint: highlight the matching form)</span>
+          </button>
+          <button type="button" class="mini" id="pauseBtn" hidden aria-pressed="false">
+            <span lang="de">Pause</span><span class="sr" lang="en"> (pause the timer)</span>
+          </button>
         </div>
       </div>
       <aside class="panel ref" id="sideRef" lang="de">
@@ -723,8 +736,9 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
       <li>Eine Person → <b>du</b> (<span lang="de">Wink!</span>). Zwei / beide → <b>ihr</b> (<span lang="de">Winkt!</span>). Frau Berg → <b>Sie</b> (<span lang="de">Winken Sie!</span>).</li>
       <li>Ohne „Simon sagt“ bleiben Mira, Otto und Frau Berg stehen. Mit den Worten führen sie den Befehl aus.</li>
       <li><b>Simon sagt (klassisch):</b> Tippe die Aktion nur, wenn der Fuchs „Simon sagt“ voranschickt.</li>
-      <li><b>Noch mal hören</b> spricht den letzten Befehl erneut. <b>Vollbild</b> eignet sich für den Beamer. <b>Spickzettel drucken</b> gibt den Imperativ-Zettel auf Papier.</li>
-      <li>Tastatur: <kbd>S</kbd> = Simon sagt ein/aus · <kbd>1</kbd>–<kbd>9</kbd> = Befehl · <kbd>Esc</kbd> = Hilfe oder Tutorial schließen.</li>
+      <li><b>Noch mal hören</b> spricht den letzten Befehl erneut. <b>Tipp</b> markiert die passende Anrede (du / ihr / Sie), nicht das Verb. <b>Pause</b> (Leertaste) hält den Timer im Hör-Modus an — auch wenn der Tab im Hintergrund ist.</li>
+      <li><b>Langsam</b> spricht die Befehle gemütlicher. <b>Vollbild</b> eignet sich für den Beamer. <b>Spickzettel drucken</b> gibt den Imperativ-Zettel auf Papier.</li>
+      <li>Tastatur: <kbd>S</kbd> = Simon sagt ein/aus · <kbd>Leertaste</kbd> = Pause · <kbd>1</kbd>–<kbd>9</kbd> = Befehl · <kbd>Esc</kbd> = Hilfe oder Tutorial schließen.</li>
       <li>Das <b>Tutorial</b> zeigt die Spielfläche Schritt für Schritt. Keine Cookies — nur in diesem Besuch.</li>
     </ul>
     <span class="en" lang="en">One person → <span lang="de">du</span>. Two people → <span lang="de">ihr</span>. Frau Berg (formal) → <span lang="de">Sie</span>. Without “<span lang="de">Simon sagt</span>”, nobody moves. Keyboard: <kbd>S</kbd> toggles Simon, number keys pick a command.</span>
@@ -929,7 +943,9 @@ const state = {
   tutorialOn:false,
   tutorialKind:null,
   tutorialStep:0,
-  tutorialOnDone:null
+  tutorialOnDone:null,
+  listenClock:null,
+  giveMisses:0
 };
 
 const $ = id => document.getElementById(id);
@@ -942,8 +958,7 @@ let deVoice = null;
 function bumpSession(){
   state.session++;
   state.busy = false;
-  clearTimeout(state.listenTimer);
-  state.listenTimer = null;
+  clearListenClock();
   if (window.speechSynthesis) speechSynthesis.cancel();
   hideBubble();
   if (state.tutorialOn) hideTutorial(true);
@@ -1149,15 +1164,16 @@ function speak(text){
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "de-DE";
-      u.rate = 0.92;
+      u.rate = $("btnSlow") && $("btnSlow").getAttribute("aria-pressed") === "true" ? 0.72 : 0.92;
       u.pitch = 1.05;
       if (deVoice) u.voice = deVoice;
       u.onend = finish;
       u.onerror = finish;
       $("fox").classList.add("talk");
       speechSynthesis.speak(u);
-      setTimeout(() => $("fox").classList.remove("talk"), Math.min(2400, text.length*80));
-      setTimeout(finish, Math.max(1800, text.length * 90));
+      const slow = $("btnSlow") && $("btnSlow").getAttribute("aria-pressed") === "true";
+      setTimeout(() => $("fox").classList.remove("talk"), Math.min(3200, text.length*(slow?110:80)));
+      setTimeout(finish, Math.max(1800, text.length * (slow ? 130 : 90)));
     }catch(e){ finish(); }
   });
 }
@@ -1469,11 +1485,14 @@ function nextMission(){
   hideBubble();
   renderCmds(optionSet(m));
   updateHud();
+  state.giveMisses = 0;
+  syncPlayTools();
   announce(m.text, m.simon ? "Include Simon sagt so they obey." : "Do not say Simon sagt.");
 }
 
 function onCommand(opt, btn){
   if (state.tutorialOn || state.busy) return;
+  if (state.listenClock && state.listenClock.paused) return;
   if (state.mode === "listen"){ onListenTap(opt, btn); return; }
   if (state.mode === "free"){ onFreeTap(opt); return; }
 
@@ -1482,6 +1501,7 @@ function onCommand(opt, btn){
   const form = WHO[m.who].form;
   const spoken = (state.simonOn ? "Simon sagt: " : "") + formText(opt.cmd, opt.form);
   state.busy = true;
+  syncPlayTools();
   bubble(spoken, opt.cmd.en);
   speak(spoken);
 
@@ -1511,8 +1531,8 @@ function onCommand(opt, btn){
       let why = "";
       let whyEn = "";
       if (opt.cmd.id === m.cmd && opt.form !== form){
-        why = `Falsche Anrede. ${WHO[m.who].name} braucht die ${form}-Form.`;
-        whyEn = `Wrong address form. Use the ${form} imperative.`;
+        why = `Falsche Anrede. ${WHO[m.who].name} braucht die ${form === "sie" ? "Sie" : form}-Form.`;
+        whyEn = `Wrong address form. Use the ${form === "sie" ? "Sie" : form} imperative.`;
       } else if (opt.cmd.id !== m.cmd){
         why = "Das ist der falsche Befehl.";
         whyEn = "That is the wrong command.";
@@ -1525,6 +1545,9 @@ function onCommand(opt, btn){
       }
       feedback("err", "Noch nicht.", whyEn, why);
       state.busy = false;
+      state.giveMisses++;
+      if (state.giveMisses >= 2) giveHint(true);
+      syncPlayTools();
       window.setTimeout(() => {
         if (!alive(session) || state.mode !== "give" || state.current !== m) return;
         resetPoses();
@@ -1542,6 +1565,148 @@ function onCommand(opt, btn){
     }
     hideBubble();
   }, 1150);
+}
+
+function giveHint(auto){
+  if (state.mode !== "give" || !state.current) return;
+  const m = state.current;
+  const form = WHO[m.who].form;
+  const label = form === "sie" ? "Sie" : form;
+  const btns = [...$("cmds").querySelectorAll(".cmd")];
+  const mixed = btns.some(b => b.dataset.form !== form);
+  if (mixed){
+    btns.forEach(btn => btn.classList.toggle("hint", btn.dataset.form === form));
+    if (!auto){
+      feedback("tip", `Tipp: ${WHO[m.who].name} braucht die ${label}-Form.`, `Hint: use the ${label} imperative.`);
+    }
+    return;
+  }
+  if (auto || state.giveMisses >= 2){
+    btns.forEach(btn => btn.classList.toggle("hint", btn.dataset.cmd === m.cmd));
+    if (!auto){
+      feedback("tip", "Tipp: Welche Bewegung steht im Auftrag?", "Hint: which action is in the mission?");
+    }
+    return;
+  }
+  if (!auto){
+    feedback("tip",
+      m.simon ? "Tipp: Zuerst „Simon sagt“ einschalten, dann den Befehl aus dem Auftrag." : "Tipp: Das ist ein Trick — ohne „Simon sagt“ bleiben sie stehen.",
+      m.simon ? "Hint: turn on “<span lang=\"de\">Simon sagt</span>” first, then pick the action in the mission." : "Hint: this is a trick round — leave “<span lang=\"de\">Simon sagt</span>” off.");
+  }
+}
+
+function syncPlayTools(){
+  const hint = $("hintBtn");
+  const pause = $("pauseBtn");
+  if (hint){
+    hint.hidden = state.mode !== "give" || !$("screen-play").classList.contains("on");
+    hint.disabled = state.mode !== "give" || !state.current || state.busy;
+  }
+  if (pause){
+    const clock = state.listenClock;
+    pause.hidden = state.mode !== "listen" || !$("screen-play").classList.contains("on");
+    pause.disabled = !clock;
+    const paused = !!(clock && clock.paused);
+    pause.setAttribute("aria-pressed", String(paused));
+    pause.innerHTML = paused
+      ? `<span lang="de">Weiter</span><span class="sr" lang="en"> (resume)</span>`
+      : `<span lang="de">Pause</span><span class="sr" lang="en"> (pause the timer)</span>`;
+  }
+}
+
+function clearListenClock(){
+  const c = state.listenClock;
+  if (c){
+    clearTimeout(c.timer);
+    clearInterval(c.tick);
+  }
+  state.listenClock = null;
+  clearTimeout(state.listenTimer);
+  state.listenTimer = null;
+  syncPlayTools();
+}
+
+function startListenClock(ms, session, simon){
+  clearListenClock();
+  state.listenClock = {ms, remaining: ms, session, simon, paused:false, started:0, timer:null, tick:null};
+  runListenClock();
+  syncPlayTools();
+}
+
+function runListenClock(){
+  const c = state.listenClock;
+  if (!c || c.paused || !alive(c.session) || state.mode !== "listen") return;
+  const bar = $("timerBar");
+  const ratio = c.ms ? Math.max(0, c.remaining / c.ms) : 0;
+  bar.style.transition = "none";
+  bar.style.transform = "scaleX(" + ratio + ")";
+  void bar.offsetWidth;
+  bar.style.transition = "transform " + c.remaining + "ms linear";
+  bar.style.transform = "scaleX(0)";
+  c.started = Date.now();
+  $("timer").setAttribute("aria-valuenow", String(Math.round(ratio * 100)));
+  clearInterval(c.tick);
+  c.tick = setInterval(() => {
+    if (!state.listenClock || state.listenClock.paused){ clearInterval(c.tick); return; }
+    const left = Math.max(0, c.remaining - (Date.now() - c.started));
+    $("timer").setAttribute("aria-valuenow", String(Math.round((c.ms ? left / c.ms : 0) * 100)));
+    if (left <= 0) clearInterval(c.tick);
+  }, 200);
+  clearTimeout(c.timer);
+  c.timer = setTimeout(() => {
+    if (!alive(c.session) || state.mode !== "listen" || state.busy) return;
+    if (state.listenClock && state.listenClock.paused) return;
+    state.busy = true;
+    const simon = c.simon;
+    clearListenClock();
+    if (simon){
+      miss("Zu langsam!", "Too slow — Simon did say it.");
+    } else {
+      sfx("ok");
+      state.score += 8;
+      state.round++;
+      feedback("ok", "Gut gewartet!", "You waited — they didn't say Simon sagt.");
+      updateHud();
+      setTimeout(() => { if (alive(c.session)) listenRound(); }, 800);
+    }
+  }, c.remaining);
+}
+
+function pauseListenClock(reason){
+  const c = state.listenClock;
+  if (!c || c.paused) return;
+  c.paused = true;
+  c.remaining = Math.max(0, c.remaining - (Date.now() - c.started));
+  clearTimeout(c.timer);
+  clearInterval(c.tick);
+  const bar = $("timerBar");
+  const ratio = c.ms ? Math.max(0, c.remaining / c.ms) : 0;
+  bar.style.transition = "none";
+  bar.style.transform = "scaleX(" + ratio + ")";
+  $("timer").setAttribute("aria-valuenow", String(Math.round(ratio * 100)));
+  syncPlayTools();
+  if (reason === "tab"){
+    feedback("tip", "Pause.", "Paused — the tab was in the background. Press Pause or Space to continue.");
+  } else {
+    feedback("tip", "Pause.", "Paused. Spacebar continues.");
+  }
+}
+
+function resumeListenClock(){
+  const c = state.listenClock;
+  if (!c || !c.paused) return;
+  c.paused = false;
+  $("feedback").className = "feedback";
+  $("feedback").textContent = "";
+  runListenClock();
+  syncPlayTools();
+}
+
+function toggleListenPause(){
+  const c = state.listenClock;
+  if (!c) return;
+  if (c.paused) resumeListenClock();
+  else pauseListenClock("user");
 }
 
 /* ---------- LISTEN MODE ---------- */
@@ -1568,6 +1733,7 @@ function startListen(opts){
   $("whoPill").innerHTML = `<span class="dot frau" aria-hidden="true"></span> <span lang="de">Alle auf dem Platz</span><span class="en" lang="en">everyone on the field</span>`;
   updateHud();
   $("cmds").innerHTML = "";
+  syncPlayTools();
   const go = () => { if (alive(session)) listenRound(); };
   const force = !!(opts && opts.tutorial);
   if (force) state.sawTutorial.listen = false;
@@ -1616,35 +1782,7 @@ function listenRound(){
       if (!alive(session) || state.mode !== "listen") return;
       state.busy = false;
       const ms = Math.max(1400, 4200 - state.round*140);
-      const bar = $("timerBar");
-      bar.style.transition = "none";
-      bar.style.transform = "scaleX(1)";
-      void bar.offsetWidth;
-      bar.style.transition = `transform ${ms}ms linear`;
-      bar.style.transform = "scaleX(0)";
-      $("timer").setAttribute("aria-valuenow", "100");
-      const started = Date.now();
-      const tick = setInterval(() => {
-        if (!alive(session)) { clearInterval(tick); return; }
-        const left = Math.max(0, 100 - Math.round((Date.now()-started)/ms*100));
-        $("timer").setAttribute("aria-valuenow", String(left));
-        if (left <= 0) clearInterval(tick);
-      }, 200);
-      clearTimeout(state.listenTimer);
-      state.listenTimer = setTimeout(() => {
-        if (!alive(session) || state.mode !== "listen" || state.busy) return;
-        state.busy = true;
-        if (simon){
-          miss("Zu langsam!", "Too slow — Simon did say it.");
-        } else {
-          sfx("ok");
-          state.score += 8;
-          state.round++;
-          feedback("ok", "Gut gewartet!", "You waited — they didn't say Simon sagt.");
-          updateHud();
-          setTimeout(() => { if (alive(session)) listenRound(); }, 800);
-        }
-      }, ms);
+      startListenClock(ms, session, simon);
     });
   }, 280);
 }
@@ -1653,7 +1791,7 @@ function onListenTap(opt){
   if (state.busy) return;
   const session = state.session;
   state.busy = true;
-  clearTimeout(state.listenTimer);
+  clearListenClock();
   const m = state.current;
   const rightVerb = opt.cmd.id === m.cmd;
   if (m.simon && rightVerb){
@@ -1727,6 +1865,7 @@ function startFree(){
   renderFreeCmds();
   $("feedback").className = "feedback";
   $("feedback").innerHTML = `<span lang="de">Mit „Simon sagt“ bewegen sie sich. Ohne die Worte schütteln sie den Kopf.</span><span class="en" lang="en">With “<span lang="de">Simon sagt</span>” they move. Without those words they shake their heads.</span>`;
+  syncPlayTools();
 }
 
 function renderFreeCmds(){
@@ -1825,6 +1964,18 @@ $("btnAudio").addEventListener("click", () => {
   const on = $("btnAudio").getAttribute("aria-pressed") !== "true";
   $("btnAudio").setAttribute("aria-pressed", String(on));
   if (!on && window.speechSynthesis) speechSynthesis.cancel();
+});
+$("btnSlow").addEventListener("click", () => {
+  const on = $("btnSlow").getAttribute("aria-pressed") !== "true";
+  $("btnSlow").setAttribute("aria-pressed", String(on));
+});
+$("hintBtn").addEventListener("click", () => {
+  if (state.tutorialOn || state.busy) return;
+  giveHint(false);
+});
+$("pauseBtn").addEventListener("click", toggleListenPause);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && state.listenClock && !state.listenClock.paused) pauseListenClock("tab");
 });
 $("btnMotion").addEventListener("click", () => {
   const on = $("btnMotion").getAttribute("aria-pressed") !== "true";
@@ -1961,6 +2112,11 @@ document.addEventListener("keydown", e => {
     return;
   }
   if (!$("screen-play").classList.contains("on")) return;
+  if ((e.code === "Space" || e.key === " ") && state.mode === "listen" && state.listenClock){
+    e.preventDefault();
+    toggleListenPause();
+    return;
+  }
   if ((e.key === "s" || e.key === "S") && $("simonBtn").style.display !== "none" && !state.busy){
     e.preventDefault();
     $("simonBtn").click();

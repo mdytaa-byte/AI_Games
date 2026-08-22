@@ -412,6 +412,10 @@ details.look .group{margin-top:12px}
               <button class="thumb" data-set="hairStyle" data-val="side"><span class="icon">◖</span>Side Sweep</button>
               <button class="thumb" data-set="hairStyle" data-val="bob"><span class="icon">⬒</span>Bob</button>
               <button class="thumb" data-set="hairStyle" data-val="ponytail"><span class="icon">🎀</span>Ponytail</button>
+              <button class="thumb" data-set="hairStyle" data-val="short"><span class="icon">▁</span>Short</button>
+              <button class="thumb" data-set="hairStyle" data-val="spiky"><span class="icon">✦</span>Spiky</button>
+              <button class="thumb" data-set="hairStyle" data-val="twintails"><span class="icon">✿</span>Twintails</button>
+              <button class="thumb" data-set="hairStyle" data-val="hime"><span class="icon">━</span>Hime</button>
             </div>
           </div>
           <div class="group">
@@ -1228,6 +1232,187 @@ function hairData(style, feminine=false){
         'M163 137 C167 124 173 115 181 109',
         'M298 216 C311 226 318 239 319 253'
       ]
+    },
+    short: {
+      rearMass:'M150 168 C152 128 168 104 192 94 C210 88 232 90 252 100 C270 112 276 138 274 168 L272 208 C260 222 238 230 210 232 C182 230 160 222 148 208 Z',
+      rearShadow:[
+        'M151 166 C156 136 168 116 186 104 C176 130 174 162 176 204 C168 216 160 218 152 208 Z',
+        'M273 166 C268 136 256 116 238 104 C248 130 250 162 248 204 C256 216 264 218 272 208 Z'
+      ],
+      rearLocks:[
+        'M154 138 C146 156 148 178 156 196 C160 206 166 212 172 214 C168 190 170 168 178 148 C172 138 162 134 154 138 Z',
+        'M266 138 C274 156 272 178 264 196 C260 206 254 212 248 214 C252 190 250 168 242 148 C248 138 258 134 266 138 Z'
+      ],
+      sideLocks:[
+        'M154 148 C148 166 150 186 158 200 C162 208 168 212 174 214 C170 194 172 174 180 156 C174 148 162 144 154 148 Z',
+        'M266 148 C272 166 270 186 262 200 C258 208 252 212 246 214 C250 194 248 174 240 156 C246 148 258 144 266 148 Z'
+      ],
+      bangs:[
+        'M152 146 C154 126 164 112 178 110 C186 109 192 116 192 126 C186 138 176 148 164 154 C158 156 153 152 152 146 Z',
+        'M174 132 C176 114 186 104 198 104 C206 104 210 112 208 122 C204 136 196 146 186 154 C178 152 174 144 174 132 Z',
+        'M196 122 C198 106 208 98 218 100 C226 102 230 110 228 120 C224 134 218 144 210 152 C202 148 196 138 196 122 Z',
+        'M218 122 C224 106 236 102 246 108 C252 112 254 122 250 132 C244 144 236 152 226 156 C220 150 216 138 218 122 Z',
+        'M244 134 C252 120 264 122 270 132 C274 140 272 150 264 158 C258 162 252 162 248 160 C246 150 244 142 244 134 Z'
+      ],
+      crownStrands:[
+        'M166 118 C178 102 194 94 212 92',
+        'M196 106 C210 94 228 94 244 104'
+      ],
+      flyaways:[
+        'M186 94 C180 82 184 74 194 70',
+        'M242 98 C254 90 264 92 270 100'
+      ],
+      highlightBand:[
+        'M168 112 C186 98 208 94 230 98 C242 100 252 106 260 114 C244 110 228 114 216 122 C200 114 184 112 168 112 Z'
+      ],
+      streaks:[
+        'M182 110 C194 102 206 98 218 98',
+        'M220 104 C232 100 244 104 254 112'
+      ]
+    },
+    spiky: {
+      rearMass:'M146 176 C144 142 152 120 166 110 L156 78 L176 98 L188 66 L206 94 L216 58 L232 92 L250 64 L260 98 L284 80 L272 112 C286 128 290 150 286 176 L282 218 C268 244 240 258 210 260 C180 258 154 244 144 218 Z',
+      rearShadow:[
+        'M147 174 C150 144 160 124 176 112 C166 138 164 168 166 210 C158 224 150 226 146 214 Z',
+        'M285 174 C282 144 272 124 256 112 C266 138 268 168 266 210 C274 224 282 226 286 214 Z'
+      ],
+      rearLocks:[
+        'M150 128 L142 92 L164 122 C158 136 156 152 160 168 C154 150 150 138 150 128 Z',
+        'M270 128 L278 92 L256 122 C262 136 264 152 260 168 C266 150 270 138 270 128 Z',
+        'M168 108 L174 70 L190 106 C184 118 180 132 182 146 C176 128 170 116 168 108 Z',
+        'M252 108 L246 70 L230 106 C236 118 240 132 238 146 C244 128 250 116 252 108 Z'
+      ],
+      sideLocks:[
+        'M150 146 C142 168 146 196 158 218 C164 228 172 234 180 236 C174 208 176 180 186 154 C176 146 160 140 150 146 Z',
+        'M270 146 C278 168 274 196 262 218 C256 228 248 234 240 236 C246 208 244 180 234 154 C244 146 260 140 270 146 Z'
+      ],
+      bangs:[
+        'M146 150 C148 122 154 100 166 88 C174 98 178 122 174 146 C166 158 154 160 146 150 Z',
+        'M166 136 C168 108 176 88 190 78 C198 90 200 116 196 140 C188 152 174 150 166 136 Z',
+        'M188 124 C192 96 204 80 218 76 C226 90 226 116 222 140 C214 150 196 142 188 124 Z',
+        'M214 122 C220 94 234 80 248 82 C254 96 252 122 246 144 C236 152 220 140 214 122 Z',
+        'M244 134 C250 108 262 96 274 98 C280 112 276 136 268 154 C258 160 246 150 244 134 Z',
+        'M156 118 C158 98 166 86 178 82 C172 98 166 114 160 132 C156 130 156 124 156 118 Z'
+      ],
+      crownStrands:[
+        'M170 96 C182 78 198 70 216 68',
+        'M200 88 C214 72 232 70 250 78',
+        'M230 92 C246 80 262 84 274 96'
+      ],
+      flyaways:[
+        'M176 72 C168 56 172 44 184 40',
+        'M214 60 C216 42 226 32 238 30',
+        'M258 78 C274 64 288 66 296 76'
+      ],
+      highlightBand:[
+        'M168 108 C188 90 214 84 240 90 C252 92 262 98 270 106 C250 102 232 106 218 116 C200 108 184 106 168 108 Z'
+      ],
+      streaks:[
+        'M182 104 C196 92 212 86 228 86',
+        'M226 98 C240 92 254 96 266 104'
+      ]
+    },
+    twintails: {
+      rearMass:'M146 168 C148 122 166 96 192 86 C210 80 232 82 254 94 C272 106 278 134 276 168 L274 214 C262 232 240 242 210 244 C180 242 158 232 146 214 Z',
+      rearShadow:[
+        'M147 166 C152 132 166 110 184 98 C174 128 172 164 174 208 C166 220 156 222 148 210 Z',
+        'M275 166 C270 132 256 110 238 98 C248 128 250 164 248 208 C256 220 266 222 274 210 Z'
+      ],
+      rearLocks:[
+        'M150 140 C142 158 144 180 152 198 C156 208 162 214 168 216 C164 192 166 170 174 150 C168 140 158 136 150 140 Z',
+        'M270 140 C278 158 276 180 268 198 C264 208 258 214 252 216 C256 192 254 170 246 150 C252 140 262 136 270 140 Z'
+      ],
+      sideLocks:[
+        'M152 148 C146 168 148 192 156 212 C160 222 166 228 172 230 C168 204 170 180 178 158 C172 148 160 144 152 148 Z',
+        'M268 148 C274 168 272 192 264 212 C260 222 254 228 248 230 C252 204 250 180 242 158 C248 148 260 144 268 148 Z'
+      ],
+      bangs:[
+        'M150 150 C152 126 162 110 176 108 C186 107 192 114 192 124 C186 138 176 150 164 158 C158 160 151 156 150 150 Z',
+        'M172 134 C174 112 184 100 198 100 C206 100 212 108 210 118 C206 134 198 146 188 156 C180 154 172 146 172 134 Z',
+        'M196 124 C198 106 208 98 218 100 C226 102 230 110 228 120 C224 134 218 146 210 154 C202 150 196 140 196 124 Z',
+        'M218 122 C224 104 236 100 246 106 C252 110 254 120 250 130 C244 142 236 152 226 158 C220 152 216 138 218 122 Z',
+        'M244 132 C252 116 264 116 272 126 C276 134 274 146 266 156 C260 162 254 164 250 162 C246 152 244 142 244 132 Z'
+      ],
+      tails:[
+        {
+          sign:-1, pivot:{x:140,y:168},
+          mass:'M138 162 C118 168 100 188 96 214 C92 246 100 282 116 312 C128 332 142 346 156 356 C158 328 158 296 156 266 C154 228 150 190 138 162 Z',
+          locks:[
+            'M136 176 C120 186 110 206 108 228 C106 250 112 272 124 292 C128 268 130 244 132 220 C134 200 136 186 136 176 Z',
+            'M144 210 C134 228 130 250 134 272 C138 292 146 310 156 324 C152 296 148 270 146 246 C144 230 144 218 144 210 Z',
+            'M140 250 C134 268 136 288 144 306 C150 320 158 332 166 342 C160 318 154 294 148 272 C144 262 142 254 140 250 Z'
+          ]
+        },
+        {
+          sign:1, pivot:{x:280,y:168},
+          mass:'M282 162 C302 168 320 188 324 214 C328 246 320 282 304 312 C292 332 278 346 264 356 C262 328 262 296 264 266 C266 228 270 190 282 162 Z',
+          locks:[
+            'M284 176 C300 186 310 206 312 228 C314 250 308 272 296 292 C292 268 290 244 288 220 C286 200 284 186 284 176 Z',
+            'M276 210 C286 228 290 250 286 272 C282 292 274 310 264 324 C268 296 272 270 274 246 C276 230 276 218 276 210 Z',
+            'M280 250 C286 268 284 288 276 306 C270 320 262 332 254 342 C260 318 266 294 272 272 C276 262 278 254 280 250 Z'
+          ]
+        }
+      ],
+      crownStrands:[
+        'M164 116 C178 98 196 90 216 90',
+        'M196 104 C212 92 230 92 246 102'
+      ],
+      flyaways:[
+        'M182 90 C174 74 178 62 190 56',
+        'M246 96 C260 86 272 88 280 98',
+        'M118 214 C104 220 94 232 90 246',
+        'M302 214 C316 220 326 232 330 246'
+      ],
+      highlightBand:[
+        'M166 110 C184 96 208 92 232 96 C244 98 254 104 262 112 C246 108 230 112 218 120 C202 112 184 110 166 110 Z'
+      ],
+      streaks:[
+        'M180 108 C192 100 206 96 218 96',
+        'M222 104 C234 100 246 104 256 112',
+        'M124 230 C118 246 118 264 124 280',
+        'M296 230 C302 246 302 264 296 280'
+      ]
+    },
+    hime: {
+      rearMass:'M132 170 C134 118 156 86 190 76 C210 70 240 74 270 90 C288 104 296 138 294 176 L300 370 C294 430 254 468 210 470 C166 468 126 430 120 370 Z',
+      rearShadow:[
+        'M133 170 C140 126 156 98 180 86 C166 128 164 184 168 280 C162 360 150 400 136 360 C128 300 128 230 133 170 Z',
+        'M293 170 C286 126 270 98 246 86 C260 128 262 184 258 280 C264 360 276 400 290 360 C298 300 298 230 293 170 Z',
+        'M150 360 C170 420 190 448 210 452 C230 448 250 420 270 360 C258 430 238 458 210 462 C182 458 162 430 150 360 Z'
+      ],
+      rearLocks:[
+        'M138 150 C128 190 128 250 136 320 C140 360 148 400 158 430 C152 360 150 280 156 200 C150 170 142 150 138 150 Z',
+        'M282 150 C292 190 292 250 284 320 C280 360 272 400 262 430 C268 360 270 280 264 200 C270 170 278 150 282 150 Z'
+      ],
+      sideLocks:[
+        'M146 148 C136 188 138 250 148 330 C152 370 160 410 170 438 C166 370 164 290 172 210 C166 170 156 148 146 148 Z',
+        'M274 148 C284 188 282 250 272 330 C268 370 260 410 250 438 C254 370 256 290 248 210 C254 170 264 148 274 148 Z',
+        'M160 160 C152 200 154 260 164 340 C168 380 174 410 182 430 C178 370 176 290 184 210 C178 176 168 160 160 160 Z',
+        'M260 160 C268 200 266 260 256 340 C252 380 246 410 238 430 C242 370 244 290 236 210 C242 176 252 160 260 160 Z'
+      ],
+      bangs:[
+        'M146 150 C148 128 156 118 168 116 L252 116 C264 118 272 128 274 150 C270 164 252 170 210 170 C168 170 150 164 146 150 Z',
+        'M158 148 C160 132 166 124 176 122 L210 122 L244 122 C254 124 260 132 262 148 C258 158 238 162 210 162 C182 162 162 158 158 148 Z',
+        'M148 142 C150 126 158 118 170 116 C164 128 158 140 152 154 C148 152 148 146 148 142 Z',
+        'M272 142 C270 126 262 118 250 116 C256 128 262 140 268 154 C272 152 272 146 272 142 Z'
+      ],
+      crownStrands:[
+        'M160 118 C176 96 194 86 216 84',
+        'M200 102 C218 90 238 90 256 100'
+      ],
+      flyaways:[
+        'M178 84 C172 70 178 58 190 54',
+        'M248 88 C262 78 274 80 282 90'
+      ],
+      highlightBand:[
+        'M162 112 C182 94 208 88 236 92 C248 94 258 100 266 108 C248 104 230 108 216 118 C198 110 180 110 162 112 Z'
+      ],
+      streaks:[
+        'M176 108 C190 98 206 94 220 94',
+        'M218 102 C232 96 246 100 258 108',
+        'M158 200 C156 240 158 290 164 340',
+        'M262 200 C264 240 262 290 256 340'
+      ]
     }
   };
   return defs[style] || defs.messy;
@@ -1285,6 +1470,23 @@ function applyHairMotion(parent,items,fill,line,hd,kind,width=1.55,opacity=1){
   });
 }
 
+function attachHairTail(g, mass, locks, hd, pivot, p, sign=1){
+  if(mass){
+    const el=svgEl('path',{d:mass,fill:'url(#hairLight)',stroke:p.line,'stroke-width':3.4,'stroke-linejoin':'round','stroke-linecap':'round'});
+    const lag=(hd.sway*1.55+hd.walkLag*1.9)*sign;
+    const drop=hd.bowDrop*0.55;
+    el.setAttribute('transform',`translate(${lag.toFixed(2)} ${drop.toFixed(2)}) rotate(${(hd.poseLag*12*sign).toFixed(2)} ${pivot.x} ${pivot.y})`);
+    g.appendChild(el);
+  }
+  (locks||[]).forEach((d,i)=>{
+    const el=svgEl('path',{d,fill:[p.base,p.mid,p.shadow,p.light][i%4],stroke:p.line,'stroke-width':1.55,'stroke-linejoin':'round','stroke-linecap':'round',opacity:0.98});
+    const lag=(hd.sway*(1.55+0.18*i)+hd.walkLag*(1.9+0.22*i))*sign;
+    const drop=hd.bowDrop*(0.42+0.08*i);
+    const rot=hd.poseLag*(12+1.5*i)*sign;
+    el.setAttribute('transform',`translate(${lag.toFixed(2)} ${drop.toFixed(2)}) rotate(${rot.toFixed(2)} ${pivot.x} ${pivot.y})`);
+    g.appendChild(el);
+  });
+}
 function renderHairBack(s, data, st=styleProfile(s), ft=headTurnProfile(s), hd=hairDynamicsProfile(s)){
   const p = hairPalette(s.hair);
   const perspectiveX=1-ft.abs*0.018;
@@ -1297,20 +1499,8 @@ function renderHairBack(s, data, st=styleProfile(s), ft=headTurnProfile(s), hd=h
     g.appendChild(el);
   });
   applyHairMotion(g,data.rearLocks||[],p.base,p.line,hd,'rear',1.55,1);
-  if(data.ponyMass){
-    const el=svgEl('path',{d:data.ponyMass,fill:'url(#hairLight)',stroke:p.line,'stroke-width':3.4,'stroke-linejoin':'round','stroke-linecap':'round'});
-    const lag=(hd.sway*1.55+hd.walkLag*1.9), drop=hd.bowDrop*0.55;
-    el.setAttribute('transform',`translate(${lag.toFixed(2)} ${drop.toFixed(2)}) rotate(${(hd.poseLag*12).toFixed(2)} 286 230)`);
-    g.appendChild(el);
-  }
-  (data.ponyLocks || []).forEach((d,i)=>{
-    const el=svgEl('path',{d,fill:[p.base,p.mid,p.shadow,p.light][i%4],stroke:p.line,'stroke-width':1.55,'stroke-linejoin':'round','stroke-linecap':'round',opacity:0.98});
-    const lag=hd.sway*(1.55+0.18*i)+hd.walkLag*(1.9+0.22*i);
-    const drop=hd.bowDrop*(0.42+0.08*i);
-    const rot=hd.poseLag*(12+1.5*i);
-    el.setAttribute('transform',`translate(${lag.toFixed(2)} ${drop.toFixed(2)}) rotate(${rot.toFixed(2)} 292 250)`);
-    g.appendChild(el);
-  });
+  if(data.ponyMass) attachHairTail(g, data.ponyMass, data.ponyLocks, hd, {x:286,y:230}, p, 1);
+  (data.tails||[]).forEach(tail=>attachHairTail(g, tail.mass, tail.locks, hd, tail.pivot||{x:210,y:180}, p, tail.sign||1));
   return g;
 }
 
@@ -2700,7 +2890,7 @@ function syncDialogueFields(s){
 }
 function autoAltText(s){
   const poseNames = {wave:'waving',neutral:'standing',bow:'bowing',point:'pointing',think:'thinking',crossed:'standing with arms crossed',hips:'standing with hands on hips',hold:'holding a prop',seated:'sitting',walk:'walking'};
-  const hairNames = {messy:'messy',side:'side-swept',bob:'bob',ponytail:'ponytail'};
+  const hairNames = {messy:'messy',side:'side-swept',bob:'bob',ponytail:'ponytail',short:'short',spiky:'spiky',twintails:'twintail',hime:'hime-cut'};
   const sceneNames = {classroom:'a Japanese classroom',station:'a train station',restaurant:'a restaurant',park:'a park'};
   const expr = (s.expression==='custom'||!s.expression) ? 'expressive' : s.expression;
   const body = s.gender==='feminine' ? 'feminine' : s.gender==='androgynous' ? 'androgynous' : 'masculine';
@@ -3136,7 +3326,7 @@ function randomize(){
   s.gender = pick(['masculine','feminine','androgynous']);
   s.faceShape = pick(['soft','round','sharp']);
   s.eyeStyle = pick(['anime','gentle','serious']);
-  s.hairStyle = pick(['messy','side','bob','ponytail']);
+  s.hairStyle = pick(['messy','side','bob','ponytail','short','spiky','twintails','hime']);
   const exprName=pick(['happy','neutral','surprised','worried','embarrassed','thinking','angry','tired']);
   Object.assign(s,{expression:exprName,...(EXPRESSION_PRESETS[exprName]||EXPRESSION_PRESETS.neutral)});
   s.pose = pick(['wave','neutral','point','bow','think','crossed','hips','hold','seated','walk']);
@@ -3669,6 +3859,13 @@ $('#saveCharBtn').onclick = saveCharacter;
 $('#canvasBtn').onclick = canvasExport;
 
 refreshSavedGrid();
+try{
+  const q = new URLSearchParams(location.search);
+  const hairQ = q.get('hair');
+  if(['messy','side','bob','ponytail','short','spiky','twintails','hime'].includes(hairQ)){
+    current().hairStyle = hairQ;
+  }
+}catch(err){}
 renderAvatar();
 ['B','C'].forEach(id=>{
   const keep = activeVariant;

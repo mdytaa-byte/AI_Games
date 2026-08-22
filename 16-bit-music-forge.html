@@ -505,7 +505,10 @@
         <p class="help">Mood sets the arrangement recipe. Generate writes A and B, then loops the chain. Mutate keeps drums and harmony, rewrites the lead. Lock a mixer channel to keep it.</p>
         <h2 style="margin-top:14px">Game SFX</h2>
         <div class="sfx" id="sfxPad"></div>
-        <p class="help">One-shots for pickups, jumps, menus, and fanfares. Click to audition.</p>
+        <div class="mini" style="margin-top:6px">
+          <button class="btn" id="sfxPackBtn" type="button">Export SFX Pack</button>
+        </div>
+        <p class="help">One-shots for pickups, jumps, menus, and fanfares. Click to audition. Shift-click downloads that WAV. Export pack zips all eight for your game.</p>
       </aside>
 
       <main class="panel">
@@ -621,14 +624,14 @@
     };
     const WAVES = ["pulse12", "pulse25", "pulse50", "triangle", "detuned", "square"];
     const SFX_KIT = [
-      { id: "coin", label: "Coin" },
-      { id: "jump", label: "Jump" },
-      { id: "hit", label: "Hit" },
-      { id: "select", label: "Select" },
-      { id: "heal", label: "Heal" },
-      { id: "power", label: "Power" },
-      { id: "fanfare", label: "Fanfare" },
-      { id: "lose", label: "Game Over" }
+      { id: "coin", label: "Coin", seconds: 0.32 },
+      { id: "jump", label: "Jump", seconds: 0.26 },
+      { id: "hit", label: "Hit", seconds: 0.26 },
+      { id: "select", label: "Select", seconds: 0.14 },
+      { id: "heal", label: "Heal", seconds: 0.52 },
+      { id: "power", label: "Power", seconds: 0.45 },
+      { id: "fanfare", label: "Fanfare", seconds: 0.9 },
+      { id: "lose", label: "Game Over", seconds: 1.2 }
     ];
     const CHAIN_PRESETS = {
       AABA: ["A", "A", "B", "A"],
@@ -775,6 +778,7 @@
       stageTag: $("stageTag"),
       roll: $("pianoRoll"),
       sfx: $("sfxPad"),
+      sfxPack: $("sfxPackBtn"),
       library: $("librarySelect"),
       chainSlots: $("chainSlots"),
       chainPresets: $("chainPresets"),
@@ -1359,16 +1363,16 @@
       }
     }
 
-    async function playSfx(id) {
-      const audio = ensureAudio();
-      if (audio.ctx.state === "suspended") await audio.ctx.resume();
-      if (!state.sfxGain) {
-        state.sfxGain = audio.ctx.createGain();
-        state.sfxGain.gain.value = 0.55;
-        state.sfxGain.connect(audio.ctx.destination);
-      }
-      const dest = state.sfxGain;
-      const t = audio.ctx.currentTime + 0.01;
+    function sfxItem(id) {
+      return SFX_KIT.find((item) => item.id === id) || null;
+    }
+
+    function sfxSeconds(id) {
+      const item = sfxItem(id);
+      return item && item.seconds ? item.seconds : 0.4;
+    }
+
+    function scheduleSfx(audio, dest, id, t) {
       const blip = (midi, when, dur, wave, amp) => startVoice(audio, dest, {
         kind: "tone", wave: wave || "pulse25", freq: midiToFreq(midi), dur, vel: 0.95, amp: amp || 0.55, a: 0.004, d: 0.03, s: 0.35, r: 0.05
       }, when);
@@ -1390,7 +1394,153 @@
         [[72, 0], [76, 0.12], [79, 0.24], [84, 0.36]].forEach(([midi, off]) => blip(midi, t + off, off === 0.36 ? 0.35 : 0.14, "pulse25", 0.5));
       } else if (id === "lose") {
         [67, 63, 60, 55].forEach((midi, i) => blip(midi, t + i * 0.18, i === 3 ? 0.45 : 0.2, "triangle", 0.6));
+      } else {
+        throw new Error("Unknown SFX: " + id);
       }
+    }
+
+    async function playSfx(id) {
+      const audio = ensureAudio();
+      if (audio.ctx.state === "suspended") await audio.ctx.resume();
+      if (!state.sfxGain) {
+        state.sfxGain = audio.ctx.createGain();
+        state.sfxGain.gain.value = 0.55;
+        state.sfxGain.connect(audio.ctx.destination);
+      }
+      scheduleSfx(audio, state.sfxGain, id, audio.ctx.currentTime + 0.01);
+    }
+
+    function makeSynthAudio(ctx) {
+      return {
+        ctx,
+        pulse: {
+          12: createPulseWave(ctx, 0.125),
+          25: createPulseWave(ctx, 0.25),
+          50: createPulseWave(ctx, 0.5)
+        },
+        noise: noiseBuffer(ctx)
+      };
+    }
+
+    async function renderSfxBuffer(id, sampleRate = 44100) {
+      if (!sfxItem(id)) throw new Error("Unknown SFX: " + id);
+      const seconds = sfxSeconds(id) + 0.06;
+      const sr = Math.max(8000, Number(sampleRate) || 44100);
+      const offline = new OfflineAudioContext(1, Math.ceil(sr * seconds), sr);
+      const audio = makeSynthAudio(offline);
+      const master = offline.createGain();
+      master.gain.value = 0.55;
+      master.connect(offline.destination);
+      scheduleSfx(audio, master, id, 0.01);
+      return offline.startRendering();
+    }
+
+    async function sfxWavBytes(id, sampleRate = 44100) {
+      const buffer = await renderSfxBuffer(id, sampleRate);
+      const blob = audioBufferToWav(buffer);
+      return new Uint8Array(await blob.arrayBuffer());
+    }
+
+    async function exportSfxWav(id) {
+      const item = sfxItem(id);
+      if (!item) throw new Error("Unknown SFX: " + id);
+      setStatus("Rendering " + item.label + "…");
+      const bytes = await sfxWavBytes(id);
+      downloadBlob(new Blob([bytes], { type: "audio/wav" }), item.id + ".wav");
+      setStatus("Exported " + item.label + " WAV.");
+      toast(item.label + " WAV downloaded");
+    }
+
+    function crc32(bytes) {
+      if (!crc32.table) {
+        const table = new Uint32Array(256);
+        for (let n = 0; n < 256; n++) {
+          let c = n;
+          for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+          table[n] = c >>> 0;
+        }
+        crc32.table = table;
+      }
+      let crc = 0xffffffff;
+      for (let i = 0; i < bytes.length; i++) crc = crc32.table[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+      return (crc ^ 0xffffffff) >>> 0;
+    }
+
+    function asciiBytes(str) {
+      const out = new Uint8Array(str.length);
+      for (let i = 0; i < str.length; i++) out[i] = str.charCodeAt(i) & 0xff;
+      return out;
+    }
+
+    function zipStore(files) {
+      const u16 = (n) => {
+        const b = new Uint8Array(2);
+        b[0] = n & 0xff;
+        b[1] = (n >>> 8) & 0xff;
+        return b;
+      };
+      const u32 = (n) => {
+        const b = new Uint8Array(4);
+        b[0] = n & 0xff;
+        b[1] = (n >>> 8) & 0xff;
+        b[2] = (n >>> 16) & 0xff;
+        b[3] = (n >>> 24) & 0xff;
+        return b;
+      };
+      const concat = (parts) => {
+        const len = parts.reduce((sum, part) => sum + part.length, 0);
+        const out = new Uint8Array(len);
+        let o = 0;
+        for (const part of parts) {
+          out.set(part, o);
+          o += part.length;
+        }
+        return out;
+      };
+      const locals = [];
+      const centrals = [];
+      let offset = 0;
+      for (const file of files) {
+        const name = asciiBytes(file.name);
+        const data = file.data;
+        const crc = crc32(data);
+        const local = concat([
+          asciiBytes("PK\x03\x04"), u16(20), u16(0), u16(0), u16(0), u16(0),
+          u32(crc), u32(data.length), u32(data.length), u16(name.length), u16(0),
+          name, data
+        ]);
+        const central = concat([
+          asciiBytes("PK\x01\x02"), u16(20), u16(20), u16(0), u16(0), u16(0), u16(0),
+          u32(crc), u32(data.length), u32(data.length),
+          u16(name.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset),
+          name
+        ]);
+        locals.push(local);
+        centrals.push(central);
+        offset += local.length;
+      }
+      const center = concat(centrals);
+      const end = concat([
+        asciiBytes("PK\x05\x06"), u16(0), u16(0), u16(files.length), u16(files.length),
+        u32(center.length), u32(offset), u16(0)
+      ]);
+      return concat(locals.concat([center, end]));
+    }
+
+    async function buildSfxPack(sampleRate = 44100) {
+      const files = [];
+      for (const item of SFX_KIT) {
+        files.push({ name: item.id + ".wav", data: await sfxWavBytes(item.id, sampleRate) });
+      }
+      return zipStore(files);
+    }
+
+    async function exportSfxPack() {
+      setStatus("Rendering SFX pack…");
+      const bytes = await buildSfxPack();
+      downloadBlob(new Blob([bytes], { type: "application/zip" }), "16-bit-sfx-kit.zip");
+      setStatus("Exported 8 SFX WAVs.");
+      toast("SFX pack downloaded");
     }
 
     function playChannelNote(audio, dest, channel, note, song, when) {
@@ -2152,7 +2302,10 @@ window.BitForgePlay = async function BitForgePlay(song) {
         btn.type = "button";
         btn.className = "chip";
         btn.textContent = item.label;
-        btn.addEventListener("click", () => playSfx(item.id).catch((err) => setStatus(String(err.message || err))));
+        btn.addEventListener("click", (event) => {
+          const run = event.shiftKey ? exportSfxWav(item.id) : playSfx(item.id);
+          run.catch((err) => setStatus(String(err.message || err)));
+        });
         ui.sfx.appendChild(btn);
       }
     }
@@ -2606,6 +2759,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
       $("genBtn").addEventListener("click", () => generate(false));
       $("mutateBtn").addEventListener("click", () => generate(true));
       $("wavBtn").addEventListener("click", () => exportWav().catch((err) => setStatus(String(err.message || err))));
+      ui.sfxPack.addEventListener("click", () => exportSfxPack().catch((err) => setStatus(String(err.message || err))));
       $("midiBtn").addEventListener("click", () => {
         try { exportMidi(); }
         catch (err) { setStatus(String(err.message || err)); }
@@ -2826,7 +2980,7 @@ window.BitForgePlay = async function BitForgePlay(song) {
         const original = generateSong({ mood: "town", seed: "share-test", bars: 4, tempo: 110, energy: 40, key: 2, scale: "dorian", swing: 4 });
         const round = decodeSong(encodeSong(original));
         check("share-roundtrip", round.seed === original.seed && notesOf(round, "lead", "A").length === notesOf(original, "lead", "A").length);
-        check("sfx-kit", SFX_KIT.length === 8 && SFX_KIT.every((item) => item.id && item.label));
+        check("sfx-kit", SFX_KIT.length === 8 && SFX_KIT.every((item) => item.id && item.label && item.seconds > 0));
         check("vibrato-field", Number.isFinite(original.vibrato));
         const midi = songToMidi(original);
         const magic = String.fromCharCode(midi[0], midi[1], midi[2], midi[3]);
@@ -2864,6 +3018,30 @@ window.BitForgePlay = async function BitForgePlay(song) {
         paintStage();
         const pix = ui.stage.getContext("2d").getImageData(24, 24, 1, 1).data;
         check("stage-preview", pix[3] > 0, [pix[0], pix[1], pix[2], pix[3]]);
+        const peakOf = (buffer) => {
+          const data = buffer.getChannelData(0);
+          let peak = 0;
+          for (let i = 0; i < data.length; i++) {
+            const amp = Math.abs(data[i]);
+            if (amp > peak) peak = amp;
+          }
+          return peak;
+        };
+        const coinBuf = await renderSfxBuffer("coin", 22050);
+        const coinPeak = peakOf(coinBuf);
+        check("sfx-render", coinPeak > 0.02, Number(coinPeak.toFixed(4)));
+        const coinWav = new Uint8Array(await audioBufferToWav(coinBuf).arrayBuffer());
+        const riff = String.fromCharCode(coinWav[0], coinWav[1], coinWav[2], coinWav[3]);
+        const wave = String.fromCharCode(coinWav[8], coinWav[9], coinWav[10], coinWav[11]);
+        check("sfx-wav", riff === "RIFF" && wave === "WAVE" && coinWav.length > 44, { riff, wave, bytes: coinWav.length });
+        const pack = zipStore([{ name: "coin.wav", data: coinWav }, { name: "jump.wav", data: coinWav }]);
+        const packText = new TextDecoder("latin1").decode(pack);
+        check("sfx-zip", pack[0] === 0x50 && pack[1] === 0x4b && packText.indexOf("coin.wav") >= 0 && packText.indexOf("jump.wav") >= 0, pack.length);
+        for (const item of SFX_KIT) {
+          const buf = await renderSfxBuffer(item.id, 22050);
+          const peak = peakOf(buf);
+          check("sfx:" + item.id, peak > 0.015, Number(peak.toFixed(4)));
+        }
       } catch (err) {
         check("share-roundtrip", false, String(err && err.message ? err.message : err));
       }
@@ -2878,6 +3056,9 @@ window.BitForgePlay = async function BitForgePlay(song) {
       generateSong,
       runSelfTest,
       playSfx,
+      renderSfxBuffer,
+      exportSfxWav,
+      exportSfxPack,
       encodeSong,
       decodeSong,
       songToMidi,

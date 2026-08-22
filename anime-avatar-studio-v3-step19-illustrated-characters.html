@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Anime Avatar Studio — Japanese Classroom Edition v3 Step 19 · Teen Proportions</title>
+<title>Anime Avatar Studio — Japanese Classroom Edition v3 Step 19 · Illustrated Characters</title>
 <style>
 :root{
   --bg:#f4f7fb; --panel:#ffffff; --ink:#1b2940; --muted:#6a768a; --line:#e5e9f1;
@@ -83,43 +83,11 @@ button{cursor:pointer}
   position:relative;background:#dfe8f1;border:1px solid var(--line);border-radius:18px;overflow:hidden;
   box-shadow:var(--shadow);display:grid;place-items:center;min-height:660px
 }
-.scene{position:absolute;inset:0}
-.scene.classroom{
-  background:
-    linear-gradient(180deg,#d6e8f4 0 18%,#f1dcb6 18% 64%,#bc8a57 64% 100%);
-}
-.scene.classroom:before{
-  content:"日本語　にほんご";
-  position:absolute;left:14%;top:10%;width:58%;height:28%;
-  background:#2f5a4d;border:10px solid #a68864;color:#f8f5e3;font-size:34px;font-weight:900;
-  padding:24px;border-radius:2px;box-shadow:0 10px 18px rgba(0,0,0,.08)
-}
-.scene.classroom:after{
-  content:"今週の目標\A・あいさつ\A・かんじ\A・文法";
-  white-space:pre; position:absolute; right:10%; top:18%; background:#f9f2e6; border:4px solid #9b8d77;
-  padding:14px 16px; font-weight:800; color:#53483d; border-radius:6px;
-}
-.scene.station{
-  background:
-    linear-gradient(180deg,#cde7fb 0 42%,#dce1e7 42% 58%,#8d97a4 58% 67%,#d5d9de 67% 100%);
-}
-.scene.station:before{
-  content:"駅 / STATION";position:absolute;left:10%;top:13%;padding:14px 20px;background:#fff;border:3px solid #324055;
-  border-radius:8px;font-size:24px;font-weight:900
-}
-.scene.restaurant{
-  background:
-    linear-gradient(180deg,#f6dfbf 0 56%,#b57d5a 56% 100%);
-}
-.scene.restaurant:before{
-  content:"いらっしゃいませ";position:absolute;left:22%;top:10%;padding:12px 18px;background:#f9f1df;border:5px solid #8a5d42;
-  border-radius:8px;font-size:26px;font-weight:900
-}
-.scene.park{
-  background:
-    linear-gradient(180deg,#bfe7ff 0 46%,#8ac878 46% 100%);
-}
-.scene.park:before{content:"🌸  🌳  🌸";position:absolute;left:8%;top:14%;font-size:74px}
+.scene{position:absolute;inset:0;background:#ead9c0}
+.scene.classroom{background:#ead9c0}
+.scene.station{background:#d4e6f4}
+.scene.restaurant{background:#f0d3b4}
+.scene.park{background:#cfe9d8}
 .avatar-stage{position:relative;z-index:2;width:min(480px,72%);height:100%;display:flex;align-items:flex-end;justify-content:center}
 #avatarSvg{width:100%;height:92%;overflow:visible}
 .speech{
@@ -214,7 +182,7 @@ button{cursor:pointer}
       <div class="flower">🌸</div>
       <div>
         <h1>Anime Avatar Studio</h1>
-        <small>Japanese Classroom Edition — v3 Step 19: Teen Proportions</small>
+        <small>Japanese Classroom Edition — v3 Step 19: Illustrated Characters</small>
       </div>
     </div>
     <div class="toolbar">
@@ -644,7 +612,7 @@ How are you today?</textarea>
       <h2>What improved in v3 — Step 19?</h2>
       <button class="close" data-close>✕</button>
     </div>
-    <p>Step 19 rebuilds the character silhouettes so they read as illustrated school-anime figures instead of assembled polygons. Masses share one outer ink contour. The default teen proportion is a fuller torso and sleeve against a smaller hair globe, and each outfit cuts a different outer shape instead of sitting as a sticker on one body.</p>
+    <p>Step 19 rebuilds the character silhouettes so they read as illustrated school-anime figures instead of assembled polygons. Masses share one outer ink contour. Clothes cut the figure, the body yaws with the head, form shadows sit on planes, and the classroom is drawn in the same ink as the character.</p>
     <ul>
       <li>Hair, face, sleeve, torso, and hand no longer each stroke themselves, so overlaps are not double-outlined</li>
       <li>Head and hair scale sit smaller against broader shoulders, so the jacket — not the hair mass — reads as the widest form</li>
@@ -652,7 +620,10 @@ How are you today?</textarea>
       <li>Torso, neck, and limb paths use anatomical tapers, hidden joint roots, and soft end-caps instead of capsule tubes</li>
       <li>Clothes reshape the outer contour: blazer V and peaked shoulders, sailor collar flaps, gakuran stand collar, cardigan hem, t-shirt length, apron, and yukata drape — not one body with decals on top</li>
       <li>Hands are one palm mass: fingers grow out of a knuckle pad with webbing, not five separate sticks</li>
-      <li>Hair is denser: overlapping bangs, undercut framing locks, inner strand edges, and a forehead hairline seam</li>
+      <li>Each hairstyle keeps its own bangs, with a forehead hairline and baby hairs instead of one shared fringe sticker</li>
+      <li>Head turn yaws the torso, shoulders, and hips into a 3/4 stance, not just the face</li>
+      <li>Cel form shadows follow cheek, jaw, collar, and rib planes instead of a wash overlay</li>
+      <li>Classroom, station, restaurant, and park are drawn as SVG sets behind the figure, so they export with the character</li>
       <li>The face silhouette uses a multi-point jaw curve so cheeks no longer read as a rounded hexagon</li>
       <li>Shoes, backpacks, scarves, and held props follow the same illustration language instead of rectangles and blobs</li>
       <li>All existing sliders — exaggeration, art direction, pose, folds, depth, hair motion, expression, and anatomy — still drive the new drawing</li>
@@ -993,8 +964,81 @@ function sceneAmbientProfile(scene){
   return m[scene]||m.classroom;
 }
 function artDirectionMarkup(s,pal,lights,lines,rig,profile){
-  // Presentation-only master group. It intentionally contains no background shape so transparent exports stay transparent.
+  // Presentation-only master group. Scene art lives in sceneBackdropMarkup so the figure and set share one SVG.
   return svgEl('g',{'data-art-direction':'master-v1','pointer-events':'none'});
+}
+function sceneInk(d, fill, stroke='#3a2f28', width=1.6){
+  const g=svgEl('g');
+  g.appendChild(svgEl('path',{d,fill,stroke, 'stroke-width':String(width),'stroke-linejoin':'round','stroke-linecap':'round'}));
+  return g;
+}
+function sceneBackdropMarkup(scene){
+  const g=svgEl('g',{'data-scene-art':scene,'pointer-events':'none'});
+  const label=(x,y,text,size=13,fill='#f4efe4')=>{
+    const t=svgEl('text',{x,y,fill,'font-size':String(size),'font-weight':'800','font-family':'Noto Sans JP, Hiragino Sans, Yu Gothic, sans-serif'});
+    t.textContent=text;
+    return t;
+  };
+  if(scene==='classroom'){
+    g.appendChild(svgEl('path',{d:'M0 0 H420 V508 H0 Z',fill:'#f3e2c4',stroke:'none'}));
+    g.appendChild(svgEl('path',{d:'M0 508 H420 V780 H0 Z',fill:'#c49a68',stroke:'none'}));
+    g.appendChild(svgEl('path',{d:'M0 500 H420 V518 H0 Z',fill:'#a67b50',stroke:'#5c4030','stroke-width':'1.2'}));
+    g.appendChild(svgEl('path',{d:'M0 0 H420 V18 H0 Z',fill:'#e6d0ae',stroke:'none'}));
+    g.appendChild(sceneInk('M22 72 H96 V232 H22 Z','#eef6fb','#7d6a55',2.2));
+    g.appendChild(svgEl('path',{d:'M28 80 H90 V140 H28 Z',fill:'#cfe8f7',stroke:'#7d6a55','stroke-width':'1.1'}));
+    g.appendChild(svgEl('path',{d:'M28 146 H90 V224 H28 Z',fill:'#d7ecf8',stroke:'#7d6a55','stroke-width':'1.1'}));
+    g.appendChild(svgEl('line',{x1:59,y1:80,x2:59,y2:224,stroke:'#7d6a55','stroke-width':'1'}));
+    g.appendChild(sceneInk('M108 46 H318 V258 H108 Z','#8a6a48','#5c4632',2.4));
+    g.appendChild(svgEl('path',{d:'M118 56 H308 V236 H118 Z',fill:'#2f5a4d',stroke:'#24463c','stroke-width':'1.2'}));
+    g.appendChild(svgEl('path',{d:'M118 236 H308 V250 H118 Z',fill:'#6e533c',stroke:'#4a3828','stroke-width':'1'}));
+    g.appendChild(svgEl('path',{d:'M142 240 H168 V246 H142 Z',fill:'#f4efe4',stroke:'#5c4632','stroke-width':'0.8'}));
+    g.appendChild(svgEl('path',{d:'M176 241 H198 V245 H176 Z',fill:'#f2d66e',stroke:'#5c4632','stroke-width':'0.8'}));
+    g.appendChild(svgEl('path',{d:'M206 240 H216 V246 H206 Z',fill:'#dfe4ea',stroke:'#5c4632','stroke-width':'0.8'}));
+    g.appendChild(svgEl('path',{d:'M132 72 C150 78 170 70 188 76',fill:'none',stroke:'#d7e6d4','stroke-width':'1.4',opacity:'0.35'}));
+    g.appendChild(svgEl('path',{d:'M210 90 C230 86 250 94 268 88',fill:'none',stroke:'#d7e6d4','stroke-width':'1.2',opacity:'0.28'}));
+    g.appendChild(label(132,118,'日本語',22));
+    g.appendChild(label(132,148,'にほんご',16,'#e7f0dc'));
+    g.appendChild(svgEl('circle',{cx:366,cy:62,r:16,fill:'#f7f1e4',stroke:'#5c4632','stroke-width':'1.6'}));
+    g.appendChild(svgEl('circle',{cx:366,cy:62,r:2,fill:'#5c4632'}));
+    g.appendChild(svgEl('line',{x1:366,y1:62,x2:366,y2:50,stroke:'#5c4632','stroke-width':'1.5','stroke-linecap':'round'}));
+    g.appendChild(svgEl('line',{x1:366,y1:62,x2:376,y2:62,stroke:'#5c4632','stroke-width':'1.2','stroke-linecap':'round'}));
+    g.appendChild(sceneInk('M328 88 H404 V248 H328 Z','#f7f0e2','#8a7864',2));
+    g.appendChild(label(336,118,'今週の目標',11,'#53483d'));
+    g.appendChild(label(338,142,'・あいさつ',10,'#6a5c4e'));
+    g.appendChild(label(338,162,'・かんじ',10,'#6a5c4e'));
+    g.appendChild(label(338,182,'・文法',10,'#6a5c4e'));
+    g.appendChild(svgEl('path',{d:'M12 620 H92 V780 H12 Z',fill:'#b9895c',stroke:'#6a4a32','stroke-width':'1.4'}));
+    g.appendChild(svgEl('path',{d:'M328 620 H408 V780 H328 Z',fill:'#b9895c',stroke:'#6a4a32','stroke-width':'1.4'}));
+  } else if(scene==='station'){
+    g.appendChild(svgEl('path',{d:'M0 0 H420 V430 H0 Z',fill:'#cfe6f8',stroke:'none'}));
+    g.appendChild(svgEl('path',{d:'M0 430 H420 V520 H0 Z',fill:'#8d97a4',stroke:'none'}));
+    g.appendChild(svgEl('path',{d:'M0 520 H420 V780 H0 Z',fill:'#d5d9de',stroke:'none'}));
+    g.appendChild(svgEl('path',{d:'M0 512 H420 V528 H0 Z',fill:'#f3d56a',stroke:'#c4a43a','stroke-width':'1.2'}));
+    g.appendChild(sceneInk('M40 70 H210 V150 H40 Z','#f7fbff','#324055',2.2));
+    g.appendChild(label(58,118,'駅  /  STATION',16,'#243246'));
+    g.appendChild(svgEl('path',{d:'M250 0 H280 V430 H250 Z',fill:'#9aa7b5',stroke:'#5d6b78','stroke-width':'1.2'}));
+    g.appendChild(svgEl('path',{d:'M300 90 H400 V200 H300 Z',fill:'#e8eef4',stroke:'#5d6b78','stroke-width':'1.4'}));
+  } else if(scene==='restaurant'){
+    g.appendChild(svgEl('path',{d:'M0 0 H420 V520 H0 Z',fill:'#f3d7b6',stroke:'none'}));
+    g.appendChild(svgEl('path',{d:'M0 520 H420 V780 H0 Z',fill:'#b57d5a',stroke:'none'}));
+    g.appendChild(svgEl('path',{d:'M0 80 H420 V200 H0 Z',fill:'#c96b56',stroke:'#7a3e32','stroke-width':'1.6'}));
+    g.appendChild(svgEl('path',{d:'M70 80 V200',stroke:'#f4e2c4','stroke-width':'10'}));
+    g.appendChild(svgEl('path',{d:'M150 80 V200',stroke:'#f4e2c4','stroke-width':'10'}));
+    g.appendChild(svgEl('path',{d:'M230 80 V200',stroke:'#f4e2c4','stroke-width':'10'}));
+    g.appendChild(svgEl('path',{d:'M310 80 V200',stroke:'#f4e2c4','stroke-width':'10'}));
+    g.appendChild(label(118,150,'いらっしゃいませ',18,'#f8eedc'));
+    g.appendChild(svgEl('path',{d:'M20 540 H400 V620 H20 Z',fill:'#8a5a3a',stroke:'#5a3824','stroke-width':'1.8'}));
+  } else {
+    g.appendChild(svgEl('path',{d:'M0 0 H420 V360 H0 Z',fill:'#bfe7ff',stroke:'none'}));
+    g.appendChild(svgEl('path',{d:'M0 360 C80 320 160 340 210 330 C280 318 360 350 420 328 V780 H0 Z',fill:'#7fbf68',stroke:'none'}));
+    g.appendChild(svgEl('path',{d:'M48 360 C70 260 110 220 128 360 Z',fill:'#5a8f46',stroke:'#3f6a32','stroke-width':'1.4'}));
+    g.appendChild(svgEl('circle',{cx:118,cy:210,r:36,fill:'#ef9bb8',stroke:'#d67a98','stroke-width':'1.2'}));
+    g.appendChild(svgEl('circle',{cx:86,cy:228,r:22,fill:'#f4b3c8',stroke:'#d67a98','stroke-width':'1'}));
+    g.appendChild(svgEl('circle',{cx:300,cy:120,r:18,fill:'#f7c0d2',opacity:'0.85'}));
+    g.appendChild(svgEl('circle',{cx:340,cy:160,r:12,fill:'#f4b3c8',opacity:'0.8'}));
+    g.appendChild(svgEl('circle',{cx:250,cy:90,r:10,fill:'#f7c0d2',opacity:'0.75'}));
+  }
+  return g;
 }
 function artDirectionLineTune(lines,ad){
   const w=lines.weights||{};
@@ -1228,47 +1272,90 @@ function hairData(style, feminine=false){
     ...base,
     bangs,
     sideLocks:[...(base.sideLocks||[]), ...(extra.sideLocks||[])],
-    strandEdges: extra.strandEdges || [],
-    ponyLocks:[...(base.ponyLocks||[]), ...(extra.ponyLocks||[])]
+    strandEdges: extra.strandEdges || base.strandEdges || [],
+    ponyLocks:[...(base.ponyLocks||[]), ...(extra.ponyLocks||[])],
+    babyHairs: extra.babyHairs || [],
+    hairline: extra.hairline || 'M168 150 C186 144 210 142 234 146 C248 149 256 153 264 158'
   };
 }
 function hairIllustrationExtras(style){
-  const bangs = [
-    'M148 150 C151 128 161 116 174 114 C178 126 176 140 169 154 C161 160 149 158 148 150 Z',
-    'M272 150 C269 128 259 116 246 114 C242 126 244 140 251 154 C259 160 271 158 272 150 Z',
-    'M166 126 C168 104 178 94 190 94 C196 96 198 106 196 118 C191 136 184 150 175 160 C168 156 165 142 166 126 Z',
-    'M180 118 C182 96 192 86 204 86 C212 88 214 98 212 112 C207 132 200 148 190 160 C183 154 179 138 180 118 Z',
-    'M194 114 C196 92 206 82 218 84 C226 86 228 98 226 112 C221 132 214 148 206 160 C199 154 193 134 194 114 Z',
-    'M210 114 C213 92 224 84 236 88 C244 92 246 104 243 118 C237 136 228 150 218 160 C212 152 209 132 210 114 Z',
-    'M226 120 C230 100 242 94 254 100 C260 104 260 116 256 128 C249 144 240 154 230 160 C224 150 224 134 226 120 Z',
-    'M156 138 C158 118 168 108 178 108 C182 118 180 132 174 146 C167 150 156 148 156 138 Z',
-    'M250 136 C254 116 266 110 274 118 C278 126 276 140 268 150 C260 154 250 148 250 136 Z',
-    'M186 146 C188 136 196 132 204 134 C206 144 202 154 196 160 C190 160 185 154 186 146 Z',
-    'M214 144 C216 134 226 132 232 138 C234 148 228 158 220 160 C214 156 212 150 214 144 Z',
-    'M172 132 C174 116 182 108 192 108 C196 118 192 132 186 144 C180 146 171 140 172 132 Z'
-  ];
-  const undercut = bangs.slice(0,2);
-  const tips = bangs.slice(-3);
-  const strandEdges = [
-    'M176 112 C180 128 178 144 172 156',
-    'M198 100 C200 118 198 138 192 154',
-    'M220 102 C222 120 220 140 214 154',
-    'M244 118 C246 132 244 146 238 156',
-    'M164 130 C168 144 166 156 160 166',
-    'M256 128 C260 142 258 154 252 164',
-    'M188 108 C190 126 188 144 184 156',
-    'M232 110 C234 128 232 146 226 158'
-  ];
-  const sideLocks = [
-    'M142 162 C136 178 138 204 147 228 C150 238 156 244 163 246 C160 220 162 190 170 166 C162 156 148 154 142 162 Z',
-    'M278 162 C284 178 282 204 273 228 C270 238 264 244 257 246 C260 220 258 190 250 166 C258 156 272 154 278 162 Z'
-  ];
+  const undercut = {
+    messy:[
+      'M146 148 C138 164 140 188 150 214 C154 226 160 232 168 234 C164 206 166 176 174 152 C166 144 152 140 146 148 Z',
+      'M274 148 C282 164 280 188 270 214 C266 226 260 232 252 234 C256 206 254 176 246 152 C254 144 268 140 274 148 Z'
+    ],
+    side:[
+      'M144 150 C134 172 138 206 154 238 C160 250 170 256 180 258 C172 224 174 186 184 154 C174 142 154 140 144 150 Z',
+      'M272 146 C278 160 276 184 268 206 C264 216 258 222 252 224 C256 198 254 172 246 150 C252 142 264 140 272 146 Z'
+    ],
+    bob:[
+      'M148 152 C142 174 146 210 160 244 C166 256 174 262 182 264 C178 232 180 196 190 162 C180 150 156 144 148 152 Z',
+      'M272 152 C278 174 274 210 260 244 C254 256 246 262 238 264 C242 232 240 196 230 162 C240 150 264 144 272 152 Z'
+    ],
+    ponytail:[
+      'M150 148 C144 166 146 192 154 216 C158 226 164 232 170 234 C166 208 168 180 176 156 C168 146 156 142 150 148 Z',
+      'M270 148 C276 166 274 192 266 216 C262 226 256 232 250 234 C254 208 252 180 244 156 C252 146 264 142 270 148 Z'
+    ]
+  }[style] || [];
+  const babyHairs = {
+    messy:[
+      'M170 150 C168 142 164 134 170 128','M178 148 C176 140 174 132 180 126','M186 146 C185 138 182 130 188 124',
+      'M198 144 C198 136 196 128 202 122','M210 142 C211 134 210 126 216 122','M222 144 C224 136 226 128 232 124',
+      'M234 146 C237 138 240 132 246 128','M246 150 C250 142 254 138 258 134','M160 154 C156 148 152 144 156 138',
+      'M260 152 C264 146 268 142 272 138','M174 152 C172 146 168 140 172 136','M228 148 C230 142 234 138 238 134'
+    ],
+    side:[
+      'M166 152 C160 144 154 136 158 128','M176 148 C170 138 166 128 172 122','M186 144 C182 134 180 124 186 118',
+      'M198 142 C196 132 198 122 206 118','M210 140 C212 132 218 126 224 124','M226 144 C232 138 238 136 244 134',
+      'M244 148 C250 144 256 144 260 142','M158 156 C152 150 148 146 150 140','M252 150 C258 148 264 148 268 146'
+    ],
+    bob:[
+      'M172 148 C170 142 168 136 172 132','M182 146 C181 140 180 134 184 130','M192 144 C192 138 192 132 196 128',
+      'M204 142 C205 136 206 130 210 128','M216 142 C218 136 220 130 224 128','M228 144 C231 138 234 134 238 132',
+      'M240 148 C244 142 248 140 252 138','M164 152 C160 148 156 146 158 140','M256 152 C260 148 264 146 266 142'
+    ],
+    ponytail:[
+      'M174 148 C172 142 170 136 174 132','M184 146 C183 140 182 134 186 130','M196 144 C196 138 196 132 200 128',
+      'M208 142 C209 136 210 130 214 128','M220 144 C222 138 224 134 228 132','M232 146 C236 140 240 138 244 136',
+      'M166 152 C162 148 158 146 160 140','M250 150 C254 146 258 144 260 140'
+    ]
+  }[style] || [];
+  const hairline = {
+    messy:'M164 154 C184 144 210 140 236 144 C252 148 262 154 270 162',
+    side:'M160 156 C184 140 216 136 252 148 C264 154 272 160 278 168',
+    bob:'M166 150 C188 140 210 138 232 140 C248 144 258 150 266 158',
+    ponytail:'M168 152 C188 142 210 140 232 142 C246 146 256 152 264 160'
+  }[style] || 'M168 150 C186 144 210 142 234 146 C248 149 256 153 264 158';
+  const strandEdges = {
+    messy:[
+      'M176 112 C180 128 176 146 168 158','M198 98 C200 118 196 140 188 156','M220 100 C222 120 218 142 210 156',
+      'M244 116 C246 132 242 148 234 158','M164 128 C168 144 164 158 156 168','M256 126 C260 142 256 156 248 166'
+    ],
+    side:[
+      'M186 104 C178 122 168 140 156 154','M204 98 C198 118 190 138 180 152','M222 102 C226 120 232 138 240 150',
+      'M160 132 C154 146 148 158 142 166','M248 118 C254 132 260 144 266 152'
+    ],
+    bob:[
+      'M180 108 C182 126 180 144 174 156','M200 100 C202 118 200 138 196 152','M220 100 C222 118 220 138 216 152',
+      'M240 110 C242 126 240 142 234 154','M166 128 C168 142 166 154 160 164'
+    ],
+    ponytail:[
+      'M182 108 C184 126 182 144 176 156','M202 100 C204 118 202 136 198 150','M222 102 C224 120 222 138 216 152',
+      'M248 118 C250 132 248 146 242 156'
+    ]
+  }[style] || [];
+  const tips = style==='messy' ? [
+    'M190 150 C192 138 198 128 206 126 C210 136 206 148 198 158 C192 158 190 154 190 150 Z',
+    'M214 148 C218 136 226 128 234 130 C236 140 230 152 222 160 C216 158 213 152 214 148 Z'
+  ] : [];
+  const sideLocks = style==='side' ? [
+    'M138 168 C130 188 134 220 148 248 C152 258 160 264 168 264 C162 236 164 202 172 174 C162 164 146 160 138 168 Z'
+  ] : [];
   const ponyLocks = style==='ponytail' ? [
     'M278 188 C300 196 314 214 318 236 C322 258 316 280 304 298 C300 274 294 250 286 228 C282 210 280 196 278 188 Z',
-    'M290 248 C306 262 314 282 312 304 C310 318 304 330 296 338 C294 318 290 298 284 280 C282 266 284 256 290 248 Z',
-    'M284 210 C304 222 314 242 316 264 C318 284 310 304 298 318 C296 296 292 274 284 254 C282 238 282 222 284 210 Z'
+    'M290 248 C306 262 314 282 312 304 C310 318 304 330 296 338 C294 318 290 298 284 280 C282 266 284 256 290 248 Z'
   ] : [];
-  return {replaceBangs:true, bangs, undercut, tips, strandEdges, sideLocks, ponyLocks};
+  return {replaceBangs:false, undercut, tips, strandEdges, sideLocks, ponyLocks, babyHairs, hairline};
 }
 
 function hairPalette(base){
@@ -1362,6 +1449,16 @@ function renderHairFront(s, data, st=styleProfile(s), ft=headTurnProfile(s), hd=
 
   (data.bangs || []).forEach((d,i)=>{
     silhouette(pair, d, fills[(i+1)%fills.length], { transform: hairLockTransform(hd,i,(data.bangs||[]).length,'bang') });
+  });
+
+  if(data.hairline){
+    const hx=ft.t*7.5;
+    interiorStroke(pair.ink, data.hairline, {stroke:p.line, strokeWidth:1.2, opacity:0.52, transform:`translate(${hx.toFixed(2)} 0) ${hairLockTransform(hd,0,1,'bang')}`});
+  }
+  (data.babyHairs || []).forEach((d,i)=>{
+    const el=svgEl('path',{d,fill:'none',stroke:i%3?p.line:p.base,'stroke-width':i%2?'0.7':'0.9','stroke-linecap':'round',opacity:i%2?'0.55':'0.42'});
+    el.setAttribute('transform',`translate(${(ft.t*6).toFixed(2)} 0) ${hairLockTransform(hd,i,(data.babyHairs||[]).length,'bang')}`);
+    g.appendChild(el);
   });
 
   (data.strandEdges || []).forEach((d,i)=>{
@@ -1561,10 +1658,6 @@ function buildLightingDefs(parent, s, pal, hairDataObj){
   linear('accentLight',accent,[170,280,260,445],true);
   linear('hairLight',hair,[140,70,292,285],true);
 
-  const warm=svgEl('radialGradient',{id:'faceWarmLight',gradientUnits:'userSpaceOnUse',cx:'178',cy:'162',r:'118',fx:'168',fy:'145'});
-  addStops(warm,[['0%',skin.warm,0.34],['38%',skin.base,0.14],['72%',skin.shadow,0.06],['100%',skin.shadow,0]]);
-  defs.appendChild(warm);
-
   const hairSpec=svgEl('linearGradient',{id:'hairSpecular',gradientUnits:'userSpaceOnUse',x1:'150',y1:'82',x2:'268',y2:'180'});
   addStops(hairSpec,[['0%','#ffffff',0],['38%',hair.highlight,0.08],['52%','#ffffff',0.34],['67%',hair.highlight,0.08],['100%','#ffffff',0]]);
   defs.appendChild(hairSpec);
@@ -1587,9 +1680,6 @@ function buildLightingDefs(parent, s, pal, hairDataObj){
   }
   defs.appendChild(torsoClip);
 
-  const soft=svgEl('filter',{id:'lightingSoftBlur',x:'-30%',y:'-30%',width:'160%',height:'160%'});
-  soft.appendChild(svgEl('feGaussianBlur',{stdDeviation:'4'}));
-  defs.appendChild(soft);
   const ground=svgEl('filter',{id:'groundShadowBlur',x:'-30%',y:'-80%',width:'160%',height:'260%'});
   ground.appendChild(svgEl('feGaussianBlur',{stdDeviation:'5'}));
   defs.appendChild(ground);
@@ -1602,33 +1692,31 @@ function buildLightingDefs(parent, s, pal, hairDataObj){
 
 function faceLightingMarkup(s, lights){
   const ft=headTurnProfile(s);
+  const t=ft.t, a=ft.abs;
   const g=svgEl('g',{'clip-path':'url(#faceLightClip)','data-lighting':'face'});
-  g.appendChild(svgEl('rect',{x:140+ft.t*2,y:100,width:140,height:210,fill:'url(#faceWarmLight)'}));
-  g.appendChild(svgEl('path',{
-    d:'M224 102 C258 121 274 154 274 193 C273 233 253 272 220 294 C233 265 237 234 234 205 C231 169 225 134 224 102 Z',
-    fill:lights.skin.shadow,opacity:'0.26',transform:`translate(${(ft.t*3.5).toFixed(2)} 0) scale(${(1-ft.abs*0.035).toFixed(3)} 1)`
-  }));
-  g.appendChild(svgEl('path',{
-    d:'M151 126 C164 112 180 104 198 102 C181 119 171 140 167 164 C160 158 154 146 151 126 Z',
-    fill:lights.skin.highlight,opacity:'0.22',filter:'url(#lightingSoftBlur)',transform:`translate(${(ft.t*1.5).toFixed(2)} 0)`
-  }));
-  g.appendChild(svgEl('path',{
-    d:'M177 264 C192 280 211 286 231 278 C224 290 217 296 210 299 C198 295 186 283 177 264 Z',
-    fill:lights.skin.deep,opacity:'0.11',transform:`translate(${(ft.chinShift*0.55).toFixed(2)} 0)`
-  }));
+  const sh=lights.skin.shadow, deep=lights.skin.deep, hi=lights.skin.highlight;
+  const farBoost=a*0.10;
+  shadowPath(g,'M232 118 C258 132 272 162 270 198 C268 236 250 270 224 288 C234 254 238 220 236 186 C234 156 234 134 232 118 Z',sh,0.20+ (t>0?farBoost:0));
+  shadowPath(g,'M150 128 C164 116 182 110 198 110 C184 128 174 150 170 176 C162 168 154 150 150 128 Z',hi,0.13);
+  shadowPath(g,`M${158+t*2} 168 C${164+t*2} 186 ${172+t*1.5} 204 ${184+t} 218 C${174+t} 214 ${164+t} 202 ${158+t*2} 188 Z`,sh,0.12+(t<0?farBoost:0.04));
+  shadowPath(g,`M${236+t*2} 168 C${246+t*2} 186 ${254+t} 206 ${262+t} 222 C${256+t} 210 ${246+t} 194 ${240+t} 176 Z`,sh,0.14+(t>0?farBoost:0.03));
+  shadowPath(g,'M186 268 C200 280 220 280 234 268 C226 284 218 292 210 294 C202 292 194 284 186 268 Z',deep,0.16, {transform:`translate(${(ft.chinShift*0.5).toFixed(2)} 0)`});
+  shadowPath(g,'M204 198 C208 204 214 204 218 198 C216 206 212 210 210 210 C208 210 204 206 204 198 Z',sh,0.18);
   return g;
 }
 
-function torsoLightingMarkup(lights){
+function torsoLightingMarkup(s, lights, profile){
+  const ft=headTurnProfile(s);
+  const t=ft.t, a=ft.abs;
   const g=svgEl('g',{'clip-path':'url(#torsoLightClip)','data-lighting':'torso'});
-  g.appendChild(svgEl('path',{
-    d:'M226 276 C266 291 287 330 286 381 C285 424 269 456 245 478 L223 478 C237 433 240 385 236 339 C234 316 231 295 226 276 Z',
-    fill:lights.top.deep,opacity:'0.18'
-  }));
-  g.appendChild(svgEl('path',{
-    d:'M150 286 C169 278 188 275 205 278 C188 292 178 315 174 344 C163 334 154 313 150 286 Z',
-    fill:lights.top.highlight,opacity:'0.16',filter:'url(#lightingSoftBlur)'
-  }));
+  const sh=lights.top.shadow, deep=lights.top.deep, hi=lights.top.highlight;
+  shadowPath(g,'M176 298 C198 310 222 310 244 298 C240 316 228 326 210 328 C192 326 180 316 176 298 Z',sh,0.24);
+  shadowPath(g,'M228 300 C262 318 278 356 276 400 C274 438 258 468 236 486 C246 444 250 396 246 350 C242 324 236 308 228 300 Z',deep,0.18+(t>0?a*0.10:0));
+  shadowPath(g,'M166 372 C188 386 232 386 254 372 C250 396 234 410 210 412 C186 410 170 396 166 372 Z',sh,0.14);
+  shadowPath(g,'M148 292 C168 282 188 280 204 284 C190 298 180 320 176 348 C164 336 154 314 148 292 Z',hi,0.12);
+  if(profile && profile.lower==='skirt'){
+    shadowPath(g,'M160 458 C184 470 236 470 260 458 C256 488 240 516 210 522 C180 516 164 488 160 458 Z',lights.lower?lights.lower.shadow:sh,0.16);
+  }
   return g;
 }
 
@@ -1980,6 +2068,8 @@ function poseRig(pose){
     elbow:sp.elbows, wrist:sp.wrists, knee:sp.knees, ankle:sp.ankles,
     handGestures:sp.handGestures||{}, armOrder:sp.armOrder||['left','right'],
     twoHanded:!!sp.twoHanded, seated:!!sp.seated, walking:!!sp.walking,
+    poseTransform:transform,
+    headAngle:sp.headAngle||0,
     torsoTransform:transform,
     headTransform:`${transform} rotate(${sp.headAngle||0} 210 272)`
   };
@@ -2069,7 +2159,38 @@ function applyDepthRig(rig,s){
   out.depthStrength=amount;
   out.armOrder=['left','right'].sort((a,b)=>limbDepth(out,a,'arm')-limbDepth(out,b,'arm'));
   out.legOrder=['left','right'].sort((a,b)=>limbDepth(out,a,'leg')-limbDepth(out,b,'leg'));
+  applyBodyYaw(out,s);
   return out;
+}
+function bodyYawProfile(s){
+  const ft=headTurnProfile(s);
+  const t=ft.t*0.56;
+  const a=Math.abs(t);
+  return {t,a,shift:t*18,sx:1-a*0.11,skew:-t*5.5,headLead:ft.t*9};
+}
+function applyBodyYaw(rig,s){
+  const yaw=bodyYawProfile(s);
+  const poseXform=rig.poseTransform || rig.torsoTransform || '';
+  const headAngle=rig.headAngle||0;
+  if(yaw.a>0.02){
+    const near=yaw.t>=0?'right':'left';
+    const follow={shoulder:1,elbow:0.84,wrist:0.70,hip:0.64,knee:0.38,ankle:0.14};
+    for(const key of ['shoulder','elbow','wrist','hip','knee','ankle']){
+      for(const side of ['left','right']){
+        const p=rig[key][side];
+        const isNear=side===near;
+        const lat=isNear?1+yaw.a*0.07:1-yaw.a*0.15;
+        p.x=210+(p.x-210)*lat + yaw.shift*follow[key];
+        p.z=(p.z||0)+(isNear?yaw.a*11:-yaw.a*13)*follow[key];
+      }
+    }
+    rig.armOrder=['left','right'].sort((a,b)=>limbDepth(rig,a,'arm')-limbDepth(rig,b,'arm'));
+    rig.legOrder=['left','right'].sort((a,b)=>limbDepth(rig,a,'leg')-limbDepth(rig,b,'leg'));
+  }
+  const yawXform=`translate(${yaw.shift.toFixed(2)} 0) translate(210 410) scale(${yaw.sx.toFixed(3)} 1) skewX(${yaw.skew.toFixed(2)}) translate(-210 -410)`;
+  rig.torsoTransform=`${poseXform} ${yawXform}`.trim();
+  rig.headTransform=`${poseXform} translate(${(yaw.shift+yaw.headLead).toFixed(2)} 0) rotate(${headAngle} 210 272)`;
+  rig.bodyYaw=yaw;
 }
 
 function interpolateRig(a,b,t){
@@ -2986,6 +3107,7 @@ function renderAvatar(){
 
   const whole = svgEl('g');
   group.appendChild(whole);
+  whole.appendChild(sceneBackdropMarkup(s.scene));
   whole.appendChild(artDirectionMarkup(s,pal,lights,lines,rig,s.exaggeration));
 
   // Soft contact shadow grounds the otherwise crisp cel-shaded character.
@@ -3018,7 +3140,7 @@ function renderAvatar(){
   });
 
   if(s.outfit === 'festival'){
-    silhouette(stack.layerCore, festivalRobePath(), lights.topFill);
+    silhouette(stack.layerCore, festivalRobePath(), lights.topFill, { transform: torsoXform });
     silhouette(stack.layerBack,'M151 654 C161 650 177 651 187 656 C191 661 191 667 186 671 L148 671 C143 667 145 660 151 654 Z','#463a34');
     silhouette(stack.layerBack,'M269 654 C259 650 243 651 233 656 C229 661 229 667 234 671 L272 671 C277 667 275 660 269 654 Z','#463a34');
   } else {
@@ -3049,12 +3171,12 @@ function renderAvatar(){
   } else {
     coreDetailLayer.appendChild(svgEl('path',{d:'M106 662 C142 680 176 690 210 691 C244 690 278 680 314 662',fill:'none',stroke:lines.top,'stroke-width':'1.2',opacity:'0.55'}));
     fillMass(coreDetailLayer,'M173 314 C188 303 199 298 210 298 C221 298 232 303 247 314 C250 430 251 548 250 664 C238 680 224 687 210 689 C196 687 182 680 170 664 C169 548 170 430 173 314 Z','#e6d2a6',{opacity:'0.15'});
-    silhouette(stack.layerCore, kimonoEriPath(), lights.accentFill);
+    silhouette(stack.layerCore, kimonoEriPath(), lights.accentFill, { transform: torsoXform });
     festivalGarmentDetails(coreDetailLayer,pal,lights,lines);
   }
 
   torsoPoseFolds(torsoGroup,s,rig,lines,profile);
-  torsoGroup.appendChild(torsoLightingMarkup(lights));
+  torsoGroup.appendChild(torsoLightingMarkup(s,lights,profile));
   if(s.outfit!=='festival'){
     coreDetailLayer.appendChild(lowerCastShadowMarkup(s,rig,pal,profile));
     litEdge(torsoGroup,'M160 299 C171 286 190 280 207 279',lights.top.highlight,3.8,0.38);
@@ -3083,7 +3205,6 @@ function renderAvatar(){
   headGroup.appendChild(faceCore);
   silhouette(faceCore, facePath(s.faceShape,s.exaggeration,s.headTurn,faceAnatomyProfile(s)), lights.skinFill);
   faceCore.appendChild(earMarkup(s.skin, lines, ft, faceAnatomyProfile(s)));
-  interiorStroke(faceCore, 'M168 150 C186 144 210 142 234 146 C248 149 256 153 264 158', { stroke: lines.hair, strokeWidth: 1.15, opacity: 0.48 });
   faceCore.appendChild(faceLightingMarkup(s, lights));
   // Upper-left key light breaks the dark face contour instead of outlining every edge equally.
   litEdge(faceCore,'M154 149 C149 166 147 188 149 211 C151 230 158 248 170 264',lights.skin.highlight,3.45,0.50);
@@ -3264,7 +3385,7 @@ function randomize(){
   renderAvatar();
 }
 function saveStateFile(){
-  const data = {version:3, rendererStep:19, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', silhouetteModel:'teen-proportion-unified-contour-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'illustrated-palm-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'unified-outer-contour-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'garment-silhouette-v1', activeVariant, variants};
+  const data = {version:3, rendererStep:19, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', silhouetteModel:'teen-proportion-unified-contour-v1', hairModel:'style-bangs-baby-hair-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'three-quarter-body-yaw-v1', handModel:'illustrated-palm-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'form-cel-shadow-v1', lineArtModel:'unified-outer-contour-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'garment-silhouette-v1', sceneModel:'illustrated-scene-v1', activeVariant, variants};
   const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);

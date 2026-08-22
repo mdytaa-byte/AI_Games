@@ -111,9 +111,9 @@
       <div id="titleUI" class="overlay show">
         <div style="height:40px"></div>
         <h1>WANDAFUL</h1>
-        <div class="sub">A 16-BIT RPG · COLOR COMBAT</div>
+        <div class="sub">A 16-BIT RPG · FROM THE NOVEL</div>
         <p style="max-width:340px;margin:0 auto 14px;font-size:11px;line-height:1.45;color:#ffd8e8">
-          From the novel by Michael D. Young. Ordinary objects channel magic across color-linked Wavelengths.
+          From the novel by Michael D. Young. Chrome is magical color. Complementary hues cancel. Wands can look like anything.
         </p>
         <button class="menu-btn" id="btnNew">NEW QUEST</button>
         <button class="menu-btn" id="btnContinue">CONTINUE</button>
@@ -121,8 +121,8 @@
         <p style="margin-top:14px;font-size:10px;color:#c090a8">ARROWS / WASD MOVE · Z / SPACE CONFIRM · X MENU</p>
       </div>
       <div id="endingUI" class="overlay">
-        <h1>SPECTRUM RESTORED</h1>
-        <div class="sub">THE MULTIVERSE KEEPS ITS COLORS</div>
+        <h1>THE SPECTRUM HOLDS</h1>
+        <div class="sub">WHITE KEEPS BLACK IN CHECK — FOR NOW</div>
         <p id="endingText" style="max-width:360px;margin:10px auto 14px;font-size:11px;line-height:1.5;color:#ffd8e8"></p>
         <button class="menu-btn" id="btnAgain">RETURN TO TITLE</button>
       </div>
@@ -157,40 +157,52 @@ const endingUI = document.getElementById("endingUI");
 const pauseEl = document.getElementById("pause");
 const codexEl = document.getElementById("codex");
 const battleEl = document.getElementById("battle");
-const SAVE_KEY = "wandaful-16bit-v1";
+const SAVE_KEY = "wandaful-16bit-v2";
 
 /* ------------------------------------------------------------------ */
-/*  Color combat — ordinary objects channel magic across Wavelengths. */
-/*  Colors stand for different things. Complementary hues CLASH.     */
-/*  Same hues RESONATE. Adjacent hues MIX. Darkness (Umbra) drinks    */
-/*  unmatched color. Hal and Wanda's talents clash until they master  */
-/*  them together as a Chorus (white).                                */
+/*  Chrome combat, from the novels.                                   */
+/*  Chrome / Chroma = magical matter (millions of shades). Ordinary   */
+/*  objects hold it. Breaking, squeezing, or channeling releases it.  */
+/*  Primaries: red, yellow, blue. Secondaries: green, purple, orange. */
+/*  Opposites cancel: red↔green, yellow↔purple, blue↔orange.          */
+/*  Black + white = the Spectrum's most powerful reaction.            */
+/*  Dark Chroma drinks unmatched color. Vitas fuels the work.         */
+/*  Hal's native hue is yellow; his Wand reads white. Wanda is blue.  */
 /* ------------------------------------------------------------------ */
 const SPECTRUM = {
-  order: ["red", "orange", "yellow", "green", "blue", "violet"],
+  order: ["red", "orange", "yellow", "green", "blue", "purple"],
   hex: {
     red: "#e23a3a", orange: "#f08a28", yellow: "#f0d030",
-    green: "#3cb464", blue: "#3a78e0", violet: "#8a4ae0",
-    white: "#f4f0ff", umbra: "#1a1018"
+    green: "#3cb464", blue: "#3a78e0", purple: "#8a4ae0",
+    white: "#f4f0ff", black: "#1a1018", dark: "#142038"
   },
   meaning: {
-    red: "Force", orange: "Change", yellow: "Light",
-    green: "Life", blue: "Thought", violet: "Door"
+    red: "primary — cancelled by green",
+    orange: "secondary — cancelled by blue",
+    yellow: "primary — Hal's native Chrome",
+    green: "secondary — cancelled by red",
+    blue: "primary — Wanda's native Chrome; Blue Wavelength",
+    purple: "secondary — cancelled by yellow"
   },
   conduit: {
-    red: "chili-brick", orange: "copper coin", yellow: "attic lamp",
-    green: "jade leaf", blue: "ink bottle", violet: "ribbon key"
+    red: "Misha's knitting-needle Wand",
+    orange: "hint in the rubber duck",
+    yellow: "rubber duck; Hal's native burst",
+    green: "green pencil; action figure",
+    blue: "Wanda's paintbrush trail",
+    purple: "action-figure haze"
   },
   warm: ["red", "orange", "yellow"],
-  cool: ["green", "blue", "violet"],
+  cool: ["green", "blue", "purple"],
   index(c) { return this.order.indexOf(c); },
   opposite(c) {
     const i = this.index(c);
     return i < 0 ? null : this.order[(i + 3) % 6];
   },
   relation(atk, def) {
-    if (atk === "white") return "chorus";
-    if (def === "umbra") return "umbra";
+    if ((atk === "white" && def === "black") || (atk === "black" && def === "white")) return "spectrum";
+    if (atk === "white") return "white";
+    if (def === "black") return "glance";
     const a = this.index(atk), d = this.index(def);
     if (a < 0 || d < 0) return "glance";
     const dist = Math.min((a - d + 6) % 6, (d - a + 6) % 6);
@@ -203,22 +215,28 @@ const SPECTRUM = {
     const pair = [a, b].sort().join("+");
     return ({
       "orange+red": "Spark",
-      "orange+yellow": "Glare",
+      "orange+yellow": "Duck-burst",
       "green+yellow": "Bloom",
       "blue+green": "Tide",
-      "blue+violet": "Dusk",
-      "red+violet": "Bind"
+      "blue+purple": "Haze",
+      "purple+red": "Web"
     })[pair] || "Blend";
   },
   affinity(caster, color) {
-    if (color === "white") return 1.25;
-    if (caster === "hal") return this.warm.includes(color) ? 1.25 : 0.85;
-    if (caster === "wanda") return this.cool.includes(color) ? 1.25 : 0.85;
+    if (color === "white" || color === "black") return 1.3;
+    if (caster === "hal") {
+      if (color === "yellow") return 1.35;
+      return this.warm.includes(color) ? 1.15 : 0.85;
+    }
+    if (caster === "wanda") {
+      if (color === "blue") return 1.35;
+      return this.cool.includes(color) ? 1.15 : 0.85;
+    }
     return 1;
   },
   resolve(opts) {
-    const { color, foeHue, caster, level, stolen, both } = opts;
-    const rel = this.relation(color, foeHue);
+    const { color, foeHue, caster, level, stolen, both, dark } = opts;
+    let rel = this.relation(color, foeHue);
     const aff = both
       ? (this.affinity("hal", color) + this.affinity("wanda", color)) / 2
       : this.affinity(caster, color);
@@ -228,52 +246,54 @@ const SPECTRUM = {
     let steal = false;
     let status = null;
     let log = "";
-    if (rel === "clash") {
-      dmg = Math.round((10 + lv * 3) * aff * (both ? 1.35 : 1));
-      log = "CLASH! Opposite Wavelengths strike true.";
-    } else if (rel === "resonate") {
-      dmg = Math.round((3 + lv) * aff);
-      steal = true;
-      log = "RESONATE. The hues lock. You seize the Wavelength.";
-    } else if (rel === "mix") {
-      dmg = Math.round((7 + lv * 2) * aff);
-      status = this.mixName(color, foeHue);
-      log = "MIX into " + status + ".";
-    } else if (rel === "chorus") {
-      dmg = Math.round((14 + lv * 4) * (both ? 1.2 : 1));
-      log = "CHORUS. Hal and Wanda braid every Wavelength.";
-    } else if (rel === "umbra") {
-      if (color === "white" || (stolen && color === this.opposite(stolen))) {
-        dmg = Math.round((12 + lv * 3) * (color === "white" ? 1.3 : 1.15));
-        log = color === "white"
-          ? "White light refuses the Unpainting."
-          : "The stolen hue is thrown back as a clash.";
+    if (dark && rel !== "clash" && color !== "white") {
+      if (stolen && color === this.opposite(stolen)) {
+        rel = "clash";
       } else {
         dmg = 0;
         heal = 6 + lv;
-        log = "Umbra drinks the unmatched color.";
+        log = "Dark Chroma drinks the unmatched color.";
+        return { rel: "dark", dmg: 0, heal, steal, status, log };
       }
+    }
+    if (rel === "clash") {
+      dmg = Math.round((10 + lv * 3) * aff * (both ? 1.35 : 1));
+      log = "COUNTER! Complementary Chrome stings the opposite Wand.";
+    } else if (rel === "resonate") {
+      dmg = Math.round((3 + lv) * aff);
+      steal = true;
+      log = "RESONATE. The hues lock. You seize a spark of that Chrome.";
+    } else if (rel === "mix") {
+      dmg = Math.round((7 + lv * 2) * aff);
+      status = this.mixName(color, foeHue);
+      log = "MIX into " + status + ". Residue hangs in the air.";
+    } else if (rel === "spectrum") {
+      dmg = Math.round((28 + lv * 5) * (both ? 1.2 : 1));
+      log = "BLACK + WHITE. The Spectrum's most dangerous reaction.";
+    } else if (rel === "white") {
+      dmg = Math.round((14 + lv * 4) * (both ? 1.2 : 1));
+      log = "White Chrome — Hal's Wand, keeping the Spectrum in check.";
     } else {
       dmg = Math.round((5 + lv) * aff);
-      log = "A glancing Wavelength. Little purchase.";
+      log = "A glancing burst. Little purchase.";
     }
     return { rel, dmg: Math.max(0, dmg), heal, steal, status, log };
   }
 };
 
 const ACTORS = {
-  hal:    { name: "Hal",    skin: "#e0b48a", hair: "#5a3a22", coat: "#c44a32", acc: "#f0d060" },
-  wanda:  { name: "Wanda",  skin: "#d8a878", hair: "#241418", coat: "#3a58c8", acc: "#b070e0" },
-  primer: { name: "Primer" },
-  mom:    { name: "Mom" },
-  clerk:  { name: "Clerk" },
-  page:   { name: "Librarian" },
-  gard:   { name: "Gardener" },
-  dock:   { name: "Dockhand" },
-  usher:  { name: "Usher" },
-  prism:  { name: "Prism" },
-  unp:    { name: "The Unpainter" },
-  foe:    { name: "Wavelength" }
+  hal:    { name: "Hal",      skin: "#e8c49a", hair: "#c8a060", coat: "#c44a32", acc: "#f0d060" },
+  wanda:  { name: "Wanda",    skin: "#d8a878", hair: "#c43a28", coat: "#3a58c8", acc: "#f0d060" },
+  dad:    { name: "Dad" },
+  wandy:  { name: "Wandy" },
+  em:     { name: "Emmaline" },
+  blish:  { name: "Uncle Blish" },
+  merlin: { name: "Merlin" },
+  misha:  { name: "Misha" },
+  fyodor: { name: "Fyodor" },
+  sergio: { name: "Sergio" },
+  other:  { name: "The Other Hal" },
+  foe:    { name: "Chrome" }
 };
 
 function gridFrom(rows) {
@@ -294,22 +314,10 @@ function fillMap(w, h, wall, floor, extra) {
 }
 
 const MAPS = {
-  attic: gridFrom([
-    "##############",
-    "#++++..TTTT..#",
-    "#++++........#",
-    "#......Y.....#",
-    "#............#",
-    "#............#",
-    "#SSS.........#",
-    "#S.S.........#",
-    "#S.D.........#",
-    "##############"
-  ]),
-  street: gridFrom([
+  portal: gridFrom([
     "####################",
     "#,,,,,,,,,,,,,,,,,,#",
-    "#,,=======R=======,#",
+    "#,,=======Y=======,#",
     "#,,=======.=======,#",
     "#,,HHH.....###.....#",
     "#,,H.H.....#.#.....#",
@@ -319,11 +327,23 @@ const MAPS = {
     "#,,,,,,,,,,,,,,,,,,#",
     "####################"
   ]),
-  market: gridFrom([
+  blish: gridFrom([
+    "##############",
+    "#++++..TTTT..#",
+    "#++++........#",
+    "#......O.....#",
+    "#............#",
+    "#............#",
+    "#SSS.........#",
+    "#S.S.........#",
+    "#S.D.........#",
+    "##############"
+  ]),
+  thrift: gridFrom([
     "################",
-    "#....=======...#",
+    "#.+..=======...#",
     "#.TTT.=======.T#",
-    "#.T.T....O....T#",
+    "#.T.T....R....T#",
     "#.TTT.=======.T#",
     "#.....=======..#",
     "#.SSS..........#",
@@ -331,11 +351,23 @@ const MAPS = {
     "#.S.D..H..H....#",
     "################"
   ]),
-  library: gridFrom([
+  museum: gridFrom([
+    "################",
+    "#CCCCCCCCCCCCCC#",
+    "#C............C#",
+    "#C.....V......C#",
+    "#C............C#",
+    "#.......=======#",
+    "#.....SSSS.....#",
+    "#.....S.GS.....#",
+    "#.....S..D.....#",
+    "################"
+  ]),
+  lab: gridFrom([
     "##################",
     "#TTTT........TTTT#",
     "#T..T........T..T#",
-    "#T..T...Y....T..T#",
+    "#T..T...C....T..T#",
     "#TTTT........TTTT#",
     "#................#",
     "#....SSSS........#",
@@ -343,19 +375,7 @@ const MAPS = {
     "#....S..D........#",
     "##################"
   ]),
-  green: gridFrom([
-    "################",
-    "#,,,,~~~~,,,,,*#",
-    "#,,,,~~~~,,,,,*#",
-    "#,,,,,,G,,,,,,*#",
-    "#,,,,~~~~,,,,,*#",
-    "#,,,,,,,,,,,,,,#",
-    "#....SSSS......#",
-    "#....S..S......#",
-    "#....S..D......#",
-    "################"
-  ]),
-  harbor: gridFrom([
+  chase: gridFrom([
     "##################",
     "#~~~~~......~~~~~#",
     "#~~~~~......~~~~~#",
@@ -367,7 +387,7 @@ const MAPS = {
     "#......S..D......#",
     "##################"
   ]),
-  theater: gridFrom([
+  gala: gridFrom([
     "################",
     "#CCCCCCCCCCCCCC#",
     "#C............C#",
@@ -375,11 +395,11 @@ const MAPS = {
     "#C............C#",
     "#.......=======#",
     "#.....SSSS.....#",
-    "#.....S..S.....#",
+    "#.....S.GS.....#",
     "#.....S..D.....#",
     "################"
   ]),
-  prism: gridFrom([
+  whitewave: gridFrom([
     "##################",
     "#...*........*...#",
     "#................#",
@@ -392,135 +412,104 @@ const MAPS = {
     "#......S.S.......#",
     "#......S.D.......#",
     "##################"
-  ]),
-  umbra: gridFrom([
-    "##################",
-    "#................#",
-    "#..####....####..#",
-    "#..#..#....#..#..#",
-    "#................#",
-    "#.......U........#",
-    "#................#",
-    "#..#..#....#..#..#",
-    "#..####....####..#",
-    "#................#",
-    "#.......D........#",
-    "##################"
   ])
 };
 
 const BLOCK = new Set("#T+~HCS*");
 const MAP_PAL = {
-  attic:   { floor: "#3a2a1c", wall: "#241818", acc: "#6a3d22", light: "#f0d030" },
-  street:  { floor: "#3a3a44", wall: "#2a2030", acc: "#e23a3a", light: "#c44a32" },
-  market:  { floor: "#4a3724", wall: "#3a2418", acc: "#f08a28", light: "#d07020" },
-  library: { floor: "#3a3420", wall: "#2a2818", acc: "#f0d030", light: "#fff0a0" },
-  green:   { floor: "#16351c", wall: "#0e2414", acc: "#3cb464", light: "#7dff9a" },
-  harbor:  { floor: "#1c3048", wall: "#142030", acc: "#3a78e0", light: "#7ec8ff" },
-  theater: { floor: "#2a1838", wall: "#1a1028", acc: "#8a4ae0", light: "#c090ff" },
-  prism:   { floor: "#201428", wall: "#140c1c", acc: "#f4f0ff", light: "#ffffff" },
-  umbra:   { floor: "#121018", wall: "#08060c", acc: "#3a2040", light: "#5a3068" }
+  portal:    { floor: "#1c3048", wall: "#142030", acc: "#3a78e0", light: "#7ec8ff" },
+  blish:     { floor: "#3a2a1c", wall: "#241818", acc: "#6a3d22", light: "#f0d030" },
+  thrift:    { floor: "#4a3724", wall: "#3a2418", acc: "#8a5a32", light: "#d07020" },
+  museum:    { floor: "#3a3420", wall: "#2a2818", acc: "#f0d030", light: "#fff0a0" },
+  lab:       { floor: "#3a3a44", wall: "#2a2030", acc: "#e23a3a", light: "#c44a32" },
+  chase:     { floor: "#1c3048", wall: "#142030", acc: "#142038", light: "#3a78e0" },
+  gala:      { floor: "#2a1838", wall: "#1a1028", acc: "#8a4ae0", light: "#c090ff" },
+  whitewave: { floor: "#201428", wall: "#140c1c", acc: "#f4f0ff", light: "#ffffff" }
 };
 
 const FOES = {
-  mote:     { name: "Dust Mote",     hue: "yellow", hp: 18, atk: 4,  xp: 8,  boss: false },
-  scarlet:  { name: "Scarlet Imp",   hue: "red",    hp: 22, atk: 6,  xp: 12, boss: false },
-  ember:    { name: "Ember Warden",  hue: "red",    hp: 48, atk: 8,  xp: 28, boss: true },
-  rustfox:  { name: "Rust Fox",      hue: "orange", hp: 26, atk: 7,  xp: 14, boss: false },
-  coppers:  { name: "Copper Shift",  hue: "orange", hp: 56, atk: 9,  xp: 32, boss: true },
-  glare:    { name: "Glare Page",    hue: "yellow", hp: 28, atk: 7,  xp: 16, boss: false },
-  lantern:  { name: "Lamp Sentinel", hue: "yellow", hp: 64, atk: 10, xp: 36, boss: true },
-  thorn:    { name: "Thorn Choir",   hue: "green",  hp: 30, atk: 8,  xp: 18, boss: false },
-  root:     { name: "Root Cantor",   hue: "green",  hp: 72, atk: 11, xp: 40, boss: true },
-  ripple:   { name: "Tide Memory",   hue: "blue",   hp: 32, atk: 8,  xp: 18, boss: false },
-  harbor:   { name: "Harbor Mind",   hue: "blue",   hp: 78, atk: 12, xp: 44, boss: true },
-  curtain:  { name: "Curtain Shade", hue: "violet", hp: 34, atk: 9,  xp: 20, boss: false },
-  usher:    { name: "Violet Usher",  hue: "violet", hp: 84, atk: 12, xp: 48, boss: true },
-  blot:     { name: "Color Blot",    hue: "umbra",  hp: 40, atk: 10, xp: 22, boss: false, stolen: "red" },
-  unpainter:{ name: "The Unpainter", hue: "umbra",  hp: 140,atk: 14, xp: 80, boss: true, stolen: "red" }
+  haze:     { name: "Blue Haze",       hue: "blue",   hp: 18, atk: 4,  xp: 8,  boss: false },
+  spark:    { name: "Red Spark",       hue: "red",    hp: 22, atk: 6,  xp: 12, boss: false },
+  misha:    { name: "Misha",           hue: "red",    hp: 52, atk: 8,  xp: 28, boss: true },
+  residue:  { name: "Purple Haze",     hue: "purple", hp: 26, atk: 7,  xp: 14, boss: false },
+  agent:    { name: "Spectrum Agent",  hue: "orange", hp: 30, atk: 8,  xp: 16, boss: false },
+  sergio:   { name: "Sergio",          hue: "blue",   hp: 78, atk: 12, xp: 44, boss: true, dark: true, stolen: "blue" },
+  blot:     { name: "Dark Blot",       hue: "blue",   hp: 40, atk: 10, xp: 22, boss: false, dark: true, stolen: "blue" },
+  fyodor:   { name: "Fyodor",          hue: "black",  hp: 140,atk: 14, xp: 80, boss: true }
 };
 
 const CHAPTERS = [
   {
-    id: "ch0", title: "THE ATTIC LAMP", hero: "hal", map: "attic", spawn: [4, 7],
-    goal: "Examine the yellow lamp. Ordinary objects have started to hum.",
+    id: "ch0", title: "ALONE THROUGH THE PORTAL", hero: "hal", map: "portal", spawn: [4, 6],
+    goal: "Find the girl with the paintbrush. This city is the wrong blue.",
     intro: [
-      ["hal", "The attic always smelled like cardboard and old summers."],
-      ["wanda", "Hal. The lamp is doing something lamps are not supposed to do."],
-      ["hal", "It's yellow. It's always been yellow."],
-      ["wanda", "Not this yellow. This yellow has a Wavelength."]
+      ["dad", "Take this. It looks like a tie bar. It is not a tie bar."],
+      ["hal", "Dad — they're breaking in."],
+      ["dad", "Fyodor's people. Through the blue. Don't look back."],
+      ["hal", "The street is blue the way a bruise is blue. Someone with red curls is staring."]
     ]
   },
   {
-    id: "ch1", title: "RED STREET", hero: "hal", map: "street", spawn: [4, 6],
-    goal: "Follow the red rift. Force wants a fight.",
+    id: "ch1", title: "UNCLE BLISH", hero: "hal", map: "blish", spawn: [4, 7],
+    goal: "Talk to Uncle Blish. The second floor is trying to become a first floor.",
     intro: [
-      ["wanda", "Red is Force. Heat, push, the will to move a wall."],
-      ["hal", "Then the street is angry."],
-      ["primer", "Objects of a color open that color's door. Chili, brick, a ruby marble — all Force if you listen."]
+      ["wanda", "You came out of a hole in the air. That's either magic or a very committed magician."],
+      ["hal", "I need somewhere that isn't this Wavelength's idea of a welcome."],
+      ["wanda", "Uncle Blish's house is crumbling. He says that's a personality."]
     ]
   },
   {
-    id: "ch2", title: "ORANGE MARKET", hero: "wanda", map: "market", spawn: [3, 8],
-    goal: "Find the copper coin. Change never sits still.",
+    id: "ch2", title: "BAD BRISTLE DAY", hero: "wanda", map: "thrift", spawn: [3, 8],
+    goal: "Merlin's thrift. Find a brush — then survive the old woman with licorice breath.",
     intro: [
-      ["wanda", "Orange is Change. Rust, motion, the moment a thing becomes another thing."],
-      ["hal", "The market stalls keep rearranging themselves."],
-      ["clerk", "If you pay in copper, you may not get the same fruit twice."]
+      ["em", "Wandy-dear, you cannot produce a masterpiece with a brush having a bad bristle day."],
+      ["wanda", "Abracadabra, Merlin."],
+      ["merlin", "Abracadabra, Wanda. I saved you a bottle cap. And the back corner is... lively."]
     ]
   },
   {
-    id: "ch3", title: "YELLOW STACKS", hero: "hal", map: "library", spawn: [6, 8],
-    goal: "Read the Spectrum Primer. Light reveals what Force cannot shove.",
+    id: "ch3", title: "A POWERFUL PORTRAIT", hero: "wanda", map: "museum", spawn: [5, 8],
+    goal: "The exhibit. A man in black wants the painting — and more than the painting.",
     intro: [
-      ["page", "Yellow is Light. Truth, spark, the unkind honesty of a bare bulb."],
-      ["hal", "We already have a lamp."],
-      ["wanda", "Then use it like a question, not a flashlight."]
+      ["em", "This will be the centerpiece. Wandaful, of course. Not wonderful — Wandaful."],
+      ["wanda", "I still can't get his smile right."],
+      ["em", "The fire took the photographs. Paint him until the smile comes back."]
     ]
   },
   {
-    id: "ch4", title: "GREENHOUSE", hero: "wanda", map: "green", spawn: [4, 8],
-    goal: "Speak with the gardener. Life mends — and also grows thorns.",
+    id: "ch4", title: "THE SPECTRUM", hero: "hal", map: "lab", spawn: [6, 8],
+    goal: "Hal's Red Wavelength lab. Learn the color chart before Sergio finds the door.",
     intro: [
-      ["gard", "Green is Life. Roots, mend, the stubborn fact of growing anyway."],
-      ["hal", "The ivy is writing on the glass."],
-      ["wanda", "It's a Wavelength, Hal. Everything is, if it has a color."]
+      ["hal", "This is the Red Wavelength. Your home is Blue. Each universe has a majority Chrome."],
+      ["wanda", "And you look like a teenager again. The milkshake guy was a costume?"],
+      ["hal", "Wielders change their faces. The Wand changes its shape. Listen to the chart."]
     ]
   },
   {
-    id: "ch5", title: "BLUE HARBOR", hero: "hal", map: "harbor", spawn: [8, 8],
-    goal: "Walk the dock. Thought is a tide: it remembers, then it leaves.",
+    id: "ch5", title: "DARK CHROMA", hero: "hal", map: "chase", spawn: [8, 8],
+    goal: "Sergio is tailing you. Dark blue Chrome. Complementary orange will sting it.",
     intro: [
-      ["dock", "Blue is Thought. Calm, ice, the bottle of ink that knows more than it writes."],
-      ["wanda", "My talent sits here. Cool colors listen before they strike."],
-      ["hal", "Mine shout. That's why we clash."]
+      ["hal", "Dark Chroma. Dark blue if I'm not mistaken. That means Sergio."],
+      ["wanda", "Dark like evil?"],
+      ["hal", "Dark is not necessarily evil. Light is not necessarily good. They are opposites. Like paint."]
     ]
   },
   {
-    id: "ch6", title: "VIOLET CURTAIN", hero: "wanda", map: "theater", spawn: [5, 8],
-    goal: "Open the violet door. Binding is a kind of courage.",
+    id: "ch6", title: "THE SECRET GALA", hero: "wanda", map: "gala", spawn: [5, 8],
+    goal: "Infiltrate Fyodor's gala. Em speaks. Wanda walks. Do not let him unmask you early.",
     intro: [
-      ["usher", "Violet is Door. Spirit, ribbon, the key that is also a lock."],
-      ["wanda", "If we can open, he can close. That's the Unpainter's trick."],
-      ["hal", "Then we learn to clash on purpose."]
+      ["hal", "You attend as your mother. The necklace carries her voice. Magic cannot copy a voice — only a face."],
+      ["em", "Fyodor is a ruthless man. Tomorrow Will Look Different — that is his promise and his threat."],
+      ["wanda", "If he is my uncle, why does the portrait still feel like a question?"]
     ]
   },
   {
-    id: "ch7", title: "PRISM", hero: "hal", map: "prism", spawn: [8, 9],
-    goal: "Stand in the Prism. Master the clash before the Unpainter drinks the rest.",
+    id: "ch7", title: "THE OTHER HAL", hero: "hal", map: "whitewave", spawn: [8, 10],
+    goal: "Fyodor wants the White Wavelength. White Chrome keeps black in check. Mix if you must.",
     intro: [
-      ["prism", "Six Wavelengths. Two talents that refuse each other. One Chorus if you stop arguing long enough."],
-      ["wanda", "He wants every color so he can unpaint them."],
-      ["hal", "Then we keep the spectrum by using it together."]
-    ]
-  },
-  {
-    id: "ch8", title: "THE UNPAINTING", hero: "hal", map: "umbra", spawn: [8, 10],
-    goal: "Confront the Unpainter. Unmatched color feeds him. Clash and Chorus do not.",
-    intro: [
-      ["unp", "A multiverse is only a palette. I prefer the dark between the strokes."],
-      ["wanda", "You don't get to decide what stays visible."],
-      ["hal", "We brought every Wavelength. Including the ones that hurt to hold together."]
+      ["fyodor", "The poorest live like princes there. I will have every Wand. Including yours."],
+      ["other", "I am what you would have been, on another Wavelength. Do not waste the family you still have."],
+      ["wanda", "Hal — mix. Your yellow, his stolen red, my blue. Make him small enough to argue with."]
     ]
   }
 ];
@@ -552,13 +541,13 @@ function colorCount() {
 function newState() {
   return {
     ch: 0, hero: "hal",
-    x: 4 * TS, y: 7 * TS, dir: "down", moving: false,
+    x: 4 * TS, y: 6 * TS, dir: "down", moving: false,
     hp: 42, maxHp: 42, chroma: 20, maxChroma: 20, xp: 0, lv: 1,
-    items: { candy: 3, prismdrop: 1 },
+    items: { candy: 3, milkshake: 1 },
     colors: { yellow: true },
     flags: {},
-    party: ["hal", "wanda"],
-    map: "attic",
+    party: ["hal"],
+    map: "portal",
     notes: {}
   };
 }
@@ -615,6 +604,7 @@ function loadChapter(i, extraIntro) {
   const ch = CHAPTERS[i];
   state.hero = ch.hero;
   state.map = ch.map;
+  if (i >= 1 && !state.party.includes("wanda")) state.party.push("wanda");
   state.x = ch.spawn[0] * TS;
   state.y = ch.spawn[1] * TS;
   state.dir = "down";
@@ -645,14 +635,14 @@ function finishGame() {
   hudEl.classList.remove("show");
   goalEl.classList.remove("show");
   sayMany([
-    ["unp", "Color is a habit. Darkness is honest."],
-    ["wanda", "Darkness is what you get when you stop looking."],
-    ["hal", "We kept every Wavelength. Even the ones that clash."],
-    ["prism", "The multiverse stays painted. Ordinary objects keep their secret doors."]
+    ["fyodor", "Tomorrow will look different. That is not a threat. It is a schedule."],
+    ["wanda", "Then we keep mixing until tomorrow looks like us."],
+    ["hal", "White keeps black in check. That is the job. You are my pupil now — if you still want a Wand that used to be a paintbrush."],
+    ["wanda", "Wandaful. Not wonderful. You have to get the word right."]
   ], () => {
     endingUI.classList.add("show");
     document.getElementById("endingText").textContent =
-      "Hal and Wanda master their clashing talents. The Unpainter's palette is empty. Six Wavelengths remain open, and the attic lamp is only a lamp again — until the next time an ordinary object starts to hum.";
+      "Fyodor is a man again, for now. Hal takes Wanda as his pupil. The Blue Wavelength keeps its color, the White Wavelength stays out of one Superwielder's pocket, and a disguised Wand still looks like whatever it needs to be.";
     localStorage.removeItem(SAVE_KEY);
   });
 }
@@ -677,10 +667,10 @@ function renderHud() {
       <div class="hpbar${low ? " low" : ""}"><i style="width:${Math.max(0, state.hp / state.maxHp * 100)}%"></i></div>
       <div class="hpbar chromabar"><i style="width:${Math.max(0, state.chroma / state.maxChroma * 100)}%"></i></div>
     </div>
-    <div class="hud-card">WANDA
+    <div class="hud-card">CHROME
       <div style="margin-top:4px;font-size:9px;letter-spacing:.04em">${SPECTRUM.order.map((c) =>
         `<span class="hue-dot" style="background:${hasColor(c) ? SPECTRUM.hex[c] : "#332"}"></span>`
-      ).join("")}</div>
+      ).join("")}${hasColor("white") ? `<span class="hue-dot" style="background:${SPECTRUM.hex.white}"></span>` : ""}</div>
     </div>`;
 }
 
@@ -718,13 +708,13 @@ function closeMenu() {
 }
 function menuAct(a) {
   if (a === "close") { closeMenu(); return; }
-  if (a === "save") { save(); closeMenu(); say("", "The attic remembers this page."); return; }
+  if (a === "save") { save(); closeMenu(); say("", "The Wavelength remembers this page."); return; }
   if (a === "title") { closeMenu(); goTitle(); return; }
   if (a === "codex") { closeMenu(); openCodex(); return; }
   if (a === "item") {
     pauseEl.innerHTML = `<div class="panel"><h2>ITEMS</h2>
       <p>Candy ${state.items.candy || 0} — restore HP.</p>
-      <p>Prism drop ${state.items.prismdrop || 0} — restore Chroma.</p>
+      <p>Milkshake ${state.items.milkshake || 0} — restore Vitas (Chrome fuel).</p>
       <button data-a="close">CLOSE</button></div>`;
     pauseEl.querySelector("button").onclick = () => menuAct("close");
   }
@@ -737,12 +727,12 @@ function openCodex() {
     const opp = SPECTRUM.opposite(c);
     return `<div style="margin:5px 0;padding:5px;border:2px solid ${known ? SPECTRUM.hex[c] : "#443"};background:#100810">
       <b style="color:${known ? SPECTRUM.hex[c] : "#776"}">${c.toUpperCase()}</b>
-      ${known ? " — " + SPECTRUM.meaning[c] + ". Conduit: " + SPECTRUM.conduit[c] + ". Clashes with " + opp + "." : " — a locked Wavelength."}
+      ${known ? " — " + SPECTRUM.meaning[c] + ". Object: " + SPECTRUM.conduit[c] + ". Cancels " + opp + "." : " — a locked Chrome."}
     </div>`;
   }).join("");
   codexEl.classList.add("show");
   codexEl.innerHTML = `<div class="panel wide"><h2>SPECTRUM CODEX</h2>
-    <p style="font-size:11px;line-height:1.4;color:#ffd8e8">Ordinary objects channel magic across color-linked dimensions. Same hue resonates. Opposite hue clashes. Adjacent hues mix. Umbra drinks unmatched color. Hal favors warm Wavelengths; Wanda favors cool. Together they can Chorus.</p>
+    <p style="font-size:11px;line-height:1.4;color:#ffd8e8">Chrome is magical color. Primaries red, yellow, blue. Secondaries green, purple, orange cancel the Wand across from them. Black and white keep the Spectrum in check — and are the most dangerous. Dark Chroma drinks unmatched color. Hal's native hue is yellow; Wanda's is blue. Vitas fuels every burst.</p>
     ${rows}
     <button id="cx">CLOSE</button></div>`;
   document.getElementById("cx").onclick = () => {
@@ -767,15 +757,15 @@ function renderBattle() {
   if (!b) return;
   const f = b.foe;
   const hue = SPECTRUM.hex[f.hue] || "#888";
-  const colors = SPECTRUM.order.map((c) => {
+  const colors = SPECTRUM.order.concat(hasColor("white") ? ["white"] : []).map((c) => {
     const locked = !hasColor(c);
     return `<button data-sp="${c}" ${locked ? "disabled" : ""} style="border-color:${locked ? "#444" : SPECTRUM.hex[c]}">${locked ? "—" : c.toUpperCase()}</button>`;
   }).join("");
   let body = "";
   if (b.menu === "main") {
     body = `<div class="blist">
-      <button data-act="color">WAVELENGTH</button>
-      <button data-act="clash">CLASH / CHORUS</button>
+      <button data-act="color">CHROME</button>
+      <button data-act="clash">COUNTER</button>
       <button data-act="item">ITEM</button>
       <button data-act="run">RUN</button>
     </div>`;
@@ -784,14 +774,14 @@ function renderBattle() {
       <p style="font-size:10px;color:#c090a8">Caster: ${ACTORS[b.caster].name}. Z to confirm a hue.</p>`;
   } else if (b.menu === "item") {
     body = `<button data-it="candy">CANDY (${state.items.candy || 0})</button>
-      <button data-it="prismdrop">PRISM DROP (${state.items.prismdrop || 0})</button>
+      <button data-it="milkshake">MILKSHAKE (${state.items.milkshake || 0})</button>
       <button data-back="1">BACK</button>`;
   }
   battleEl.classList.add("show");
   battleEl.innerHTML = `<div class="panel wide">
     <div class="brow">
-      <div class="bstat"><b>${ACTORS[b.caster].name}</b><div class="hpbar"><i style="width:${state.hp / state.maxHp * 100}%"></i></div>Chroma ${state.chroma}</div>
-      <div class="bstat"><b style="color:${hue}">${f.name}</b><div class="hpbar"><i style="width:${f.hp / f.maxHp * 100}%;background:${hue}"></i></div>Hue: ${f.hue}${f.stolen ? " · stole " + f.stolen : ""}</div>
+      <div class="bstat"><b>${ACTORS[b.caster].name}</b><div class="hpbar"><i style="width:${state.hp / state.maxHp * 100}%"></i></div>Vitas ${state.chroma}</div>
+      <div class="bstat"><b style="color:${hue}">${f.name}</b><div class="hpbar"><i style="width:${f.hp / f.maxHp * 100}%;background:${hue}"></i></div>Chrome: ${f.hue}${f.dark ? " · DARK" : ""}${f.stolen ? " · stole " + f.stolen : ""}</div>
     </div>
     <div class="log">${b.log}</div>
     ${body}
@@ -807,39 +797,49 @@ function battleAct(act) {
   if (act === "color") { battle.menu = "color"; renderBattle(); return; }
   if (act === "item") { battle.menu = "item"; renderBattle(); return; }
   if (act === "run") {
-    if (battle.foe.boss) { battle.log = "The hue will not let you leave."; renderBattle(); return; }
-    if (Math.random() < 0.65) { endBattle(false); say("", "You slip a wavelength sideways."); return; }
+    if (battle.foe.boss) { battle.log = "The Wand will not let you leave."; renderBattle(); return; }
+    if (Math.random() < 0.65) { endBattle(false); say("", "You slip a Wavelength sideways."); return; }
     battle.log = "The color sticks."; enemyTurn(); return;
   }
   if (act === "clash") {
-    if (colorCount() < 2) { battle.log = "You need two Wavelengths to clash."; renderBattle(); return; }
-    if (state.chroma < 6) { battle.log = "Not enough Chroma to braid talents."; renderBattle(); return; }
-    const warm = SPECTRUM.warm.find((c) => hasColor(c));
-    const cool = SPECTRUM.cool.find((c) => hasColor(c));
-    if (battle.foe.hue === "umbra") {
-      if (colorCount() >= 6 && state.chroma >= 8) {
+    if (colorCount() < 1) { battle.log = "You need Chrome to counter."; renderBattle(); return; }
+    if (state.chroma < 6) { battle.log = "Not enough Vitas to braid Chrome."; renderBattle(); return; }
+    if (battle.foe.hue === "black") {
+      if (hasColor("white")) {
         state.chroma -= 8;
         castColor("white", true);
         return;
       }
-      const rebound = battle.foe.stolen ? SPECTRUM.opposite(battle.foe.stolen) : null;
+      battle.log = "Fyodor holds the black Wand. Only white Chrome keeps him in check.";
+      renderBattle();
+      return;
+    }
+    if (battle.foe.dark) {
+      const rebound = battle.foe.stolen ? SPECTRUM.opposite(battle.foe.stolen) : SPECTRUM.opposite(battle.foe.hue);
       if (rebound && hasColor(rebound)) {
         state.chroma -= 6;
         castColor(rebound, true);
         return;
       }
-      battle.log = "Umbra drinks unmatched color. Clash with the opposite of what it stole, or Chorus with every hue.";
+      battle.log = "Dark Chroma drinks unmatched color. Counter with the complementary hue.";
       renderBattle();
       return;
     }
-    if (warm && cool) {
+    const use = SPECTRUM.opposite(battle.foe.hue);
+    if (use && hasColor(use)) {
       state.chroma -= 6;
-      const use = SPECTRUM.opposite(battle.foe.hue);
-      const color = hasColor(use) ? use : (SPECTRUM.warm.includes(battle.foe.hue) ? cool : warm);
-      castColor(color, true);
+      castColor(use, state.party.includes("wanda"));
       return;
     }
-    battle.log = "Warm and cool must both be unlocked.";
+    const warm = SPECTRUM.warm.find((c) => hasColor(c));
+    const cool = SPECTRUM.cool.find((c) => hasColor(c));
+    if (warm && cool) {
+      state.chroma -= 6;
+      const color = SPECTRUM.warm.includes(battle.foe.hue) ? cool : warm;
+      castColor(color, state.party.includes("wanda"));
+      return;
+    }
+    battle.log = "You do not have the complementary Chrome yet.";
     renderBattle();
   }
 }
@@ -851,17 +851,22 @@ function castColor(color, both) {
   if (!both) state.chroma -= cost;
   const res = SPECTRUM.resolve({
     color, foeHue: battle.foe.hue, caster: battle.caster,
-    level: state.lv, stolen: battle.foe.stolen, both
+    level: state.lv, stolen: battle.foe.stolen, both, dark: !!battle.foe.dark
   });
   battle.foe.hp -= res.dmg;
   if (res.heal) battle.foe.hp = Math.min(battle.foe.maxHp, battle.foe.hp + res.heal);
-  if (res.steal && battle.foe.hue !== "umbra") {
+  if (res.steal && battle.foe.hue !== "black" && !battle.foe.dark) {
     battle.foe.stolen = battle.foe.hue;
     battle.foe.hue = color;
   }
   if (res.status === "Tide") battle.foe.atk = Math.max(2, battle.foe.atk - 2);
   if (res.status === "Bloom") state.hp = Math.min(state.maxHp, state.hp + 6);
-  if (res.status === "Bind") battle.foe.bound = true;
+  if (res.status === "Haze" || res.status === "Web") battle.foe.bound = true;
+  if (res.status === "Duck-burst") battle.foe.hp -= Math.round(4 + state.lv);
+  if (res.status === "Spark" && hasColor("blue")) {
+    battle.foe.hp -= Math.round(8 + state.lv * 2);
+    res.log += " Yellow plus stolen red makes orange — mixed with Wanda's blue, it detonates.";
+  }
   battle.log = (both ? "Hal and Wanda — " : ACTORS[battle.caster].name + " — ") + color.toUpperCase() + ". " + res.log +
     (res.dmg ? " " + res.dmg + " damage." : "") + (res.heal ? " Foe mends " + res.heal + "." : "");
   beep(color === "white" ? 880 : 340 + SPECTRUM.index(color) * 70, 0.09);
@@ -874,7 +879,7 @@ function battleItem(id) {
   if (!state.items[id]) { battle.log = "None left."; renderBattle(); return; }
   state.items[id]--;
   if (id === "candy") { state.hp = Math.min(state.maxHp, state.hp + 18); battle.log = "Candy. Color returns to your face."; }
-  else { state.chroma = Math.min(state.maxChroma, state.chroma + 12); battle.log = "A drop of Prism. Chroma brightens."; }
+  else { state.chroma = Math.min(state.maxChroma, state.chroma + 12); battle.log = "A milkshake. Vitas brightens — at the usual cost of dignity."; }
   enemyTurn();
 }
 
@@ -886,23 +891,23 @@ function enemyTurn() {
   if (lastRel === "clash") dmg = Math.max(1, Math.floor(dmg * 0.7));
   state.hp -= dmg;
   battle.log += " " + battle.foe.name + " paints " + dmg + "!";
-  if (battle.foe.hue === "umbra" && Math.random() < 0.4) {
+  if (battle.foe.dark && Math.random() < 0.4) {
     const steal = SPECTRUM.order[Math.floor(Math.random() * 6)];
     battle.foe.stolen = steal;
-    battle.log += " It sips " + steal + ".";
+    battle.log += " Dark Chroma sips " + steal + ".";
   }
   battle.menu = "main";
-  battle.caster = battle.caster === "hal" ? "wanda" : "hal";
+  battle.caster = (state.party.includes("wanda") && battle.caster === "hal") ? "wanda" : "hal";
   if (state.hp <= 0) {
     state.hp = 1;
-    battle.log = "You drop. The attic lamp flickers you home.";
+    battle.log = "You drop. The blue portal flickers you home.";
     renderBattle();
     setTimeout(() => {
       endBattle(false);
-      state.map = "attic";
-      state.x = 4 * TS; state.y = 7 * TS;
+      state.map = "portal";
+      state.x = 4 * TS; state.y = 6 * TS;
       state.hp = Math.max(8, Math.floor(state.maxHp / 2));
-      say("wanda", "We lived. That is a kind of color.");
+      say("wanda", "We lived. That's a kind of Chrome.");
     }, 700);
     return;
   }
@@ -912,7 +917,7 @@ function enemyTurn() {
 function winBattle() {
   if (!battle || battle.resolved) return;
   battle.resolved = true;
-  battle.log = battle.foe.name + " loses its hue!";
+  battle.log = battle.foe.name + " loses the Chrome!";
   state.xp += battle.foe.xp;
   state.chroma = Math.min(state.maxChroma, state.chroma + 4);
   if (state.xp >= state.lv * 28) {
@@ -968,206 +973,250 @@ function unlock(color, lines, then) {
 
 function handleTile(t, tx, ty) {
   const ch = state.ch;
-  if (t === "Y" && state.map === "attic") {
-    if (!state.flags.lamp) {
-      state.flags.lamp = true;
-      unlock("yellow", [
-        ["hal", "The lamp isn't brighter. It's... more yellow."],
-        ["wanda", "Yellow is Light. Ordinary glass, ordinary wick — and a door."],
-        ["primer", "Same hue resonates. Opposite hue clashes. Remember that, or the next mote will."],
-        ["hal", "There's a mote. Of course there's a mote."]
-      ], () => startBattle("mote", () => {
-        setGoal("Leave the attic. The street is flushing red.");
-        state.flags.atticDone = true;
+  if (t === "Y" && state.map === "portal") {
+    if (!state.flags.metWanda) {
+      state.flags.metWanda = true;
+      if (!state.party.includes("wanda")) state.party.push("wanda");
+      unlock("blue", [
+        ["wandy", "You fell out of a hole. I'm Wandy. Wanda McFaren, if you're filling out forms."],
+        ["hal", "Hal. That portal was blue. This whole street is blue. That's not a metaphor."],
+        ["wandy", "Uncle Blish lives in the leaning house. If you're lost, he's the professional version."]
+      ], () => {
+        setGoal("Leave the street through the door. Uncle Blish is next.");
         save();
-        say("wanda", "We should see if the rest of the house is still the right colors.");
-      }));
+      });
       return;
     }
-    say("hal", "The lamp is still a lamp. That is the whole miracle.");
+    say("wanda", "The street is still the wrong blue. That's how you know you're not home.");
     return;
   }
   if (t === "D") {
-    if (state.map === "attic") {
-      if (!state.flags.atticDone) { say("wanda", "The lamp first. If we ignore a humming object, it gets louder."); return; }
+    if (state.map === "portal") {
+      if (!state.flags.metWanda) { say("hal", "The girl with the paintbrush first. She saw the portal."); return; }
       if (ch === 0) { advanceChapter(); return; }
       loadChapter(Math.max(1, ch));
       return;
     }
-    if (state.map === "prism" && ch === 7) {
-      if (colorCount() < 6) { say("prism", "Six doors. You have " + colorCount() + ". The Unpainter is counting too."); return; }
+    if (state.map === "blish") {
+      if (!state.flags.metBlish) { say("blish", "Talk to me before you use my door. The stairs have opinions."); return; }
       advanceChapter();
       return;
     }
-    if (state.map === "umbra") { say("unp", "There is no backstage from here."); return; }
-    if (ch < CHAPTERS.length - 1 && MAPS[CHAPTERS[Math.min(ch + 1, CHAPTERS.length - 1)].map]) {
-      if (state.flags["boss" + ch]) { advanceChapter(); return; }
+    if (state.map === "thrift") {
+      if (!state.flags.bossMisha) { say("merlin", "The back corner isn't done with you."); return; }
+      advanceChapter();
+      return;
     }
+    if (state.map === "museum") {
+      if (!state.flags.metFyodor) { say("em", "The man in black hasn't seen the portrait yet."); return; }
+      advanceChapter();
+      return;
+    }
+    if (state.map === "lab") {
+      if (!state.flags.labLesson) { say("hal", "The chart first. If you skip the chart, you skip surviving."); return; }
+      advanceChapter();
+      return;
+    }
+    if (state.map === "chase") {
+      if (!state.flags.bossSergio) { say("hal", "Sergio is still in the street. Dark blue. Don't pretend you don't see it."); return; }
+      advanceChapter();
+      return;
+    }
+    if (state.map === "gala") {
+      if (!state.flags.galaReady) { say("em", "Fyodor has not noticed us yet. That is the point. Talk to him."); return; }
+      advanceChapter();
+      return;
+    }
+    if (state.map === "whitewave") { say("fyodor", "There is no door off the White Wavelength. Not for you."); return; }
     say("", "The door waits until this Wavelength is settled.");
     return;
   }
-  if (t === "R" && state.map !== "street" && state.map !== "prism") {
-    say("", "A red memory, not a door.");
-    return;
-  }
-  if (t === "R" && state.map === "prism") {
-    say("prism", "Force still shouts in the crystal. Save it for the Unpainter.");
-    return;
-  }
-  if (t === "R") {
-    unlock("red", [
-      ["hal", "A brick, a chili, a scrape of rusted paint. Force."],
-      ["wanda", "Red shouts. That's your talent, Hal. Don't let it shout at the wrong wall."]
-    ], () => {
-      if (!state.flags.boss1) startBattle("ember", () => {
-        state.flags.boss1 = true; save();
-        sayMany([["hal", "The street remembers being asphalt."], ["wanda", "Next market. Orange never sits still."]], () => advanceChapter());
-      });
-      else say("hal", "The rift is quieter. Force is a muscle. It can rest.");
-    });
-    return;
-  }
-  if (t === "O" && state.map === "prism") {
-    say("prism", "Change flickers in the copper vein. It will not sit still even here.");
-    return;
-  }
-  if (t === "O" && state.map !== "market") {
-    say("", "Orange without a market is only rust.");
+  if (t === "O" && state.map === "blish") {
+    if (!state.flags.metBlish) {
+      state.flags.metBlish = true;
+      sayMany([
+        ["blish", "The house leans because I asked it to. Sit. Or don't. The floor votes."],
+        ["hal", "Fyodor's people opened a portal behind my father. I landed here with a tie bar that isn't a tie bar."],
+        ["blish", "Then you landed in the right crumbling house. Merlin's thrift still sells things that used to be Wands."],
+        ["wanda", "I need a brush anyway. Mine is having a bad bristle day."]
+      ], () => { setGoal("Leave by the door. Merlin's thrift is waiting."); save(); });
+      return;
+    }
+    say("blish", "If the second floor becomes a first floor, that's a Tuesday.");
     return;
   }
   if (t === "O") {
+    say("other", "A Fractling is not a ghost. It is you, on another Wavelength, wearing a different role.");
+    return;
+  }
+  if (t === "T" && state.map === "thrift") {
+    if (!state.flags.gotBrush) {
+      state.flags.gotBrush = true;
+      unlock("blue", [
+        ["merlin", "A dime from 1954 and a Donald Duck Cola cap. And that battered brush in the dark corner."],
+        ["wanda", "It's just having a bad bristle day."],
+        ["hal", "Wands look like anything. Paintbrush, knitting needle, teddy bear, pencil. That one is humming white."]
+      ]);
+      return;
+    }
+    say("merlin", "Abracadabra, Wanda. Tell your friends. I almost can't afford my own salary.");
+    return;
+  }
+  if (t === "+" && state.map === "thrift") {
     unlock("orange", [
-      ["wanda", "A copper coin that will not keep a date. Change."],
-      ["clerk", "Spend it and it becomes a different coin. That's orange for you."]
+      ["hal", "A rubber duck. Mostly yellow, with a hint of orange. Chrome doesn't care if it's undignified."],
+      ["wanda", "Saved by a duck. I'm putting that on a bottle cap."]
+    ]);
+    state.colors.yellow = true;
+    save();
+    return;
+  }
+  if (t === "+" && state.map === "blish") {
+    say("blish", "Don't sit on the boxes. They contain previous versions of the house.");
+    return;
+  }
+  if (t === "R" && state.map === "thrift") {
+    if (!state.flags.gotBrush) { say("misha", "Look at the shelves, children. I am only an old woman."); return; }
+    unlock("green", [
+      ["misha", "Hello, Hally. A knitting needle, if you must know. Now — the Sixth Wand. Where is it?"],
+      ["hal", "For the man with the green pencil."],
+      ["misha", "Red Chrome does not like to be stung."]
     ], () => {
-      if (!state.flags.boss2) startBattle("coppers", () => {
-        state.flags.boss2 = true; save();
-        say("wanda", "Library next. Light is less polite than Force.");
-        advanceChapter();
+      state.colors.purple = true;
+      save();
+      if (!state.flags.bossMisha) startBattle("misha", () => {
+        state.flags.bossMisha = true;
+        save();
+        sayMany([
+          ["hal", "Green cancelled red. Purple left a haze. Yellow plus a hint of orange mixed with the residue. Chain reaction."],
+          ["misha", "I shall tell the others what you want on your tombstone."],
+          ["merlin", "The door's that way. I don't want to know."]
+        ], () => setGoal("Leave the thrift. The portrait is waiting."));
       });
-      else say("clerk", "The fruit is staying fruit. Mostly.");
+      else say("merlin", "The old woman isn't here. The licorice smell is.");
     });
     return;
   }
-  if (t === "Y" && state.map === "prism") {
-    say("prism", "Light sits in the yellow facet, asking the same question the attic lamp asked.");
+  if (t === "R") {
+    say("misha", "A knitting needle is still a Wand. Don't trust old ladies automatically.");
     return;
   }
-  if (t === "Y" && state.map === "library") {
-    unlock("yellow", [
-      ["page", "The Primer is short because the rules are short."],
-      ["page", "Resonate to seize a hue. Clash to break one. Mix to invent a third. Umbra drinks anything unmatched."],
-      ["hal", "And Chorus?"],
-      ["page", "That is not in the book. That is the two of you."]
-    ], () => {
-      if (!state.flags.boss3) startBattle("lantern", () => {
-        state.flags.boss3 = true; save();
-        advanceChapter();
-      });
-    });
-    return;
-  }
-  if (t === "G" && state.map === "prism") {
-    say("prism", "Life in crystal is a slow green. It will wait.");
-    return;
-  }
-  if (t === "G" && state.map !== "green") {
-    say("", "Green wants soil.");
+  if (t === "G" && (state.map === "museum" || state.map === "gala")) {
+    sayMany([
+      ["em", "Black and white is a wardrobe, not a truce. I am a Drawer — I pull magic. I do not throw it."],
+      ["wanda", "And I keep painting a man whose smile the fire stole."]
+    ]);
     return;
   }
   if (t === "G") {
-    unlock("green", [
-      ["gard", "A jade leaf, still deciding whether to be plant or stone. Life."],
-      ["wanda", "Green is mine as much as blue. It mends. It also overgrows."]
-    ], () => {
-      if (!state.flags.boss4) startBattle("root", () => {
-        state.flags.boss4 = true; save();
-        advanceChapter();
-      });
-    });
+    say("em", "The world is your canvas. Leave your mark — perhaps not on the principal's desks.");
     return;
   }
-  if (t === "B" && state.map === "prism") {
-    say("prism", "Thought pools in the blue facet. Do not rush it.");
+  if (t === "V" && state.map === "museum") {
+    if (!state.flags.metFyodor) {
+      state.flags.metFyodor = true;
+      sayMany([
+        ["fyodor", "A powerful portrait. I will buy it. Tomorrow will look different."],
+        ["em", "Fyodor. Not Frodo. Though I suppose they both had... never mind."],
+        ["wanda", "He walks like the painting. Or the painting walks like him."],
+        ["hal", "Superwielder. He wants every Wand, and the White Wavelength as a prize."]
+      ], () => { setGoal("Leave the gallery. The Red lab can explain the rest."); save(); });
+      return;
+    }
+    say("fyodor", "The poorest live like princes on the White Wavelength. I intend to collect the key.");
     return;
   }
-  if (t === "B" && state.map !== "harbor") {
-    say("", "Blue wants water and quiet.");
-    return;
-  }
-  if (t === "B") {
-    unlock("blue", [
-      ["dock", "Ink in a bottle that remembers every letter it was almost."],
-      ["wanda", "Thought. If we rush it, it ices over."]
-    ], () => {
-      if (!state.flags.boss5) startBattle("harbor", () => {
-        state.flags.boss5 = true; save();
-        advanceChapter();
-      });
-    });
-    return;
-  }
-  if (t === "V" && state.map === "prism") {
-    say("prism", "Door-light. The last ribbon before the gallery.");
-    return;
-  }
-  if (t === "V" && state.map !== "theater") {
-    say("", "Violet wants a threshold.");
+  if (t === "V" && state.map === "gala") {
+    if (!state.flags.galaReady) {
+      state.flags.galaReady = true;
+      state.colors.white = true;
+      save();
+      sayMany([
+        ["fyodor", "Emmaline. It has been too long. You wear the years more kindly than I do."],
+        ["em", "Wanda, do not answer. I will speak. He must believe the face."],
+        ["fyodor", "Unmasked. Of course. A girl in her mother's skin, and a white Wand pretending to be a tie bar."],
+        ["hal", "Then we mix. Yellow and a stolen red spark make orange. Orange against her blue."]
+      ], () => setGoal("The door is a Wavelength now. Walk through. Meet him as himself."));
+      return;
+    }
+    say("fyodor", "I am already the giant in the next room. Come finish the sentence.");
     return;
   }
   if (t === "V") {
-    unlock("violet", [
-      ["usher", "A ribbon that is also a key. Door."],
-      ["hal", "If violet opens, it can also shut us in with him."],
-      ["wanda", "Then we walk through together."]
+    say("", "A purple memory of a door.");
+    return;
+  }
+  if (t === "C" && state.map === "lab") {
+    if (!state.flags.labLesson) {
+      state.flags.labLesson = true;
+      SPECTRUM.order.forEach((c) => { state.colors[c] = true; });
+      save();
+      sayMany([
+        ["hal", "Three primaries: red, yellow, blue. Three secondaries: green, purple, orange. They cancel the Wand across from them."],
+        ["hal", "Red versus green. Yellow versus purple. Blue versus orange. Black and white keep the rest in check."],
+        ["wanda", "Your Wand is white, so you're one of the dangerous ones. Hard to believe of a guy with a milkshake addiction."],
+        ["hal", "Wielders, Drawers, Blotters, Seers, the Blinded, Superwielders. You are a Wielder, Wandy. Rare on Blue."]
+      ], () => setGoal("The door. Sergio is already in the street with Dark Chroma."));
+      return;
+    }
+    say("hal", "The chart does not get kinder on a second reading.");
+    return;
+  }
+  if (t === "C") {
+    say("em", "A canvas. Or a chart. Both are maps if you squint.");
+    return;
+  }
+  if (t === "B" && state.map === "chase") {
+    unlock("orange", [
+      ["sergio", "Hallard. The White Wand does not get to hide in a girl's paintbox."],
+      ["hal", "Dark blue Chrome. Complementary orange will sting it. Unmatched color only feeds him."]
     ], () => {
-      if (!state.flags.boss6) startBattle("usher", () => {
-        state.flags.boss6 = true; save();
-        advanceChapter();
+      if (!state.flags.bossSergio) startBattle("sergio", () => {
+        state.flags.bossSergio = true;
+        save();
+        sayMany([
+          ["hal", "He'll report to Fyodor. The gala is still the only door into the museum that isn't a trap."],
+          ["wanda", "Then we go incognito. I hate evening gowns. I hate them Wandafully."]
+        ], () => setGoal("Leave the chase. The secret gala is tonight."));
       });
+      else say("hal", "Sergio's Dark Chroma is a stain on the asphalt. Keep walking.");
     });
     return;
   }
+  if (t === "B") {
+    say("sergio", "Dark is not evil. It is the other half of the painting.");
+    return;
+  }
   if (t === "U") {
-    if (state.map !== "prism" && state.map !== "umbra") {
-      say("", "A hole where a color used to be.");
-      return;
-    }
-    if (state.map === "prism") {
-      sayMany([
-        ["prism", "He is already unpainting the gallery."],
-        ["wanda", "Umbra drinks unmatched color. Clash with what he stole, or Chorus with everything."]
-      ], () => { state.flags.readyFinal = true; save(); });
+    if (state.map !== "whitewave") {
+      say("fyodor", "Not yet. The White Wavelength is a prize, not a hallway.");
       return;
     }
     if (!state.flags.final) {
       state.flags.final = true;
-      startBattle("unpainter", () => {
+      state.colors.white = true;
+      save();
+      startBattle("fyodor", () => {
         state.flags.won = true;
         finishGame();
       });
     }
     return;
   }
-  if (t === "C" && state.map === "attic") {
-    say("mom", "If you find a humming object, tell me before you put it in your pocket. Or after. I know you.");
-    return;
-  }
-  if (t === "*" ) {
-    say("prism", "White is not a seventh color. White is all six refusing to be lonely.");
+  if (t === "*") {
+    say("hal", "A Wavelength seam. White is not a seventh color — it is the Wand that keeps the others from eating the painting.");
     return;
   }
   if (t === "S" || t === "H") {
     const chatter = {
-      attic: ["The stairs still lead down. That is not guaranteed anymore."],
-      street: ["Red isn't angry. Red is just done waiting."],
-      market: ["Don't buy the oranges. They might become clocks."],
-      library: ["Silence, please. Light is trying to read."],
-      green: ["Do not water the Wavelength. It waters back."],
-      harbor: ["The tide is thinking. Give it a minute."],
-      theater: ["The curtain is a door if you applaud correctly."],
-      prism: ["Stand in the middle if you want every color at once. It will hurt, usefully."],
-      umbra: ["There is nothing here on purpose."]
+      portal: ["Blue city, blue air, blue rules. Don't drink the tap water until you know which Spectrum bottled it."],
+      blish: ["The stairs still lead up. That is not guaranteed in this house."],
+      thrift: ["Don't buy the toaster. It might be a Wand. It might just be a toaster. Both are dangerous."],
+      museum: ["Guests in black and white. Wanda and Em are the only red blotches on the portrait."],
+      lab: ["Do not spill the spectrum ink. Chromatists have searched every Wavelength for a stain remover."],
+      chase: ["The street remembers the car. Sergio does too."],
+      gala: ["If you applaud correctly, the rotunda is a door. If you don't, it is only a party."],
+      whitewave: ["The poorest live like princes here. That is why he wants the key."]
     };
     say("", (chatter[state.map] || ["..."])[0]);
     return;
@@ -1177,8 +1226,8 @@ function handleTile(t, tx, ty) {
 
 function randomFoe() {
   const byMap = {
-    street: "scarlet", market: "rustfox", library: "glare",
-    green: "thorn", harbor: "ripple", theater: "curtain", umbra: "blot"
+    portal: "haze", thrift: "spark", museum: "residue",
+    lab: "agent", chase: "blot", gala: "agent", whitewave: "blot"
   };
   return byMap[state.map];
 }
@@ -1227,9 +1276,9 @@ function startContinue() {
 function showHow() {
   sayMany([
     ["", "Move with arrows or WASD. Confirm with Z or Space. Menu with X."],
-    ["", "Combat is color. Pick a Wavelength. Opposite hues CLASH for heavy damage. Same hues RESONATE and steal the foe's color. Adjacent hues MIX."],
-    ["", "Hal is stronger in red, orange, yellow. Wanda is stronger in green, blue, violet. Clash/Chorus uses both talents."],
-    ["", "Umbra, the Unpainter's hue, drinks unmatched color. Throw back what he stole, or Chorus with every Wavelength."]
+    ["", "Combat is Chrome — magical color. Primaries: red, yellow, blue. Secondaries: green, purple, orange. Complementary hues COUNTER: red↔green, yellow↔purple, blue↔orange."],
+    ["", "Same hues resonate. Adjacent hues mix and leave residue. Black + white is the most powerful reaction. Dark Chroma drinks unmatched color."],
+    ["", "Hal's native hue is yellow; his Wand reads white. Wanda's is blue. Vitas fuels every burst. Wands can look like a paintbrush, a knitting needle, a duck, a pencil."]
   ]);
 }
 
@@ -1274,7 +1323,7 @@ function drawTile(kind, sx, sy, pal) {
     rect(sx + 3, sy + 2, 10, 14, "#5a3020");
     px(sx + 11, sy + 9, pal.light);
   } else if ("ROYGBVU".includes(kind)) {
-    const mapHue = { R: "red", O: "orange", Y: "yellow", G: "green", B: "blue", V: "violet", U: "umbra" };
+    const mapHue = { R: "red", O: "orange", Y: "yellow", G: "green", B: "blue", V: "purple", U: "black" };
     const c = SPECTRUM.hex[mapHue[kind]];
     rect(sx + 2, sy + 2, 12, 12, c);
     rect(sx + 5, sy + 5, 6, 6, "#fff8");
@@ -1299,7 +1348,7 @@ function drawActor(who, ax, ay, dir, walking) {
 
 function drawWorld() {
   const m = curMap();
-  const pal = MAP_PAL[state.map] || MAP_PAL.attic;
+  const pal = MAP_PAL[state.map] || MAP_PAL.portal;
   cam.x = Math.max(0, Math.min(m.w * TS - W, state.x - W / 2 + 8));
   cam.y = Math.max(0, Math.min(m.h * TS - H, state.y - H / 2 + 8));
   rect(0, 0, W, H, pal.wall);
@@ -1452,7 +1501,9 @@ window.WANDAFUL = {
   get mode() { return mode; },
   get state() { return state; },
   get battle() { return battle; },
-  SPECTRUM, startNew, interact, keyOn, nextLine, startBattle, castColor, battleAct, handleTile
+  SPECTRUM, MAPS, CHAPTERS, BLOCK, FOES,
+  startNew, interact, keyOn, nextLine, startBattle, castColor, battleAct, handleTile, winBattle,
+  explore() { mode = "explore"; dialogEl.classList.remove("show"); dialogQ.length = 0; }
 };
 
 goTitle();

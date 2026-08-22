@@ -2927,6 +2927,41 @@ window.BitForgePlay = async function BitForgePlay(song) {
       const a = generateSong({ mood: "overworld", seed: "same", bars: 8, tempo: 120, energy: 50, key: 0, scale: "major" });
       const b = generateSong({ mood: "overworld", seed: "same", bars: 8, tempo: 120, energy: 50, key: 0, scale: "major" });
       check("seed-stable", JSON.stringify(a.sections) === JSON.stringify(b.sections));
+      const publish = () => {
+        document.body.dataset.selftest = JSON.stringify(report);
+      };
+      try {
+        document.title = "SELFTEST_SFX";
+        check("sfx-kit", SFX_KIT.length === 8 && SFX_KIT.every((item) => item.id && item.label && item.seconds > 0));
+        const peakOf = (buffer) => {
+          const data = buffer.getChannelData(0);
+          let peak = 0;
+          for (let i = 0; i < data.length; i++) {
+            const amp = Math.abs(data[i]);
+            if (amp > peak) peak = amp;
+          }
+          return peak;
+        };
+        let coinWav = null;
+        for (const item of SFX_KIT) {
+          const buf = await renderSfxBuffer(item.id, 22050);
+          const peak = peakOf(buf);
+          check("sfx:" + item.id, peak > 0.015, Number(peak.toFixed(4)));
+          if (item.id === "coin") {
+            check("sfx-render", peak > 0.02, Number(peak.toFixed(4)));
+            coinWav = new Uint8Array(await audioBufferToWav(buf).arrayBuffer());
+          }
+        }
+        const riff = String.fromCharCode(coinWav[0], coinWav[1], coinWav[2], coinWav[3]);
+        const wave = String.fromCharCode(coinWav[8], coinWav[9], coinWav[10], coinWav[11]);
+        check("sfx-wav", riff === "RIFF" && wave === "WAVE" && coinWav.length > 44, { riff, wave, bytes: coinWav.length });
+        const pack = zipStore([{ name: "coin.wav", data: coinWav }, { name: "jump.wav", data: coinWav }]);
+        const packText = new TextDecoder("latin1").decode(pack);
+        check("sfx-zip", pack[0] === 0x50 && pack[1] === 0x4b && packText.indexOf("coin.wav") >= 0 && packText.indexOf("jump.wav") >= 0, pack.length);
+      } catch (err) {
+        check("sfx-render", false, String(err && err.message ? err.message : err));
+      }
+      publish();
       try {
         const basic = new OfflineAudioContext(1, 8000, 22050);
         const osc = basic.createOscillator();
@@ -2980,7 +3015,6 @@ window.BitForgePlay = async function BitForgePlay(song) {
         const original = generateSong({ mood: "town", seed: "share-test", bars: 4, tempo: 110, energy: 40, key: 2, scale: "dorian", swing: 4 });
         const round = decodeSong(encodeSong(original));
         check("share-roundtrip", round.seed === original.seed && notesOf(round, "lead", "A").length === notesOf(original, "lead", "A").length);
-        check("sfx-kit", SFX_KIT.length === 8 && SFX_KIT.every((item) => item.id && item.label && item.seconds > 0));
         check("vibrato-field", Number.isFinite(original.vibrato));
         const midi = songToMidi(original);
         const magic = String.fromCharCode(midi[0], midi[1], midi[2], midi[3]);
@@ -3018,30 +3052,6 @@ window.BitForgePlay = async function BitForgePlay(song) {
         paintStage();
         const pix = ui.stage.getContext("2d").getImageData(24, 24, 1, 1).data;
         check("stage-preview", pix[3] > 0, [pix[0], pix[1], pix[2], pix[3]]);
-        const peakOf = (buffer) => {
-          const data = buffer.getChannelData(0);
-          let peak = 0;
-          for (let i = 0; i < data.length; i++) {
-            const amp = Math.abs(data[i]);
-            if (amp > peak) peak = amp;
-          }
-          return peak;
-        };
-        const coinBuf = await renderSfxBuffer("coin", 22050);
-        const coinPeak = peakOf(coinBuf);
-        check("sfx-render", coinPeak > 0.02, Number(coinPeak.toFixed(4)));
-        const coinWav = new Uint8Array(await audioBufferToWav(coinBuf).arrayBuffer());
-        const riff = String.fromCharCode(coinWav[0], coinWav[1], coinWav[2], coinWav[3]);
-        const wave = String.fromCharCode(coinWav[8], coinWav[9], coinWav[10], coinWav[11]);
-        check("sfx-wav", riff === "RIFF" && wave === "WAVE" && coinWav.length > 44, { riff, wave, bytes: coinWav.length });
-        const pack = zipStore([{ name: "coin.wav", data: coinWav }, { name: "jump.wav", data: coinWav }]);
-        const packText = new TextDecoder("latin1").decode(pack);
-        check("sfx-zip", pack[0] === 0x50 && pack[1] === 0x4b && packText.indexOf("coin.wav") >= 0 && packText.indexOf("jump.wav") >= 0, pack.length);
-        for (const item of SFX_KIT) {
-          const buf = await renderSfxBuffer(item.id, 22050);
-          const peak = peakOf(buf);
-          check("sfx:" + item.id, peak > 0.015, Number(peak.toFixed(4)));
-        }
       } catch (err) {
         check("share-roundtrip", false, String(err && err.message ? err.message : err));
       }

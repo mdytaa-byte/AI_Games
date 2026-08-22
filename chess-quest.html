@@ -97,7 +97,7 @@ button{font-family:inherit;cursor:pointer}
         <p>Z / Enter — talk, confirm, attack</p>
         <p>X / Shift — cancel</p>
         <p>C / Esc — menu (one save slot, items, quests, lore, Sanctuary gate map)</p>
-        <p>In battle: FIGHT, SKILL, ITEM, GUARD, RUN, LOOK (named skills and a weakness hint)</p>
+        <p>In battle: FIGHT, SKILL, ITEM, GUARD, RUN, LOOK. LOOK is real: Fire, Ice, Order, Chaos, Song, and lemonade.</p>
         <p>On a phone, use the d-pad and A / B.</p>
         <p style="margin-top:10px;color:#e6c86a">You are Heinrich “Rich” Witz, a Paladin pawn in an ancient war of order and chaos. Complete the five books of the Chess Quest: Pawn, Knight, Rook, Bishop, and Sovereign. Optional side paths (spelling bee, fairgrounds, Duel of Sixty-four, Master Gigas, Sand-lantis) add items and lore from the novels.</p>
         <p style="margin-top:10px"><button class="gold" id="helpBack" style="background:#101850;color:#e6c86a;border:2px solid #e6c86a;padding:8px 10px;font-size:7px">BACK</button></p>
@@ -1791,6 +1791,7 @@ async function takeStone(flag, name){
   if(fl("sunstone")&&fl("moonstone")&&fl("starstone")){
     setf("three_stones");
     await say("","The three stones hum together. A banishing crystal forms in your pack.");
+    await say("","The Sovereign Song sits behind your teeth. Temperance will not like the sound.");
     G.keys.crystal=true;
   }
 }
@@ -2053,43 +2054,47 @@ const ENEMY={
 function makeEnemy(id){
   const e=ENEMY[id];
   const mv=FOE_MOVE[id]||{skill:"Strike",look:"A piece on the wrong side of the board."};
-  if(!e) return {id, name:id, hp:20, mhp:20, atk:6, def:2, spd:5, exp:8, gold:4, spr:"grayk", tint:"#888", alive:true, skill:mv.skill, look:mv.look};
-  return {id, name:e.name, hp:e.hp, mhp:e.hp, atk:e.atk, def:e.def, spd:e.spd, exp:e.exp, gold:e.gold, spr:e.spr, tint:e.tint, alive:true, skill:mv.skill, look:mv.look};
+  const extra={skill:mv.skill, look:mv.look, weak:mv.weak||[], resist:mv.resist||[], absorb:mv.absorb||[], dieT:0};
+  if(!e) return {id, name:id, hp:20, mhp:20, atk:6, def:2, spd:5, exp:8, gold:4, spr:"grayk", tint:"#888", alive:true, ...extra};
+  return {id, name:e.name, hp:e.hp, mhp:e.hp, atk:e.atk, def:e.def, spd:e.spd, exp:e.exp, gold:e.gold, spr:e.spr, tint:e.tint, alive:true, ...extra};
 }
 
 const FOE_MOVE={
   spike:{skill:"Locker Slam", look:"A hallway bully. Pride is his only armor."},
   fatigue:{skill:"Winded Sprint", look:"Out of breath. Speed is all it has left."},
-  boredom:{skill:"Clock Stare", look:"Detention haze. It hates anything interesting."},
-  ember:{skill:"Cinder Spit", look:"A live coal. Ice would douse it."},
-  frostling:{skill:"Rime Bite", look:"Winter given teeth. Fire would thaw it."},
-  spark:{skill:"Static Snap", look:"A jittering spark. Ground it and it dies."},
-  icewarden:{skill:"Winter Wall", look:"Trial of ice. Heat is the answer."},
-  firewarden:{skill:"Summer Lash", look:"Trial of fire. Cold is the answer."},
-  mallory:{skill:"Chaos Grin", look:"Nemesis blood. Cute chess club. Wrong side."},
-  hydra:{skill:"Hydra Bite", look:"Heads grow back unless lemonade spoils the helm."},
+  boredom:{skill:"Clock Stare", look:"Detention haze. It hates anything interesting.", weak:["order"]},
+  ember:{skill:"Cinder Spit", look:"A live coal.", weak:["ice"], resist:["fire"]},
+  frostling:{skill:"Rime Bite", look:"Winter given teeth.", weak:["fire"], resist:["ice"]},
+  spark:{skill:"Static Snap", look:"A jittering spark. Ground it.", weak:["order"]},
+  icewarden:{skill:"Winter Wall", look:"Trial of ice.", weak:["fire"], resist:["ice"]},
+  firewarden:{skill:"Summer Lash", look:"Trial of fire.", weak:["ice"], resist:["fire"]},
+  mallory:{skill:"Chaos Grin", look:"Nemesis blood. Cute chess club. Wrong side.", weak:["order"]},
+  hydra:{skill:"Hydra Bite", look:"Heads grow back unless the helm is spoiled.", weak:["lemon"]},
   lostkey:{skill:"Wrong Ward", look:"A key that opens nothing useful."},
-  graypawn:{skill:"Gray Advance", look:"Neither side. It wants the board still."},
-  garg:{skill:"Stone Wing", look:"Corridor twin. Blunt force, brittle pride."},
+  graypawn:{skill:"Gray Advance", look:"Neither side. It wants the board still.", resist:["order","chaos"], weak:["song"]},
+  garg:{skill:"Stone Wing", look:"Corridor twin. Blunt force, brittle pride.", weak:["order"]},
   golem:{skill:"Bad Drive", look:"Picasso built a country club. Aim for the seams."},
-  grayk:{skill:"Silent File", look:"The Gray Knight. Order and chaos both starve in him."},
-  doubt:{skill:"Scatter", look:"Unfocused thought. A clear shape defeats it."},
-  darkpawn:{skill:"Black Push", look:"Nemesis rank-and-file."},
-  fellhound:{skill:"Fell Lunge", look:"A chaos hound. It hunts first, thinks never."},
-  neme:{skill:"Rook Crush", look:"A Nemesis castle. Slow. Heavy. Honest."},
-  mallory2:{skill:"Both Bloods", look:"Mallory, grown. She offered Nadia a family. Refuse her."},
-  graypawn2:{skill:"Ash March", look:"Gray infantry. They want quiet."},
-  bonesoldier:{skill:"Rattle Step", look:"Bone and duty. Strike the joints."},
-  umbratum:{skill:"Quiet Veil", look:"Temperance's shadow. Light and dark both feed it. Song does not."},
-  temperance:{skill:"Still the Board", look:"The Gray Queen. The Sovereign Song — every voice — is her checkmate."},
+  grayk:{skill:"Silent File", look:"The Gray Knight. Both colors starve in him.", resist:["order","chaos"]},
+  doubt:{skill:"Scatter", look:"Unfocused thought. A clear shape defeats it.", weak:["order"]},
+  darkpawn:{skill:"Black Push", look:"Nemesis rank-and-file.", weak:["order"]},
+  fellhound:{skill:"Fell Lunge", look:"A chaos hound. It hunts first, thinks never.", weak:["order"]},
+  neme:{skill:"Rook Crush", look:"A Nemesis castle. Slow. Heavy. Honest.", weak:["order"]},
+  mallory2:{skill:"Both Bloods", look:"Mallory, grown. She offered Nadia a family.", weak:["order"]},
+  graypawn2:{skill:"Ash March", look:"Gray infantry. They want quiet.", resist:["order","chaos"], weak:["song"]},
+  bonesoldier:{skill:"Rattle Step", look:"Bone and duty. Strike the joints.", weak:["order"]},
+  umbratum:{skill:"Quiet Veil", look:"Temperance's shadow.", absorb:["order","chaos"], resist:["fire","ice"], weak:["song"]},
+  temperance:{skill:"Still the Board", look:"The Gray Queen. The song is her checkmate.", absorb:["order","chaos"], resist:["fire","ice"], weak:["song"]},
   gigantaur:{skill:"Ceiling Grow", look:"It fits the room by becoming the room."},
-  blackpawn:{skill:"Velvet Check", look:"Grandmother's challenge. Meet it."},
-  misspell:{skill:"Wrong Letter", look:"She always forgets the y in labyrinth."},
-  fellchariot:{skill:"Gray Trace", look:"A chariot of mist. Stay off its file."},
-  gigas:{skill:"Skeleton Unlock", look:"The key on its belt opens even the lock that holds it together."}
+  blackpawn:{skill:"Velvet Check", look:"Grandmother's challenge. Meet it.", weak:["order"]},
+  misspell:{skill:"Wrong Letter", look:"She always forgets the y in labyrinth.", weak:["order"]},
+  fellchariot:{skill:"Gray Trace", look:"A chariot of mist. Stay off its file.", resist:["order","chaos"], weak:["song"]},
+  gigas:{skill:"Skeleton Unlock", look:"The key on its belt opens even its own lock."}
 };
 
+const ELEM_NAME={fire:"FIRE",ice:"ICE",order:"ORDER",chaos:"CHAOS",song:"SONG",lemon:"LEMONADE"};
+
 let B=null, battleResolve=null, bsel=0, bphase="cmd", bmenu="main", bActor=0, bLog="";
+let bfx={wipe:0, flash:0, shake:0, banner:"", bannerT:0, intro:0, hit:null, tint:"#fff"};
 
 function startBattle(foes, boss){
   return new Promise(resolve=>{
@@ -2097,48 +2102,101 @@ function startBattle(foes, boss){
     B={foes, boss, turn:"party", idx:0, def:new Set(), over:false};
     bphase="cmd"; bmenu="main"; bsel=0; bActor=firstLiveParty();
     bLog=foes.length>1? "Enemies draw near!" : foes[0].name+" draws near!";
+    const fast=G&&G.fast;
+    bfx={wipe:fast?0:20, flash:0, shake:0, banner:"", bannerT:0, intro:fast?0:(boss?28:12), hit:null, tint:"#fff"};
+    if(boss && !fast){ bfx.banner=(foes[0].name||"BOSS").toUpperCase(); bfx.bannerT=36; }
     mode="battle";
     playMusic("battle");
     sfx("ok");
   });
+}
+function tickBfx(){
+  if(bfx.wipe>0) bfx.wipe--;
+  if(bfx.flash>0) bfx.flash--;
+  if(bfx.shake>0) bfx.shake--;
+  if(bfx.bannerT>0) bfx.bannerT--;
+  if(bfx.intro>0) bfx.intro--;
+  if(B) B.foes.forEach(f=>{ if(f.dieT>0) f.dieT--; });
+}
+function bannerFx(text){
+  if(G&&G.fast) return;
+  bfx.banner=String(text||"").toUpperCase();
+  bfx.bannerT=26;
+}
+function bfxHit(t, kind){
+  if(G&&G.fast) return;
+  bfx.hit=t;
+  bfx.flash=kind==="weak"?8:kind==="absorb"?6:5;
+  bfx.shake=kind==="weak"?6:3;
+  bfx.tint=kind==="absorb"?"#3ecf7a":kind==="weak"?"#ffcc40":"#ffffff";
 }
 function firstLiveParty(){ return G.party.findIndex(p=>p.alive&&p.hp>0); }
 function liveFoes(){ return B.foes.filter(f=>f.alive&&f.hp>0); }
 
 const SKILLS={
   rich:[
-    {name:"Advance", mp:0, minRank:0, desc:"Pawn's push", fn:(u,t)=>dmg(u,t,1.0)},
-    {name:"L-Strike", mp:6, minRank:1, desc:"Knight's fork", fn:(u,t)=>dmg(u,t,1.45)},
-    {name:"File Charge", mp:8, minRank:2, desc:"Rook's file", fn:(u)=>{ liveFoes().forEach(t=>dmg(u,t,0.85)); return true; }},
+    {name:"Advance", mp:0, minRank:0, desc:"Pawn's push", fn:(u,t)=>dmg(u,t,1.0,"")},
+    {name:"L-Strike", mp:6, minRank:1, desc:"Knight's fork", fn:(u,t)=>dmg(u,t,1.45,"order")},
+    {name:"File Charge", mp:8, minRank:2, desc:"Rook's file", fn:(u)=>{ liveFoes().forEach(t=>dmg(u,t,0.85,"order")); return true; }},
     {name:"Order Touch", mp:10, minRank:3, desc:"Bishop heal", fn:(u)=>{ const a=G.party.find(p=>p.alive); heal(a, 28+u.lv*3); return true; }},
-    {name:"Sovereign Song", mp:18, minRank:4, desc:"The true song", fn:(u)=>{ liveFoes().forEach(t=>dmg(u,t,1.3)); G.party.forEach(p=>{if(p.alive) heal(p,20);}); return true; }}
+    {name:"Sovereign Song", mp:18, minRank:4, desc:"The true song", fn:(u)=>{ liveFoes().forEach(t=>dmg(u,t,1.3,"song")); const log=bLog; G.party.forEach(p=>{if(p.alive){ p.hp=Math.min(p.mhp,p.hp+20); p.alive=true; }}); bLog=log+" The rank sings."; sfx("heal"); return true; }}
   ],
   aaron:[
-    {name:"Advise", mp:0, minRank:0, desc:"Guide's word", fn:(u,t)=>dmg(u,t,0.8)},
+    {name:"Advise", mp:0, minRank:0, desc:"Guide's word", fn:(u,t)=>dmg(u,t,0.8,"order")},
     {name:"Gift of Sight", mp:5, minRank:0, desc:"Heal ally", fn:(u)=>{ const a=G.party.reduce((b,p)=>p.hp<b.hp?p:b); heal(a, 22+u.lv*2); return true; }},
-    {name:"Ancient Tale", mp:8, minRank:0, desc:"Lore damage", fn:(u,t)=>dmg(u,t,1.3)}
+    {name:"Cinder Lore", mp:6, minRank:0, desc:"Trial of fire", fn:(u,t)=>dmg(u,t,1.25,"fire")},
+    {name:"Rime Lore", mp:6, minRank:0, desc:"Trial of ice", fn:(u,t)=>dmg(u,t,1.25,"ice")}
   ],
   nadia:[
-    {name:"Knuckle", mp:0, minRank:0, desc:"Sandwich", fn:(u,t)=>dmg(u,t,1.1)},
-    {name:"Dual Lineage", mp:8, minRank:0, desc:"Both bloods", fn:(u,t)=>dmg(u,t,1.6)},
+    {name:"Knuckle", mp:0, minRank:0, desc:"Sandwich", fn:(u,t)=>dmg(u,t,1.1,"")},
+    {name:"Dual Lineage", mp:8, minRank:0, desc:"Both bloods", fn:(u,t)=>dmg(u,t,1.6, dualElem(t))},
     {name:"Queen Guard", mp:10, minRank:0, desc:"Cover Rich", fn:()=>{ B.def.add("rich"); bLog="Nadia covers Rich."; return true; }},
-    {name:"Water Globes", mp:7, minRank:0, desc:"Balloon volley", fn:(u)=>{ liveFoes().forEach(t=>dmg(u,t,0.75)); return true; }}
+    {name:"Water Globes", mp:7, minRank:0, desc:"Balloon volley", fn:(u)=>{ liveFoes().forEach(t=>dmg(u,t,0.75,"ice")); return true; }}
   ],
   angela:[
-    {name:"Stutter-step", mp:0, minRank:0, desc:"Sidestep hit", fn:(u,t)=>dmg(u,t,1.05)},
-    {name:"Water Balloon", mp:5, minRank:0, desc:"Fairgrounds special", fn:(u,t)=>dmg(u,t,1.35)},
+    {name:"Stutter-step", mp:0, minRank:0, desc:"Sidestep hit", fn:(u,t)=>dmg(u,t,1.05,"")},
+    {name:"Water Balloon", mp:5, minRank:0, desc:"Fairgrounds special", fn:(u,t)=>dmg(u,t,1.35,"ice")},
     {name:"Keen Sight", mp:8, minRank:0, desc:"Spot the thin mist", fn:(u)=>{ const a=G.party.reduce((b,p)=>p.hp<b.hp?p:b); heal(a, 18+u.lv*2); return true; }}
   ]
 };
 
-function dmg(u,t,mult){
+function dualElem(t){
+  const a=t.absorb||[], w=t.weak||[], r=t.resist||[];
+  if(a.indexOf("order")>=0) return "order";
+  if(a.indexOf("chaos")>=0) return "chaos";
+  if(w.indexOf("order")>=0) return "order";
+  if(w.indexOf("chaos")>=0) return "chaos";
+  if(r.indexOf("chaos")>=0 && r.indexOf("order")<0) return "order";
+  if(r.indexOf("order")>=0 && r.indexOf("chaos")<0) return "chaos";
+  return "chaos";
+}
+
+function dmg(u,t,mult,elem){
   if(!t||!t.alive) t=liveFoes()[0];
   if(!t) return false;
+  elem=elem||"";
   const defB=B.def.has(t.id)?0.5:1;
   let n=Math.max(1, Math.floor((u.atk*mult - t.def*0.5)*defB + rand(0,3)));
-  t.hp-=n; bLog=u.name+" hits "+t.name+" for "+n+"!";
-  sfx(n>u.atk?"crit":"hit");
-  if(t.hp<=0){ t.hp=0; t.alive=false; bLog+=" "+t.name+" falls!"; }
+  const weak=t.weak||[], resist=t.resist||[], absorb=t.absorb||[];
+  if(elem && absorb.indexOf(elem)>=0){
+    const h=Math.max(1, Math.floor(n*0.6));
+    t.hp=Math.min(t.mhp, t.hp+h);
+    bLog=u.name+"'s "+(ELEM_NAME[elem]||elem)+" feeds "+t.name+"! +"+h+" HP!";
+    sfx("heal");
+    bfxHit(t, "absorb");
+    return true;
+  }
+  let note="";
+  if(elem && weak.indexOf(elem)>=0){ n=Math.floor(n*1.65)+2; note=" Weakness!"; }
+  else if(elem && resist.indexOf(elem)>=0){ n=Math.max(1, Math.floor(n*0.45)); note=" Resists."; }
+  t.hp-=n;
+  bLog=u.name+" hits "+t.name+" for "+n+"!"+note;
+  sfx(note===" Weakness!"?"crit":"hit");
+  bfxHit(t, note===" Weakness!"?"weak":"hit");
+  if(t.hp<=0){
+    t.hp=0; t.alive=false; t.dieT=(G&&G.fast)?0:14;
+    bLog+=" "+t.name+" falls!";
+  }
   return true;
 }
 function heal(p,n){
@@ -2146,8 +2204,24 @@ function heal(p,n){
   bLog=p.name+" recovers "+n+" HP!"; sfx("heal");
 }
 
+function lookText(t){
+  const bits=[(t.look||"A piece on the board.")];
+  bits.push("Uses "+(t.skill||"Strike")+".");
+  const lab=xs=>(xs||[]).map(e=>ELEM_NAME[e]||e).join(", ");
+  if(t.weak&&t.weak.length) bits.push("Weak to "+lab(t.weak)+".");
+  if(t.resist&&t.resist.length) bits.push("Resists "+lab(t.resist)+".");
+  if(t.absorb&&t.absorb.length) bits.push("Absorbs "+lab(t.absorb)+" — that heals it.");
+  if(t.id==="hydra"&&(G.items.lemonade||fl("lemoned"))) bits.push("You have lemonade. Throw it.");
+  return bits.join(" ");
+}
+
 function skillsFor(p){
-  return (SKILLS[p.role]||[]).filter(s=> (p.role!=="rich"|| G.rank>=s.minRank));
+  return (SKILLS[p.role]||[]).filter(s=>{
+    if(p.role!=="rich") return true;
+    if(G.rank>=s.minRank) return true;
+    if(s.name==="Sovereign Song" && fl("three_stones")) return true;
+    return false;
+  });
 }
 
 function battleCmd(which){
@@ -2166,9 +2240,7 @@ function battleCmd(which){
         else { bLog="Can't escape!"; nextActor(); }
       }
       else if(bsel===5){
-        pickFoeThen(t=>{
-          bLog="LOOK: "+t.name+" — "+(t.skill||"Strike")+". "+(t.look||"A piece on the board.")+(t.id==="hydra"&&(G.items.lemonade||fl("lemoned"))?" Lemonade would spoil it.":"");
-        }, true);
+        pickFoeThen(t=>{ bLog="LOOK: "+t.name+". "+lookText(t); }, true);
       }
     }
   } else if(bmenu==="skill"){
@@ -2178,6 +2250,7 @@ function battleCmd(which){
       const s=sk[bsel]; if(!s) return;
       if(p.mp<s.mp){ bLog="Not enough MP!"; sfx("no"); return; }
       p.mp-=s.mp;
+      bannerFx(s.name);
       if(s.fn.length>=2) pickFoeThen(t=>s.fn(p,t));
       else { s.fn(p); nextActor(); }
     }
@@ -2232,6 +2305,8 @@ function enemyTurns(){
     const n=Math.max(1, f.atk - Math.floor(t.def/2) + rand(0,2));
     const red=B.def.has(t.id)?Math.floor(n/2):n;
     t.hp-=red;
+    bannerFx(f.skill||"Strike");
+    bfxHit(t, "hit");
     bLog=extra+f.name+" "+(f.skill||"strikes")+"! "+t.name+" takes "+red+"!";
     if(t.hp<=0){ t.hp=0; t.alive=false; bLog+=" "+t.name+" is down!"; }
   }
@@ -2309,6 +2384,8 @@ function useItem(id, target){
       hyd.atk=Math.max(6, hyd.atk-4);
       hyd.hp=Math.max(1, Math.floor(hyd.hp*0.7));
       bLog="Lemonade hits the hydra helm! The heads sputter.";
+      bannerFx("LEMONADE");
+      bfxHit(hyd, "weak");
     } else {
       G.party.forEach(p=>heal(p,12));
       bLog="Tart. Sticky. Not a strategy.";
@@ -2508,45 +2585,77 @@ function renderWorld(){
 
 function renderBattle(){
   if(!B) return;
-  ctx.fillStyle="#140818"; ctx.fillRect(0,0,VW,VH);
+  const sh=(bfx.shake>0)?((bfx.shake%2)?2:-2):0;
+  ctx.save();
+  ctx.translate(sh, 0);
+  ctx.fillStyle="#140818"; ctx.fillRect(-4,0,VW+8,VH);
   for(let i=0;i<16;i++) for(let j=0;j<8;j++){
     ctx.fillStyle=(i+j)%2?"#1c1028":"#241830";
     ctx.fillRect(i*16, 8+j*12, 16, 12);
   }
   palRect(0,108,256,116,"#101428");
   B.foes.forEach((f,i)=>{
-    if(!f.alive) return;
-    drawPortrait(f.spr, 176, 6+i*36, 1);
+    if(!f.alive && !(f.dieT>0)) return;
+    const y=6+i*36;
+    const dying=!f.alive && f.dieT>0;
+    ctx.save();
+    if(dying) ctx.globalAlpha=f.dieT/14;
+    drawPortrait(f.spr, 176, y, 1);
+    if(dying){
+      ctx.globalAlpha=1;
+      ctx.fillStyle="#1c1028";
+      for(let row=0; row<32; row+=2) ctx.fillRect(176, y+row, 32, 1);
+    }
+    if(bfx.hit===f && bfx.flash>0){
+      ctx.globalAlpha=Math.min(0.7, bfx.flash/8);
+      ctx.fillStyle=bfx.tint||"#fff";
+      ctx.fillRect(174, y-2, 36, 36);
+    }
+    ctx.restore();
+    ctx.globalAlpha=(!f.alive && f.dieT>0)?(f.dieT/14):1;
     ctx.fillStyle="#f4e6b8"; ctx.font="7px monospace";
     ctx.fillText(f.name, 8, 18+i*36);
     ctx.fillStyle="#8a93a8"; ctx.font="6px monospace";
     ctx.fillText(f.skill||"Strike", 8, 28+i*36);
     ctx.fillStyle="#3a2030"; ctx.fillRect(8,32+i*36,90,4);
-    ctx.fillStyle="#d4453a"; ctx.fillRect(8,32+i*36,90*(f.hp/f.mhp),4);
+    ctx.fillStyle="#d4453a"; ctx.fillRect(8,32+i*36,90*Math.max(0,f.hp)/f.mhp,4);
+    ctx.globalAlpha=1;
   });
   G.party.forEach((p,i)=>{
     if(!p.alive) return;
     drawPortrait(p.role==="rich"?"rich":p.role, 8+i*40, 112, 3);
+    if(bfx.hit===p && bfx.flash>0){
+      ctx.save();
+      ctx.globalAlpha=Math.min(0.65, bfx.flash/8);
+      ctx.fillStyle="#d4453a";
+      ctx.fillRect(6+i*40, 110, 36, 36);
+      ctx.restore();
+    }
     ctx.fillStyle=i===bActor?"#e6c86a":"#b8c4ff";
     ctx.font="6px monospace";
     ctx.fillText(p.name.slice(0,7), 8+i*40, 148);
   });
   palRect(8,156,240,62,"#101850");
   ctx.strokeStyle="#e6c86a"; ctx.strokeRect(8.5,156.5,239,61);
-  ctx.fillStyle="#f4e6b8"; ctx.font="7px monospace";
-  ctx.fillText((bLog||"").slice(0,42), 14, 170);
+  ctx.fillStyle="#f4e6b8"; ctx.font="6px monospace";
+  const log=bLog||"";
+  ctx.fillText(log.slice(0,40), 14, 166);
+  if(log.length>40) ctx.fillText(log.slice(40,80), 14, 175);
   const p=G.party[bActor];
   if(p){
     if(bmenu==="main"){
       const cmds=["FIGHT","SKILL","ITEM","GUARD","RUN","LOOK"];
       cmds.forEach((c,i)=>{
+        ctx.font="7px monospace";
         ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8";
-        ctx.fillText((i===bsel?">":" ")+c, 14+(i%3)*72, 186+(i>2?12:0));
+        ctx.fillText((i===bsel?">":" ")+c, 14+(i%3)*72, 188+(i>2?12:0));
       });
     } else if(bmenu==="skill"){
-      skillsFor(p).forEach((s,i)=>{
+      const sk=skillsFor(p);
+      sk.forEach((s,i)=>{
+        ctx.font=sk.length>3?"6px monospace":"7px monospace";
         ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8";
-        ctx.fillText((i===bsel?">":" ")+s.name+" "+s.mp+"mp", 14, 184+i*10);
+        ctx.fillText((i===bsel?">":" ")+s.name+" "+s.mp+"mp", 14, 184+i*(sk.length>3?8:10));
       });
     } else if(bmenu==="item"){
       const L=usableItems();
@@ -2555,8 +2664,33 @@ function renderBattle(){
     } else if(bmenu==="foe"){
       liveFoes().forEach((f,i)=>{ ctx.fillStyle=i===bsel?"#e6c86a":"#f4e6b8"; ctx.fillText((i===bsel?">":" ")+f.name,14,184+i*10); });
     }
-    ctx.fillStyle="#b8c4ff";
-    ctx.fillText(p.name+" HP "+p.hp+"/"+p.mhp+"  MP "+p.mp, 128, 210);
+    ctx.fillStyle="#b8c4ff"; ctx.font="6px monospace";
+    ctx.fillText(p.name+" HP "+p.hp+"/"+p.mhp+"  MP "+p.mp, 128, 214);
+  }
+  ctx.restore();
+  if(B.boss && bfx.intro>0){
+    palRect(28, 2, 200, 14, "#101850");
+    ctx.strokeStyle="#e6c86a"; ctx.strokeRect(28.5,2.5,199,13);
+    ctx.fillStyle="#e6c86a"; ctx.font="7px monospace";
+    ctx.fillText("* "+(B.foes[0].name||"BOSS").toUpperCase(), 36, 12);
+  }
+  if(bfx.bannerT>0 && bfx.banner){
+    palRect(24, 88, 208, 16, "#e6c86a");
+    ctx.fillStyle="#101850"; ctx.font="7px monospace";
+    ctx.fillText(bfx.banner.slice(0,26), 32, 99);
+  }
+  if(bfx.wipe>0){
+    const t=bfx.wipe;
+    const cell=8;
+    for(let y=0;y<VH;y+=cell) for(let x=0;x<VW;x+=cell){
+      const i=(x+y)/cell;
+      if((i+t)%3!==0 || t>8){
+        ctx.fillStyle="#000";
+        ctx.globalAlpha=Math.min(1, t/14);
+        ctx.fillRect(x,y,cell,cell);
+      }
+    }
+    ctx.globalAlpha=1;
   }
 }
 
@@ -2588,6 +2722,7 @@ function renderHUD(){
 
 function frame(){
   if(moving>0){ moving--; if(moving===0) afterStep(); }
+  if(mode==="battle") tickBfx();
   if(mode==="world" && (keys.ArrowLeft||keys.KeyA||keys.ArrowRight||keys.KeyD||keys.ArrowUp||keys.KeyW||keys.ArrowDown||keys.KeyS)){
     walkF++;
     if(!moving){

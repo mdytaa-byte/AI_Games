@@ -368,6 +368,16 @@ function registerExpression(def){
   CharacterFeatures.expressions[def.id] = def;
   return def;
 }
+function invokeFeatureBuild(def, ctx){
+  if (def && typeof def.build === 'function') def.build(ctx);
+}
+function runActiveBuilds(kind, ids, ctx){
+  const table = CharacterFeatures[kind] || {};
+  (ids || []).forEach(id => {
+    if (!id || id === 'none') return;
+    invokeFeatureBuild(table[id], Object.assign({ id }, ctx));
+  });
+}
 
 const QUALITY = {
   preview:  { rad: 8,  torso: 10, steps: 3, headSeg: 12, headRows: 8,  hairSeg: 16 },
@@ -539,14 +549,14 @@ function compatibilityWarnings(cfg){
   const w = [];
   const bulky = hp.back === 'mohawk' || hp.texture === 'spiky' || cfg.hairVolume > 1.28;
   if (cfg.headwear && cfg.headwear !== 'none' && cfg.headwear !== 'band' && bulky)
-    w.push('This hat may collide with bulky or spiky hair.');
+    w.push('Hair is flattened under this hat.');
   if ((cfg.headwear === 'hood' || cfg.baseTop === 'hoodie') &&
-      (hp.back === 'bun' || hp.back === 'ponytail' || hp.back === 'pigtails'))
-    w.push('A hood covers most of a ponytail, bun, or pigtails.');
+      (hp.back === 'bun' || hp.back === 'ponytail' || hp.back === 'pigtails' || hp.back === 'braid'))
+    w.push('The hood tucks the ponytail, bun, braid, or pigtails.');
   if (cfg.glasses !== 'none' && cfg.eyepatch !== 'none')
-    w.push('Glasses overlap the eyepatch.');
+    w.push('Glasses are hidden while an eyepatch is on.');
   if (cfg.headwear === 'tophat' && hp.back === 'bun')
-    w.push('A top hat sits over a bun and may look stacked.');
+    w.push('The bun is tucked under the top hat.');
   if (cfg.baseTop === 'dress' && cfg.bottom && cfg.bottom !== 'none' && cfg.bottom !== 'dress')
     w.push('A dress already includes a skirt — the bottom layer may peek through.');
   if (cfg.outerwear === 'robe' && cfg.bottom === 'skirt')
@@ -588,7 +598,87 @@ function propHelpers(H, cfg){
   return { solid, wood, metal, glow, dark, paper, black, put, cyl, box, ball, H };
 }
 
-function attachPropSlot(bones, map, slot, id, H, cfg, P){
+function handHolding(cfg, side){
+  const id = side === 'L' ? (cfg.propLeft || cfg.prop || 'none') : (cfg.propRight || 'none');
+  if (!id || id === 'none') return false;
+  const def = CharacterFeatures.props[id];
+  if (def && def.bone && !/^hand/.test(def.bone)) return false;
+  return true;
+}
+function buildHands(cfg, bones, map, H, P, limb){
+  const mat = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(cfg.skin).convertSRGBToLinear(), roughness: .72
+  });
+  const grips = { L: null, R: null };
+  ['L', 'R'].forEach(s => {
+    const bone = bones[map['hand' + s]];
+    if (!bone) return;
+    const hp = P['hand' + s], tip = P['handTip' + s];
+    const dir = V(tip[0] - hp[0], tip[1] - hp[1], tip[2] - hp[2]);
+    const span = Math.max(dir.length(), .018 * H);
+    const axis = dir.clone().normalize();
+    const holding = handHolding(cfg, s);
+    const curl = holding ? 1 : .18;
+
+    const palm = new THREE.Group();
+    const yAx = axis;
+    const zRef = V(0, 0, 1);
+    if (Math.abs(yAx.dot(zRef)) > .92) zRef.set(0, 1, 0);
+    const xAx = new THREE.Vector3().crossVectors(yAx, zRef).normalize();
+    if (s === 'R') xAx.negate();
+    const zAx = new THREE.Vector3().crossVectors(xAx, yAx).normalize();
+    palm.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAx, yAx, zAx));
+    bone.add(palm);
+
+    const pad = new THREE.Mesh(new THREE.SphereGeometry(.017 * limb * H, 8, 6), mat);
+    pad.scale.set(1.22, .52, .88);
+    pad.position.set(0, span * .16, .003 * H);
+    pad.castShadow = true; pad.userData.hand = true; palm.add(pad);
+
+    const addDigit = (parent, x, z, totalLen, r, segs, curlAmt, roll) => {
+      let node = parent;
+      const segLen = totalLen / segs;
+      for (let i = 0; i < segs; i++){
+        const g = new THREE.Group();
+        if (i === 0) { g.position.set(x, 0, z); g.rotation.z = roll || 0; }
+        else g.position.y = segLen;
+        g.rotation.x = -curlAmt * (i === 0 ? .4 : .66);
+        node.add(g);
+        const mesh = new THREE.Mesh(
+          new THREE.CylinderGeometry(r * (1 - i * .12), r * (.86 - i * .12), segLen * .96, 6), mat);
+        mesh.position.y = segLen * .5;
+        mesh.castShadow = true; mesh.userData.hand = true; g.add(mesh);
+        const knuckle = new THREE.Mesh(new THREE.SphereGeometry(r * (.94 - i * .1), 6, 5), mat);
+        knuckle.position.y = segLen; knuckle.userData.hand = true; g.add(knuckle);
+        node = g;
+      }
+    };
+
+    const widths = [1, 1.06, 1, .8];
+    const lens = [.9, 1, .92, .74];
+    const spread = .0116 * limb * H;
+    for (let i = 0; i < 4; i++){
+      addDigit(palm, (i - 1.5) * spread, .002 * H,
+        span * (holding ? .7 : .94) * lens[i],
+        .0066 * limb * H * widths[i],
+        3, curl * (holding ? 1 : .5), (i - 1.5) * .05);
+    }
+    const thumbRoot = new THREE.Group();
+    thumbRoot.position.set(spread * 1.9, span * .05, .007 * H);
+    thumbRoot.rotation.set(-curl * .35, .15, .7);
+    palm.add(thumbRoot);
+    addDigit(thumbRoot, 0, 0, span * (holding ? .52 : .6), .0072 * limb * H, 2, curl * .8, 0);
+
+    const grip = new THREE.Group();
+    grip.position.set(0, span * (holding ? .26 : .4), .008 * H);
+    grip.rotation.z = -Math.PI / 2;
+    if (holding) grip.rotation.x = .12;
+    palm.add(grip);
+    grips[s] = grip;
+  });
+  return grips;
+}
+function attachPropSlot(bones, map, slot, id, H, cfg, P, grips){
   if (!id || id === 'none') return;
   const def = CharacterFeatures.props[id];
   if (!def || typeof def.build !== 'function') return;
@@ -600,15 +690,23 @@ function attachPropSlot(bones, map, slot, id, H, cfg, P){
   if (!bone) return;
   const rig = new THREE.Group();
   rig.userData.propSlot = slot;
-  bone.add(rig);
   const place = boneName === 'head' ? 'head' : slot;
   if (place === 'leftHand' || place === 'rightHand'){
     const side = (place === 'rightHand' || boneName.indexOf('R') >= 0) ? 'R' : 'L';
+    const grip = grips && grips[side];
+    if (grip){
+      grip.add(rig);
+      def.build(rig, propHelpers(H, cfg), cfg);
+      return;
+    }
+    bone.add(rig);
     if (P && P['handTip' + side] && P['hand' + side]){
       rig.position.set(
         (P['handTip' + side][0] - P['hand' + side][0]) * .6,
         (P['handTip' + side][1] - P['hand' + side][1]) * .6, 0);
     }
+  } else {
+    bone.add(rig);
   }
   if (place === 'back'){
     rig.position.set(0, -.02 * H, -.09 * H);
@@ -1202,9 +1300,9 @@ function createCharacter(input){
       },
       region: t => (t < sleeveFore ? SH_SLEEVE : SK), palette
     });
-    tube(B, P['hand' + s], P['handTip' + s], {
+    tube(B, P['hand' + s], mix3(P['hand' + s], P['handTip' + s], .42), {
       a: map['hand' + s], b: null, prev: map['forearm' + s], radial: Q.rad, steps: Math.max(2, Q.steps - 2), pscale: PS,
-      profile: t => ({ rx: (.026 + .006 * Math.sin(t * Math.PI)) * limb * H, rz: .017 * limb * H }),
+      profile: t => ({ rx: (.028 + .004 * Math.sin(t * Math.PI)) * limb * H, rz: .018 * limb * H }),
       region: () => SK, palette, capB: true
     });
     tube(B, P['thigh' + s], P['shin' + s], {
@@ -1322,6 +1420,7 @@ function createCharacter(input){
     face.add(rig); eyeRigs.push(rig);
 
     const eye = new THREE.Mesh(new THREE.SphereGeometry(hr * .30, 14, 12), solid('#fbfdff', .28));
+    eye.userData.facePart = 'eye';
     rig.add(eye); eyes.push(eye);
 
     const irisR = hr * .148 * (Number(cfg.irisSize) || 1);
@@ -1334,11 +1433,11 @@ function createCharacter(input){
     const lidMat = solid(cfg.skin, .8); lidMat.side = THREE.DoubleSide;
     const up = new THREE.Mesh(
       new THREE.SphereGeometry(hr * .322, 16, 9, 0, Math.PI * 2, 0, Math.PI * .54), lidMat);
-    aimLid(up, -.58, false); up.userData.lid = 'upper'; rig.add(up); upperLids.push(up);
+    aimLid(up, -.58, false); up.userData.lid = 'upper'; up.userData.facePart = 'lid'; rig.add(up); upperLids.push(up);
 
     const low = new THREE.Mesh(
       new THREE.SphereGeometry(hr * .322, 16, 7, 0, Math.PI * 2, 0, Math.PI * .42), lidMat);
-    aimLid(low, .80, true); low.userData.lid = 'lower'; rig.add(low); lowerLids.push(low);
+    aimLid(low, .80, true); low.userData.lid = 'lower'; low.userData.facePart = 'lid'; rig.add(low); lowerLids.push(low);
 
     const bt = Number(cfg.browThickness) || 1;
     const bh = Number(cfg.browHeight) || 1;
@@ -1348,6 +1447,7 @@ function createCharacter(input){
     brow.userData.browBaseY = brow.position.y;
     brow.userData.browBaseZ = brow.position.z;
     brow.userData.browBaseRoll = brow.rotation.z;
+    brow.userData.facePart = 'brow';
     face.add(brow); brows.push(brow);
   });
 
@@ -1361,6 +1461,7 @@ function createCharacter(input){
   mouth.position.set((Number(cfg.asymmetry) || 0) * hr * .04, -hry * .40, hrz * .76);
   mouth.scale.set(1, .75, .6); face.add(mouth);
   mouth.userData.restCurve = Number(cfg.mouthRest) || 0;
+  mouth.userData.facePart = 'mouth';
 
   if (age > .35){
     const wr = new THREE.MeshStandardMaterial({
@@ -1426,7 +1527,7 @@ function createCharacter(input){
     m.quaternion.setFromUnitVectors(V(0, 1, 0), d.clone().normalize());
     m.castShadow = true; return m;
   };
-  if (cfg.glasses !== 'none'){
+  if (cfg.glasses !== 'none' && cfg.eyepatch === 'none'){
     const G = cfg.glasses;
     const frame = solid(cfg.frameColor, .34); frame.metalness = .35;
     const dark = G === 'sun';
@@ -1620,7 +1721,10 @@ function createCharacter(input){
   // The line eases from the forehead down past the ears to the nape.
   const hair = new THREE.Group(); headBone.add(hair);
   const hairMat = solid(cfg.hairColor, .88); hairMat.side = THREE.DoubleSide;
-  const vol = cfg.hairVolume, len = cfg.hairLength;
+  const hatOn = cfg.headwear && cfg.headwear !== 'none' && cfg.headwear !== 'band';
+  const hoodOn = cfg.headwear === 'hood' || cfg.baseTop === 'hoodie';
+  const vol = hatOn ? Math.min(Number(cfg.hairVolume) || 1, 1.08) : cfg.hairVolume;
+  const len = cfg.hairLength;
 
   const FRONT = Math.max(SAFE, { high: .62, even: .52, low: .45 }[cfg.hairline] || .52);
   const SIDE = cfg.ears === 'none' ? -.12 : -.02;   // clear the ear when there is one
@@ -1701,17 +1805,21 @@ function createCharacter(input){
 
   const hp = resolveHair(cfg);
   const tex = hp.texture || 'straight';
-  const OUT = (tex === 'curly' || tex === 'coily') ? 1.12 : 1.055;
+  const OUT = (tex === 'curly' || tex === 'coily') ? (hatOn ? 1.06 : 1.12) : (hatOn ? 1.03 : 1.055);
   const waveAmt = ({ straight:0, wavy:.06, curly:.04, coily:.03, spiky:0 }[tex] || 0);
   const bald = hp.back === 'bald';
   const mohawk = hp.back === 'mohawk';
+  const tuckBack = hoodOn && (hp.back === 'bun' || hp.back === 'ponytail' || hp.back === 'pigtails' || hp.back === 'braid');
+  const tuckBun = tuckBack || (hatOn && hp.back === 'bun');
   const partA = hp.part === 'center' ? Math.PI / 2
     : hp.part === 'left' ? Math.PI / 2 - .40
     : hp.part === 'right' ? Math.PI / 2 + .40
     : undefined;
-  const napeK = hp.back === 'long' || hp.back === 'braid' ? (-.50 - .10 * len)
+  let napeK = hp.back === 'long' || hp.back === 'braid' ? (-.50 - .10 * len)
     : hp.back === 'loose' ? (-.42 - .06 * Math.max(0, len - 1))
     : -.42;
+  if (hatOn) napeK = Math.max(napeK, -.26);
+  if (hoodOn) napeK = Math.max(napeK, -.18);
   const partOpts = partA === undefined ? {} : { partA, partW: .18, partD: .09 };
   const nLock = Math.max(4, Math.round((Q.hairSeg || 28) / 5));
   const tubeOk = typeof THREE.CatmullRomCurve3 === 'function' && typeof THREE.TubeGeometry === 'function';
@@ -1840,16 +1948,18 @@ function createCharacter(input){
   }
   if (mohawk){
     cap(1.012);
-    const ridgeOut = 1.012 * vol;
-    const nSpike = Math.max(6, nLock + 2);
-    for (let i = 0; i < nSpike; i++){
-      const t = i / (nSpike - 1);
-      const th = THREE.MathUtils.lerp(thetaAt(Math.PI / 2, ridgeOut) * .70, -1.45, t);
-      const h = hry * (.5 + .38 * Math.sin(t * Math.PI)) * vol;
-      const sp = new THREE.Mesh(new THREE.ConeGeometry(hr * .13 * vol, h, 6), hairMat);
-      const ny = Math.cos(th), nz = Math.sin(th);
-      sp.position.set(0, ny * hry * ridgeOut + ny * h * .45, nz * hrz * ridgeOut + nz * h * .45);
-      sp.rotation.x = th; sp.castShadow = true; hair.add(sp);
+    if (!hatOn){
+      const ridgeOut = 1.012 * vol;
+      const nSpike = Math.max(6, nLock + 2);
+      for (let i = 0; i < nSpike; i++){
+        const t = i / (nSpike - 1);
+        const th = THREE.MathUtils.lerp(thetaAt(Math.PI / 2, ridgeOut) * .70, -1.45, t);
+        const h = hry * (.5 + .38 * Math.sin(t * Math.PI)) * vol;
+        const sp = new THREE.Mesh(new THREE.ConeGeometry(hr * .13 * vol, h, 6), hairMat);
+        const ny = Math.cos(th), nz = Math.sin(th);
+        sp.position.set(0, ny * hry * ridgeOut + ny * h * .45, nz * hrz * ridgeOut + nz * h * .45);
+        sp.rotation.x = th; sp.castShadow = true; hair.add(sp);
+      }
     }
   }
   if (!bald && (tex === 'curly' || tex === 'coily')){
@@ -1864,7 +1974,7 @@ function createCharacter(input){
       addCoil(a, .22 + ((i * 11) % 7) / 7 * .62, OUT * vol, o);
     }
   }
-  if (!bald && tex === 'spiky' && !mohawk){
+  if (!bald && tex === 'spiky' && !mohawk && !hatOn){
     const nSp = Math.max(8, nLock + 3);
     for (let i = 0; i < nSp; i++){
       const a = i / nSp * Math.PI * 2 + .1;
@@ -1911,9 +2021,10 @@ function createCharacter(input){
   }
 
   if (hp.back === 'long'){
+    const fallLen = hoodOn ? Math.min(len, .55) : len;
     const fall = new THREE.Mesh(hairShell({
       out: OUT * vol * 1.03, inn: 1.004, a0: Math.PI * .62, aSpan: Math.PI * .76,
-      front: 1, side: SIDE - .04, back: -.08 - .68 * len,
+      front: 1, side: SIDE - .04, back: -.08 - .68 * fallLen,
       rows: 8, seg: Math.max(12, Math.round((Q.hairSeg || 28) * .55)),
       wave: waveAmt, v0: .32
     }), hairMat);
@@ -1922,19 +2033,19 @@ function createCharacter(input){
       const a = Math.PI + (i - (nLock - 1) / 2) * .20;
       const p0 = onScalp(a, .88, OUT * vol, { back: -.55 });
       const p2 = p0.clone();
-      p2.y -= hry * (.55 + .95 * len);
+      p2.y -= hry * (.55 + .95 * fallLen);
       p2.z -= hrz * .10;
       addStrand(p0, p2, hr * .036 * vol, tex, i * 1.1);
     }
   }
-  if (hp.back === 'braid'){
+  if (hp.back === 'braid' && !tuckBack){
     const p0 = onScalp(-Math.PI / 2, .62, OUT * vol, { back: -.48 });
     const p2 = p0.clone();
     p2.y -= hry * (1.05 * len + .25);
     p2.z -= hrz * .12;
     addBraid(p0, p2, hr * .07 * vol);
   }
-  if (hp.back === 'ponytail'){
+  if (hp.back === 'ponytail' && !tuckBack){
     const g = scalpN(-Math.PI / 2, .58, OUT * vol, { back: -.45 });
     lump(hr * .16 * vol, g.pos.x, g.pos.y, g.pos.z, 1.15, .85, 1.05);
     const n = Math.max(3, nLock - 1);
@@ -1947,7 +2058,7 @@ function createCharacter(input){
       addStrand(p0, p2, hr * .032 * vol, tex, i * 1.3);
     }
   }
-  if (hp.back === 'pigtails'){
+  if (hp.back === 'pigtails' && !tuckBack){
     [-1, 1].forEach((sx, k) => {
         const g = scalpN(sx * (Math.PI - .85), .55, OUT * vol, { back: -.35 });
       lump(hr * .14 * vol, g.pos.x, g.pos.y, g.pos.z, 1.1, .9, 1);
@@ -1962,7 +2073,7 @@ function createCharacter(input){
       }
     });
   }
-  if (hp.back === 'bun'){
+  if (hp.back === 'bun' && !tuckBun){
     const g = scalpN(-Math.PI / 2, .28, OUT * vol, { back: -.32 });
     const bunR = hr * .28 * vol;
     const torus = new THREE.Mesh(new THREE.TorusGeometry(bunR, bunR * .46, 8, 16), hairMat);
@@ -2153,15 +2264,20 @@ function createCharacter(input){
   // ---- layered clothing silhouettes ----
   buildWardrobeOverlays(cfg, bones, map, H, fat, hr, { garment, torsoAt, SH, PA, Q });
 
-  // ---- props (multi-slot registry) ----
-  // Legacy `prop` maps onto the left hand. Dedicated slots let a character hold
-  // a book, wear a backpack, and keep a pointer in the other hand at once.
+  const pluginCtx = {
+    group, bones, map, H, fat, hr, cfg, head: headBone, face, hair, mesh, solid
+  };
+  runActiveBuilds('garments', [cfg.baseTop, cfg.outerwear, cfg.bottom, cfg.neckwear, cfg.footwear], pluginCtx);
+  runActiveBuilds('hair', [cfg.hair, hp.texture, hp.back, hp.fringe, hp.part], pluginCtx);
+
+  // ---- hands + props ----
+  const grips = buildHands(cfg, bones, map, H, P, limb);
   const leftId = cfg.propLeft || cfg.prop || 'none';
-  attachPropSlot(bones, map, 'leftHand', leftId, H, cfg, P);
-  attachPropSlot(bones, map, 'rightHand', cfg.propRight, H, cfg, P);
-  attachPropSlot(bones, map, 'back', cfg.propBack, H, cfg, P);
-  attachPropSlot(bones, map, 'waist', cfg.propWaist, H, cfg, P);
-  attachPropSlot(bones, map, 'shoulder', cfg.propShoulder, H, cfg, P);
+  attachPropSlot(bones, map, 'leftHand', leftId, H, cfg, P, grips);
+  attachPropSlot(bones, map, 'rightHand', cfg.propRight, H, cfg, P, grips);
+  attachPropSlot(bones, map, 'back', cfg.propBack, H, cfg, P, grips);
+  attachPropSlot(bones, map, 'waist', cfg.propWaist, H, cfg, P, grips);
+  attachPropSlot(bones, map, 'shoulder', cfg.propShoulder, H, cfg, P, grips);
 
   // ---------- expressions ----------
   // Identity (eye size, brow thickness, mouth width) lives on the meshes.
@@ -2388,9 +2504,11 @@ function createCharacter(input){
     return s.pose || cfg.pose || 'idle';
   }
   function getBone(name){ return map[name] !== undefined ? bones[map[name]] : null; }
+  const faceParts = [];
+  face.traverse(o => { if (o.userData && o.userData.facePart) faceParts.push(o); });
 
   return { group, mesh, bones, map, skeleton, setPose, setFace, setExpression,
-           setPoseOffsets, setState, getBone, cfg, size, warnings: compatibilityWarnings(cfg),
+           setPoseOffsets, setState, getBone, faceParts, cfg, size, warnings: compatibilityWarnings(cfg),
            description: describeCharacter(cfg),
            dispose(){
              group.traverse(o => {

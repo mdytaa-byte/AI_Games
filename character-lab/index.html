@@ -56,6 +56,8 @@
     background:transparent;border:1px solid var(--line-soft);cursor:pointer}
   .lock[aria-pressed=true]{border-color:var(--amber);color:var(--amber)}
   .mini:hover,.lock:hover{border-color:var(--cyan);color:var(--paper)}
+  details.grp.locked .grp-body{pointer-events:none;opacity:.42}
+  details.grp.locked summary h2{color:var(--amber)}
 
   .row{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;gap:8px}
   .row label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--paper-dim)}
@@ -122,7 +124,7 @@
   .card p{font-size:11.5px;line-height:1.65;color:var(--paper-dim);margin:0 0 14px}
   pre{background:#0B1728;border:1px solid var(--line-soft);padding:13px;font-size:11px;
     line-height:1.6;color:var(--paper);overflow:auto;margin:0 0 14px;max-height:28vh}
-  .export-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0 8px}
+  .export-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:12px 0 8px}
   .export-choice{min-height:72px;padding:10px 8px;border:1px solid var(--line);background:transparent;color:var(--paper);cursor:pointer;text-align:left}
   .export-choice:hover{border-color:var(--amber)}
   .export-choice strong{display:block;font-family:var(--display);font-size:9px;letter-spacing:.10em;text-transform:uppercase;margin-bottom:5px}
@@ -135,16 +137,16 @@
   .lib-card span{display:block;font-size:9px;color:var(--paper-dim)}
   .hint{position:fixed;bottom:14px;right:18px;font-size:9.5px;letter-spacing:.1em;
     color:var(--line);z-index:4;text-align:right;line-height:1.7}
-  #pose-hud{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:7;
+  #pose-hud,#face-hud,#compare-hud{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:7;
     display:none;padding:9px 16px;background:rgba(19,39,67,.94);border:1px solid var(--amber);
     font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);
     pointer-events:none;text-align:center;line-height:1.55;max-width:min(520px,92vw)}
-  #pose-hud.on{display:block}
-  body.posing .hint{opacity:0}
+  #pose-hud.on,#face-hud.on,#compare-hud.on{display:block}
+  body.posing .hint,body.sculpting .hint{opacity:0}
   #pose-axis .row label{min-width:72px}
   @media (max-width:860px){
     .hint{display:none}.export-grid{grid-template-columns:1fr}
-    #pose-hud{bottom:auto;top:78px;left:12px;right:12px;transform:none}
+    #pose-hud,#face-hud,#compare-hud{bottom:auto;top:78px;left:12px;right:12px;transform:none}
   }
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -155,7 +157,7 @@
 <header>
   <div>
     <h1>Character Lab</h1>
-    <span class="sub">v4 authoring studio · layered wardrobe · performance states</span>
+    <span class="sub">v4 authoring studio · layered wardrobe · A/B compare · face sculpt</span>
   </div>
   <div class="bar" id="cam-bar"></div>
   <span class="readout" id="readout">—</span>
@@ -167,6 +169,8 @@
     <div class="grp-body">
       <div class="ctag">Variants</div>
       <div class="seg" id="variants"></div>
+      <div class="ctag">Compare</div>
+      <div class="seg" id="compare"></div>
       <div class="row-btns">
         <button id="btn-dup">Duplicate to next slot</button>
         <button id="btn-library">Library</button>
@@ -405,6 +409,10 @@
     <summary><h2>Expression</h2></summary>
     <div class="grp-body">
       <div class="seg" id="faces"></div>
+      <div class="row-btns">
+        <button id="btn-face-edit">Sculpt face</button>
+      </div>
+      <p class="muted">Turn on Sculpt face, then drag brows, lids, eyes, or the mouth. Sliders stay in sync.</p>
       <div class="row"><label>Brow move</label><span class="val" id="v-expr-brow">0.00</span></div>
       <input type="range" id="s-expr-brow" min="-0.5" max="0.5" step="0.01" value="0">
       <div class="row"><label>Brow height</label><span class="val" id="v-expr-browy">0.00</span></div>
@@ -483,14 +491,16 @@
 </div>
 
 <button id="tab">Controls</button>
-<div class="hint">drag to orbit · scroll to zoom<br>Z undo · shift+Z redo · R rig · P pose · space randomize</div>
+<div class="hint">drag to orbit · scroll to zoom<br>Z undo · shift+Z redo · R rig · P pose · F sculpt · space randomize</div>
 <div id="pose-hud">Drag a joint to pose · empty drag orbits · Shift rotates hands and feet</div>
+<div id="face-hud">Drag brows, lids, eyes, or the mouth · empty drag orbits</div>
+<div id="compare-hud">Editing the highlighted slot · the other figure is a frozen compare</div>
 <input type="file" id="file-json" accept="application/json,.json" hidden>
 
 <div id="library" role="dialog" aria-modal="true" aria-labelledby="lib-h">
   <div class="card">
     <h3 id="lib-h">Character library</h3>
-    <p>Saved projects live in this browser. Import a JSON export to keep editing a character.</p>
+    <p>Saved projects live in this browser (IndexedDB, with a localStorage backup). Import a JSON export to keep editing a character.</p>
     <div class="lib-grid" id="lib-grid"></div>
     <div class="actions" style="flex-direction:row;flex-wrap:wrap;border:0;padding:0">
       <button id="btn-new" class="key">New character</button>
@@ -503,13 +513,14 @@
 <div id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-h">
   <div class="card">
     <h3 id="sheet-h">Export portable character</h3>
-    <p>JavaScript is simplest for standalone HTML. JSON keeps metadata, poses, expressions, and performance states. ZIP includes a starter activity plus local engine files.</p>
+    <p>JavaScript is simplest for standalone HTML. JSON keeps metadata, poses, expressions, and performance states. ZIP includes a starter activity plus local engine files. glTF exports the posed mesh for Blender or a game engine.</p>
     <label class="ctag" for="character-name">Character name</label>
     <input class="field" type="text" id="character-name" value="my-character" autocomplete="off" spellcheck="false">
     <div class="export-grid">
       <button id="btn-download-js" class="export-choice key"><strong>Character JavaScript</strong><span>Best for standalone HTML</span></button>
       <button id="btn-download-json" class="export-choice"><strong>Character JSON</strong><span>Best for LMS / continue editing</span></button>
       <button id="btn-package" class="export-choice"><strong>Complete activity ZIP</strong><span>Starter HTML + engine + Three.js</span></button>
+      <button id="btn-download-gltf" class="export-choice"><strong>glTF / GLB mesh</strong><span>Skinned figure for Blender or a game engine</span></button>
     </div>
     <p id="export-status" class="warn" aria-live="polite"></p>
     <label class="ctag" for="dump">Embed examples</label>

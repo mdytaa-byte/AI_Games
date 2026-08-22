@@ -42,11 +42,15 @@
   const PAL_KEY = 'character-lab-palettes-v4';
 
   let anim = 'idle', character = null, xray = false, poseEdit = false, turntable = false;
+  let faceEdit = false, compareWith = null, compareChar = null;
   let helper = null, joints = [];
   let selectedBone = null;
   let hoveredBone = null;
   let poseDrag = null;
   let poseEditPrev = 'idle';
+  let hoveredFace = null;
+  let faceDrag = null;
+  let faceCam = null;
   const POSE_LIMBS = [
     { id: 'head', label: 'Head', group: 'head', r: 1.28 },
     { id: 'neck', label: 'Neck', group: 'head', r: .92 },
@@ -157,12 +161,51 @@
   const fill = new THREE.DirectionalLight(0xbcd4ff, .3);
   fill.position.set(-1.5, 1.2, 3); scene.add(fill);
 
+  function disposeCompare() {
+    if (!compareChar) return;
+    scene.remove(compareChar.group);
+    compareChar.dispose();
+    compareChar = null;
+  }
+  function fitStage() {
+    if (compareChar && character) {
+      const gap = Math.max(character.size, compareChar.size) * .48;
+      character.group.position.x = -gap;
+      compareChar.group.position.x = gap;
+      target.x = 0;
+      if (dist < 3.35) dist = 3.35;
+      key.shadow.camera.left = -2.6;
+      key.shadow.camera.right = 2.6;
+    } else if (character) {
+      character.group.position.x = 0;
+      target.x = 0;
+      key.shadow.camera.left = -1.4;
+      key.shadow.camera.right = 1.4;
+    }
+    key.shadow.camera.updateProjectionMatrix();
+    const hud = document.getElementById('compare-hud');
+    if (hud) {
+      hud.classList.toggle('on', !!compareChar);
+      hud.textContent = compareChar
+        ? ('Editing ' + activeVariant + ' · comparing ' + compareWith)
+        : '';
+    }
+  }
   function rebuild() {
     if (character) { scene.remove(character.group); character.dispose(); }
+    disposeCompare();
     if (helper) { scene.remove(helper); helper = null; }
     joints = [];
     character = createCharacter(cfg);
     scene.add(character.group);
+
+    if (compareWith && compareWith !== activeVariant) {
+      variants[activeVariant] = deep(cfg);
+      if (!variants[compareWith]) variants[compareWith] = deep(cfg);
+      compareChar = createCharacter(variants[compareWith]);
+      scene.add(compareChar.group);
+    }
+    fitStage();
 
     helper = new THREE.SkeletonHelper(character.group);
     helper.material.color = new THREE.Color('#F2A93B');
@@ -188,26 +231,41 @@
     refreshWarnings();
     document.getElementById('readout').textContent =
       (character.mesh.geometry.index.count / 3 | 0) + ' TRIS · ' + character.bones.length +
-      ' BONES · ' + character.size.toFixed(2) + ' U' + (cfg.seed ? ' · SEED ' + cfg.seed : '');
+      ' BONES · ' + character.size.toFixed(2) + ' U' + (cfg.seed ? ' · SEED ' + cfg.seed : '') +
+      (compareChar ? ' · ' + activeVariant + ' vs ' + compareWith : '');
+  }
+  function overlayVisible(ch, hide) {
+    if (!ch) return;
+    const ms = [].concat(ch.mesh.material);
+    ms.forEach(m => { m.transparent = hide; m.opacity = hide ? .17 : 1; m.depthWrite = !hide; });
+    ch.mesh.castShadow = !hide;
+    ch.group.traverse(o => {
+      if (o.isMesh && o !== ch.mesh && !o.userData.rigDot) o.visible = !hide;
+    });
   }
   function applyXray() {
     if (!character) return;
     const showDots = xray || poseEdit;
-    const ms = [].concat(character.mesh.material);
-    ms.forEach(m => { m.transparent = xray; m.opacity = xray ? .17 : 1; m.depthWrite = !xray; });
-    character.mesh.castShadow = !xray;
-    character.group.traverse(o => {
-      if (o.isMesh && o !== character.mesh && !o.userData.rigDot) o.visible = !xray;
-    });
+    overlayVisible(character, xray);
+    overlayVisible(compareChar, xray);
     if (helper) helper.visible = showDots;
     styleJoints();
+    styleFaceParts();
     document.getElementById('btn-xray').textContent = xray ? 'Hide rig' : 'Show rig';
     const poseBtn = document.getElementById('btn-pose-edit');
     poseBtn.setAttribute('aria-pressed', poseEdit);
     poseBtn.textContent = poseEdit ? 'Done posing' : 'Pose figure';
     document.body.classList.toggle('posing', poseEdit);
+    document.body.classList.toggle('sculpting', faceEdit);
     const hud = document.getElementById('pose-hud');
     if (hud) hud.classList.toggle('on', poseEdit);
+    const fh = document.getElementById('face-hud');
+    if (fh) fh.classList.toggle('on', faceEdit);
+    const faceBtn = document.getElementById('btn-face-edit');
+    if (faceBtn) {
+      faceBtn.setAttribute('aria-pressed', faceEdit);
+      faceBtn.textContent = faceEdit ? 'Done sculpting' : 'Sculpt face';
+    }
   }
   function jointSize(spec) {
     const size = character ? character.size : 1;
@@ -223,7 +281,20 @@
       d.material.color.set(selected ? '#6FD3E0' : hovered ? '#E8EEF7' : '#F2A93B');
       d.material.opacity = selected ? 1 : hovered ? .95 : .78;
     });
-    if (el) el.style.cursor = poseEdit ? (poseDrag ? 'grabbing' : (hoveredBone ? 'grab' : 'default')) : '';
+    if (el) el.style.cursor = poseEdit
+      ? (poseDrag ? 'grabbing' : (hoveredBone ? 'grab' : 'default'))
+      : faceEdit
+        ? (faceDrag ? 'grabbing' : (hoveredFace ? 'grab' : 'default'))
+        : '';
+  }
+  function styleFaceParts() {
+    const parts = (character && character.faceParts) || [];
+    parts.forEach(m => {
+      if (!m.material || !m.material.emissive) return;
+      const on = faceEdit && m.userData.facePart === hoveredFace;
+      m.material.emissive.set(on ? '#3a6a72' : '#000000');
+      m.material.emissiveIntensity = on ? .55 : 0;
+    });
   }
 
   let az = .55, pol = 1.30, dist = 2.55, target = new THREE.Vector3(0, .52, 0);
@@ -271,6 +342,13 @@
     raycaster.setFromCamera(pointer, camera);
     const hits = raycaster.intersectObjects(joints, false);
     return hits.length ? hits[0].object.userData.boneName : null;
+  }
+  function hitFace(e) {
+    if (!faceEdit || !character || !character.faceParts || !character.faceParts.length) return null;
+    setPointer(e);
+    raycaster.setFromCamera(pointer, camera);
+    const hits = raycaster.intersectObjects(character.faceParts, false);
+    return hits.length ? hits[0].object.userData.facePart : null;
   }
   function clipEuler(name) {
     const b = character.getBone(name);
@@ -366,14 +444,59 @@
     poseDrag = null;
     styleJoints();
   }
+  function applyFaceDelta(part, dx, dy) {
+    const clamp = THREE.MathUtils.clamp;
+    if (part === 'brow') {
+      cfg.exprBrow = clamp((cfg.exprBrow || 0) + dx * .004, -.5, .5);
+      cfg.exprBrowY = clamp((cfg.exprBrowY || 0) + dy * .0022, -.2, .25);
+    } else if (part === 'lid') {
+      cfg.exprLid = clamp((cfg.exprLid || 0) + dy * .004, -.7, .7);
+    } else if (part === 'eye') {
+      cfg.exprEyeScale = clamp((cfg.exprEyeScale == null ? 1 : cfg.exprEyeScale) + dy * .003, .75, 1.35);
+    } else if (part === 'mouth') {
+      cfg.exprMouthCurve = clamp((cfg.exprMouthCurve || 0) + dx * .006, -1, 1);
+      cfg.exprMouthOpen = clamp((cfg.exprMouthOpen || 0) + dy * .006, -.4, 1);
+    }
+    cfg.face = 'custom';
+    cfg.expression = currentExpression();
+    if (character) character.setExpression(cfg.expression);
+    syncSliders();
+  }
+  function beginFaceDrag(part) {
+    hoveredFace = part;
+    faceDrag = { part, x: 0, y: 0, moved: false, start: true };
+    styleFaceParts();
+    styleJoints();
+  }
+  function endFaceDrag() {
+    if (faceDrag && faceDrag.moved) {
+      refreshSegs();
+      pushHistory();
+    }
+    faceDrag = null;
+    styleFaceParts();
+    styleJoints();
+  }
 
   el.addEventListener('pointerdown', e => {
-    const name = hitJoint(e);
-    if (name) {
-      beginPoseDrag(name, e);
-      el.setPointerCapture(e.pointerId);
-      e.preventDefault();
-      return;
+    if (poseEdit) {
+      const name = hitJoint(e);
+      if (name) {
+        beginPoseDrag(name, e);
+        el.setPointerCapture(e.pointerId);
+        e.preventDefault();
+        return;
+      }
+    }
+    if (faceEdit) {
+      const part = hitFace(e);
+      if (part) {
+        beginFaceDrag(part);
+        faceDrag.x = e.clientX; faceDrag.y = e.clientY; faceDrag.start = false;
+        el.setPointerCapture(e.pointerId);
+        e.preventDefault();
+        return;
+      }
     }
     drag = { x: e.clientX, y: e.clientY }; orbiting = false;
     el.setPointerCapture(e.pointerId);
@@ -388,10 +511,20 @@
       syncBoneSliders();
       return;
     }
+    if (faceDrag) {
+      const dx = e.clientX - faceDrag.x, dy = e.clientY - faceDrag.y;
+      if (Math.abs(dx) + Math.abs(dy) > 1) faceDrag.moved = true;
+      applyFaceDelta(faceDrag.part, dx, -dy);
+      faceDrag.x = e.clientX; faceDrag.y = e.clientY;
+      return;
+    }
     if (!drag) {
       if (poseEdit) {
         const next = hitJoint(e);
         if (next !== hoveredBone) { hoveredBone = next; styleJoints(); }
+      } else if (faceEdit) {
+        const next = hitFace(e);
+        if (next !== hoveredFace) { hoveredFace = next; styleFaceParts(); styleJoints(); }
       }
       return;
     }
@@ -401,8 +534,8 @@
     pol = THREE.MathUtils.clamp(pol - dy * .006, .35, 2.0);
     drag = { x: e.clientX, y: e.clientY };
   });
-  addEventListener('pointerup', () => { endPoseDrag(); drag = null; });
-  addEventListener('pointercancel', () => { endPoseDrag(); drag = null; });
+  addEventListener('pointerup', () => { endPoseDrag(); endFaceDrag(); drag = null; });
+  addEventListener('pointercancel', () => { endPoseDrag(); endFaceDrag(); drag = null; });
   el.addEventListener('wheel', e => {
     e.preventDefault();
     dist = THREE.MathUtils.clamp(dist + e.deltaY * .0022, .85, 6);
@@ -593,6 +726,9 @@
       () => cfg.quality || 'standard', v => { cfg.quality = v; });
     seg('variants', [['A', 'A'], ['B', 'B'], ['C', 'C']],
       () => activeVariant, v => switchVariant(v), true);
+    const others = ['A', 'B', 'C'].filter(v => v !== activeVariant);
+    seg('compare', [['off', 'Solo']].concat(others.map(v => [v, 'vs ' + v])),
+      () => compareWith || 'off', v => setCompare(v === 'off' ? null : v), true);
     refreshPalettes();
     refreshLinks();
     refreshStates();
@@ -720,8 +856,11 @@
   }
   function syncLocks() {
     document.querySelectorAll('.lock[data-lock]').forEach(b => {
-      b.setAttribute('aria-pressed', !!locks[b.dataset.lock]);
-      b.textContent = locks[b.dataset.lock] ? 'Locked' : 'Lock';
+      const on = !!locks[b.dataset.lock];
+      b.setAttribute('aria-pressed', on);
+      b.textContent = on ? 'Locked' : 'Lock';
+      const grp = b.closest('details.grp');
+      if (grp) grp.classList.toggle('locked', on);
     });
   }
   function syncAll() {
@@ -976,8 +1115,62 @@
   function thumbDataURL() {
     return renderPortraitCanvas(160, 200, .45, 2.4).toDataURL('image/jpeg', .7);
   }
-  function loadLib() { try { return JSON.parse(localStorage.getItem(LIB_KEY) || '[]'); } catch (e) { return []; } }
-  function saveLib(items) { localStorage.setItem(LIB_KEY, JSON.stringify(items)); }
+  let libCache = null;
+  function openLibDb() {
+    return new Promise((resolve, reject) => {
+      if (!window.indexedDB) return reject(new Error('no IndexedDB'));
+      const req = indexedDB.open('character-lab-v4', 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains('library')) db.createObjectStore('library', { keyPath: 'id' });
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  function loadLib() {
+    if (Array.isArray(libCache)) return libCache;
+    try { return JSON.parse(localStorage.getItem(LIB_KEY) || '[]'); } catch (e) { return []; }
+  }
+  function mergeLibItems(a, b) {
+    const byId = {};
+    [].concat(a || [], b || []).forEach(item => {
+      if (!item || item.id == null) return;
+      if (!byId[item.id] || (item.date || 0) > (byId[item.id].date || 0)) byId[item.id] = item;
+    });
+    return Object.keys(byId).map(k => byId[k]);
+  }
+  async function hydrateLibrary() {
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem(LIB_KEY) || '[]'); } catch (e) {}
+    let remote = [];
+    try {
+      const db = await openLibDb();
+      remote = await new Promise((resolve, reject) => {
+        const tx = db.transaction('library', 'readonly');
+        const req = tx.objectStore('library').getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    } catch (e) {}
+    libCache = mergeLibItems(local, remote);
+    return libCache;
+  }
+  async function saveLib(items) {
+    libCache = items;
+    try { localStorage.setItem(LIB_KEY, JSON.stringify(items)); } catch (e) {}
+    try {
+      const db = await openLibDb();
+      await new Promise((resolve, reject) => {
+        const tx = db.transaction('library', 'readwrite');
+        const store = tx.objectStore('library');
+        store.clear();
+        items.forEach(item => store.put(item));
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    } catch (e) {}
+  }
   function renderLibrary() {
     const grid = document.getElementById('lib-grid'); grid.innerHTML = '';
     loadLib().sort((a, b) => b.date - a.date).forEach(item => {
@@ -999,7 +1192,7 @@
   }
   function showLibrary() { renderLibrary(); document.getElementById('library').classList.add('on'); }
   function hideLibrary() { document.getElementById('library').classList.remove('on'); }
-  document.getElementById('btn-library').onclick = showLibrary;
+  document.getElementById('btn-library').onclick = async () => { await hydrateLibrary(); showLibrary(); };
   document.getElementById('btn-new').onclick = () => {
     applyProject(deep(DEFAULTS)); hideLibrary();
   };
@@ -1008,14 +1201,14 @@
     if (e.target.id === 'library') hideLibrary();
   });
 
-  document.getElementById('btn-save-proj').onclick = () => {
+  document.getElementById('btn-save-proj').onclick = async () => {
     const name = cfg.name || cfg.id || prompt('Project name', 'Untitled') || 'Untitled';
     cfg.name = name;
     const items = loadLib().filter(x => x.id !== (cfg.id || name));
     items.push({
       id: cfg.id || name, name, date: Date.now(), thumb: thumbDataURL(), config: deep(cfg)
     });
-    saveLib(items);
+    await saveLib(items);
     alert('Saved “' + name + '” to this browser’s character library.');
   };
 
@@ -1038,9 +1231,22 @@
 
   function switchVariant(v) {
     variants[activeVariant] = deep(cfg);
+    if (compareWith === v) compareWith = activeVariant;
     activeVariant = v;
     if (variants[v]) applyProject(variants[v]);
-    else variants[v] = deep(cfg);
+    else {
+      variants[v] = deep(cfg);
+      refreshSegs();
+      if (compareWith) rebuild();
+    }
+  }
+  function setCompare(slot) {
+    variants[activeVariant] = deep(cfg);
+    compareWith = slot || null;
+    if (compareWith === activeVariant) compareWith = null;
+    if (compareWith && !variants[compareWith]) variants[compareWith] = deep(cfg);
+    rebuild();
+    refreshSegs();
   }
   document.getElementById('btn-dup').onclick = () => {
     const order = ['A', 'B', 'C'];
@@ -1139,6 +1345,7 @@
     pushHistory();
   }
   function setPoseMode(on, keepAnim) {
+    if (on && faceEdit) setFaceMode(false, true);
     if (on === poseEdit) {
       applyXray();
       return;
@@ -1156,6 +1363,28 @@
     }
     applyXray();
     syncBoneSliders();
+    refreshSegs();
+  }
+  function setFaceMode(on, keepCam) {
+    if (on && poseEdit) setPoseMode(false, true);
+    if (on === faceEdit) {
+      applyXray();
+      return;
+    }
+    faceEdit = on;
+    if (faceEdit) {
+      xray = false;
+      if (anim !== 'tpose' && anim !== 'hold') anim = 'hold';
+      faceCam = { az: az, pol: pol, dist: dist, k: place.targetK };
+      setCamera('Portrait');
+    } else {
+      hoveredFace = null;
+      if (!keepCam && faceCam) {
+        az = faceCam.az; pol = faceCam.pol; dist = faceCam.dist; place.targetK = faceCam.k;
+      }
+      faceCam = null;
+    }
+    applyXray();
     refreshSegs();
   }
   function syncBoneSliders() {
@@ -1195,6 +1424,7 @@
     s.addEventListener('change', pushHistory);
   });
   document.getElementById('btn-pose-edit').onclick = () => setPoseMode(!poseEdit);
+  document.getElementById('btn-face-edit').onclick = () => setFaceMode(!faceEdit);
   document.getElementById('btn-mirror').onclick = () => {
     const next = {};
     Object.keys(cfg.poseOffsets || {}).forEach(name => {
@@ -1461,6 +1691,53 @@
       exportStatus.textContent = 'ZIP export needs the engine file and an internet connection for Three.js.';
     } finally { b.disabled = false; }
   };
+  const GLTF_EXPORTER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/examples/js/exporters/GLTFExporter.js';
+  function ensureGLTFExporter() {
+    if (THREE.GLTFExporter) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = GLTF_EXPORTER_URL;
+      s.onload = resolve;
+      s.onerror = () => reject(new Error('Could not load GLTFExporter'));
+      document.head.appendChild(s);
+    });
+  }
+  document.getElementById('btn-download-gltf').onclick = async () => {
+    if (!character) return;
+    const b = document.getElementById('btn-download-gltf');
+    const name = safeName(nameInput.value);
+    b.disabled = true;
+    exportStatus.textContent = 'Exporting glTF…';
+    const hidden = [];
+    character.group.traverse(o => {
+      if (o.userData && o.userData.rigDot) { hidden.push([o, o.visible]); o.visible = false; }
+    });
+    if (helper) { hidden.push([helper, helper.visible]); helper.visible = false; }
+    try {
+      await ensureGLTFExporter();
+      if (character) character.setPose(anim, 0, 0);
+      character.group.updateMatrixWorld(true);
+      const exporter = new THREE.GLTFExporter();
+      const result = await new Promise((resolve, reject) => {
+        try {
+          exporter.parse(character.group, resolve, { binary: true, embedImages: true });
+        } catch (err) { reject(err); }
+      });
+      if (result instanceof ArrayBuffer) {
+        downloadBlob(new Blob([result], { type: 'model/gltf-binary' }), name + '.glb');
+        exportStatus.textContent = 'GLB mesh downloaded.';
+      } else {
+        downloadBlob(new Blob([JSON.stringify(result)], { type: 'model/gltf+json' }), name + '.gltf');
+        exportStatus.textContent = 'glTF mesh downloaded.';
+      }
+    } catch (error) {
+      console.error(error);
+      exportStatus.textContent = 'glTF export needs an internet connection for the Three.js exporter.';
+    } finally {
+      hidden.forEach(([o, v]) => { o.visible = v; });
+      b.disabled = false;
+    }
+  };
   document.getElementById('btn-close').onclick = () => sheet.classList.remove('on');
   sheet.addEventListener('click', e => { if (e.target === sheet) sheet.classList.remove('on'); });
   document.getElementById('btn-copy').onclick = async () => {
@@ -1484,6 +1761,7 @@
     if (typing) return;
     if (e.key === 'r' || e.key === 'R') { xray = !xray; applyXray(); }
     if (e.key === 'p' || e.key === 'P') { e.preventDefault(); setPoseMode(!poseEdit); }
+    if (e.key === 'f' || e.key === 'F') { e.preventDefault(); setFaceMode(!faceEdit); }
     if (e.key === 'x' || e.key === 'X') {
       if (poseEdit && selectedBone && cfg.poseOffsets) {
         delete cfg.poseOffsets[selectedBone];
@@ -1494,6 +1772,7 @@
     if (e.code === 'Space') { e.preventDefault(); randomizeUnlocked(); }
     if (e.key === 'Escape') {
       if (poseEdit) setPoseMode(false);
+      if (faceEdit) setFaceMode(false);
       sheet.classList.remove('on'); hideLibrary();
     }
   });
@@ -1505,9 +1784,10 @@
     const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
     if (turntable) az += dt * 0.35;
     if (character) character.setPose(anim, t, dt);
+    if (compareChar) compareChar.setPose(anim, t, dt);
     place();
     renderer.render(scene, camera);
   })();
 
-  showLibrary();
+  hydrateLibrary().then(showLibrary);
 })();

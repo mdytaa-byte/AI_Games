@@ -96,6 +96,13 @@
     .sign-btn.feint:after{content:"hitch";position:absolute;top:6px;right:7px;font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#c9b37a}
     body.listening .signs{box-shadow:0 0 0 1px #f0d08988,0 0 18px #d7b56a22;border-radius:6px}
     body.listening .result-banner{color:#ffd27a}
+    .coach{max-width:640px;margin:4px auto 0;text-align:center;font-family:Cormorant Garamond,Georgia,serif;font-size:clamp(16px,2.2vw,22px);font-style:italic;color:#ead9b8;text-shadow:0 6px 20px #000;min-height:1.3em;pointer-events:none}
+    .sign-btn.hinted{border-color:#7dcc98;box-shadow:0 0 0 1px #7dcc98,0 0 22px #7dcc9844}
+    .mode-card.featured{grid-column:1/-1;background:linear-gradient(160deg,#2a2216ee,#0e1118);border-color:#f0d089;box-shadow:0 12px 28px #0008,0 0 22px #d7b56a22}
+    .mode-card.featured h3{color:#fff4d0}
+    .mode-card.featured p{color:#e8d4a4}
+    body.lesson .wager-row,body.lesson .wager-box > label,body.lesson .mask-signs{display:none!important}
+    body.lesson #hudVersion{opacity:.45;pointer-events:none}
     .wager-box{width:min(280px,100%);background:#12151ce6;border:1px solid var(--line);border-radius:5px;padding:12px 14px}
     .wager-box label{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
     .wager-row{display:flex;gap:8px;align-items:center}
@@ -231,6 +238,7 @@
         </div>
         <div class="beats" id="beats" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i class="sky-only"></i><i class="sky-only"></i></div>
         <div class="result-banner" id="resultBanner"></div>
+        <div class="coach" id="coach"></div>
       </div>
 
       <aside class="panel" id="youPanel">
@@ -287,6 +295,10 @@
       </div>
       <p class="version-note" id="versionNote">The sailors stop at Hah and spend the rest on gold. Toggle the full sequence to restore the forgotten throws.</p>
       <div class="mode-grid">
+        <button class="mode-card featured" id="lessonBtn" type="button">
+          <h3>First sitting</h3>
+          <p>One throw against Motim. No purse. He will hitch on Hah — hear it, then throw.</p>
+        </button>
         <button class="mode-card" data-mode="duel" type="button">
           <h3>Wagered Duel</h3>
           <p>Face a single sailor across the carved table. First to a set number of decisive throws takes the belt.</p>
@@ -381,6 +393,7 @@
       <h3>The Hah mask</h3>
       <p>The fifth beat is ceremony — and a tell. Players who have already chosen often crack, just slightly, on <strong>Hah</strong>. A Sightless ear can hear which throw is coming. Sailors who train against that ear keep the voice even, or hitch toward a <em>false</em> sign to bait the counter.</p>
       <p>Set <strong>Even voice</strong> to hide your throw, or hitch toward a lie. On Hah the hands twitch and the chant hangs: believe the hitch, ignore it, or change your own throw before the silence. In the full sequence the tell sits on <strong>Akh</strong>.</p>
+      <p><strong>First sitting</strong> is one throw against Motim with no gold. His hitch is true. Hear it, switch if you need, throw.</p>
       <h3>The full sequence</h3>
       <p>The old rite does not stop at Hah. Toggle <strong>Full sequence</strong> to chant all seven Scourge names — Shah, Sheh, Rih, Lah, Hah, Ehl, Akh — and throw afterward from six signs. Ehl raises the right arm overhead, palm open. Akh raises the left to join it.</p>
       <div class="cycle" style="grid-template-columns:repeat(2,1fr)">
@@ -516,7 +529,8 @@
 
     const save = JSON.parse(localStorage.getItem('ssrl-save') || '{}');
     const persist = () => localStorage.setItem('ssrl-save', JSON.stringify(save));
-    save.unlocked = save.unlocked || { seven:false };
+    save.unlocked = save.unlocked || { seven:false, taught:false };
+    save.unlocked.taught = !!save.unlocked.taught;
     save.stats = save.stats || { matches:0, throws:0, meritsWon:0 };
 
     let audio;
@@ -723,6 +737,7 @@
       });
       $$('#beats i').forEach(el => el.classList.remove('on'));
       if ($('#resultBanner')) $('#resultBanner').textContent = '';
+      setCoach('');
     }
     function cancelPlay() {
       bumpPlay();
@@ -730,6 +745,7 @@
       state.passing = false;
       state.listening = false;
       document.body.classList.remove('listening');
+      document.body.classList.remove('lesson');
       resetChantLabels();
     }
 
@@ -1110,6 +1126,20 @@
       const t = $('#toast'); t.textContent = s; t.classList.add('show');
       clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
     }
+    function setCoach(s) {
+      const el = $('#coach');
+      if (!el) return;
+      el.innerHTML = s || '';
+    }
+    function syncLessonCta() {
+      const btn = $('#lessonBtn');
+      if (!btn) return;
+      btn.classList.toggle('featured', !save.unlocked.taught);
+      const p = btn.querySelector('p');
+      if (p) p.textContent = save.unlocked.taught
+        ? 'Hear Motim’s hitch again. No gold. The fifth beat still names the throw.'
+        : 'One throw against Motim. No purse. He will hitch on Hah — hear it, then throw.';
+    }
 
     function beltWidth(merits, cap) { return `${clamp(merits/cap,0,1)*100}%`; }
 
@@ -1134,14 +1164,14 @@
       $('#oppTitle').textContent = o.title;
       $('#oppPort').textContent = o.glyph;
       $('#oppPort').style.color = o.color || '#d4b06a';
-      $('#oppMerits').textContent = state.mode==='story' ? '—' : o.merits;
+      $('#oppMerits').textContent = (state.mode==='story' || state.mode==='lesson') ? '—' : o.merits;
       $('#oppWins').textContent = o.wins || 0;
       $('#oppWager').textContent = (state.phase==='reveal' || state.phase==='resolve') ? o.wager : 'clenched';
       $('#oppBelt').style.width = beltWidth(o.merits||0, 48);
       $('#oppBlurb').textContent = o.blurb || (p2turn ? `${y.name} chooses in private. ${o.name} should look away.` : '');
       $('#log').innerHTML = state.logs.slice(0,8).map(x=>`<div>${x}</div>`).join('');
       $('#roundLabel').textContent = `Throw ${state.throwIndex}`;
-      const modeNames = { duel:'Wagered Duel', hotseat:'Two Sailors', circuit:'Merit Belt Circuit', story:'Command of the Ship', practice:'Practice' };
+      const modeNames = { duel:'Wagered Duel', hotseat:'Two Sailors', circuit:'Merit Belt Circuit', story:'Command of the Ship', practice:'Practice', lesson:'First sitting' };
       $('#modeLabel').textContent = modeNames[state.mode] || 'Match';
       const purse = Math.max(0, y.merits);
       const maxW = Math.max(1, Math.min(8, Math.max(1, purse)));
@@ -1151,7 +1181,7 @@
       $('#wager').value = state.you.wager;
       $('#wagerVal').textContent = state.you.wager;
       const wagerLocked = !['wager'].includes(state.phase) || state.busy || state.passing || state.clenched;
-      $('#wager').disabled = wagerLocked || state.practice || state.mode==='story';
+      $('#wager').disabled = wagerLocked || state.practice || state.mode==='story' || state.mode==='lesson';
       $('#wagerMinus').disabled = $('#wager').disabled;
       $('#wagerPlus').disabled = $('#wager').disabled;
       const canReady = !state.busy && !state.passing && !blockingOverlay();
@@ -1160,11 +1190,16 @@
         $('#readyBtn').textContent = 'Run a practice chant';
       } else {
         $('#readyBtn').disabled = !canReady || state.phase!=='wager';
-        $('#readyBtn').textContent = state.busy ? 'Chanting…' : state.mode==='story' ? 'Call the game' : p2turn ? 'Clench & chant' : 'Clench the wager';
+        $('#readyBtn').textContent = state.busy ? 'Chanting…' : state.mode==='story' ? 'Call the game' : state.mode==='lesson' ? 'Raise the hand' : p2turn ? 'Clench & chant' : 'Clench the wager';
       }
       if (state.mode==='story') {
         $('#youWager').textContent = 'the helm';
         $('#oppWager').textContent = 'the helm';
+      }
+      if (state.mode==='lesson') {
+        $('#youWager').textContent = 'none';
+        $('#oppWager').textContent = 'none';
+        $('#youMerits').textContent = '—';
       }
       if (state.mode==='circuit') $('#modeLabel').textContent = `Merit Belt Circuit · ${state.circuitIndex+1} / ${OPPONENTS.length}`;
       if (state.full) {
@@ -1174,19 +1209,22 @@
       $('#hudVersion').classList.toggle('on', state.full);
       $('#hudVersion').setAttribute('aria-pressed', state.full ? 'true' : 'false');
       $('#hudVersion').textContent = state.full ? 'Full sequence on' : 'Full sequence';
-      const hint = p2turn
+      const hint = state.mode==='lesson'
+        ? (state.listening ? 'His hitch is true. <b>Sheh</b> beats Lah — change now, or keep your throw.' : 'Keep the voice even. Choose a silent throw, then raise the hand.')
+        : p2turn
         ? `${y.name}: choose a silent throw. Hitch a lie on Hah, or keep the voice even.`
         : `Silent throw — <span class="kbd">1</span> <span class="kbd">2</span> <span class="kbd">3</span> <span class="kbd">4</span><span class="sky-only"> <span class="kbd">5</span> <span class="kbd">6</span></span>. Hitch with <span class="kbd">Shift</span>.`;
       $('#signHint').innerHTML = hint;
       const tellName = state.full ? 'Akh' : 'Hah';
       $('#maskLabel').textContent = `${tellName} mask`;
       $('#maskEven').classList.toggle('on', !state.you.feint);
-      $('#maskEven').disabled = !['wager','idle'].includes(state.phase) && !state.practice;
+      $('#maskEven').disabled = (!['wager','idle'].includes(state.phase) && !state.practice) || state.mode==='lesson';
       $$('#maskSigns .mask-sign').forEach(b => { b.disabled = $('#maskEven').disabled; });
       $$('#maskSigns .mask-sign').forEach(b => b.classList.toggle('on', b.dataset.sign === state.you.feint));
       $$('.sign-btn').forEach(b => {
         b.classList.toggle('selected', b.dataset.sign === workingThrow);
         b.classList.toggle('feint', b.dataset.sign === state.you.feint);
+        b.classList.toggle('hinted', state.mode==='lesson' && state.listening && b.dataset.sign==='sheh');
         b.classList.toggle('locked', state.phase==='reveal' || state.phase==='resolve' || state.passing);
       });
       document.body.classList.toggle('listening', !!state.listening);
@@ -1218,6 +1256,7 @@
     }
 
     function chooseFeint(sign) {
+      if (state.mode==='lesson') return;
       if (blockingOverlay() || state.passing) return;
       if (!throwSigns().includes(sign)) return;
       if (['reveal','resolve','story','throw','countdown','chant'].includes(state.phase)) return;
@@ -1243,6 +1282,11 @@
       if (state.phase==='chant' && state.chantBeat >= chantBeats().length-2) state.changedOnHah = true;
       if ((state.phase==='wager' || state.phase==='idle') && prev!==sign) state.wagerChanges = (state.wagerChanges||0)+1;
       if (prev!==sign && state.phase==='chant') audio.tell();
+      if (state.mode==='lesson' && state.listening) {
+        setCoach(sign==='sheh'
+          ? 'Sheh is in the hand. It beats Lah. Hold it through the silence.'
+          : 'Lah loses to Sheh. Change to Sheh, or keep this throw and take the wheel as it lands.');
+      }
       renderHud();
     }
 
@@ -1292,6 +1336,7 @@
     }
 
     function reviseAiThrow() {
+      if (state.mode==='lesson') return;
       const skill = state.opp && state.opp.skill;
       const chance = { belt:0.58, sightless:0.84, king:0.93, counter:0.42 }[skill];
       if (!chance) return;
@@ -1304,7 +1349,7 @@
     }
 
     function aiWager() {
-      if (state.mode==='story') return 0;
+      if (state.mode==='story' || state.mode==='lesson') return 0;
       const m = Math.max(1, state.opp.merits);
       const cap = Math.min(8, m);
       if (state.opp.skill==='novice') return 1+Math.floor(Math.random()*Math.min(3,cap));
@@ -1360,12 +1405,13 @@
             world && world.setHands(youH || s, oppH || s, 0.2);
             if (oppH) {
               $('#resultBanner').textContent = `A hitch in the ${SIGN_META[tellBeat].name} — it leans toward ${SIGN_META[oppH].name}.`;
+              if (state.mode==='lesson') setCoach(`${SIGN_META[oppH].name} loses to Sheh. Click Sheh before the silence, or keep your throw.`);
             } else {
               $('#resultBanner').textContent = `Your ${SIGN_META[tellBeat].name} hitch is in the throat.`;
             }
             state.listening = true;
             renderHud();
-            await sleep(state.mode==='story' ? 1150 : 860);
+            await sleep(state.mode==='story' ? 1150 : state.mode==='lesson' ? 1700 : 860);
             if (stale(seqId)) return;
             state.listening = false;
             world && world.setHands(s, s, 0.18);
@@ -1403,17 +1449,24 @@
       state.youThrows.push(youSign);
       state.oppThrows.push(oppSign);
       if (state.hotseat) state.p2.throw = oppSign;
-      save.stats.throws = (save.stats.throws||0)+1; persist();
+      if (state.mode!=='lesson') { save.stats.throws = (save.stats.throws||0)+1; persist(); }
       const res = outcome(youSign, oppSign);
       const yn = SIGN_META[youSign].name, on = SIGN_META[oppSign].name;
-      $('#oppWager').textContent = state.mode==='story' ? 'the helm' : (state.hotseat?state.p2.wager:state.opp.wager);
+      $('#oppWager').textContent = state.mode==='story' ? 'the helm' : state.mode==='lesson' ? 'none' : (state.hotseat?state.p2.wager:state.opp.wager);
       if (res==='draw') {
         audio.draw();
         world && world.flash(0x3a3420);
         $('#resultBanner').innerHTML = `<span class="winlose draw">${yn} against ${on}. Again.</span>`;
         log(`${yn} against ${on}. Opposite or matching — the officiator calls another throw.`);
-        toast(state.mode==='story' ? 'No winner. The helm is still at stake — throw again.' : 'No winner. The merits stay clenched.');
-        state.clenched = state.mode!=='story';
+        if (state.mode==='lesson') {
+          toast('No winner. Throw again — listen on Hah.');
+          setCoach(youSign==='lah'
+            ? 'Matching signs draw. He named Lah and you threw it. Sheh beats Lah.'
+            : `${yn} against ${on} sits opposite on the wheel — a draw. He will hitch toward Lah again. Switch to Sheh.`);
+        } else {
+          toast(state.mode==='story' ? 'No winner. The helm is still at stake — throw again.' : 'No winner. The merits stay clenched.');
+        }
+        state.clenched = state.mode!=='story' && state.mode!=='lesson';
         state.throwIndex++;
         state.busy = false;
         state.phase = 'wager';
@@ -1433,6 +1486,21 @@
       if (state.mode==='story') {
         if (youWon) { state.you.wins++; log('The officiator: “That’s the game for the king.”'); endMatch(true, 'Command of the ship is yours. Sail toward the blue light.'); }
         else { state.opp.wins++; log('Motim seizes the call.'); endMatch(false, 'Motim takes the helm. The ship turns back into the wrecks.'); }
+        renderHud(); return;
+      }
+      if (state.mode==='lesson') {
+        save.unlocked.taught = true; persist(); syncLessonCta();
+        if (youWon) {
+          state.you.wins++;
+          log('Sheh beats Lah. You threw through the hitch.');
+          setCoach('The hitch was true. That is the sailors’ game.');
+          endMatch(true, 'Sheh beats Lah. You heard the hitch and threw through it. The table is ready for gold.');
+        } else {
+          state.opp.wins++;
+          log(`Lah beats ${yn}. The hitch named the throw.`);
+          setCoach('The hitch was true. Sit again and switch to Sheh when Hah breaks.');
+          endMatch(false, `${on} defeats ${yn}. Motim’s Hah named Lah — Sheh would have taken it. Hear it once more.`);
+        }
         renderHud(); return;
       }
       // Winner takes the opponent's clenched wager. Own wager never left the purse.
@@ -1483,18 +1551,20 @@
 
     function endMatch(won, text) {
       state.busy = false; state.phase = 'resolve';
-      save.stats.matches = (save.stats.matches||0)+1;
-      if (won) save.unlocked.seven = true;
+      if (state.mode!=='lesson') save.stats.matches = (save.stats.matches||0)+1;
+      if (won && state.mode!=='lesson') save.unlocked.seven = true;
       persist();
       $('#endTitle').textContent = won ? 'A decisive hand' : 'The wager is lost';
+      if (state.mode==='lesson') $('#endTitle').textContent = won ? 'The hitch was true' : 'The hitch was true';
       $('#endBody').textContent = text;
       const other = state.hotseat ? state.p2 : state.opp;
-      if (state.mode==='story' || state.practice || !other) {
+      if (state.mode==='story' || state.practice || state.mode==='lesson' || !other) {
         $('#endPurse').textContent = '';
       } else {
         $('#endPurse').textContent = `${state.you.name}: ${state.you.merits} merits · ${other.name}: ${other.merits} merits`;
       }
-      $('#endAgain').textContent = state.mode==='circuit' && won && state.circuitIndex < OPPONENTS.length-1 ? 'Next challenger' : 'Sit again';
+      if (state.mode==='lesson') $('#endAgain').textContent = won ? 'Play for gold' : 'Hear it again';
+      else $('#endAgain').textContent = state.mode==='circuit' && won && state.circuitIndex < OPPONENTS.length-1 ? 'Next challenger' : 'Sit again';
       $('#endModal').classList.remove('hidden');
       if (state.mode==='story') {
         $('#storyTitle').textContent = won ? 'Forward. Only forward.' : 'The brig waits';
@@ -1550,6 +1620,7 @@
         state.phase = 'story';
         $('#storyTitle').textContent = 'Shah-Sheh-Rih-Lah';
         $('#storyBody').innerHTML = `<p>The corridor is narrow, the ship starving, the fog thick as wool. You are Caecus. You speak the game’s name to the man wearing a merit belt — a challenge he cannot refuse.</p><p>The stake is command. If you win, the prow stays pointed at the blue light. If Motim wins, the ship turns around.</p><p>You play to the first decisive throw. Keep your Hah even, or hitch toward a lie. Motim has not trained against a Sightless ear. Listen when his fifth beat breaks — then change, if you must, before the silence.</p>`;
+        $('#storyContinue').textContent = 'Raise the hand';
         $('#storyModal').classList.remove('hidden');
         renderHud();
       } else {
@@ -1587,8 +1658,14 @@
         return;
       }
       state.opp.wager = aiWager();
-      state.opp.throw = aiThrowBase();
-      state.oppTell = aiTell(state.opp.throw);
+      if (state.mode==='lesson') {
+        state.you.feint = null;
+        state.opp.throw = 'lah';
+        state.oppTell = 'lah';
+      } else {
+        state.opp.throw = aiThrowBase();
+        state.oppTell = aiTell(state.opp.throw);
+      }
       state.oppThrowLocked = true;
       runChant();
     }
@@ -1601,6 +1678,9 @@
       state.phase = 'idle';
       state.practice = false;
       state.hotseatStep = 1;
+      $('#storyContinue').textContent = 'Raise the hand';
+      setFull(!!save.full, {force:true, persist:false});
+      syncLessonCta();
       world && world.resetCam();
       world && world.setHands('hah','hah', 0.5);
     }
@@ -1616,10 +1696,17 @@
         syncVersionButtons();
         return;
       }
+      if (state.mode==='lesson' && !opts.force) {
+        toast('Finish the first sitting in the sailors’ five beats.');
+        syncVersionButtons();
+        return;
+      }
       state.full = next;
-      save.full = next;
-      if (next) save.unlocked.seven = true;
-      persist();
+      if (opts.persist !== false) {
+        save.full = next;
+        if (next) save.unlocked.seven = true;
+        persist();
+      }
       document.body.classList.toggle('full-seq', next);
       $('#chantLine').classList.toggle('seven', next);
       syncVersionButtons();
@@ -1664,6 +1751,41 @@
       $('#codexBody').innerHTML = c.body;
     }
 
+    function startLesson() {
+      cancelPlay();
+      setFull(false, {force:true, persist:false});
+      state.mode = 'lesson';
+      state.practice = false;
+      state.hotseat = false;
+      state.firstTo = 1;
+      state.startMerits = 0;
+      state.you = { name:'You', title:'Student of the table', glyph:'Y', merits:0, wins:0, wager:0, throw:'shah', feint:null, color:'#e7c37a' };
+      state.opp = cloneOpp('motim');
+      state.opp.merits = 0;
+      state.opp.wager = 0;
+      state.opp.throw = 'lah';
+      state.opp.blurb = 'No gold. He has not trained against a listening ear. His Hah will name the throw.';
+      state.logs = ['No gold on the table. The fifth beat is the lesson.'];
+      state.youThrows=[]; state.oppThrows=[]; state.throwIndex=1;
+      state.passing=false; state.clenched=false; state.listening=false; state.wagerChanges=0;
+      state.oppTell='lah'; state.oppThrowLocked=true;
+      document.body.classList.add('lesson');
+      $('#setupModal').classList.add('hidden');
+      $('#hotseatModal').classList.add('hidden');
+      $('#endModal').classList.add('hidden');
+      $('#titleScreen').classList.add('hidden');
+      $('#playHud').classList.remove('hidden');
+      buildSigns();
+      state.phase = 'story';
+      $('#storyTitle').textContent = 'First sitting';
+      $('#storyBody').innerHTML = `<p>Motim sits without a purse. The chant is the sailors’ five names. Your voice stays even — you are listening, not lying.</p><p>On <em>Hah</em> his throat will break, and the hitch will be true. The chant hangs. Believe it, switch, throw.</p><p>Shah is a fair first hand. Sheh is the sign that beats Lah.</p>`;
+      $('#storyContinue').textContent = 'Sit down';
+      $('#storyModal').classList.remove('hidden');
+      setCoach('Keep the voice even. Choose a throw — Shah is a fair first hand — then raise it.');
+      renderHud();
+      world && world.setHands('hah','hah', 0.4);
+    }
+
     function startPractice() {
       cancelPlay();
       state.practice = true; state.mode='practice';
@@ -1692,7 +1814,11 @@
       buildSigns(); fillOpponents();
       $$('.ver-btn').forEach(b => b.onclick = () => { audio.resume(); setFull(b.dataset.full==='1'); });
       $('#hudVersion').onclick = () => { audio.resume(); setFull(!state.full); };
-      $$('.mode-card').forEach(b => b.onclick = () => { audio.resume(); openSetup(b.dataset.mode); });
+      $$('.mode-card').forEach(b => {
+        if (b.id==='lessonBtn') return;
+        b.onclick = () => { audio.resume(); openSetup(b.dataset.mode); };
+      });
+      $('#lessonBtn').onclick = () => { audio.resume(); startLesson(); };
       $('#practiceBtn').onclick = () => { audio.resume(); startPractice(); };
       $('#titleRulesBtn').onclick = $('#rulesBtn').onclick = () => $('#rulesModal').classList.remove('hidden');
       $('#titleCodexBtn').onclick = $('#codexBtn').onclick = () => openCodex();
@@ -1702,6 +1828,7 @@
       $('#closeSetup').onclick = () => $('#setupModal').classList.add('hidden');
       $('#startBtn').onclick = beginMatch;
       $('#maskEven').onclick = () => {
+        if (state.mode==='lesson') return;
         if (['reveal','resolve','story','throw','countdown','chant'].includes(state.phase)) return;
         state.you.feint = null;
         renderHud();
@@ -1710,6 +1837,11 @@
       $('#endMenu').onclick = showMenu;
       $('#endAgain').onclick = () => {
         $('#endModal').classList.add('hidden');
+        if (state.mode==='lesson') {
+          if (state.you.wins>=1) openSetup('duel');
+          else startLesson();
+          return;
+        }
         if (state.mode==='circuit' && state.you.wins>=state.firstTo && state.circuitIndex < OPPONENTS.length-1) {
           state.circuitIndex++;
           const keep = state.you.merits;
@@ -1731,7 +1863,13 @@
       $('#storyContinue').onclick = () => {
         $('#storyModal').classList.add('hidden');
         state.phase='wager';
-        log('Witnesses take their places. Play to the first win.');
+        if (state.mode==='lesson') {
+          $('#storyContinue').textContent = 'Raise the hand';
+          log('No gold. Listen when his Hah breaks.');
+          setCoach('Keep the voice even. Choose a throw — Shah is a fair first hand — then raise it.');
+        } else {
+          log('Witnesses take their places. Play to the first win.');
+        }
         renderHud();
       };
       $('#hotseatOk').onclick = () => {
@@ -1769,7 +1907,10 @@
           if (e.key==='e'||e.key==='E') chooseThrow('rih');
           if (e.key==='r'||e.key==='R') chooseThrow('lah');
         }
-        if (e.key==='f'||e.key==='F') setFull(!state.full);
+        if (e.key==='f'||e.key==='F') {
+          if (state.mode==='lesson') return;
+          setFull(!state.full);
+        }
         const hudUp = $('#playHud') && !$('#playHud').classList.contains('hidden');
         if (e.key===' ' && hudUp && !overlayOpen() && (state.phase==='wager' || state.practice)) { e.preventDefault(); $('#readyBtn').click(); }
         if (e.key==='+' || e.key==='=') $('#wagerPlus').click();
@@ -1825,6 +1966,7 @@
 
     function boot() {
       bind();
+      syncLessonCta();
       setFull(!!save.full, {force:true});
       if (!window.THREE || !window.THREE.WebGLRenderer) {
         toast('WebGL is unavailable — signs still play in the HUD.');

@@ -113,7 +113,7 @@
         <h1>WANDAFUL</h1>
         <div class="sub">A 16-BIT RPG · FROM THE NOVEL</div>
         <p style="max-width:340px;margin:0 auto 14px;font-size:11px;line-height:1.45;color:#ffd8e8">
-          From the novel by Michael D. Young. Chrome is magical color. Complementary hues cancel. Wands can look like anything.
+          From the novel by Michael D. Young. Chroma is magical color. Complementary hues cancel. Wands can look like anything.
         </p>
         <button class="menu-btn" id="btnNew">NEW QUEST</button>
         <button class="menu-btn" id="btnContinue">CONTINUE</button>
@@ -160,8 +160,8 @@ const battleEl = document.getElementById("battle");
 const SAVE_KEY = "wandaful-16bit-v2";
 
 /* ------------------------------------------------------------------ */
-/*  Chrome combat, from the novels.                                   */
-/*  Chrome / Chroma = magical matter (millions of shades). Ordinary   */
+/*  Chroma combat, from the novels.                                   */
+/*  Chroma is magical matter (millions of shades). Ordinary           */
 /*  objects hold it. Breaking, squeezing, or channeling releases it.  */
 /*  Primaries: red, yellow, blue. Secondaries: green, purple, orange. */
 /*  Opposites cancel: red↔green, yellow↔purple, blue↔orange.          */
@@ -179,9 +179,9 @@ const SPECTRUM = {
   meaning: {
     red: "primary — cancelled by green",
     orange: "secondary — cancelled by blue",
-    yellow: "primary — Hal's native Chrome",
+    yellow: "primary — Hal's native Chroma",
     green: "secondary — cancelled by red",
-    blue: "primary — Wanda's native Chrome; Blue Wavelength",
+    blue: "primary — Wanda's native Chroma; Blue Wavelength",
     purple: "secondary — cancelled by yellow"
   },
   conduit: {
@@ -258,11 +258,11 @@ const SPECTRUM = {
     }
     if (rel === "clash") {
       dmg = Math.round((10 + lv * 3) * aff * (both ? 1.35 : 1));
-      log = "COUNTER! Complementary Chrome stings the opposite Wand.";
+      log = "COUNTER! Complementary Chroma stings the opposite Wand.";
     } else if (rel === "resonate") {
       dmg = Math.round((3 + lv) * aff);
       steal = true;
-      log = "RESONATE. The hues lock. You seize a spark of that Chrome.";
+      log = "RESONATE. The hues lock. You seize a spark of that Chroma.";
     } else if (rel === "mix") {
       dmg = Math.round((7 + lv * 2) * aff);
       status = this.mixName(color, foeHue);
@@ -272,7 +272,7 @@ const SPECTRUM = {
       log = "BLACK + WHITE. The Spectrum's most dangerous reaction.";
     } else if (rel === "white") {
       dmg = Math.round((14 + lv * 4) * (both ? 1.2 : 1));
-      log = "White Chrome — Hal's Wand, keeping the Spectrum in check.";
+      log = "White Chroma — Hal's Wand, keeping the Spectrum in check.";
     } else {
       dmg = Math.round((5 + lv) * aff);
       log = "A glancing burst. Little purchase.";
@@ -293,7 +293,7 @@ const ACTORS = {
   fyodor: { name: "Fyodor" },
   sergio: { name: "Sergio" },
   other:  { name: "The Other Hal" },
-  foe:    { name: "Chrome" }
+  foe:    { name: "Chroma" }
 };
 
 function gridFrom(rows) {
@@ -480,14 +480,14 @@ const CHAPTERS = [
     id: "ch4", title: "THE SPECTRUM", hero: "hal", map: "lab", spawn: [6, 8],
     goal: "Hal's Red Wavelength lab. Learn the color chart before Sergio finds the door.",
     intro: [
-      ["hal", "This is the Red Wavelength. Your home is Blue. Each universe has a majority Chrome."],
+      ["hal", "This is the Red Wavelength. Your home is Blue. Each universe has a majority Chroma."],
       ["wanda", "And you look like a teenager again. The milkshake guy was a costume?"],
       ["hal", "Wielders change their faces. The Wand changes its shape. Listen to the chart."]
     ]
   },
   {
     id: "ch5", title: "DARK CHROMA", hero: "hal", map: "chase", spawn: [8, 8],
-    goal: "Sergio is tailing you. Dark blue Chrome. Complementary orange will sting it.",
+    goal: "Sergio is tailing you. Dark blue Chroma. Complementary orange will sting it.",
     intro: [
       ["hal", "Dark Chroma. Dark blue if I'm not mistaken. That means Sergio."],
       ["wanda", "Dark like evil?"],
@@ -505,7 +505,7 @@ const CHAPTERS = [
   },
   {
     id: "ch7", title: "THE OTHER HAL", hero: "hal", map: "whitewave", spawn: [8, 10],
-    goal: "Fyodor wants the White Wavelength. White Chrome keeps black in check. Mix if you must.",
+    goal: "Fyodor wants the White Wavelength. White Chroma keeps black in check. Mix if you must.",
     intro: [
       ["fyodor", "The poorest live like princes there. I will have every Wand. Including yours."],
       ["other", "I am what you would have been, on another Wavelength. Do not waste the family you still have."],
@@ -667,7 +667,7 @@ function renderHud() {
       <div class="hpbar${low ? " low" : ""}"><i style="width:${Math.max(0, state.hp / state.maxHp * 100)}%"></i></div>
       <div class="hpbar chromabar"><i style="width:${Math.max(0, state.chroma / state.maxChroma * 100)}%"></i></div>
     </div>
-    <div class="hud-card">CHROME
+    <div class="hud-card">CHROMA
       <div style="margin-top:4px;font-size:9px;letter-spacing:.04em">${SPECTRUM.order.map((c) =>
         `<span class="hue-dot" style="background:${hasColor(c) ? SPECTRUM.hex[c] : "#332"}"></span>`
       ).join("")}${hasColor("white") ? `<span class="hue-dot" style="background:${SPECTRUM.hex.white}"></span>` : ""}</div>
@@ -714,7 +714,7 @@ function menuAct(a) {
   if (a === "item") {
     pauseEl.innerHTML = `<div class="panel"><h2>ITEMS</h2>
       <p>Candy ${state.items.candy || 0} — restore HP.</p>
-      <p>Milkshake ${state.items.milkshake || 0} — restore Vitas (Chrome fuel).</p>
+      <p>Milkshake ${state.items.milkshake || 0} — restore Vitas (Chroma fuel).</p>
       <button data-a="close">CLOSE</button></div>`;
     pauseEl.querySelector("button").onclick = () => menuAct("close");
   }
@@ -727,12 +727,12 @@ function openCodex() {
     const opp = SPECTRUM.opposite(c);
     return `<div style="margin:5px 0;padding:5px;border:2px solid ${known ? SPECTRUM.hex[c] : "#443"};background:#100810">
       <b style="color:${known ? SPECTRUM.hex[c] : "#776"}">${c.toUpperCase()}</b>
-      ${known ? " — " + SPECTRUM.meaning[c] + ". Object: " + SPECTRUM.conduit[c] + ". Cancels " + opp + "." : " — a locked Chrome."}
+      ${known ? " — " + SPECTRUM.meaning[c] + ". Object: " + SPECTRUM.conduit[c] + ". Cancels " + opp + "." : " — a locked Chroma."}
     </div>`;
   }).join("");
   codexEl.classList.add("show");
   codexEl.innerHTML = `<div class="panel wide"><h2>SPECTRUM CODEX</h2>
-    <p style="font-size:11px;line-height:1.4;color:#ffd8e8">Chrome is magical color. Primaries red, yellow, blue. Secondaries green, purple, orange cancel the Wand across from them. Black and white keep the Spectrum in check — and are the most dangerous. Dark Chroma drinks unmatched color. Hal's native hue is yellow; Wanda's is blue. Vitas fuels every burst.</p>
+    <p style="font-size:11px;line-height:1.4;color:#ffd8e8">Chroma is magical color. Primaries red, yellow, blue. Secondaries green, purple, orange cancel the Wand across from them. Black and white keep the Spectrum in check — and are the most dangerous. Dark Chroma drinks unmatched color. Hal's native hue is yellow; Wanda's is blue. Vitas fuels every burst.</p>
     ${rows}
     <button id="cx">CLOSE</button></div>`;
   document.getElementById("cx").onclick = () => {
@@ -764,7 +764,7 @@ function renderBattle() {
   let body = "";
   if (b.menu === "main") {
     body = `<div class="blist">
-      <button data-act="color">CHROME</button>
+      <button data-act="color">CHROMA</button>
       <button data-act="clash">COUNTER</button>
       <button data-act="item">ITEM</button>
       <button data-act="run">RUN</button>
@@ -781,7 +781,7 @@ function renderBattle() {
   battleEl.innerHTML = `<div class="panel wide">
     <div class="brow">
       <div class="bstat"><b>${ACTORS[b.caster].name}</b><div class="hpbar"><i style="width:${state.hp / state.maxHp * 100}%"></i></div>Vitas ${state.chroma}</div>
-      <div class="bstat"><b style="color:${hue}">${f.name}</b><div class="hpbar"><i style="width:${f.hp / f.maxHp * 100}%;background:${hue}"></i></div>Chrome: ${f.hue}${f.dark ? " · DARK" : ""}${f.stolen ? " · stole " + f.stolen : ""}</div>
+      <div class="bstat"><b style="color:${hue}">${f.name}</b><div class="hpbar"><i style="width:${f.hp / f.maxHp * 100}%;background:${hue}"></i></div>Chroma: ${f.hue}${f.dark ? " · DARK" : ""}${f.stolen ? " · stole " + f.stolen : ""}</div>
     </div>
     <div class="log">${b.log}</div>
     ${body}
@@ -802,15 +802,15 @@ function battleAct(act) {
     battle.log = "The color sticks."; enemyTurn(); return;
   }
   if (act === "clash") {
-    if (colorCount() < 1) { battle.log = "You need Chrome to counter."; renderBattle(); return; }
-    if (state.chroma < 6) { battle.log = "Not enough Vitas to braid Chrome."; renderBattle(); return; }
+    if (colorCount() < 1) { battle.log = "You need Chroma to counter."; renderBattle(); return; }
+    if (state.chroma < 6) { battle.log = "Not enough Vitas to braid Chroma."; renderBattle(); return; }
     if (battle.foe.hue === "black") {
       if (hasColor("white")) {
         state.chroma -= 8;
         castColor("white", true);
         return;
       }
-      battle.log = "Fyodor holds the black Wand. Only white Chrome keeps him in check.";
+      battle.log = "Fyodor holds the black Wand. Only white Chroma keeps him in check.";
       renderBattle();
       return;
     }
@@ -839,7 +839,7 @@ function battleAct(act) {
       castColor(color, state.party.includes("wanda"));
       return;
     }
-    battle.log = "You do not have the complementary Chrome yet.";
+    battle.log = "You do not have the complementary Chroma yet.";
     renderBattle();
   }
 }
@@ -907,7 +907,7 @@ function enemyTurn() {
       state.map = "portal";
       state.x = 4 * TS; state.y = 6 * TS;
       state.hp = Math.max(8, Math.floor(state.maxHp / 2));
-      say("wanda", "We lived. That's a kind of Chrome.");
+      say("wanda", "We lived. That's a kind of Chroma.");
     }, 700);
     return;
   }
@@ -917,7 +917,7 @@ function enemyTurn() {
 function winBattle() {
   if (!battle || battle.resolved) return;
   battle.resolved = true;
-  battle.log = battle.foe.name + " loses the Chrome!";
+  battle.log = battle.foe.name + " loses the Chroma!";
   state.xp += battle.foe.xp;
   state.chroma = Math.min(state.maxChroma, state.chroma + 4);
   if (state.xp >= state.lv * 28) {
@@ -1064,7 +1064,7 @@ function handleTile(t, tx, ty) {
   }
   if (t === "+" && state.map === "thrift") {
     unlock("orange", [
-      ["hal", "A rubber duck. Mostly yellow, with a hint of orange. Chrome doesn't care if it's undignified."],
+      ["hal", "A rubber duck. Mostly yellow, with a hint of orange. Chroma doesn't care if it's undignified."],
       ["wanda", "Saved by a duck. I'm putting that on a bottle cap."]
     ]);
     state.colors.yellow = true;
@@ -1080,7 +1080,7 @@ function handleTile(t, tx, ty) {
     unlock("green", [
       ["misha", "Hello, Hally. A knitting needle, if you must know. Now — the Sixth Wand. Where is it?"],
       ["hal", "For the man with the green pencil."],
-      ["misha", "Red Chrome does not like to be stung."]
+      ["misha", "Red Chroma does not like to be stung."]
     ], () => {
       state.colors.purple = true;
       save();
@@ -1169,7 +1169,7 @@ function handleTile(t, tx, ty) {
   if (t === "B" && state.map === "chase") {
     unlock("orange", [
       ["sergio", "Hallard. The White Wand does not get to hide in a girl's paintbox."],
-      ["hal", "Dark blue Chrome. Complementary orange will sting it. Unmatched color only feeds him."]
+      ["hal", "Dark blue Chroma. Complementary orange will sting it. Unmatched color only feeds him."]
     ], () => {
       if (!state.flags.bossSergio) startBattle("sergio", () => {
         state.flags.bossSergio = true;
@@ -1276,7 +1276,7 @@ function startContinue() {
 function showHow() {
   sayMany([
     ["", "Move with arrows or WASD. Confirm with Z or Space. Menu with X."],
-    ["", "Combat is Chrome — magical color. Primaries: red, yellow, blue. Secondaries: green, purple, orange. Complementary hues COUNTER: red↔green, yellow↔purple, blue↔orange."],
+    ["", "Combat is Chroma — magical color. Primaries: red, yellow, blue. Secondaries: green, purple, orange. Complementary hues COUNTER: red↔green, yellow↔purple, blue↔orange."],
     ["", "Same hues resonate. Adjacent hues mix and leave residue. Black + white is the most powerful reaction. Dark Chroma drinks unmatched color."],
     ["", "Hal's native hue is yellow; his Wand reads white. Wanda's is blue. Vitas fuels every burst. Wands can look like a paintbrush, a knitting needle, a duck, a pencil."]
   ]);

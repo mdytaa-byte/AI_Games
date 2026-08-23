@@ -471,6 +471,15 @@ html[data-contrast="hoch"] .coach-spot{
 .coach-dots button[aria-current="true"]::after{background:var(--gold)}
 .coach-actions{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;align-items:center}
 .tut-launch{margin:0 4px 14px}
+.class-row{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  margin:0 4px 14px;font-weight:700;font-size:.88rem;
+}
+.class-row input{
+  font:inherit;padding:8px 12px;border:2px solid var(--ink);
+  border-radius:12px;min-width:min(260px,100%);background:var(--paper);color:var(--ink);
+}
+.class-row input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .modal{
   background:var(--paper);border:3px solid var(--ink);border-radius:22px;
   padding:22px;max-width:640px;width:100%;box-shadow:8px 8px 0 var(--ink);
@@ -516,6 +525,7 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
       </div>
     </div>
     <div class="hud" id="hud" hidden>
+      <div class="chip" id="nameChip" lang="de" hidden></div>
       <div class="chip" id="scoreChip" lang="de">Punkte: 0</div>
       <div class="chip" id="roundChip" lang="de">Runde 1</div>
       <div class="lives" id="lives" lang="de" aria-label="Leben"></div>
@@ -590,6 +600,10 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
         <span class="sr" lang="en"> (short walkthrough)</span>
       </button>
     </p>
+    <div class="class-row">
+      <label for="playerName"><span lang="de">Name / Klasse:</span><span class="sr" lang="en"> Name or class</span></label>
+      <input id="playerName" lang="de" maxlength="40" autocomplete="nickname" placeholder="z. B. Klasse 6a oder Mira">
+    </div>
     <p lang="de" id="playHow" style="font-weight:800;margin:0 4px 8px">Wie willst du spielen?</p>
     <span class="en" lang="en" style="margin:-4px 4px 10px">How do you want to play?</span>
     <div class="modes" role="group" aria-labelledby="playHow">
@@ -620,9 +634,16 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
       <button type="button" class="lvl" data-level="mittel" role="radio" aria-checked="false"><b lang="de">Mittel · A1/A2</b><small lang="de">du + ihr · Tricks</small><span class="en" lang="en">medium · you singular and plural</span></button>
       <button type="button" class="lvl" data-level="schwer" role="radio" aria-checked="false"><b lang="de">Schwer · A2</b><small lang="de">du, ihr, Sie</small><span class="en" lang="en">hard · informal, plural, and formal</span></button>
     </div>
+    <p class="tut-launch" style="margin-top:-6px">
+      <button type="button" class="mini" id="btnTeacher" aria-pressed="false">
+        <span lang="de">Lehrer-Modus</span>
+        <span class="sr" lang="en"> (teacher mode: no listen timer, good for the projector)</span>
+      </button>
+    </p>
     <p style="margin:18px 4px 0;font-size:.82rem;font-weight:700;color:var(--ink-soft)">
-      <span lang="de">Simon sagt · Sportplatz Kleinhausen · Imperativ: du / ihr / Sie. Eine Datei, keine Cookies — Fortschritt gilt nur für diesen Besuch.</span>
-      <span class="en" lang="en">A single-file German commands game. Progress is for this visit only.</span>
+      <span lang="de">Simon sagt · Sportplatz Kleinhausen · Imperativ: du / ihr / Sie. Keine Cookies. Name, Einstellungen und Rekord können auf diesem Gerät bleiben.</span>
+      <span class="en" lang="en">No cookies. Name, settings, and high score can stay on this computer.</span>
+      <button type="button" class="mini" id="btnForget" style="margin-top:8px"><span lang="de">Auf diesem Gerät löschen</span><span class="sr" lang="en"> (clear saved settings on this device)</span></button>
     </p>
   </section>
 
@@ -680,6 +701,9 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
           </button>
           <button type="button" class="mini" id="pauseBtn" hidden aria-pressed="false">
             <span lang="de">Pause</span><span class="sr" lang="en"> (pause the timer)</span>
+          </button>
+          <button type="button" class="mini" id="waitBtn" hidden>
+            <span lang="de">Ich warte</span><span class="sr" lang="en"> (I wait — Simon did not say it)</span>
           </button>
         </div>
       </div>
@@ -739,7 +763,8 @@ html.no-motion, html.no-motion *{animation:none !important;transition:none !impo
       <li><b>Noch mal hören</b> spricht den letzten Befehl erneut. <b>Tipp</b> markiert die passende Anrede (du / ihr / Sie), nicht das Verb. <b>Pause</b> (Leertaste) hält den Timer im Hör-Modus an — auch wenn der Tab im Hintergrund ist.</li>
       <li><b>Langsam</b> spricht die Befehle gemütlicher. <b>Vollbild</b> eignet sich für den Beamer. <b>Spickzettel drucken</b> gibt den Imperativ-Zettel auf Papier.</li>
       <li>Tastatur: <kbd>S</kbd> = Simon sagt ein/aus · <kbd>Leertaste</kbd> = Pause · <kbd>1</kbd>–<kbd>9</kbd> = Befehl · <kbd>Esc</kbd> = Hilfe oder Tutorial schließen.</li>
-      <li>Das <b>Tutorial</b> zeigt die Spielfläche Schritt für Schritt. Keine Cookies — nur in diesem Besuch.</li>
+      <li><b>Lehrer-Modus</b> schaltet den Timer aus — gut für den Beamer. Mit <b>Ich warte</b> sagst du, dass Simon nichts gesagt hat. Name und Einstellungen bleiben auf diesem Gerät (keine Cookies); <b>Auf diesem Gerät löschen</b> wischt sie weg.</li>
+      <li>Das <b>Tutorial</b> zeigt die Spielfläche Schritt für Schritt.</li>
     </ul>
     <span class="en" lang="en">One person → <span lang="de">du</span>. Two people → <span lang="de">ihr</span>. Frau Berg (formal) → <span lang="de">Sie</span>. Without “<span lang="de">Simon sagt</span>”, nobody moves. Keyboard: <kbd>S</kbd> toggles Simon, number keys pick a command.</span>
     <p style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px">
@@ -945,10 +970,86 @@ const state = {
   tutorialStep:0,
   tutorialOnDone:null,
   listenClock:null,
-  giveMisses:0
+  giveMisses:0,
+  playerName:"",
+  teacher:false,
+  best:0,
+  ready:false
 };
 
 const $ = id => document.getElementById(id);
+const STORE = "kleinhausen-simon-sagt";
+function loadStore(){
+  try { return JSON.parse(localStorage.getItem(STORE) || "{}"); }
+  catch(e){ return {}; }
+}
+function persist(){
+  if (!state.ready) return;
+  try{
+    localStorage.setItem(STORE, JSON.stringify({
+      en: $("btnEn").getAttribute("aria-pressed") === "true",
+      audio: $("btnAudio").getAttribute("aria-pressed") === "true",
+      slow: $("btnSlow").getAttribute("aria-pressed") === "true",
+      motion: $("btnMotion").getAttribute("aria-pressed") === "true",
+      contrast: $("btnContrast").getAttribute("aria-pressed") === "true",
+      size: document.documentElement.getAttribute("data-size") || "",
+      voice: $("voiceSelect") ? $("voiceSelect").value : "auto",
+      level: state.level,
+      name: state.playerName,
+      teacher: state.teacher,
+      sawGive: state.sawTutorial.give,
+      sawListen: state.sawTutorial.listen,
+      best: state.best
+    }));
+  }catch(e){}
+}
+function setPressed(id, on){
+  const el = $(id);
+  if (el) el.setAttribute("aria-pressed", String(!!on));
+}
+function restoreSettings(){
+  const d = loadStore();
+  if (d.en === false){
+    document.body.classList.remove("zeige-en");
+    setPressed("btnEn", false);
+  }
+  if (d.audio === false) setPressed("btnAudio", false);
+  if (d.slow) setPressed("btnSlow", true);
+  if (d.motion === false){
+    setPressed("btnMotion", false);
+    document.documentElement.classList.add("no-motion");
+    document.documentElement.style.setProperty("--motion", "0.001");
+  }
+  if (d.contrast){
+    setPressed("btnContrast", true);
+    document.documentElement.setAttribute("data-contrast", "hoch");
+  }
+  if (d.size){
+    document.documentElement.setAttribute("data-size", d.size);
+    setPressed("btnSize", true);
+  }
+  if (d.level && MISSIONS[d.level]){
+    state.level = d.level;
+    document.querySelectorAll(".lvl[data-level]").forEach(b => {
+      const on = b.dataset.level === d.level;
+      b.classList.toggle("pick", on);
+      b.setAttribute("aria-checked", String(on));
+    });
+  }
+  if (typeof d.name === "string"){
+    state.playerName = d.name.slice(0, 40);
+    if ($("playerName")) $("playerName").value = state.playerName;
+  }
+  if (d.teacher){
+    state.teacher = true;
+    setPressed("btnTeacher", true);
+  }
+  if (d.sawGive) state.sawTutorial.give = true;
+  if (d.sawListen) state.sawTutorial.listen = true;
+  if (typeof d.best === "number" && d.best > 0) state.best = d.best;
+  state.pendingVoice = d.voice || "auto";
+  updateNameChip();
+}
 function esc(s){
   return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 }
@@ -1129,11 +1230,11 @@ function pickVoice(){
   const sel = $("voiceSelect");
   const deVoices = vs.filter(v => /^de/i.test(v.lang));
   if (sel){
-    const current = sel.value;
+    const prefer = state.pendingVoice || sel.value || "auto";
     const opts = [`<option value="auto">Automatisch</option>`]
       .concat(deVoices.map(v => `<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`));
     sel.innerHTML = opts.join("");
-    if ([...sel.options].some(o => o.value === current)) sel.value = current;
+    if ([...sel.options].some(o => o.value === prefer)) sel.value = prefer;
   }
   if (!deVoices.length && sel){
     $("voiceRow").hidden = true;
@@ -1194,7 +1295,17 @@ function feedback(kind, de, en, tip){
   announce(de, en);
 }
 
+function updateNameChip(){
+  const chip = $("nameChip");
+  if (!chip) return;
+  const n = (state.playerName || "").trim();
+  if (!n){ chip.hidden = true; chip.textContent = ""; return; }
+  chip.hidden = false;
+  chip.innerHTML = `<span lang="de">${esc(n)}</span>`;
+}
+
 function updateHud(){
+  updateNameChip();
   $("scoreChip").innerHTML = `<span lang="de">Punkte: ${state.score}</span>`;
   if (state.mode === "give"){
     const total = MISSIONS[state.level].length;
@@ -1415,7 +1526,10 @@ function hideTutorial(silent){
     el.hidden = true;
   }
   if ($("coachSpot")) $("coachSpot").hidden = true;
-  if (wasOn && kind) state.sawTutorial[kind] = true;
+  if (wasOn && kind){
+    state.sawTutorial[kind] = true;
+    persist();
+  }
   if (!silent && typeof done === "function") done();
 }
 
@@ -1445,7 +1559,7 @@ function startGive(opts){
   nextMission();
   const force = !!(opts && opts.tutorial);
   if (force) state.sawTutorial.give = false;
-  queueTutorial("give", force);
+  if (!state.teacher || force) queueTutorial("give", force);
 }
 
 function nextMission(){
@@ -1598,19 +1712,26 @@ function giveHint(auto){
 function syncPlayTools(){
   const hint = $("hintBtn");
   const pause = $("pauseBtn");
+  const wait = $("waitBtn");
+  const playing = $("screen-play") && $("screen-play").classList.contains("on");
   if (hint){
-    hint.hidden = state.mode !== "give" || !$("screen-play").classList.contains("on");
+    hint.hidden = state.mode !== "give" || !playing;
     hint.disabled = state.mode !== "give" || !state.current || state.busy;
   }
   if (pause){
     const clock = state.listenClock;
-    pause.hidden = state.mode !== "listen" || !$("screen-play").classList.contains("on");
-    pause.disabled = !clock;
+    const timed = clock && !clock.infinite && !state.teacher;
+    pause.hidden = state.mode !== "listen" || !playing || !timed;
+    pause.disabled = !timed;
     const paused = !!(clock && clock.paused);
     pause.setAttribute("aria-pressed", String(paused));
     pause.innerHTML = paused
       ? `<span lang="de">Weiter</span><span class="sr" lang="en"> (resume)</span>`
       : `<span lang="de">Pause</span><span class="sr" lang="en"> (pause the timer)</span>`;
+  }
+  if (wait){
+    wait.hidden = state.mode !== "listen" || !playing;
+    wait.disabled = state.mode !== "listen" || state.busy || !state.current || !!(state.listenClock && state.listenClock.paused);
   }
 }
 
@@ -1628,7 +1749,14 @@ function clearListenClock(){
 
 function startListenClock(ms, session, simon){
   clearListenClock();
-  state.listenClock = {ms, remaining: ms, session, simon, paused:false, started:0, timer:null, tick:null};
+  if (state.teacher){
+    $("timer").classList.remove("on");
+    state.listenClock = {infinite:true, paused:false, session, simon, ms:0, remaining:0, timer:null, tick:null};
+    syncPlayTools();
+    return;
+  }
+  $("timer").classList.add("on");
+  state.listenClock = {ms, remaining: ms, session, simon, paused:false, started:0, timer:null, tick:null, infinite:false};
   runListenClock();
   syncPlayTools();
 }
@@ -1704,9 +1832,28 @@ function resumeListenClock(){
 
 function toggleListenPause(){
   const c = state.listenClock;
-  if (!c) return;
+  if (!c || c.infinite) return;
   if (c.paused) resumeListenClock();
   else pauseListenClock("user");
+}
+
+function listenWait(){
+  if (state.tutorialOn || state.busy || state.mode !== "listen" || !state.current) return;
+  if (state.listenClock && state.listenClock.paused) return;
+  const session = state.session;
+  const simon = state.current.simon;
+  state.busy = true;
+  clearListenClock();
+  if (simon){
+    miss("Simon hat es gesagt!", "Simon did say it — you should have moved.");
+  } else {
+    sfx("ok");
+    state.score += 8;
+    state.round++;
+    feedback("ok", "Gut gewartet!", "You waited — they didn't say Simon sagt.");
+    updateHud();
+    setTimeout(() => { if (alive(session)) listenRound(); }, 800);
+  }
 }
 
 /* ---------- LISTEN MODE ---------- */
@@ -1727,7 +1874,8 @@ function startListen(opts){
   setActorActive("all");
   $("simonBtn").style.display = "none";
   $("whoPick").innerHTML = "";
-  $("timer").classList.add("on");
+  if (state.teacher) $("timer").classList.remove("on");
+  else $("timer").classList.add("on");
   $("missionTitle").innerHTML = `<span lang="de">Hör zu!</span>`;
   $("missionText").innerHTML = `<span lang="de">Tippe die Aktion — aber nur, wenn Simon es sagt.</span><span class="en" lang="en">Tap the action only if Simon says so.</span>`;
   $("whoPill").innerHTML = `<span class="dot frau" aria-hidden="true"></span> <span lang="de">Alle auf dem Platz</span><span class="en" lang="en">everyone on the field</span>`;
@@ -1737,7 +1885,7 @@ function startListen(opts){
   const go = () => { if (alive(session)) listenRound(); };
   const force = !!(opts && opts.tutorial);
   if (force) state.sawTutorial.listen = false;
-  if (!state.sawTutorial.listen || force){
+  if (force || (!state.teacher && !state.sawTutorial.listen)){
     state.tutorialOnDone = go;
     queueTutorial("listen", force);
   } else {
@@ -1891,20 +2039,31 @@ function onFreeTap(opt){
 function endGame(win){
   bumpSession();
   showScreen("screen-end");
+  const who = (state.playerName || "").trim();
+  if (state.score > state.best){
+    state.best = state.score;
+    persist();
+  }
+  const rec = state.best ? ` Rekord auf diesem Gerät: ${state.best}.` : "";
   $("hud").hidden = false;
   $("lives").hidden = true;
   $("roundChip").innerHTML = `<span lang="de">${win ? "Fertig" : "Pause"}</span>`;
   $("scoreChip").innerHTML = `<span lang="de">Punkte: ${state.score}</span>`;
+  updateNameChip();
   if (win){
     burst();
     $("endTitle").textContent = "Geschafft!";
-    $("endText").textContent = `Du hast ${state.score} Punkte. Die Klasse auf dem Sportplatz Kleinhausen folgt deinen Befehlen.`;
-    $("endEn").textContent = `You scored ${state.score} points. The Kleinhausen class is following your commands.`;
+    $("endText").textContent = who
+      ? `${who}, du hast ${state.score} Punkte.${rec} Die Klasse auf dem Sportplatz Kleinhausen folgt deinen Befehlen.`
+      : `Du hast ${state.score} Punkte.${rec} Die Klasse auf dem Sportplatz Kleinhausen folgt deinen Befehlen.`;
+    $("endEn").textContent = `You scored ${state.score} points.${state.best ? " Device record: " + state.best + "." : ""} The Kleinhausen class is following your commands.`;
     announce(`Geschafft! ${state.score} Punkte.`, `You scored ${state.score} points.`);
   } else {
     $("endTitle").textContent = "Pause!";
-    $("endText").textContent = `Noch ${state.score} Punkte auf dem Zettel. Nochmal versuchen?`;
-    $("endEn").textContent = `You banked ${state.score} points. Try again?`;
+    $("endText").textContent = who
+      ? `${who}, noch ${state.score} Punkte auf dem Zettel.${rec} Nochmal versuchen?`
+      : `Noch ${state.score} Punkte auf dem Zettel.${rec} Nochmal versuchen?`;
+    $("endEn").textContent = `You banked ${state.score} points.${state.best ? " Device record: " + state.best + "." : ""} Try again?`;
     announce(`Pause. ${state.score} Punkte.`, `You banked ${state.score} points.`);
   }
   renderEndLog();
@@ -1954,39 +2113,48 @@ if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").m
   document.documentElement.classList.add("no-motion");
   document.documentElement.style.setProperty("--motion", "0.001");
 }
+restoreSettings();
+if (window.speechSynthesis) pickVoice();
+state.ready = true;
 
 $("btnEn").addEventListener("click", () => {
   const on = $("btnEn").getAttribute("aria-pressed") !== "true";
   $("btnEn").setAttribute("aria-pressed", String(on));
   document.body.classList.toggle("zeige-en", on);
+  persist();
 });
 $("btnAudio").addEventListener("click", () => {
   const on = $("btnAudio").getAttribute("aria-pressed") !== "true";
   $("btnAudio").setAttribute("aria-pressed", String(on));
   if (!on && window.speechSynthesis) speechSynthesis.cancel();
+  persist();
 });
 $("btnSlow").addEventListener("click", () => {
   const on = $("btnSlow").getAttribute("aria-pressed") !== "true";
   $("btnSlow").setAttribute("aria-pressed", String(on));
+  persist();
 });
 $("hintBtn").addEventListener("click", () => {
   if (state.tutorialOn || state.busy) return;
   giveHint(false);
 });
 $("pauseBtn").addEventListener("click", toggleListenPause);
+$("waitBtn").addEventListener("click", listenWait);
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden && state.listenClock && !state.listenClock.paused) pauseListenClock("tab");
+  if (document.hidden && state.listenClock && !state.listenClock.paused && !state.listenClock.infinite) pauseListenClock("tab");
 });
 $("btnMotion").addEventListener("click", () => {
   const on = $("btnMotion").getAttribute("aria-pressed") !== "true";
   $("btnMotion").setAttribute("aria-pressed", String(on));
   document.documentElement.classList.toggle("no-motion", !on);
   document.documentElement.style.setProperty("--motion", on ? "1" : "0.001");
+  persist();
 });
 $("btnContrast").addEventListener("click", () => {
   const on = $("btnContrast").getAttribute("aria-pressed") !== "true";
   $("btnContrast").setAttribute("aria-pressed", String(on));
   document.documentElement.setAttribute("data-contrast", on ? "hoch" : "");
+  persist();
 });
 const SIZES = ["", "gross", "sehr-gross"];
 $("btnSize").addEventListener("click", () => {
@@ -1994,6 +2162,7 @@ $("btnSize").addEventListener("click", () => {
   const next = SIZES[(SIZES.indexOf(cur)+1) % SIZES.length];
   document.documentElement.setAttribute("data-size", next);
   $("btnSize").setAttribute("aria-pressed", next ? "true" : "false");
+  persist();
 });
 $("btnFull").addEventListener("click", () => {
   if (!document.fullscreenElement){
@@ -2007,7 +2176,11 @@ document.addEventListener("fullscreenchange", () => {
 });
 $("hearBtn").addEventListener("click", replayLast);
 if ($("voiceSelect")){
-  $("voiceSelect").addEventListener("change", pickVoice);
+  $("voiceSelect").addEventListener("change", () => {
+    state.pendingVoice = $("voiceSelect").value;
+    pickVoice();
+    persist();
+  });
 }
 if ($("voiceTest")){
   $("voiceTest").addEventListener("click", () => speak("Simon sagt: Hallo! Ich bin Simon."));
@@ -2045,6 +2218,21 @@ $("helpVeil").addEventListener("click", e => { if (e.target.id==="helpVeil") clo
 $("helpVeil").addEventListener("keydown", e => trapFocus($("helpVeil"), e));
 $("helpTutorial").addEventListener("click", replayTutorial);
 $("btnTutorial").addEventListener("click", () => startGive({tutorial:true}));
+$("btnTeacher").addEventListener("click", () => {
+  state.teacher = $("btnTeacher").getAttribute("aria-pressed") !== "true";
+  setPressed("btnTeacher", state.teacher);
+  persist();
+});
+$("playerName").addEventListener("input", () => {
+  state.playerName = $("playerName").value.slice(0, 40);
+  updateNameChip();
+  persist();
+});
+$("btnForget").addEventListener("click", () => {
+  try { localStorage.removeItem(STORE); } catch(e){}
+  state.ready = false;
+  location.reload();
+});
 $("coachSkip").addEventListener("click", finishTutorial);
 $("coachNext").addEventListener("click", tutorialNext);
 $("coach").addEventListener("keydown", e => {
@@ -2075,6 +2263,7 @@ document.querySelectorAll(".lvl").forEach(btn => btn.addEventListener("click", (
   btn.classList.add("pick");
   btn.setAttribute("aria-checked", "true");
   state.level = btn.dataset.level;
+  persist();
 }));
 
 document.querySelectorAll(".mode").forEach(btn => btn.addEventListener("click", () => {

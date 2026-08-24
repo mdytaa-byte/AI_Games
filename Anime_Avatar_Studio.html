@@ -416,6 +416,8 @@ details.look .group{margin-top:12px}
               <button class="thumb" data-set="hairStyle" data-val="spiky"><span class="icon">✦</span>Spiky</button>
               <button class="thumb" data-set="hairStyle" data-val="twintails"><span class="icon">✿</span>Twintails</button>
               <button class="thumb" data-set="hairStyle" data-val="hime"><span class="icon">━</span>Hime</button>
+              <button class="thumb" data-set="hairStyle" data-val="bun"><span class="icon">◉</span>Bun</button>
+              <button class="thumb" data-set="hairStyle" data-val="braid"><span class="icon">∿</span>Braid</button>
             </div>
           </div>
           <div class="group">
@@ -463,6 +465,13 @@ details.look .group{margin-top:12px}
             <div class="swatch-row">
               <div class="swatches" id="shirtSwatches"></div>
               <input class="color-pick" type="color" id="shirtCustom" value="#243b63" aria-label="Custom clothing color" title="Custom clothing color">
+            </div>
+          </div>
+          <div class="group">
+            <div class="labelrow">Collar / Trim Color</div>
+            <div class="swatch-row">
+              <div class="swatches" id="trimSwatches"></div>
+              <input class="color-pick" type="color" id="trimCustom" value="#f7f8fb" aria-label="Custom collar and trim color" title="Custom collar and trim color">
             </div>
           </div>
         </section>
@@ -742,7 +751,7 @@ How are you today?</textarea>
       <li><b>Dialogue:</b> Write Japanese with optional furigana like <span class="jp-text">先生(せんせい)</span>. Use ◀ ▶ on the speech bubble to step through a conversation, and 🔊 to hear Japanese speech.</li>
       <li><b>Present:</b> Hide the editor and show only the character and dialogue — useful on a classroom projector. Press <kbd>P</kbd> to enter or exit.</li>
       <li><b>Export:</b> PNG and SVG download the character (optionally with the scene). Lesson Card makes a simple HTML slide with the portrait and lines. Open Project reloads a saved JSON file.</li>
-      <li><b>Look:</b> Body type, face, hair, outfit, and expression all feed the same illustration. Custom color pickers sit next to the palettes when you need a specific shade.</li>
+      <li><b>Look:</b> Body type, face, hair, outfit, and expression all feed the same illustration. Collar / trim is a second clothing color for sailor collars, blazer linings, and festival details. Custom color pickers sit next to the palettes when you need a specific shade.</li>
     </ul>
     <p style="color:var(--muted);font-size:13px">Shortcuts: Ctrl+Z undo · Ctrl+Y redo · Ctrl+S save character · P present</p>
   </div>
@@ -755,7 +764,8 @@ const COLORS = {
   skin:['#f7d7c4','#f2c7a5','#e6b18f','#c98f67','#9f6747','#6f4534'],
   eyes:['#47688c','#614637','#3d6f5b','#7d5ba6','#c45c6a','#d4a24a','#5a5f6b'],
   hair:['#24242b','#654735','#a56d40','#1d3454','#e0b95d','#f2f0ea','#7aa7d9','#e89ab5'],
-  shirt:['#243b63','#45546c','#6b3448','#42684c','#335f82','#3d4658','#8b3a3a','#2c2f38']
+  shirt:['#243b63','#45546c','#6b3448','#42684c','#335f82','#3d4658','#8b3a3a','#2c2f38'],
+  trim:['#f7f8fb','#fff6e8','#d8c077','#c45c48','#1a2744','#e89ab5','#2c2f38','#48b8b5']
 };
 
 const SAVE_KEY = 'animeAvatarStudioSavedV3';
@@ -803,6 +813,7 @@ const DEFAULT = {
   eyes:'#47688c',
   hair:'#24242b',
   shirt:'#243b63',
+  trim:'#f7f8fb',
   name:'Haruto',
   role:'Student',
   jp:'おはようございます！',
@@ -822,8 +833,8 @@ const DEFAULT = {
 
 let variants = {
   A: JSON.parse(JSON.stringify(DEFAULT)),
-  B: {...JSON.parse(JSON.stringify(DEFAULT)), gender:'feminine', hair:'#654735', hairStyle:'bob', schoolStyle:'sailor', name:'Aiko'},
-  C: {...JSON.parse(JSON.stringify(DEFAULT)), hair:'#a56d40', outfit:'casual', shirt:'#45546c', name:'Ren'}
+  B: {...JSON.parse(JSON.stringify(DEFAULT)), gender:'feminine', hair:'#654735', hairStyle:'bob', schoolStyle:'sailor', trim:'#fff6e8', name:'Aiko'},
+  C: {...JSON.parse(JSON.stringify(DEFAULT)), hair:'#a56d40', outfit:'casual', shirt:'#45546c', trim:'#efefef', name:'Ren'}
 };
 let activeVariant = 'A';
 let history = [];
@@ -874,6 +885,7 @@ setupSwatches('skinSwatches','skin',COLORS.skin);
 setupSwatches('eyeSwatches','eyes',COLORS.eyes);
 setupSwatches('hairSwatches','hair',COLORS.hair);
 setupSwatches('shirtSwatches','shirt',COLORS.shirt);
+setupSwatches('trimSwatches','trim',COLORS.trim);
 
 function clamp01(v){ return Math.max(0,Math.min(1,v)); }
 function lerp(a,b,t){ return a+(b-a)*t; }
@@ -1413,6 +1425,113 @@ function hairData(style, feminine=false){
         'M158 200 C156 240 158 290 164 340',
         'M262 200 C264 240 262 290 256 340'
       ]
+    },
+    bun: {
+      rearMass:'M148 170 C150 126 168 100 194 90 C214 84 236 86 256 98 C272 110 278 138 276 170 L274 214 C262 228 238 236 210 238 C182 236 160 228 148 214 Z',
+      bunMass:'M186 76 C194 48 226 46 236 74 C244 92 232 110 210 116 C188 110 178 92 186 76 Z',
+      bunPivot:{x:210,y:88},
+      rearShadow:[
+        'M149 168 C154 134 168 112 186 100 C176 128 174 162 176 206 C168 218 158 220 150 208 Z',
+        'M275 168 C270 134 256 112 238 100 C248 128 250 162 248 206 C256 218 266 220 274 208 Z'
+      ],
+      rearLocks:[
+        'M152 140 C144 158 146 180 154 198 C158 208 164 214 170 216 C166 192 168 170 176 150 C170 140 160 136 152 140 Z',
+        'M268 140 C276 158 274 180 266 198 C262 208 256 214 250 216 C254 192 252 170 244 150 C250 140 260 136 268 140 Z'
+      ],
+      bunLocks:[
+        'M192 82 C200 60 220 58 230 80 C224 76 216 74 210 76 C204 74 196 76 192 82 Z',
+        'M198 58 C204 44 218 44 224 58 C220 66 216 74 210 78 C204 74 200 66 198 58 Z',
+        'M188 92 C196 104 204 110 210 112 C216 110 224 104 232 92 C226 100 218 106 210 108 C202 106 194 100 188 92 Z'
+      ],
+      sideLocks:[
+        'M152 148 C146 166 148 188 156 204 C160 212 166 216 172 218 C168 196 170 176 178 156 C172 148 160 144 152 148 Z',
+        'M268 148 C274 166 272 188 264 204 C260 212 254 216 248 218 C252 196 250 176 242 156 C248 148 260 144 268 148 Z'
+      ],
+      bangs:[
+        'M150 150 C152 126 162 110 176 108 C186 107 192 114 192 124 C186 138 176 150 164 158 C158 160 151 156 150 150 Z',
+        'M172 134 C174 112 184 100 198 100 C206 100 212 108 210 118 C206 134 198 146 188 156 C180 154 172 146 172 134 Z',
+        'M196 124 C198 106 208 98 218 100 C226 102 230 110 228 120 C224 134 218 146 210 154 C202 150 196 140 196 124 Z',
+        'M218 122 C224 104 236 100 246 106 C252 110 254 120 250 130 C244 142 236 152 226 158 C220 152 216 138 218 122 Z',
+        'M244 132 C252 116 264 116 272 126 C276 134 274 146 266 156 C260 162 254 164 250 162 C246 152 244 142 244 132 Z',
+        'M158 124 C161 108 169 98 180 95 C185 94 190 98 191 104 C183 115 176 126 169 139 C163 138 159 133 158 124 Z'
+      ],
+      crownStrands:[
+        'M168 108 C180 90 196 80 214 78',
+        'M198 96 C212 84 228 82 244 92'
+      ],
+      flyaways:[
+        'M200 48 C194 34 198 24 210 20',
+        'M230 52 C242 40 254 42 262 52',
+        'M176 86 C166 74 166 62 176 54'
+      ],
+      highlightBand:[
+        'M190 70 C200 56 220 54 232 68 C224 66 216 68 210 74 C204 68 196 66 190 70 Z',
+        'M168 112 C186 98 208 94 230 98 C242 100 252 106 260 114 C244 110 228 114 216 122 C200 114 184 112 168 112 Z'
+      ],
+      streaks:[
+        'M196 68 C206 58 218 56 228 62',
+        'M182 110 C194 102 206 98 218 98',
+        'M220 104 C232 100 244 104 254 112'
+      ]
+    },
+    braid: {
+      rearMass:'M142 172 C144 124 162 96 190 86 C216 76 246 82 266 100 C281 114 286 140 282 172 L280 222 C266 244 242 256 210 260 C178 256 154 244 142 222 Z',
+      rearShadow:[
+        'M143 170 C149 132 164 108 184 96 C170 128 168 168 172 218 C164 236 154 242 145 230 Z',
+        'M281 170 C275 132 260 108 239 96 C253 128 254 168 249 218 C257 236 267 242 276 230 Z'
+      ],
+      rearLocks:[
+        'M150 138 C141 160 142 192 152 218 C156 230 162 238 170 242 C166 214 169 182 178 150 C171 137 159 132 150 138 Z',
+        'M272 140 C280 162 279 190 270 216 C266 228 259 236 251 240 C254 214 251 184 242 154 C249 142 262 136 272 140 Z'
+      ],
+      sideLocks:[
+        'M148 146 C141 170 144 204 156 232 C161 244 168 250 176 254 C171 224 174 188 184 156 C176 146 158 141 148 146 Z',
+        'M270 144 C278 164 277 194 269 220 C265 232 259 240 251 246 C254 218 251 186 242 158 C248 146 260 140 270 144 Z',
+        'M160 158 C155 180 157 206 166 226 C170 235 176 241 182 244 C179 218 182 190 190 166 C184 157 169 153 160 158 Z'
+      ],
+      bangs:[
+        'M146 147 C158 117 181 98 208 96 C219 96 228 100 233 106 C215 112 196 123 177 140 C164 151 154 156 146 147 Z',
+        'M169 139 C184 111 207 99 236 103 C245 105 252 110 255 116 C233 118 211 127 190 145 C180 152 173 149 169 139 Z',
+        'M196 131 C214 109 238 104 263 113 C270 116 275 123 276 131 C256 129 235 136 217 151 C207 153 199 145 196 131 Z',
+        'M222 141 C239 125 257 122 273 132 C280 137 282 146 278 154 C265 149 249 151 235 161 C227 160 222 153 222 141 Z',
+        'M154 123 C163 105 176 94 192 90 C184 103 175 118 166 136 C160 136 155 131 154 123 Z',
+        'M244 105 C256 107 266 114 272 125 C259 121 247 122 234 126 C235 115 238 108 244 105 Z'
+      ],
+      tails:[
+        {
+          sign:1, pivot:{x:258,y:176},
+          mass:'M250 168 C272 176 286 198 290 230 C294 272 290 322 280 368 C272 400 260 428 248 448 C244 430 246 402 250 372 C258 322 264 272 260 226 C256 198 252 176 250 168 Z',
+          locks:[
+            'M256 184 C270 192 278 210 276 228 C270 236 258 232 252 218 C250 202 252 190 256 184 Z',
+            'M252 222 C268 232 276 252 272 272 C264 282 250 276 246 260 C244 242 248 228 252 222 Z',
+            'M248 268 C264 280 272 302 266 324 C258 334 244 326 240 310 C238 290 242 276 248 268 Z',
+            'M244 318 C258 332 264 354 258 376 C250 386 236 378 232 360 C230 340 236 324 244 318 Z',
+            'M240 368 C252 382 256 404 250 424 C242 434 230 426 226 408 C224 388 232 372 240 368 Z',
+            'M236 416 C246 428 248 442 242 450 C236 454 228 448 226 436 C224 426 230 418 236 416 Z'
+          ]
+        }
+      ],
+      crownStrands:[
+        'M156 121 C174 97 195 86 219 85',
+        'M181 104 C201 88 222 84 243 91',
+        'M209 99 C227 90 245 94 261 107'
+      ],
+      flyaways:[
+        'M181 89 C174 72 178 61 190 54',
+        'M258 101 C275 91 288 95 296 108',
+        'M286 240 C300 248 310 262 314 276',
+        'M252 400 C264 412 268 428 264 442'
+      ],
+      highlightBand:[
+        'M168 108 C190 92 219 88 247 96 C255 98 262 102 268 107 C244 104 220 110 198 123 C188 117 178 112 168 108 Z',
+        'M258 210 C270 222 276 240 274 258 C266 252 258 244 252 232 C252 220 254 214 258 210 Z'
+      ],
+      streaks:[
+        'M183 108 C199 97 216 93 232 94',
+        'M210 112 C226 104 242 105 256 111',
+        'M266 230 C274 248 274 268 268 286',
+        'M260 300 C266 320 264 342 256 362'
+      ]
     }
   };
   return defs[style] || defs.messy;
@@ -1499,6 +1618,7 @@ function renderHairBack(s, data, st=styleProfile(s), ft=headTurnProfile(s), hd=h
     g.appendChild(el);
   });
   applyHairMotion(g,data.rearLocks||[],p.base,p.line,hd,'rear',1.55,1);
+  if(data.bunMass) attachHairTail(g, data.bunMass, data.bunLocks, hd, data.bunPivot||{x:210,y:88}, p, 0);
   if(data.ponyMass) attachHairTail(g, data.ponyMass, data.ponyLocks, hd, {x:286,y:230}, p, 1);
   (data.tails||[]).forEach(tail=>attachHairTail(g, tail.mass, tail.locks, hd, tail.pivot||{x:210,y:180}, p, tail.sign||1));
   return g;
@@ -2415,7 +2535,7 @@ function handGestureFor(side,rig,s){
   if(carrier==='both' || carrier===side) return 'grip';
   return rig.handGestures[side] || 'relaxed';
 }
-function outfitPalette(outfit, primary){
+function outfitPalette(outfit, primary, trim){
   const pal = {
     school: {top: primary || '#243b63', lower:'#4d5568', accent:'#365780', trim:'#d8c077'},
     teacher:{top: primary || '#3d4658', lower:'#2f3440', accent:'#7e2f3d', trim:'#dadada'},
@@ -2424,7 +2544,24 @@ function outfitPalette(outfit, primary){
     server: {top: primary || '#4a3a38', lower:'#2f3039', accent:'#8b2f3e', trim:'#efe3cf'},
     station:{top: primary || '#334f6d', lower:'#394556', accent:'#c9a54a', trim:'#dfe8f1'}
   };
-  return pal[outfit] || pal.school;
+  const out = Object.assign({}, pal[outfit] || pal.school);
+  if(trim) out.trim = trim;
+  return out;
+}
+function defaultTrimFor(outfit, schoolStyle){
+  if(outfit==='school'){
+    if(schoolStyle==='sailor') return '#fff6e8';
+    if(schoolStyle==='gakuran') return '#d3ae52';
+    if(schoolStyle==='cardigan') return '#f5f7fb';
+    return '#f7f8fb';
+  }
+  return ({
+    teacher:'#f8f8f6',
+    festival:'#d2b15e',
+    casual:'#efefef',
+    server:'#efe3cf',
+    station:'#c9a54a'
+  })[outfit] || '#f7f8fb';
 }
 
 // Step 7: clothing is generated from garment profiles rather than sharing one generic sleeve/lower-body recipe.
@@ -2506,6 +2643,23 @@ function neckPath(){
 function shoeMarkup(side, ankle, profile, lines, depthScale=1){
   const g=svgEl('g',{transform:scaleAround(ankle.x,ankle.y,depthScale,depthScale)});
   const dir=side==='left'?-1:1;
+  if(profile.shoe==='geta'){
+    const x=ankle.x, y=ankle.y;
+    const wood='#c9a56a', woodShadow='#8d6840', woodLine='#5a4026', woodHi='#e2c48a';
+    const strap='#c45c48';
+    const tabi=`M${(x-9).toFixed(1)} ${(y-11).toFixed(1)} Q${x.toFixed(1)} ${(y-17).toFixed(1)} ${(x+9).toFixed(1)} ${(y-9).toFixed(1)} L${(x+18*dir).toFixed(1)} ${(y+5).toFixed(1)} Q${(x+8*dir).toFixed(1)} ${(y+9).toFixed(1)} ${(x-10*dir).toFixed(1)} ${(y+7).toFixed(1)} Z`;
+    g.appendChild(svgEl('path',{d:tabi,fill:'#f6f7fa',stroke:'#c8cdd7','stroke-width':'1.6','stroke-linejoin':'round'}));
+    g.appendChild(svgEl('path',{d:`M${(x+2*dir).toFixed(1)} ${(y-6).toFixed(1)} L${(x+10*dir).toFixed(1)} ${(y+6).toFixed(1)}`,fill:'none',stroke:'#c8cdd7','stroke-width':'1.1'}));
+    const dai=`M${(x-16*dir).toFixed(1)} ${(y+6).toFixed(1)} L${(x+22*dir).toFixed(1)} ${(y+8).toFixed(1)} L${(x+21*dir).toFixed(1)} ${(y+15).toFixed(1)} L${(x-18*dir).toFixed(1)} ${(y+13).toFixed(1)} Z`;
+    g.appendChild(svgEl('path',{d:dai,fill:wood,stroke:woodLine,'stroke-width':'2.2','stroke-linejoin':'round'}));
+    g.appendChild(svgEl('path',{d:`M${(x-12*dir).toFixed(1)} ${(y+8).toFixed(1)} L${(x+16*dir).toFixed(1)} ${(y+9.5).toFixed(1)}`,fill:'none',stroke:woodHi,'stroke-width':'1.1','stroke-linecap':'round',opacity:'0.7'}));
+    const haBack=x-6*dir, haFront=x+10*dir;
+    g.appendChild(svgEl('path',{d:`M${(haBack-4.5).toFixed(1)} ${(y+13).toFixed(1)} L${(haBack+4.5).toFixed(1)} ${(y+13).toFixed(1)} L${(haBack+3.5).toFixed(1)} ${(y+24).toFixed(1)} L${(haBack-3.5).toFixed(1)} ${(y+24).toFixed(1)} Z`,fill:woodShadow,stroke:woodLine,'stroke-width':'1.6','stroke-linejoin':'round'}));
+    g.appendChild(svgEl('path',{d:`M${(haFront-4.5).toFixed(1)} ${(y+14).toFixed(1)} L${(haFront+4.5).toFixed(1)} ${(y+14).toFixed(1)} L${(haFront+3.5).toFixed(1)} ${(y+24).toFixed(1)} L${(haFront-3.5).toFixed(1)} ${(y+24).toFixed(1)} Z`,fill:woodShadow,stroke:woodLine,'stroke-width':'1.6','stroke-linejoin':'round'}));
+    g.appendChild(svgEl('path',{d:`M${(x+3*dir).toFixed(1)} ${(y-8).toFixed(1)} Q${(x+10*dir).toFixed(1)} ${(y+2).toFixed(1)} ${(x+16*dir).toFixed(1)} ${(y+10).toFixed(1)}`,fill:'none',stroke:strap,'stroke-width':'2.4','stroke-linecap':'round'}));
+    g.appendChild(svgEl('path',{d:`M${(x+3*dir).toFixed(1)} ${(y-8).toFixed(1)} Q${(x-4*dir).toFixed(1)} ${(y+3).toFixed(1)} ${(x-10*dir).toFixed(1)} ${(y+11).toFixed(1)}`,fill:'none',stroke:strap,'stroke-width':'2.4','stroke-linecap':'round'}));
+    return g;
+  }
   const stroke=profile.shoe==='sneaker'?'#405779':mixHex('#3b3540','#111827',0.34);
   let fill='#3b3540';
   if(profile.shoe==='sneaker') fill='#eef3fb';
@@ -2696,9 +2850,9 @@ function outfitTorsoDetails(parent,s,pal,lights,lines,profile){
   const fine=lines.weights.interior;
   if(k==='school-blazer'){
     detail.appendChild(svgEl('path',{d:'M169 296 L196 326 L186 375 L210 344 L234 375 L224 326 L251 296',fill:mixHex(pal.top,'#ffffff',0.035),stroke:lines.top,'stroke-width':'1.65','stroke-linejoin':'round'}));
-    detail.appendChild(svgEl('path',{d:'M194 294 L210 313 L226 294 L221 335 L199 335 Z',fill:'#f7f8fb',stroke:lines.trim,'stroke-width':'1.1'}));
+    detail.appendChild(svgEl('path',{d:'M194 294 L210 313 L226 294 L221 335 L199 335 Z',fill:pal.trim,stroke:lines.trim,'stroke-width':'1.1'}));
     detail.appendChild(svgEl('path',{d:'M205 314 L215 314 L220 384 L210 395 L200 384 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1.0'}));
-    [353,389,425].forEach(y=>detail.appendChild(svgEl('circle',{cx:211,cy:y,r:2.6,fill:pal.trim,stroke:lines.trim,'stroke-width':'.6'})));
+    [353,389,425].forEach(y=>detail.appendChild(svgEl('circle',{cx:211,cy:y,r:2.6,fill:'#d3ae52',stroke:lines.trim,'stroke-width':'.6'})));
     detail.appendChild(svgEl('path',{d:'M235 350 Q248 347 261 351 L259 375 Q247 378 237 374 Z',fill:'none',stroke:lines.top,'stroke-width':'1.2'}));
   } else if(k==='school-gakuran'){
     detail.appendChild(svgEl('path',{d:'M181 293 Q210 304 239 293 L237 316 Q210 324 183 316 Z',fill:mixHex(pal.top,'#111827',0.12),stroke:lines.top,'stroke-width':'1.6'}));
@@ -2706,21 +2860,21 @@ function outfitTorsoDetails(parent,s,pal,lights,lines,profile){
     [332,365,398,431].forEach(y=>detail.appendChild(svgEl('circle',{cx:210,cy:y,r:3.2,fill:'#d3ae52',stroke:'#8d6f2f','stroke-width':'.8'})));
     detail.appendChild(svgEl('path',{d:'M174 321 Q210 333 246 321',fill:'none',stroke:mixHex(lines.top,'#ffffff',0.10),'stroke-width':'1.0',opacity:'0.5'}));
   } else if(k==='school-sailor'){
-    detail.appendChild(svgEl('path',{d:'M160 296 Q177 287 190 286 L210 330 L230 286 Q243 287 260 296 L246 350 L210 329 L174 350 Z',fill:mixHex(pal.top,'#111827',0.08),stroke:lines.top,'stroke-width':'1.6','stroke-linejoin':'round'}));
-    detail.appendChild(svgEl('path',{d:'M174 309 L210 337 L246 309',fill:'none',stroke:pal.trim,'stroke-width':'3.2','stroke-linejoin':'round'}));
+    detail.appendChild(svgEl('path',{d:'M160 296 Q177 287 190 286 L210 330 L230 286 Q243 287 260 296 L246 350 L210 329 L174 350 Z',fill:pal.trim,stroke:lines.top,'stroke-width':'1.6','stroke-linejoin':'round'}));
+    detail.appendChild(svgEl('path',{d:'M174 309 L210 337 L246 309',fill:'none',stroke:mixHex(pal.top,'#ffffff',0.22),'stroke-width':'3.2','stroke-linejoin':'round'}));
     detail.appendChild(svgEl('path',{d:'M179 316 L210 341 L241 316',fill:'none',stroke:lines.trim,'stroke-width':'1.0'}));
     detail.appendChild(svgEl('circle',{cx:210,cy:342,r:7,fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1'}));
     detail.appendChild(svgEl('path',{d:'M205 347 L190 395 L209 379 L212 347 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1'}));
     detail.appendChild(svgEl('path',{d:'M215 347 L230 395 L211 379 L208 347 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1'}));
   } else if(k==='school-cardigan'){
-    detail.appendChild(svgEl('path',{d:'M178 296 L210 339 L242 296',fill:'#f5f7fb',stroke:lines.trim,'stroke-width':'1.15','stroke-linejoin':'round'}));
+    detail.appendChild(svgEl('path',{d:'M178 296 L210 339 L242 296',fill:pal.trim,stroke:lines.trim,'stroke-width':'1.15','stroke-linejoin':'round'}));
     detail.appendChild(svgEl('path',{d:'M177 296 L210 347 L243 296',fill:'none',stroke:mixHex(lines.top,'#ffffff',0.22),'stroke-width':'5.2','stroke-linejoin':'round'}));
     detail.appendChild(svgEl('path',{d:'M210 345 L210 452',stroke:lines.top,'stroke-width':'1.1'}));
-    [360,383,406,429].forEach(y=>detail.appendChild(svgEl('circle',{cx:210,cy:y,r:2.3,fill:pal.trim,stroke:lines.trim,'stroke-width':'.5'})));
+    [360,383,406,429].forEach(y=>detail.appendChild(svgEl('circle',{cx:210,cy:y,r:2.3,fill:'#d3ae52',stroke:lines.trim,'stroke-width':'.5'})));
     detail.appendChild(svgEl('path',{d:'M160 445 Q210 454 260 445',fill:'none',stroke:mixHex(lines.top,'#ffffff',0.18),'stroke-width':'3.0'}));
   } else if(k==='teacher'){
     detail.appendChild(svgEl('path',{d:'M168 296 L196 324 L187 376 L210 344 L233 376 L224 324 L252 296',fill:mixHex(pal.top,'#ffffff',0.03),stroke:lines.top,'stroke-width':'1.55'}));
-    detail.appendChild(svgEl('path',{d:'M194 294 L210 313 L226 294 L220 345 L200 345 Z',fill:'#f8f8f6',stroke:lines.trim,'stroke-width':'1.0'}));
+    detail.appendChild(svgEl('path',{d:'M194 294 L210 313 L226 294 L220 345 L200 345 Z',fill:pal.trim,stroke:lines.trim,'stroke-width':'1.0'}));
     detail.appendChild(svgEl('path',{d:'M204 313 L216 313 L220 386 L210 395 L200 386 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1'}));
     detail.appendChild(svgEl('path',{d:'M236 345 Q248 343 258 346 L257 369 Q247 372 238 369 Z',fill:'none',stroke:lines.top,'stroke-width':'1.1'}));
   } else if(k==='casual'){
@@ -2729,7 +2883,7 @@ function outfitTorsoDetails(parent,s,pal,lights,lines,profile){
     detail.appendChild(svgEl('path',{d:'M236 350 Q247 347 258 350 L257 373 Q247 376 238 373 Z',fill:'none',stroke:lines.top,'stroke-width':'1.0'}));
     detail.appendChild(svgEl('path',{d:'M154 447 Q210 458 266 447',fill:'none',stroke:mixHex(lines.top,'#ffffff',0.14),'stroke-width':'1.25'}));
   } else if(k==='server'){
-    detail.appendChild(svgEl('path',{d:'M183 294 L210 322 L237 294',fill:'#fbfaf6',stroke:lines.trim,'stroke-width':'1.1'}));
+    detail.appendChild(svgEl('path',{d:'M183 294 L210 322 L237 294',fill:pal.trim,stroke:lines.trim,'stroke-width':'1.1'}));
     detail.appendChild(svgEl('path',{d:'M176 335 Q210 326 244 335 L247 437 Q210 446 173 437 Z',fill:pal.trim,stroke:lines.trim,'stroke-width':'1.25'}));
     detail.appendChild(svgEl('path',{d:'M174 350 Q210 360 246 350',fill:'none',stroke:mixHex(lines.trim,'#ffffff',0.25),'stroke-width':'1.0'}));
     detail.appendChild(svgEl('path',{d:'M188 390 Q210 384 232 390 L230 420 Q210 425 190 420 Z',fill:'none',stroke:lines.trim,'stroke-width':'1.0'}));
@@ -2750,9 +2904,9 @@ function outfitTorsoDetails(parent,s,pal,lights,lines,profile){
 
 function festivalGarmentDetails(parent,pal,lights,lines){
   const g=svgEl('g',{'data-garment-details':'festival'});
-  g.appendChild(svgEl('path',{d:'M170 294 L210 347 L250 294',fill:'none',stroke:pal.trim,'stroke-width':'7','stroke-linejoin':'round'}));
+  g.appendChild(svgEl('path',{d:'M170 294 L210 347 L250 294',fill:'none',stroke:mixHex(pal.top,'#ffffff',0.62),'stroke-width':'7','stroke-linejoin':'round'}));
   g.appendChild(svgEl('path',{d:'M178 300 L210 340 L242 300',fill:'none',stroke:lines.trim,'stroke-width':'1.2'}));
-  g.appendChild(svgEl('path',{d:'M169 355 Q210 369 251 355 L252 402 Q210 414 168 402 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'1.6'}));
+  g.appendChild(svgEl('path',{d:'M169 355 Q210 369 251 355 L252 402 Q210 414 168 402 Z',fill:pal.trim,stroke:lines.trim,'stroke-width':'1.6'}));
   g.appendChild(svgEl('path',{d:'M174 370 Q210 380 246 370',fill:'none',stroke:mixHex(pal.accent,'#ffffff',0.32),'stroke-width':'2.0',opacity:'.65'}));
   [190,210,230].forEach(x=>g.appendChild(svgEl('path',{d:`M${x} 415 Q${x-6} 520 ${x+(x-210)*.22} 650`,fill:'none',stroke:lights.top.deep,'stroke-width':'1.1',opacity:'.22'})));
   parent.appendChild(g);
@@ -2890,7 +3044,7 @@ function syncDialogueFields(s){
 }
 function autoAltText(s){
   const poseNames = {wave:'waving',neutral:'standing',bow:'bowing',point:'pointing',think:'thinking',crossed:'standing with arms crossed',hips:'standing with hands on hips',hold:'holding a prop',seated:'sitting',walk:'walking'};
-  const hairNames = {messy:'messy',side:'side-swept',bob:'bob',ponytail:'ponytail',short:'short',spiky:'spiky',twintails:'twintail',hime:'hime-cut'};
+  const hairNames = {messy:'messy',side:'side-swept',bob:'bob',ponytail:'ponytail',short:'short',spiky:'spiky',twintails:'twintail',hime:'hime-cut',bun:'bun',braid:'braid'};
   const sceneNames = {classroom:'a Japanese classroom',station:'a train station',restaurant:'a restaurant',park:'a park'};
   const expr = (s.expression==='custom'||!s.expression) ? 'expressive' : s.expression;
   const body = s.gender==='feminine' ? 'feminine' : s.gender==='androgynous' ? 'androgynous' : 'masculine';
@@ -3049,7 +3203,7 @@ function renderAvatar(){
   const hd = hairDynamicsProfile(s);
   const ad = artDirectionProfile(s);
   const rig = applyDepthRig(stylizeRig(poseRig(s.pose),st),s);
-  let pal = outfitPalette(s.outfit, s.shirt);
+  let pal = outfitPalette(s.outfit, s.shirt, s.trim);
   pal = {
     ...pal,
     top:harmonizeColor(pal.top,s.scene,ad.harmony),
@@ -3083,8 +3237,7 @@ function renderAvatar(){
     whole.appendChild(svgEl('path',{d:'M145 308 C171 290 190 282 210 282 C230 282 249 290 275 308 C286 390 292 498 298 664 C270 683 240 692 210 693 C180 692 150 683 122 664 C128 498 134 390 145 308 Z',fill:lights.topFill,stroke:lines.top,'stroke-width':'3.6','stroke-linejoin':'round'}));
     whole.appendChild(svgEl('path',{d:'M173 314 C188 303 199 298 210 298 C221 298 232 303 247 314 C250 430 251 548 250 664 C238 680 224 687 210 689 C196 687 182 680 170 664 C169 548 170 430 173 314 Z',fill:'#e6d2a6',opacity:'0.15'}));
     whole.appendChild(svgEl('path',{d:'M186 270 C194 265 202 263 210 263 C218 263 226 265 234 270 L234 326 C226 332 218 335 210 335 C202 335 194 332 186 326 Z',fill:lights.accentFill,stroke:lines.accent,'stroke-width':'2.6','stroke-linejoin':'round'}));
-    whole.appendChild(svgEl('path',{d:'M151 654 C161 650 177 651 187 656 C191 661 191 667 186 671 L148 671 C143 667 145 660 151 654 Z',fill:'#463a34',stroke:'#2c2522','stroke-width':'2.4'}));
-    whole.appendChild(svgEl('path',{d:'M269 654 C259 650 243 651 233 656 C229 661 229 667 234 671 L272 671 C277 667 275 660 269 654 Z',fill:'#463a34',stroke:'#2c2522','stroke-width':'2.4'}));
+    ['left','right'].forEach(side=>whole.appendChild(shoeMarkup(side, rig.ankle[side], profile, lines, jointDepthScale(rig.ankle[side]))));
   } else {
     rig.legOrder.forEach(side=>whole.appendChild(legMarkup(side, rig, pal.lower, lights, lines, s, profile)));
   }
@@ -3197,7 +3350,7 @@ function renderAvatar(){
   if($('#enInput') && document.activeElement !== $('#enInput')) $('#enInput').value = line.en;
   if($('#showSpeech')) $('#showSpeech').checked = showSpeech;
   if($('#showScene')) $('#showScene').checked = showScene;
-  ['skin','eyes','hair','shirt'].forEach(key=>{
+  ['skin','eyes','hair','shirt','trim'].forEach(key=>{
     const el = $(`#${key}Custom`);
     if(el && s[key]) el.value = s[key];
   });
@@ -3272,6 +3425,10 @@ function setValue(key, value){
       school:'#243b63', teacher:'#3d4658', festival:'#335f82', casual:'#6b7a8c', server:'#4a3a38', station:'#334f6d'
     };
     current().shirt = outfitDefaults[value];
+    current().trim = defaultTrimFor(value, current().schoolStyle);
+  }
+  if(key === 'schoolStyle'){
+    current().trim = defaultTrimFor(current().outfit, value);
   }
   renderAvatar();
 }
@@ -3279,13 +3436,13 @@ function applyPreset(preset){
   snapshot();
   const s = current();
   if(preset==='student'){
-    Object.assign(s,{role:'Student', outfit:'school', schoolStyle:'blazer', shirt:'#243b63', pose:'wave', scene:'classroom', prop:'book'});
+    Object.assign(s,{role:'Student', outfit:'school', schoolStyle:'blazer', shirt:'#243b63', trim:'#f7f8fb', pose:'wave', scene:'classroom', prop:'book'});
   } else if(preset==='teacher'){
-    Object.assign(s,{role:'Teacher', outfit:'teacher', shirt:'#3d4658', pose:'point', scene:'classroom', prop:'book'});
+    Object.assign(s,{role:'Teacher', outfit:'teacher', shirt:'#3d4658', trim:'#f8f8f6', pose:'point', scene:'classroom', prop:'book'});
   } else if(preset==='festival'){
-    Object.assign(s,{role:'Student', outfit:'festival', shirt:'#335f82', pose:'neutral', scene:'park', prop:'none'});
+    Object.assign(s,{role:'Student', outfit:'festival', shirt:'#335f82', trim:'#d2b15e', pose:'neutral', scene:'park', prop:'none'});
   } else if(preset==='station'){
-    Object.assign(s,{role:'Station attendant', outfit:'station', shirt:'#334f6d', pose:'point', scene:'station', prop:'none'});
+    Object.assign(s,{role:'Station attendant', outfit:'station', shirt:'#334f6d', trim:'#c9a54a', pose:'point', scene:'station', prop:'none'});
   }
   renderAvatar();
   toast('Preset applied');
@@ -3298,7 +3455,7 @@ function copyFromA(kind){
   const dst = current();
   if(!src){ toast('Source variant missing'); return; }
   if(kind==='hair'){ dst.artFinish = src.artFinish ?? DEFAULT.artFinish; dst.hair = src.hair; dst.hairStyle = src.hairStyle; dst.hairDynamics = src.hairDynamics ?? DEFAULT.hairDynamics; dst.hairWind = src.hairWind ?? DEFAULT.hairWind; }
-  if(kind==='outfit'){ dst.artFinish = src.artFinish ?? DEFAULT.artFinish; dst.outfit = src.outfit; dst.schoolStyle = src.schoolStyle; dst.shirt = src.shirt; }
+  if(kind==='outfit'){ dst.artFinish = src.artFinish ?? DEFAULT.artFinish; dst.outfit = src.outfit; dst.schoolStyle = src.schoolStyle; dst.shirt = src.shirt; dst.trim = src.trim ?? defaultTrimFor(src.outfit, src.schoolStyle); }
   if(kind==='face'){ dst.artFinish = src.artFinish ?? DEFAULT.artFinish; ['skin','eyes','faceShape','eyeStyle','expression','browRaise','eyeOpen','eyeSquint','eyeWide','mouthSmile','mouthOpen','blush','headTurn','gazeX','gazeY','faceWidth','cheekFullness','jawWidth','chinLength','eyeSpacing','eyeTilt','irisSize','browHeight','noseLength','mouthWidth'].forEach(k=>dst[k]=src[k] ?? DEFAULT[k]); }
   if(kind==='pose'){ dst.pose = src.pose; dst.depthStrength = src.depthStrength ?? DEFAULT.depthStrength; dst.castShadowStrength = src.castShadowStrength ?? DEFAULT.castShadowStrength; dst.foldStrength = src.foldStrength ?? DEFAULT.foldStrength; }
   renderAvatar();
@@ -3311,7 +3468,7 @@ function resetSection(){
   if(activePane==='character'){ ['gender','name','role','exaggeration','artFinish','castShadowStrength'].forEach(k => s[k]=fresh[k]); }
   else if(activePane==='face'){ ['faceShape','eyeStyle','skin','eyes','headTurn','gazeX','gazeY','faceWidth','cheekFullness','jawWidth','chinLength','eyeSpacing','eyeTilt','irisSize','browHeight','noseLength','mouthWidth'].forEach(k => s[k]=fresh[k]); }
   else if(activePane==='hair'){ ['hairStyle','hair','hairDynamics','hairWind'].forEach(k => s[k]=fresh[k]); }
-  else if(activePane==='outfit'){ ['outfit','schoolStyle','shirt'].forEach(k => s[k]=fresh[k]); }
+  else if(activePane==='outfit'){ ['outfit','schoolStyle','shirt','trim'].forEach(k => s[k]=fresh[k]); }
   else if(activePane==='accessories'){ s.accessories = []; }
   else if(activePane==='expression'){ ['expression','browRaise','eyeOpen','eyeSquint','eyeWide','mouthSmile','mouthOpen','blush'].forEach(k=>s[k]=fresh[k]); }
   else if(activePane==='pose'){ ['pose','depthStrength','castShadowStrength','foldStrength'].forEach(k=>s[k]=fresh[k]); }
@@ -3326,7 +3483,7 @@ function randomize(){
   s.gender = pick(['masculine','feminine','androgynous']);
   s.faceShape = pick(['soft','round','sharp']);
   s.eyeStyle = pick(['anime','gentle','serious']);
-  s.hairStyle = pick(['messy','side','bob','ponytail','short','spiky','twintails','hime']);
+  s.hairStyle = pick(['messy','side','bob','ponytail','short','spiky','twintails','hime','bun','braid']);
   const exprName=pick(['happy','neutral','surprised','worried','embarrassed','thinking','angry','tired']);
   Object.assign(s,{expression:exprName,...(EXPRESSION_PRESETS[exprName]||EXPRESSION_PRESETS.neutral)});
   s.pose = pick(['wave','neutral','point','bow','think','crossed','hips','hold','seated','walk']);
@@ -3357,6 +3514,7 @@ function randomize(){
   s.hairDynamics = pick([35,50,58,68,78,88]);
   s.hairWind = pick([0,10,20,30,45,60]);
   s.shirt = pick(COLORS.shirt);
+  s.trim = pick(COLORS.trim);
   s.accessories = ['glasses','badge','hairclip','scarf','backpack'].filter(()=>Math.random()<0.22);
   renderAvatar();
 }
@@ -3374,6 +3532,7 @@ function mergeCharacter(raw){
     fresh.dialogue = [{jp:fresh.jp||DEFAULT.jp, en:fresh.en||DEFAULT.en}];
   }
   if(!Array.isArray(fresh.accessories)) fresh.accessories = [];
+  if(!fresh.trim) fresh.trim = defaultTrimFor(fresh.outfit, fresh.schoolStyle);
   return fresh;
 }
 function saveCharacter(){
@@ -3718,7 +3877,7 @@ if($('#nextLine')) $('#nextLine').onclick = ()=>stepLine(1);
 if($('#speakBtn')) $('#speakBtn').onclick = speakJapanese;
 if($('#showSpeech')) $('#showSpeech').onchange = e=>{ current().showSpeech = e.target.checked; renderAvatar(); };
 if($('#showScene')) $('#showScene').onchange = e=>{ current().showScene = e.target.checked; renderAvatar(); };
-['skin','eyes','hair','shirt'].forEach(key=>{
+['skin','eyes','hair','shirt','trim'].forEach(key=>{
   const el = $(`#${key}Custom`);
   if(!el) return;
   el.addEventListener('input', e=>{ current()[key] = e.target.value; renderAvatar(); });
@@ -3862,7 +4021,7 @@ refreshSavedGrid();
 try{
   const q = new URLSearchParams(location.search);
   const hairQ = q.get('hair');
-  if(['messy','side','bob','ponytail','short','spiky','twintails','hime'].includes(hairQ)){
+  if(['messy','side','bob','ponytail','short','spiky','twintails','hime','bun','braid'].includes(hairQ)){
     current().hairStyle = hairQ;
   }
 }catch(err){}

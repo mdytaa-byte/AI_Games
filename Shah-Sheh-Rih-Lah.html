@@ -526,6 +526,63 @@
       }
       return o;
     };
+    function easeHand(t, dur) {
+      const x = clamp(t, 0, 1);
+      if (dur < 0.16) return 1 - Math.pow(1-x, 3);
+      return x < 0.5 ? 4*x*x*x : 1 - Math.pow(-2*x+2, 3)/2;
+    }
+    function livePose(pose, t, seed) {
+      const breathe = 0.016 * Math.sin(t*1.18 + seed);
+      const o = { wrist: [pose.wrist[0]+breathe, pose.wrist[1], pose.wrist[2]+breathe*0.45] };
+      for (const k of ['thumb','index','middle','ring','pinky']) {
+        const w = 0.022 * Math.sin(t*1.55 + seed + k.length*0.7);
+        o[k] = { splay: pose[k].splay + w*0.12, j: pose[k].j.map((a,i)=>a + w*(0.55+i*0.18)) };
+      }
+      return o;
+    }
+    let skinEnv = null;
+    function getSkinEnv() {
+      if (skinEnv) return skinEnv;
+      const THREE = window.THREE;
+      try {
+        const face = (a,b) => {
+          const c = document.createElement('canvas'); c.width=c.height=32;
+          const g = c.getContext('2d');
+          const gr = g.createLinearGradient(0,0,0,32);
+          gr.addColorStop(0,a); gr.addColorStop(1,b);
+          g.fillStyle=gr; g.fillRect(0,0,32,32);
+          return c;
+        };
+        const cube = new THREE.CubeTexture([
+          face('#6a4a30','#1c140e'),
+          face('#3a3228','#121014'),
+          face('#d4a05a','#6a4824'),
+          face('#1a1410','#08090c'),
+          face('#4a382c','#18140f'),
+          face('#2a3848','#10141c')
+        ]);
+        cube.encoding = THREE.sRGBEncoding;
+        cube.needsUpdate = true;
+        skinEnv = cube;
+      } catch (err) {
+        skinEnv = null;
+      }
+      return skinEnv;
+    }
+    function makeSkin(hex) {
+      const THREE = window.THREE;
+      const env = getSkinEnv();
+      if (THREE.MeshPhysicalMaterial) {
+        return new THREE.MeshPhysicalMaterial({
+          color: hex, roughness: 0.4, metalness: 0.02,
+          envMap: env, envMapIntensity: 0.58,
+          clearcoat: 0.16, clearcoatRoughness: 0.52,
+          sheen: 0.42, sheenRoughness: 0.5,
+          sheenColor: new THREE.Color(0xe8b89a)
+        });
+      }
+      return new THREE.MeshStandardMaterial({ color:hex, roughness:0.42, metalness:0.03, envMap:env, envMapIntensity:0.5 });
+    }
 
     const save = JSON.parse(localStorage.getItem('ssrl-save') || '{}');
     const persist = () => localStorage.setItem('ssrl-save', JSON.stringify(save));
@@ -609,12 +666,12 @@
 
     const POSES = {
       hah: {
-        wrist:[-1.22, 0.12, 0.04],
-        thumb:{splay:1.15, j:[0.15,0.12,0.1]},
-        index:{splay:-0.03, j:[0.06,0.08,0.06]},
-        middle:{splay:0.0, j:[0.06,0.08,0.06]},
-        ring:{splay:0.03, j:[0.08,0.1,0.08]},
-        pinky:{splay:0.07, j:[0.1,0.12,0.08]}
+        wrist:[-1.18, 0.1, 0.05],
+        thumb:{splay:1.12, j:[0.22,0.18,0.14]},
+        index:{splay:-0.03, j:[0.14,0.18,0.12]},
+        middle:{splay:0.0, j:[0.15,0.2,0.13]},
+        ring:{splay:0.03, j:[0.16,0.2,0.14]},
+        pinky:{splay:0.07, j:[0.18,0.22,0.14]}
       },
       shah: {
         wrist:[-0.38, 0.08, 0.06],
@@ -781,19 +838,21 @@
     function createHand(skinHex, cuffHex, isLeft) {
       const THREE = window.THREE;
       const root = new THREE.Group();
-      const skin = new THREE.MeshStandardMaterial({ color:skinHex, roughness:0.48, metalness:0.03, envMapIntensity:0.4 });
-      const nailMat = new THREE.MeshStandardMaterial({ color:0xc9b7a6, roughness:0.28, metalness:0.2 });
+      const skin = makeSkin(skinHex);
+      const nailMat = THREE.MeshPhysicalMaterial
+        ? new THREE.MeshPhysicalMaterial({ color:0xe4d0c0, roughness:0.22, metalness:0.18, clearcoat:0.55, clearcoatRoughness:0.28, envMap:getSkinEnv(), envMapIntensity:0.7 })
+        : new THREE.MeshStandardMaterial({ color:0xe4d0c0, roughness:0.22, metalness:0.18 });
       const cloth = new THREE.MeshStandardMaterial({ color:cuffHex, roughness:0.78, metalness:0.05 });
-      const gold = new THREE.MeshStandardMaterial({ color:0xd4b06a, roughness:0.25, metalness:0.85, emissive:0x3a2a10, emissiveIntensity:0.25 });
+      const gold = new THREE.MeshStandardMaterial({ color:0xd4b06a, roughness:0.25, metalness:0.85, emissive:0x3a2a10, emissiveIntensity:0.25, envMap:getSkinEnv(), envMapIntensity:0.8 });
 
-      const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.26, 1.45, 20), cloth);
+      const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.26, 1.45, 32, 1), cloth);
       sleeve.position.y = -1.22; sleeve.castShadow = true; root.add(sleeve);
-      const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.038, 10, 24), gold);
+      const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.28, 0.038, 14, 32), gold);
       cuff.rotation.x = Math.PI/2; cuff.position.y = -0.5; root.add(cuff);
 
       const palm = new THREE.Group(); root.add(palm);
       const palmShape = new THREE.Shape();
-      const pw=0.42, ph=0.48, pr=0.16;
+      const pw=0.42, ph=0.48, pr=0.18;
       palmShape.moveTo(-pw+pr, -ph);
       palmShape.lineTo(pw-pr, -ph);
       palmShape.quadraticCurveTo(pw, -ph, pw, -ph+pr);
@@ -803,14 +862,15 @@
       palmShape.quadraticCurveTo(-pw, ph, -pw, ph-pr);
       palmShape.lineTo(-pw, -ph+pr);
       palmShape.quadraticCurveTo(-pw, -ph, -pw+pr, -ph);
-      const palmGeo = new THREE.ExtrudeGeometry(palmShape, { depth:0.24, bevelEnabled:true, bevelThickness:0.045, bevelSize:0.045, bevelSegments:3, curveSegments:8 });
+      const palmGeo = new THREE.ExtrudeGeometry(palmShape, { depth:0.26, bevelEnabled:true, bevelThickness:0.06, bevelSize:0.055, bevelSegments:6, curveSegments:16 });
       palmGeo.center();
+      palmGeo.computeVertexNormals();
       const palmMesh = new THREE.Mesh(palmGeo, skin);
       palmMesh.castShadow = true; palmMesh.receiveShadow = true;
       palm.add(palmMesh);
-      const thenar = new THREE.Mesh(new THREE.SphereGeometry(0.2, 14, 12), skin);
+      const thenar = new THREE.Mesh(new THREE.SphereGeometry(0.2, 20, 16), skin);
       thenar.scale.set(1.15, 0.85, 0.75); thenar.position.set(-0.28, -0.18, 0.06); palm.add(thenar);
-      const heel = new THREE.Mesh(new THREE.SphereGeometry(0.22, 14, 12), skin);
+      const heel = new THREE.Mesh(new THREE.SphereGeometry(0.22, 20, 16), skin);
       heel.scale.set(1.55, 0.62, 0.78); heel.position.set(0.02, -0.42, 0.02); palm.add(heel);
 
       function finger(lens, radii, withNail=true) {
@@ -820,20 +880,19 @@
         lens.forEach((len, i) => {
           const pivot = parent;
           const r = radii[i];
-          const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(r, Math.max(0.04, len - r*0.15), 8, 16), skin);
-          mesh.position.y = len/2 + r*0.08;
+          const mesh = new THREE.Mesh(new THREE.CapsuleGeometry(r, Math.max(0.04, len - r*0.12), 8, 20), skin);
+          mesh.position.y = len/2 + r*0.06;
           mesh.castShadow = true;
           pivot.add(mesh);
-          if (i===0) {
-            const kn = new THREE.Mesh(new THREE.SphereGeometry(r*0.95, 12, 10), skin);
-            kn.position.y = 0; pivot.add(kn);
-          }
+          const kn = new THREE.Mesh(new THREE.SphereGeometry(r*1.02, 16, 14), skin);
+          kn.position.y = 0; pivot.add(kn);
           const end = new THREE.Group();
-          end.position.y = len + r*0.35;
+          end.position.y = len + r*0.32;
           pivot.add(end);
           if (i===lens.length-1 && withNail) {
-            const n = new THREE.Mesh(new THREE.BoxGeometry(r*1.2, r*0.22, r*0.62), nailMat);
-            n.position.set(0, r*0.12, r*0.48);
+            const n = new THREE.Mesh(new THREE.SphereGeometry(r*0.92, 12, 10), nailMat);
+            n.scale.set(1.15, 0.28, 0.78);
+            n.position.set(0, r*0.08, r*0.52);
             end.add(n);
           }
           joints.push(pivot);
@@ -861,12 +920,12 @@
       palm.add(thumb.base);
       fingers.thumb = thumb;
 
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.095, 0.018, 8, 16), gold);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.095, 0.016, 12, 24), gold);
       ring.rotation.x = Math.PI/2; ring.position.y = 0.02;
       fingers.ring.joints[1].add(ring);
 
       if (isLeft) root.scale.x = -1;
-      root.userData = { palm, fingers, pose: JSON.parse(JSON.stringify(POSES.hah)) };
+      root.userData = { palm, fingers, pose: lerpPose(POSES.hah, POSES.hah, 0) };
       applyPose(root, POSES.hah);
       return root;
     }
@@ -1043,7 +1102,8 @@
         youOffFrom: POSES.fist, youOffTo: POSES.fist, oppOffFrom: POSES.fist, oppOffTo: POSES.fist,
         youXfFrom: YOU_SIGN.rest, youXfTo: YOU_SIGN.rest, oppXfFrom: OPP_SIGN.rest, oppXfTo: OPP_SIGN.rest,
         youOffXfFrom: YOU_OFF.rest, youOffXfTo: YOU_OFF.rest, oppOffXfFrom: OPP_OFF.rest, oppOffXfTo: OPP_OFF.rest,
-        t:1, dur:0.28
+        youNow: POSES.hah, oppNow: POSES.hah, youOffNow: POSES.fist, oppOffNow: POSES.fist,
+        t:1, dur:0.34
       };
 
       function drawStorm(t) {
@@ -1078,16 +1138,24 @@
         });
         if (anim.t < 1) {
           anim.t = Math.min(1, anim.t + dt/anim.dur);
-          const e = 1-Math.pow(1-anim.t, 3);
-          applyPose(youHand, lerpPose(anim.youFrom, anim.youTo, e));
-          applyPose(oppHand, lerpPose(anim.oppFrom, anim.oppTo, e));
-          applyPose(youFist, lerpPose(anim.youOffFrom, anim.youOffTo, e));
-          applyPose(oppFist, lerpPose(anim.oppOffFrom, anim.oppOffTo, e));
+          const e = easeHand(anim.t, anim.dur);
+          anim.youNow = lerpPose(anim.youFrom, anim.youTo, e);
+          anim.oppNow = lerpPose(anim.oppFrom, anim.oppTo, e);
+          anim.youOffNow = lerpPose(anim.youOffFrom, anim.youOffTo, e);
+          anim.oppOffNow = lerpPose(anim.oppOffFrom, anim.oppOffTo, e);
           putXf(youHand, mixXf(anim.youXfFrom, anim.youXfTo, e));
           putXf(oppHand, mixXf(anim.oppXfFrom, anim.oppXfTo, e));
           putXf(youFist, mixXf(anim.youOffXfFrom, anim.youOffXfTo, e));
           putXf(oppFist, mixXf(anim.oppOffXfFrom, anim.oppOffXfTo, e));
         }
+        applyPose(youHand, livePose(anim.youNow || anim.youTo, t, 0.2));
+        applyPose(oppHand, livePose(anim.oppNow || anim.oppTo, t, 1.4));
+        applyPose(youFist, livePose(anim.youOffNow || anim.youOffTo, t, 0.7));
+        applyPose(oppFist, livePose(anim.oppOffNow || anim.oppOffTo, t, 2.1));
+        youHand.userData.pose = anim.youNow || anim.youTo;
+        oppHand.userData.pose = anim.oppNow || anim.oppTo;
+        youFist.userData.pose = anim.youOffNow || anim.youOffTo;
+        oppFist.userData.pose = anim.oppOffNow || anim.oppOffTo;
         renderer.render(scene, camera);
         requestAnimationFrame(tick);
       }
@@ -1099,7 +1167,7 @@
       });
 
       return {
-        setHands(youSign, oppSign, dur=0.28) {
+        setHands(youSign, oppSign, dur=0.34) {
           anim.youFrom = youHand.userData.pose;
           anim.oppFrom = oppHand.userData.pose;
           anim.youOffFrom = youFist.userData.pose;
@@ -1108,11 +1176,13 @@
           anim.oppTo = POSES[oppSign] || POSES.hah;
           anim.youOffTo = offPose(youSign);
           anim.oppOffTo = offPose(oppSign);
+          anim.youNow = anim.youFrom; anim.oppNow = anim.oppFrom;
+          anim.youOffNow = anim.youOffFrom; anim.oppOffNow = anim.oppOffFrom;
           anim.youXfFrom = readXf(youHand); anim.youXfTo = signXf(YOU_SIGN, youSign);
           anim.oppXfFrom = readXf(oppHand); anim.oppXfTo = signXf(OPP_SIGN, oppSign);
           anim.youOffXfFrom = readXf(youFist); anim.youOffXfTo = offXf(YOU_OFF, youSign);
           anim.oppOffXfFrom = readXf(oppFist); anim.oppOffXfTo = offXf(OPP_OFF, oppSign);
-          anim.t = 0; anim.dur = dur;
+          anim.t = 0; anim.dur = Math.max(0.08, dur);
         },
         punchIn() { punch = 0.18; camHome.z = 5.7; },
         resetCam() { camHome.set(0, 2.35, 5.55); },
@@ -1262,7 +1332,7 @@
       if (['reveal','resolve','story','throw','countdown','chant'].includes(state.phase)) return;
       state.you.feint = state.you.feint === sign ? null : sign;
       if (state.practice) {
-        world && world.setHands(state.you.feint || state.you.throw, state.you.feint || state.you.throw, 0.16);
+        world && world.setHands(state.you.feint || state.you.throw, state.you.feint || state.you.throw, 0.24);
       }
       renderHud();
     }
@@ -1273,7 +1343,7 @@
       if (['reveal','resolve','story'].includes(state.phase) || state.busy && state.phase==='throw') return;
       if (state.practice) {
         state.you.throw = sign;
-        world && world.setHands(sign, sign, 0.16);
+        world && world.setHands(sign, sign, 0.24);
         renderHud();
         return;
       }
@@ -1395,14 +1465,14 @@
         state.chantBeat = i;
         const s = seq[i];
         setChant(s);
-        world && world.setHands(s, s, i>=5 ? 0.32 : 0.22);
+        world && world.setHands(s, s, i>=5 ? 0.4 : 0.34);
         audio.beat(s);
         if (s===tellBeat) {
           const youH = state.you.feint;
           const oppH = state.hotseat ? state.p2.feint : state.oppTell;
           if (youH || oppH) {
             audio.hitch();
-            world && world.setHands(youH || s, oppH || s, 0.2);
+            world && world.setHands(youH || s, oppH || s, 0.28);
             if (oppH) {
               $('#resultBanner').textContent = `A hitch in the ${SIGN_META[tellBeat].name} — it leans toward ${SIGN_META[oppH].name}.`;
               if (state.mode==='lesson') setCoach(`${SIGN_META[oppH].name} loses to Sheh. Click Sheh before the silence, or keep your throw.`);
@@ -1414,7 +1484,7 @@
             await sleep(state.mode==='story' ? 1150 : state.mode==='lesson' ? 1700 : 860);
             if (stale(seqId)) return;
             state.listening = false;
-            world && world.setHands(s, s, 0.18);
+            world && world.setHands(s, s, 0.26);
             renderHud();
             continue;
           }
@@ -1435,7 +1505,7 @@
       const youSign = state.you.throw;
       if (!state.hotseat) state.opp.throw = oppSign;
       state.oppThrowLocked = false;
-      world && world.setHands(youSign, state.hotseat ? state.p2.throw : oppSign, 0.09);
+      world && world.setHands(youSign, state.hotseat ? state.p2.throw : oppSign, 0.14);
       await sleep(420);
       if (stale(seqId)) return;
       if (lastEl) { lastEl.textContent = SIGN_META[lastName].name; lastEl.classList.remove('throw'); }
@@ -1934,7 +2004,7 @@
       const tellBeat = state.full ? 'akh' : 'hah';
       for (const s of seq) {
         if (stale(seqId)) return;
-        setChant(s); world && world.setHands(s,s, s==='ehl'||s==='akh'?0.32:0.22); audio.beat(s);
+        setChant(s); world && world.setHands(s,s, s==='ehl'||s==='akh'?0.4:0.34); audio.beat(s);
         if (s===tellBeat && state.you.feint) {
           audio.hitch();
           world && world.setHands(state.you.feint, state.you.feint, 0.18);

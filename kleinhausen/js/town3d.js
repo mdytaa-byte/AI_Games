@@ -1333,9 +1333,9 @@
     }
     const start = LANDMARKS.find(function (l) { return l.id === "bahnhof"; });
     if (start) {
-      player.x = start.x;
-      player.z = start.z + 12;
-      look.yaw = Math.PI * 0.5;
+      player.x = 90;
+      player.z = 90;
+      look.yaw = -Math.PI / 2;
     }
   }
 
@@ -1359,6 +1359,7 @@
     }
     if (kompass) kompass.textContent = compassLetter(look.yaw);
     const door = nearestDoor();
+    const enterBtn = host.querySelector("#town-enter");
     if (prompt) {
       if (door && !paused) {
         prompt.hidden = false;
@@ -1367,6 +1368,7 @@
         prompt.hidden = true;
       }
     }
+    if (enterBtn) enterBtn.hidden = !(door && !paused);
   }
 
   function tryEnter() {
@@ -1531,10 +1533,19 @@
   KH.Town = {
     landmarks: LANDMARKS,
     isLive: function () { return visible && built; },
+    where: function () {
+      return {
+        x: player.x,
+        z: player.z,
+        yaw: look.yaw,
+        street: streetAt(player.x, player.z),
+        door: nearestDoor()
+      };
+    },
     supported: function () {
       try {
         const c = document.createElement("canvas");
-        return !!(c.getContext("webgl") || c.getContext("experimental-webgl"));
+        return !!(c.getContext("webgl2") || c.getContext("webgl") || c.getContext("experimental-webgl"));
       } catch (e) { return false; }
     },
     show: function (opts) {
@@ -1561,6 +1572,9 @@
       }
       showLoad(true);
       quality = pickQuality();
+      if (!KH.Town.supported()) {
+        console.warn("Kleinhausen 3D: WebGL-Probe negativ — versuche Renderer trotzdem.");
+      }
       loadThree(function (err) {
         if (err || !global.THREE) {
           showLoad(false);

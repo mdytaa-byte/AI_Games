@@ -1,0 +1,7 @@
+# Audio, covers, and generated indexes stay off GitHub Pages.
+library/*
+!library/.gitkeep
+!library/_incoming/
+!library/_incoming/.gitkeep
+__pycache__/
+*.pyc

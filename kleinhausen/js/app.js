@@ -126,8 +126,9 @@
     KH.shell(
       '<div class="weather-bar">' + weather + " · " + KH.esc(KH.rolleNoun()) + " " + KH.esc(KH.state.player.vorname) + "</div>" +
       '<div class="map-layout"><div><h1>Die Stadt</h1>' +
-      '<p class="lede">Klick ein Gebäude oder starte die nächste Episode. Die gelbe Nadel bist du.</p>' +
+      '<p class="lede">Klick ein Gebäude oder starte die nächste Episode. Die gelbe Nadel bist du. Weitere Orte haben einen Punkt — Fokus oder Hover nennt den Namen.</p>' +
       '<div class="map-board hi-only" id="mapboard"></div>' +
+      '<p class="hi-only" id="map-status" aria-live="polite"></p>' +
       '<div class="lo-only card"><p class="lowfi-note">Low-fi Stadtplan: Liste statt Illustration.</p><ul id="lolist"></ul></div>' +
       '</div><aside class="side-stack"><div class="card"><p class="kicker">16 Episoden</p><div class="episode-list">' + list + '</div></div>' +
       '<div class="card"><p class="kicker">Durchgehende Geschichte</p><p>' + KH.STORY.throughline + "</p>" +
@@ -139,13 +140,21 @@
       board.innerHTML = KH.mapSVG();
       KH.bindMap(board, function (place) {
         const p = KH.PLACES[place];
+        setMapStatus(p, KH.state.episodes[p.ep] && KH.state.episodes[p.ep].status === "locked");
         if (p && p.ep) {
           const st = KH.state.episodes[p.ep];
           if (st && st.status !== "locked") KH.view.episode(p.ep);
-          else {
-            KH.live("Noch geschlossen: " + p.name + " öffnet mit einer späteren Episode.");
-          }
+          else KH.live("Noch geschlossen: " + p.name + " öffnet mit einer späteren Episode.");
         }
+      });
+      board.querySelectorAll("[data-place]").forEach(function (g) {
+        function hint() {
+          const p = KH.PLACES[g.getAttribute("data-place")];
+          const locked = p && KH.state.episodes[p.ep] && KH.state.episodes[p.ep].status === "locked";
+          setMapStatus(p, locked);
+        }
+        g.addEventListener("mouseenter", hint);
+        g.addEventListener("focus", hint);
       });
     }
     const ul = document.getElementById("lolist");
@@ -159,6 +168,7 @@
         b.textContent = p.name + " · " + p.district;
         b.addEventListener("click", function () {
           if (KH.state.episodes[p.ep] && KH.state.episodes[p.ep].status !== "locked") KH.view.episode(p.ep);
+          else KH.live("Noch geschlossen: " + p.name);
         });
         li.appendChild(b);
         ul.appendChild(li);
@@ -173,6 +183,12 @@
     const done = Object.values(KH.state.episodes).filter(function (e) { return e.status === "done"; }).length;
     const m = KH.MODULES[Math.min(done, 15)];
     return m ? m.season : "Kleinhausen";
+  }
+
+  function setMapStatus(p, locked) {
+    const status = document.getElementById("map-status");
+    if (!status || !p) return;
+    status.textContent = p.name + " · " + p.district + (locked ? " — noch geschlossen" : "");
   }
 
   KH.view.episode = function (id) {
@@ -284,8 +300,9 @@
 
   KH.view.discover = function () {
     const doneEps = Object.values(KH.state.episodes).filter(function (e) { return e.status === "done"; }).length;
+    const preview = KH.state.flags.demo ? 16 : doneEps;
     const cards = KH.SIDEQUESTS.map(function (q) {
-      const open = doneEps >= q.need;
+      const open = preview >= q.need;
       const got = KH.state.sidequests[q.id];
       return '<div class="card' + (open ? "" : " locked-card") + '"><p class="kicker">' + (got ? "gefunden" : open ? "offen" : "ab Episode " + q.need) + "</p>" +
         "<h3>" + KH.esc(q.title) + "</h3><p>" + KH.esc(q.teaser) + "</p>" +
@@ -388,6 +405,7 @@
       { here: "teacher" }
     );
     document.getElementById("unlock").addEventListener("click", function () {
+      KH.state.flags.demo = true;
       Object.keys(KH.state.episodes).forEach(function (id) {
         if (KH.state.episodes[id].status === "locked") KH.state.episodes[id].status = "open";
       });

@@ -5,15 +5,20 @@
   KH.mapSVG = function () {
     const places = KH.PLACES;
     const you = KH.currentPlace || "haus";
+    const majors = { bahnhof: 1, haus: 1, markt: 1, schule: 1, cafe: 1, fest: 1, park: 1, kirche: 1, sport: 1 };
     let pins = "";
     Object.keys(places).forEach(function (id) {
       const p = places[id];
       const x = p.x * 10;
       const y = p.y * 6.4;
-      pins += '<g class="map-hotspot" tabindex="0" role="button" data-place="' + id + '" aria-label="' + KH.esc(p.name) + '">' +
-        '<circle class="hs-ring" cx="' + x + '" cy="' + y + '" r="22" fill="none" stroke="#f5c400" stroke-width="3"></circle>' +
-        '<circle cx="' + x + '" cy="' + y + '" r="9" fill="#14385c" stroke="#fff" stroke-width="2"></circle>' +
-        '<text x="' + x + '" y="' + (y + 22) + '" text-anchor="middle" font-size="11" font-family="Georgia,serif" fill="#14385c">' + KH.esc(p.name) + "</text></g>";
+      const label = majors[id]
+        ? '<text x="' + x + '" y="' + (y - 14) + '" text-anchor="middle" font-size="12" font-family="Georgia,serif" fill="#0c243c" stroke="#f3eee3" stroke-width="4" paint-order="stroke" pointer-events="none">' + KH.esc(p.name) + "</text>"
+        : "";
+      pins += '<g class="map-hotspot" tabindex="0" role="button" data-place="' + id + '" aria-label="' + KH.esc(p.name) + ', ' + KH.esc(p.district) + '">' +
+        '<title>' + KH.esc(p.name) + " · " + KH.esc(p.district) + "</title>" +
+        '<circle class="hs-ring" cx="' + x + '" cy="' + y + '" r="18" fill="none" stroke="#f5c400" stroke-width="3"></circle>' +
+        '<circle cx="' + x + '" cy="' + y + '" r="8" fill="#14385c" stroke="#fff" stroke-width="2"></circle>' +
+        label + "</g>";
     });
     const yp = places[you] || places.haus;
     const yx = yp.x * 10, yy = yp.y * 6.4;

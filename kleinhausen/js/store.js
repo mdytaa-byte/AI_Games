@@ -32,7 +32,7 @@
         motion: "full",
         tts: true,
         ttsRate: 0.9,
-        captions: true,
+        captions: false,
         exam: false
       },
       points: { verstehen: 0, sprechen: 0, kultur: 0, mut: 0 },

@@ -495,6 +495,8 @@ details.look .group{margin-top:12px}
             <div class="grid4">
               <button class="thumb selected" data-set="expression" data-expression-preset="happy" data-val="happy"><span class="icon">😀</span>Happy</button>
               <button class="thumb" data-set="expression" data-expression-preset="neutral" data-val="neutral"><span class="icon">🙂</span>Friendly</button>
+              <button class="thumb" data-set="expression" data-expression-preset="polite" data-val="polite"><span class="icon">🙏</span>Polite</button>
+              <button class="thumb" data-set="expression" data-expression-preset="determined" data-val="determined"><span class="icon">✊</span>Determined</button>
               <button class="thumb" data-set="expression" data-expression-preset="surprised" data-val="surprised"><span class="icon">😮</span>Surprised</button>
               <button class="thumb" data-set="expression" data-expression-preset="worried" data-val="worried"><span class="icon">😟</span>Worried</button>
               <button class="thumb" data-set="expression" data-expression-preset="embarrassed" data-val="embarrassed"><span class="icon">😳</span>Embarrassed</button>
@@ -502,6 +504,7 @@ details.look .group{margin-top:12px}
               <button class="thumb" data-set="expression" data-expression-preset="angry" data-val="angry"><span class="icon">😠</span>Angry</button>
               <button class="thumb" data-set="expression" data-expression-preset="tired" data-val="tired"><span class="icon">😴</span>Tired</button>
             </div>
+            <div class="art-notes">Polite and Determined are lesson faces — <span class="jp-text">お願いします</span> and <span class="jp-text">がんばります</span>.</div>
           </div>
           <div class="group">
             <div class="labelrow"><span>Expression Mixer</span><span class="style-readout" id="expressionValue">Happy · Preset</span></div>
@@ -751,7 +754,7 @@ How are you today?</textarea>
       <li><b>Dialogue:</b> Write Japanese with optional furigana like <span class="jp-text">先生(せんせい)</span>. Use ◀ ▶ on the speech bubble to step through a conversation, and 🔊 to hear Japanese speech.</li>
       <li><b>Present:</b> Hide the editor and show only the character and dialogue — useful on a classroom projector. Press <kbd>P</kbd> to enter or exit.</li>
       <li><b>Export:</b> PNG and SVG download the character (optionally with the scene). Lesson Card makes a simple HTML slide with the portrait and lines. Open Project reloads a saved JSON file.</li>
-      <li><b>Look:</b> Body type, face, hair, outfit, and expression all feed the same illustration. Collar / trim is a second clothing color for sailor collars, blazer linings, and festival details. Custom color pickers sit next to the palettes when you need a specific shade.</li>
+      <li><b>Look:</b> Body type, face, hair, outfit, and expression all feed the same illustration. Polite and Determined are the classroom lesson faces. Collar / trim is a second clothing color for sailor collars, blazer linings, and festival details. Custom color pickers sit next to the palettes when you need a specific shade.</li>
     </ul>
     <p style="color:var(--muted);font-size:13px">Shortcuts: Ctrl+Z undo · Ctrl+Y redo · Ctrl+S save character · P present</p>
   </div>
@@ -1972,6 +1975,8 @@ function earMarkup(skin, lines, ft={t:0,abs:0,farEarOpacity:1,nearEarScale:1}, a
 const EXPRESSION_PRESETS = {
   happy:{browRaise:8,eyeOpen:8,eyeSquint:18,eyeWide:0,mouthSmile:78,mouthOpen:28,blush:16},
   neutral:{browRaise:0,eyeOpen:0,eyeSquint:0,eyeWide:0,mouthSmile:0,mouthOpen:0,blush:0},
+  polite:{browRaise:10,eyeOpen:-10,eyeSquint:28,eyeWide:0,mouthSmile:36,mouthOpen:0,blush:12},
+  determined:{browRaise:-26,eyeOpen:16,eyeSquint:14,eyeWide:10,mouthSmile:14,mouthOpen:0,blush:0},
   surprised:{browRaise:70,eyeOpen:72,eyeSquint:0,eyeWide:82,mouthSmile:8,mouthOpen:84,blush:4},
   worried:{browRaise:22,eyeOpen:12,eyeSquint:6,eyeWide:4,mouthSmile:-42,mouthOpen:4,blush:10},
   embarrassed:{browRaise:12,eyeOpen:-8,eyeSquint:42,eyeWide:0,mouthSmile:22,mouthOpen:8,blush:76},
@@ -2037,6 +2042,8 @@ function eyeMarkup(style, expression, eyeColor, gender, lines, st={eyeScale:1,ir
     const by=anatomy.browY - ep.browRaise*0.11;
     let d;
     if(baseExpression==='angry') d = side==='left' ? `M${cx-15} ${149+by} Q${cx} ${143+by} ${cx+15} ${151+by}` : `M${cx-15} ${151+by} Q${cx} ${143+by} ${cx+15} ${149+by}`;
+    else if(baseExpression==='determined') d = side==='left' ? `M${cx-15} ${148+by} Q${cx} ${145+by} ${cx+15} ${150+by}` : `M${cx-15} ${150+by} Q${cx} ${145+by} ${cx+15} ${148+by}`;
+    else if(baseExpression==='polite') d = `M${cx-14} ${148+by} Q${cx} ${142+by} ${cx+14} ${148+by}`;
     else if(baseExpression==='sad' || baseExpression==='worried') d = side==='left' ? `M${cx-15} ${151+by} Q${cx-3} ${143+by} ${cx+15} ${147+by}` : `M${cx-15} ${147+by} Q${cx+3} ${143+by} ${cx+15} ${151+by}`;
     else if(baseExpression==='surprised') d = `M${cx-14} ${145+by} Q${cx} ${139+by} ${cx+14} ${145+by}`;
     else if(baseExpression==='thinking') d = side==='left' ? `M${cx-15} ${149+by} Q${cx} ${144+by} ${cx+15} ${148+by}` : `M${cx-15} ${153+by} Q${cx} ${147+by} ${cx+15} ${150+by}`;
@@ -2065,6 +2072,8 @@ function eyeMarkup(style, expression, eyeColor, gender, lines, st={eyeScale:1,ir
     if(style==='serious'){ halfW=17; top=8; bottom=5; irisRx=7.0; irisRy=8.0; irisY=y+1; }
     if(mode==='surprised'){ halfW=15; top=16; bottom=12; irisRx=7.0; irisRy=9.0; irisY=y+2; }
     if(mode==='angry'){ halfW=17; top=8; bottom=5; irisRx=7.0; irisRy=8.0; irisY=y+1; }
+    if(mode==='determined'){ halfW=17; top=10; bottom=6; irisRx=7.4; irisRy=9.2; irisY=y+1; }
+    if(mode==='polite'){ halfW=17; top=9; bottom=6; irisRx=7.6; irisRy=8.8; irisY=y+1; }
     if(mode==='worried'){ top+=1; bottom+=1; }
     top += ep.eyeOpen*0.055 - ep.eyeSquint*0.065;
     bottom += ep.eyeOpen*0.042 - ep.eyeSquint*0.045;
@@ -2074,6 +2083,8 @@ function eyeMarkup(style, expression, eyeColor, gender, lines, st={eyeScale:1,ir
     let upperStartY=y, upperEndY=y-2;
     if(mode==='angry'){
       if(side==='left'){ upperStartY=y+1; upperEndY=y-4; } else { upperStartY=y-4; upperEndY=y+1; }
+    } else if(mode==='determined'){
+      if(side==='left'){ upperStartY=y; upperEndY=y-3; } else { upperStartY=y-3; upperEndY=y; }
     }
     const d=`M${cx-halfW} ${upperStartY} C${cx-halfW*0.55} ${y-top} ${cx+halfW*0.45} ${y-top-1} ${cx+halfW} ${upperEndY} C${cx+halfW*0.55} ${y+bottom} ${cx-halfW*0.55} ${y+bottom} ${cx-halfW} ${upperStartY} Z`;
     grp.appendChild(svgEl('path',{d,fill:'#fffdfd'}));
@@ -2099,6 +2110,8 @@ function eyeMarkup(style, expression, eyeColor, gender, lines, st={eyeScale:1,ir
 
     const upperD = mode==='angry'
       ? (side==='left' ? `M${cx-halfW} ${y+1} C${cx-8} ${y-7} ${cx+7} ${y-10} ${cx+halfW} ${y-4}` : `M${cx-halfW} ${y-4} C${cx-7} ${y-10} ${cx+8} ${y-7} ${cx+halfW} ${y+1}`)
+      : mode==='determined'
+      ? (side==='left' ? `M${cx-halfW} ${y} C${cx-8} ${y-top+1} ${cx+7} ${y-top-2} ${cx+halfW} ${y-3}` : `M${cx-halfW} ${y-3} C${cx-7} ${y-top-2} ${cx+8} ${y-top+1} ${cx+halfW} ${y}`)
       : `M${cx-halfW} ${y} C${cx-9} ${y-top} ${cx+8} ${y-top-1} ${cx+halfW} ${y-2}`;
     grp.appendChild(svgEl('path',{d:upperD,stroke:line,'stroke-width':style==='anime'?'3.0':'2.6','stroke-linecap':'round',fill:'none'}));
     grp.appendChild(svgEl('path',{d:`M${cx-halfW+2} ${y+1} Q${cx} ${y+bottom+1} ${cx+halfW-2} ${y}`,stroke:(lines?lines.skinInner:'#8a6d75'),'stroke-width':'1.05','stroke-linecap':'round',fill:'none',opacity:'0.58'}));
@@ -2114,6 +2127,8 @@ function eyeMarkup(style, expression, eyeColor, gender, lines, st={eyeScale:1,ir
   if(baseExpression==='tired' && ep.eyeOpen < -20){ g.appendChild(closedEye(leftX,'left','soft')); g.appendChild(closedEye(rightX,'right','soft')); }
   else if(baseExpression==='thinking'){ g.appendChild(openEye(leftX,'left','normal')); g.appendChild(closedEye(rightX,'right','soft')); }
   else if(baseExpression==='angry'){ g.appendChild(openEye(leftX,'left','angry')); g.appendChild(openEye(rightX,'right','angry')); }
+  else if(baseExpression==='determined'){ g.appendChild(openEye(leftX,'left','determined')); g.appendChild(openEye(rightX,'right','determined')); }
+  else if(baseExpression==='polite'){ g.appendChild(openEye(leftX,'left','polite')); g.appendChild(openEye(rightX,'right','polite')); }
   else if(baseExpression==='surprised'){ g.appendChild(openEye(leftX,'left','surprised')); g.appendChild(openEye(rightX,'right','surprised')); }
   else if(baseExpression==='sad' || baseExpression==='worried'){ g.appendChild(openEye(leftX,'left','worried')); g.appendChild(openEye(rightX,'right','worried')); }
   else { g.appendChild(openEye(leftX,'left','normal')); g.appendChild(openEye(rightX,'right','normal')); }
@@ -3438,7 +3453,7 @@ function applyPreset(preset){
   if(preset==='student'){
     Object.assign(s,{role:'Student', outfit:'school', schoolStyle:'blazer', shirt:'#243b63', trim:'#f7f8fb', pose:'wave', scene:'classroom', prop:'book'});
   } else if(preset==='teacher'){
-    Object.assign(s,{role:'Teacher', outfit:'teacher', shirt:'#3d4658', trim:'#f8f8f6', pose:'point', scene:'classroom', prop:'book'});
+    Object.assign(s,{role:'Teacher', outfit:'teacher', shirt:'#3d4658', trim:'#f8f8f6', pose:'point', scene:'classroom', prop:'book', expression:'determined', ...EXPRESSION_PRESETS.determined});
   } else if(preset==='festival'){
     Object.assign(s,{role:'Student', outfit:'festival', shirt:'#335f82', trim:'#d2b15e', pose:'neutral', scene:'park', prop:'none'});
   } else if(preset==='station'){
@@ -3484,7 +3499,7 @@ function randomize(){
   s.faceShape = pick(['soft','round','sharp']);
   s.eyeStyle = pick(['anime','gentle','serious']);
   s.hairStyle = pick(['messy','side','bob','ponytail','short','spiky','twintails','hime','bun','braid']);
-  const exprName=pick(['happy','neutral','surprised','worried','embarrassed','thinking','angry','tired']);
+  const exprName=pick(['happy','neutral','polite','determined','surprised','worried','embarrassed','thinking','angry','tired']);
   Object.assign(s,{expression:exprName,...(EXPRESSION_PRESETS[exprName]||EXPRESSION_PRESETS.neutral)});
   s.pose = pick(['wave','neutral','point','bow','think','crossed','hips','hold','seated','walk']);
   s.depthStrength = pick([35,50,65,75,85]);
@@ -4023,6 +4038,11 @@ try{
   const hairQ = q.get('hair');
   if(['messy','side','bob','ponytail','short','spiky','twintails','hime','bun','braid'].includes(hairQ)){
     current().hairStyle = hairQ;
+  }
+  const exprQ = q.get('expr') || q.get('expression');
+  if(exprQ && EXPRESSION_PRESETS[exprQ]){
+    current().expression = exprQ;
+    Object.assign(current(), EXPRESSION_PRESETS[exprQ]);
   }
 }catch(err){}
 renderAvatar();

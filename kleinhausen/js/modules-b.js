@@ -241,6 +241,34 @@
         ]
       },
       {
+        type: "simulate",
+        title: "In der Hand, in die Tonne",
+        intro: "Du hältst vier Dinge. Wohin damit — in Kleinhausen, nicht in einem Idealsatz.",
+        steps: [
+          {
+            de: "Eine Wasserflasche mit Pfandlogo.",
+            options: [
+              { de: "Zurück zum Automat / Markt. Pfand.", ok: true, feedback: "8 oder 25 Cent, je nach Flasche." },
+              { de: "Gelbe Tonne.", ok: false, feedback: "Pfand ist ein Kreislauf, kein Gelber Sack zuerst." }
+            ]
+          },
+          {
+            de: "Ein nasses Nordpark-Plakat (Papier).",
+            options: [
+              { de: "Altpapier / blaue Tonne — wenn trocken genug. Sonst Rest.", ok: true, feedback: "Nasses Papier nervt die Tonne, aber die Idee ist Papier." },
+              { de: "In den Fluss. Symbolisch.", ok: false, feedback: "Amira hat eine Waage, keine Performance." }
+            ]
+          },
+          {
+            de: "Apfelrest von Ottos Tüte.",
+            options: [
+              { de: "Braune Tonne / Bio.", ok: true, feedback: "Bio ist Alltag, nicht Moralpredigt." },
+              { de: "Gelbe Tonne, steckt in Plastik.", ok: false, feedback: "Der Rest ist Bio. Die Tüte separat." }
+            ]
+          }
+        ]
+      },
+      {
         type: "dialogue",
         npc: "tadesse",
         line: "Danke, dass ihr kommt. Eine Stadt ohne Bäume ist ein Parkplatz mit Laternen. Wollt ihr Setzlinge für den Festplatz-Rand? Kostenlos. Bedingung: gießen.",
@@ -643,6 +671,37 @@
             options: [
               { de: "Weg für Frau Haller und den Platz.", ok: true, feedback: "Beides. Das Gerücht hat das UND gelöscht." },
               { de: "Sie hasst Frau Haller.", ok: false, feedback: "Das ist das Gerücht." }
+            ]
+          }
+        ]
+      },
+      {
+        type: "simulate",
+        title: "Interview am Brunnen — zwei Minuten",
+        intro: "Du hältst ein Handy. Die Person vor dir hat wenig Zeit. Frag so, dass eine Stimme für das Buch bleibt.",
+        steps: [
+          {
+            who: "Otto",
+            de: "Ich backe. Frag schnell.",
+            options: [
+              { de: "Herr Otto, ist der Festplatz wichtig für die Bäckerei? Warum?", ok: true, feedback: "Name, Thema, warum. Novice High reicht." },
+              { de: "Autos oder Feste, choose.", ok: false, feedback: "Englisch und eine Falle. Er backt um drei Uhr." }
+            ]
+          },
+          {
+            who: "Frau Haller",
+            de: "Wenn das ins Buch kommt, dann richtig.",
+            options: [
+              { de: "Was brauchen Sie auf dem Platz — außer Parken?", ok: true, feedback: "Sie sagt: einen Weg. Das UND überlebt." },
+              { de: "Warum hassen Sie Jugendliche?", ok: false, feedback: "Das ist das Gerücht. Du wiederholst es." }
+            ]
+          },
+          {
+            who: "Du, nachher im Chat",
+            de: "Jemand kürzt das Zitat.",
+            options: [
+              { de: "Ich schreibe das Transkript dazu. Weg UND Platz.", ok: true, feedback: "Tempo verliert. Genauigkeit bleibt." },
+              { de: "lol egal", ok: false, feedback: "Für Aylin ist die Klasse das Internet." }
             ]
           }
         ]

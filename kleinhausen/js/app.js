@@ -126,8 +126,8 @@
     KH.shell(
       '<div class="weather-bar">' + weather + " · " + KH.esc(KH.rolleNoun()) + " " + KH.esc(KH.state.player.vorname) + "</div>" +
       '<div class="map-layout"><div><h1>Die Stadt</h1>' +
-      '<p class="lede">Klick ein Gebäude oder starte die nächste Episode. Die gelbe Nadel bist du. Weitere Orte haben einen Punkt — Fokus oder Hover nennt den Namen.</p>' +
-      '<div class="map-board hi-only" id="mapboard"></div>' +
+      '<p class="lede">Klick ein Gebäude: du stehst dort in der Ich-Perspektive. Die gelbe Nadel bist du. Episoden rechts — oder von der Straße aus.</p>' +
+      '<div class="map-board hi-only" id="mapboard" data-weather=""></div>' +
       '<p class="hi-only" id="map-status" aria-live="polite"></p>' +
       '<div class="lo-only card"><p class="lowfi-note">Low-fi Stadtplan: Liste statt Illustration.</p><ul id="lolist"></ul></div>' +
       '</div><aside class="side-stack"><div class="card"><p class="kicker">16 Episoden</p><div class="episode-list">' + list + '</div></div>' +
@@ -137,15 +137,10 @@
     );
     const board = document.getElementById("mapboard");
     if (board) {
+      board.setAttribute("data-weather", KH.weatherKey ? KH.weatherKey() : "overcast");
       board.innerHTML = KH.mapSVG();
       KH.bindMap(board, function (place) {
-        const p = KH.PLACES[place];
-        setMapStatus(p, KH.state.episodes[p.ep] && KH.state.episodes[p.ep].status === "locked");
-        if (p && p.ep) {
-          const st = KH.state.episodes[p.ep];
-          if (st && st.status !== "locked") KH.view.episode(p.ep);
-          else KH.live("Noch geschlossen: " + p.name + " öffnet mit einer späteren Episode.");
-        }
+        KH.view.place(place);
       });
       board.querySelectorAll("[data-place]").forEach(function (g) {
         function hint() {
@@ -166,10 +161,7 @@
         b.className = "btn ghost";
         b.type = "button";
         b.textContent = p.name + " · " + p.district;
-        b.addEventListener("click", function () {
-          if (KH.state.episodes[p.ep] && KH.state.episodes[p.ep].status !== "locked") KH.view.episode(p.ep);
-          else KH.live("Noch geschlossen: " + p.name);
-        });
+        b.addEventListener("click", function () { KH.view.place(id); });
         li.appendChild(b);
         ul.appendChild(li);
       });
@@ -188,8 +180,69 @@
   function setMapStatus(p, locked) {
     const status = document.getElementById("map-status");
     if (!status || !p) return;
-    status.textContent = p.name + " · " + p.district + (locked ? " — noch geschlossen" : "");
+    status.textContent = p.name + " · " + p.district + (locked ? " — Episode später, Ort trotzdem offen" : "");
   }
+
+  KH.view.place = function (id) {
+    const meta = KH.PLACES[id];
+    const loc = (KH.LOCATIONS && KH.LOCATIONS[id]) || {};
+    if (!meta) return KH.view.hub();
+    KH.currentPlace = id;
+    if ((KH.state.visited || []).indexOf(id) < 0) {
+      KH.state.visited = KH.state.visited || [];
+      KH.state.visited.push(id);
+      KH.addPoints("kultur", 1);
+    }
+    KH.save();
+    const ep = loc.episode;
+    const st = ep && KH.state.episodes[ep];
+    const canEp = st && st.status !== "locked";
+    const weather = KH.weatherKey ? KH.weatherKey() : "overcast";
+    const looks = loc.looks || [];
+    const npc = loc.npc && KH.NPCS[loc.npc];
+    const lookBtns = looks.map(function (h, i) {
+      return '<button type="button" data-look="' + i + '">' + (i + 1) + " · " + KH.esc(h.label) + "</button>";
+    }).join("");
+    KH.shell(
+      '<p class="kicker">Ich-Perspektive · ' + KH.esc(meta.district) + "</p>" +
+      "<h1>" + KH.esc(meta.name) + "</h1>" +
+      '<div class="street hi-only" data-weather="' + weather + '">' +
+      '<div class="sky" aria-hidden="true"></div><div class="ground" aria-hidden="true"></div>' +
+      '<div class="facade facade-' + KH.esc(loc.facade || "markt") + '" aria-hidden="true"></div>' +
+      '<div class="vignette" aria-hidden="true"></div></div>' +
+      '<p class="you-line">' + KH.esc(loc.you || ("Du stehst vor " + meta.name + ".")) + "</p>" +
+      '<p class="lo-only lowfi-note">Low-fi: Text statt Fassade — derselbe Ort.</p>' +
+      (loc.youEn ? '<p class="en">' + KH.esc(loc.youEn) + "</p>" : "") +
+      "<h2>Schau dich um</h2>" +
+      '<div class="look-grid" id="looks">' + lookBtns + "</div>" +
+      '<div id="look-out" class="feedback">Wähle etwas, das du siehst. Die Wörter gehören dir danach.</div>' +
+      (npc ? '<div class="card npc-row" style="margin-top:12px"><div class="portrait" style="background:' + npc.color + ';color:#fff">' + KH.esc(npc.initials) + '</div><div class="bubble"><div class="who">' + KH.esc(npc.name) + '</div><p>' + KH.esc(loc.npcLine || npc.bio) + '</p>' + (loc.npcLineEn ? '<p class="en">' + KH.esc(loc.npcLineEn) + '</p>' : '') + '</div></div>' : '') +
+      '<div class="row-btns">' +
+      (canEp ? '<button class="btn post" type="button" id="goep">Episode ' + ep.slice(1) + " hier spielen</button>" : '<p>Die Episode zu diesem Ort ist noch zu — du darfst trotzdem stehen und gucken.</p>') +
+      (loc.side ? '<button class="btn ghost" type="button" id="goside">Entdeckung</button>' : "") +
+      '<button class="btn ghost" type="button" data-go="hub">Zurück zum Plan</button>' +
+      "</div>",
+      { here: "hub" }
+    );
+    document.querySelectorAll("[data-look]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        const h = looks[parseInt(b.getAttribute("data-look"), 10)];
+        b.setAttribute("data-found", "1");
+        const out = document.getElementById("look-out");
+        out.className = "feedback ok";
+        out.innerHTML = "<strong>" + KH.esc(h.label) + "</strong> — " + h.de + (h.en ? '<span class="en">' + KH.esc(h.en) + "</span>" : "");
+        KH.speak(h.label + ". " + (h.de || ""));
+        KH.live(h.label);
+        if (h.discover) KH.discover(h.discover);
+      });
+    });
+    const goep = document.getElementById("goep");
+    if (goep) goep.addEventListener("click", function () { KH.view.episode(ep); });
+    const goside = document.getElementById("goside");
+    if (goside) goside.addEventListener("click", function () { KH.view.side(loc.side); });
+    const tts = loc.you || meta.name;
+    KH.live(tts);
+  };
 
   KH.view.episode = function (id) {
     const mod = KH.mod(id);
@@ -269,7 +322,7 @@
       return '<div><strong>' + KH.esc(n.short) + '</strong><div class="npc-trust"><i style="width:' + (t / 5 * 100) + '%"></i></div></div>';
     }).join("");
     KH.shell(
-      "<h1>Einwohnerpass</h1><p>Du bist " + KH.esc(KH.state.player.vorname) + ", " + KH.esc(KH.rolleNoun()) + " aus " + KH.esc(KH.state.player.herkunft) + ". Rang: <strong>" + KH.esc(KH.residentRank().de) + "</strong>.</p>" +
+      "<h1>Einwohnerpass</h1><p>Du bist " + KH.esc(KH.state.player.vorname) + ", " + KH.esc(KH.rolleNoun()) + " aus " + KH.esc(KH.state.player.herkunft) + ". Rang: <strong>" + KH.esc(KH.residentRank().de) + "</strong>. Orte gesehen: " + ((KH.state.visited && KH.state.visited.length) || 0) + " / " + Object.keys(KH.PLACES).length + ".</p>" +
       '<div class="stats">' +
       stat("Verstehen", KH.state.points.verstehen) +
       stat("Sprechen", KH.state.points.sprechen) +

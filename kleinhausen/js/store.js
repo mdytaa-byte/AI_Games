@@ -43,6 +43,7 @@
       flags: {},
       journal: [],
       sidequests: {},
+      visited: [],
       episodes,
       onboarding: false
     };

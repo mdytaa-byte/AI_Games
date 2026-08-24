@@ -636,4 +636,47 @@
   };
 
   KH.scenes.choice = KH.scenes.dialogue;
+
+  KH.scenes.simulate = function (box, scene, done) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = '<p class="kicker">Simulation · Alltag</p><h2>' + KH.esc(scene.title || "Situation") + "</h2>" +
+      "<p>" + (scene.intro || "Mach die Schritte der Reihe nach. Das ist die Stadt, nicht ein Quiz-Blatt.") + "</p>" +
+      (scene.introEn ? '<p class="en">' + scene.introEn + "</p>" : "");
+    box.appendChild(card);
+    const host = document.createElement("div");
+    box.appendChild(host);
+    const steps = scene.steps || [];
+    let i = 0;
+    let good = 0;
+    function step() {
+      if (i >= steps.length) {
+        box.appendChild(continueBtn("Fertig", function () {
+          done({ kind: "simulate", ok: good >= Math.ceil(steps.length * 0.6), score: Math.round((good / Math.max(steps.length, 1)) * 100) });
+        }));
+        return;
+      }
+      host.innerHTML = "";
+      const s = steps[i];
+      const p = document.createElement("div");
+      p.className = "card";
+      p.innerHTML = "<p><strong>" + (s.who ? KH.esc(s.who) + ": " : "Schritt " + (i + 1) + ": ") + "</strong>" + (s.de || "") + "</p>" +
+        (s.en ? '<p class="en">' + s.en + "</p>" : "");
+      host.appendChild(p);
+      optionList(host, s.options, function (opt) {
+        host.appendChild(feedbackEl(opt));
+        if (opt.ok === true || opt.ok === "good" || opt.ok === "ok") good += 1;
+        const nxt = document.createElement("div");
+        nxt.className = "row-btns";
+        const b = document.createElement("button");
+        b.className = "btn post";
+        b.type = "button";
+        b.textContent = "Weiter";
+        b.addEventListener("click", function () { i += 1; step(); });
+        nxt.appendChild(b);
+        host.appendChild(nxt);
+      });
+    }
+    step();
+  };
 })(window);

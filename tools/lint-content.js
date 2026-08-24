@@ -15,6 +15,7 @@ function load(rel) {
 }
 
 load("js/world.js");
+load("js/locations.js");
 load("js/modules-a.js");
 load("js/modules-b.js");
 load("js/sidequests.js");
@@ -41,8 +42,8 @@ mods.forEach(function (m) {
       const file = path.join(root, s.src);
       if (!fs.existsSync(file)) errors.push(m.id + " activity missing: " + s.src);
     }
-    if (s.type === "dialogue" && (!s.options || s.options.length < 2)) {
-      errors.push(m.id + " scene " + i + " dialogue needs options");
+    if (s.type === "simulate" && (!s.steps || s.steps.length < 2)) {
+      errors.push(m.id + " simulation too short");
     }
     if (s.type === "ipa") {
       if (!s.interpretive || !s.interpersonal || !s.presentational) {
@@ -54,6 +55,10 @@ mods.forEach(function (m) {
 });
 
 if ((KH.SIDEQUESTS || []).length < 6) errors.push("Need at least 6 sidequests");
+
+Object.keys(KH.PLACES || {}).forEach(function (id) {
+  if (!KH.LOCATIONS || !KH.LOCATIONS[id]) errors.push("Missing first-person location: " + id);
+});
 
 if (errors.length) {
   console.error(errors.join("\n"));

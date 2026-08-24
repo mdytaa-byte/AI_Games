@@ -707,12 +707,9 @@ html[data-gfx="low"] .room { background: #fff; min-height: 0; border-width: 2px;
   background: #fff;
 }
 
-#map-status {
-  min-height: 1.4em;
-  font-weight: 700;
-  color: var(--navy);
-  margin: 8px 0 0;
-}
+.map-board[data-weather="rain"] { filter: saturate(.82); }
+.map-board[data-weather="sun"] { filter: saturate(1.12) contrast(1.05); }
+.map-board[data-weather="cold"] { filter: saturate(.7) brightness(1.05); }
 
 .journal-entry {
   border-left: 4px solid var(--post);
@@ -756,3 +753,110 @@ th { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color:
 html[data-gfx="low"] .lowfi-note { display: block; }
 html[data-gfx="low"] .hi-only { display: none !important; }
 html[data-gfx="high"] .lo-only { display: none !important; }
+
+/* ---------- first-person street ---------- */
+.street {
+  position: relative;
+  min-height: 340px;
+  border: 3px solid var(--navy);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.sky {
+  position: absolute; inset: 0 0 42% 0;
+  background: linear-gradient(#7eb3d6, #cfe4f2);
+}
+.street[data-weather="rain"] .sky { background: linear-gradient(#4d5f70, #8a9aaa); }
+.street[data-weather="sun"] .sky { background: linear-gradient(#5aa4d6, #f2d889); }
+.street[data-weather="cold"] .sky { background: linear-gradient(#9bb4c8, #e8eef2); }
+.ground {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 28%;
+  background: linear-gradient(#8a7a68, #5c5248);
+}
+.street[data-weather="cold"] .ground { background: linear-gradient(#dfe6ec, #9aa7b2); }
+.facade {
+  position: absolute; left: 18%; right: 18%; bottom: 22%;
+  height: 52%;
+  border: 3px solid #1a1f2b;
+  box-shadow: 0 12px 0 rgba(0,0,0,.12);
+}
+.facade-station { background: #4a5560; }
+.facade-station::before {
+  content: "KLEINHAUSEN";
+  position: absolute; left: 12%; right: 12%; top: 12%;
+  background: var(--post); color: var(--navy);
+  font-family: var(--mono); font-weight: 800; letter-spacing: .14em;
+  text-align: center; padding: 6px 0; font-size: .8rem;
+}
+.facade-fachwerk {
+  background:
+    repeating-linear-gradient(90deg, #5c3d26 0 10px, #d9c4a2 10px 48px),
+    #d9c4a2;
+}
+.facade-markt { background: #c9b48a; border-radius: 50% 50% 0 0; height: 40%; bottom: 28%; left: 30%; right: 30%; }
+.facade-rathaus { background: #8c3d3a; }
+.facade-rathaus::after {
+  content: "";
+  position: absolute; left: 42%; width: 16%; top: -28%; height: 28%;
+  background: var(--post); border: 3px solid #1a1f2b;
+}
+.facade-kirche {
+  background: #cfc3a8;
+  clip-path: polygon(50% 0, 100% 28%, 100% 100%, 0 100%, 0 28%);
+}
+.facade-museum { background: #e8e0d0; }
+.facade-schule { background: #d4a84b; }
+.facade-cafe { background: #6a3d2e; }
+.facade-cafe::before {
+  content: "";
+  position: absolute; left: -6%; right: -6%; top: -14px; height: 18px;
+  background: #c45c6a; border-radius: 4px 4px 0 0;
+}
+.facade-baeckerei { background: #f4e4c4; }
+.facade-kaufhaus { background: var(--post); }
+.facade-post { background: #1e5a8a; }
+.facade-park { background: transparent; border: 0; box-shadow: none; }
+.facade-fest { background: #6a8a4a; }
+.facade-apotheke { background: #2f6a52; }
+.facade-sparkasse { background: #d9e4ee; }
+.facade-sport { background: #3d6a3d; }
+.facade-werkstatt { background: #5a6570; }
+.facade-kette { background: #da3633; }
+.facade-jugend { background: #3d5c8c; }
+.facade-schloss { background: #6a7b8c; }
+.facade-turm {
+  left: 40%; right: 40%; background: #8a8a82;
+}
+.facade-garten { background: #2f6a3d; }
+.vignette {
+  pointer-events: none;
+  position: absolute; inset: 0;
+  box-shadow: inset 0 0 80px rgba(10, 16, 24, .35);
+}
+.street[data-weather="rain"] .vignette {
+  background: repeating-linear-gradient(-18deg, transparent 0 12px, rgba(255,255,255,.12) 12px 13px);
+}
+.you-line {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  padding: 12px 14px;
+  background: rgba(251, 247, 239, .92);
+  font-family: var(--display);
+  font-size: 1.08rem;
+}
+.look-grid { display: grid; gap: 8px; margin: 10px 0 16px; }
+.look-grid button {
+  text-align: left;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-weight: 700;
+}
+.look-grid button[data-found="1"] { border-color: var(--moss); background: var(--moss-wash); }
+
+html[data-gfx="low"] .street { display: none; }
+html[data-contrast="hoch"] .street { border-width: 4px; }
+html[data-contrast="hoch"] .you-line { background: #fff; border-bottom: 2px solid #000; }

@@ -439,6 +439,39 @@
         ]
       },
       {
+        type: "simulate",
+        title: "Packen unter Zeitdruck",
+        intro: "Drei Termine, ein Rucksack. Wähle, was du einpackst.",
+        introEn: "Three events, one bag.",
+        steps: [
+          {
+            who: "Lena",
+            de: "Bio-Referat. Die Klasse sitzt. Es ist 9 Grad, aber die Heizung ist laut.",
+            options: [
+              { de: "Pullover, Jeans, ordentliche Schuhe.", ok: true, feedback: "Referat ist kein Sport und kein Strand." },
+              { de: "Trainingsanzug und Turnschuhe.", ok: false, feedback: "Sport ist später. Frau Vogel sieht den Anzug." },
+              { de: "T-Shirt und Sonnenbrille.", ok: false, feedback: "Oktober. Die Sonnenbrille wartet aufs Wochenende." }
+            ]
+          },
+          {
+            who: "Karl (Nachricht)",
+            de: "Danach Sport. Bringst du Turnschuhe? Der Platz ist nass.",
+            options: [
+              { de: "Ja. Turnschuhe extra im Beutel, nicht an den Füßen im Referat.", ok: true, feedback: "Schichten, auch im Rucksack." },
+              { de: "Ich mache Sport in den schönen Schuhen.", ok: false, feedback: "Die Schuhe und der Platz überleben das nicht." }
+            ]
+          },
+          {
+            who: "Opa Werner",
+            de: "Die Schuhe an der Tür sind dreckig. Kehrwoche sieht das.",
+            options: [
+              { de: "Ich putze sie. Dann die Regenjacke, es windet.", ok: true, feedback: "Nachbarschaft beginnt am Schuh." },
+              { de: "Ist mir egal.", ok: false, feedback: "Für Werner ist Wohnen eine Aufgabe." }
+            ]
+          }
+        ]
+      },
+      {
         type: "activity",
         title: "Kleiderschrank Kleinhausen",
         src: "praxis/kleiderschrank.html",
@@ -819,6 +852,38 @@
           "Drei Minuten später verstehst du, was du getan hast. Die Stadt hat Regeln für Straßen. Die Sprache auch."
         ],
         en: "Register crash: chat voice into teacher email. Repair is the lesson."
+      },
+      {
+        type: "simulate",
+        title: "Drei Empfänger, drei Töne",
+        intro: "Dieselbe Information: Die Deutschstunde findet statt. Wähle den passenden Text.",
+        introEn: "Same news, three audiences.",
+        steps: [
+          {
+            who: "Lena (Chat)",
+            de: "deutsch fällt nicht aus, oder?",
+            options: [
+              { de: "ne, findet statt. bis morgen, lg", ok: true, feedback: "Kurz, du, kein Sie." },
+              { de: "Sehr geehrte Lena, hiermit teile ich mit …", ok: false, feedback: "Sie ist 15 und in deinem Chat." }
+            ]
+          },
+          {
+            who: "Die Bande (Gruppe)",
+            de: "petition festplatz — kommt ihr????",
+            options: [
+              { de: "ja, 17 uhr. bda wenn nicht.", ok: true, feedback: "Gruppe darf Slang. Inhalt bleibt klar." },
+              { de: "hey fällt deutsch aus oderso lg", ok: false, feedback: "Falsche Info, falscher Thread." }
+            ]
+          },
+          {
+            who: "Frau Vogel (E-Mail)",
+            de: "Betreff und Ton.",
+            options: [
+              { de: "Betreff: Deutschstunde morgen. Text: Sehr geehrte Frau Vogel, findet die Stunde statt? Mit freundlichen Grüßen", ok: true, feedback: "Anrede, Frage, Gruß. Kein lg." },
+              { de: "hey, fällt was aus oderso lg", ok: false, feedback: "Genau das ist der Fehler dieser Episode." }
+            ]
+          }
+        ]
       },
       {
         type: "activity",

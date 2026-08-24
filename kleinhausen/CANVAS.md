@@ -38,5 +38,16 @@ Students open **Zugang** (header): contrast, type size, Verdana, reduced motion,
 
 Prüfungsmodus hides extra transcripts for listening tests; leave it off unless you are proctoring.
 
+## Suggested Canvas module (16 weeks)
+
+Create a Canvas **Module** named *Kleinhausen* with:
+
+1. One **Page**: link or embed `kleinhausen/index.html` (the town).
+2. Sixteen **Assignments** (text entry): “Episode 01 Ankunft — Lehrer-Code”. Points 10 each, or 16 × 6.25 for a 100-point year.
+3. One **Assignment**: Episode 16 Rede (file upload or media). Human IPA overlay.
+4. Optional **SCORM** assignment for the overall course score.
+
+Students live in the town (first-person streets). They paste the stamp-screen code into that week’s assignment. Heft → JSON is the portfolio backup.
+
 ## Existing Kleinhausen games
 Wrapped as praxis missions inside episodes 2, 4, 5, 6, 7, 8, 9, 16 so the town is one umbrella, not a pile of links.

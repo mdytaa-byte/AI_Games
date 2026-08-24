@@ -122,7 +122,7 @@
       </div>
       <div id="endingUI" class="overlay">
         <h1>THE SPECTRUM HOLDS</h1>
-        <div class="sub">WHITE KEEPS BLACK IN CHECK — FOR NOW</div>
+        <div class="sub">THE WANDERER IS SCATTERED — FOR NOW</div>
         <p id="endingText" style="max-width:360px;margin:10px auto 14px;font-size:11px;line-height:1.5;color:#ffd8e8"></p>
         <button class="menu-btn" id="btnAgain">RETURN TO TITLE</button>
       </div>
@@ -157,7 +157,7 @@ const endingUI = document.getElementById("endingUI");
 const pauseEl = document.getElementById("pause");
 const codexEl = document.getElementById("codex");
 const battleEl = document.getElementById("battle");
-const SAVE_KEY = "wandaful-16bit-v2";
+const SAVE_KEY = "wandaful-16bit-v3";
 
 /* ------------------------------------------------------------------ */
 /*  Chroma combat, from the novels.                                   */
@@ -246,6 +246,17 @@ const SPECTRUM = {
     let steal = false;
     let status = null;
     let log = "";
+    if (opts.wanderer && color === "white") {
+      dmg = Math.round((22 + lv * 5) * (both ? 1.25 : 1));
+      log = "The dark core. Wanda threads white Chroma through the rainbow.";
+      return { rel: "core", dmg, heal: 0, steal: false, status: null, log };
+    }
+    if (opts.wanderer && rel !== "clash") {
+      dmg = 0;
+      heal = 5 + lv;
+      log = "The Wanderer is every hue at once. Unmatched Chroma feeds the rainbow.";
+      return { rel: "rainbow", dmg: 0, heal, steal: false, status: null, log };
+    }
     if (dark && rel !== "clash" && color !== "white") {
       if (stolen && color === this.opposite(stolen)) {
         rel = "clash";
@@ -258,7 +269,9 @@ const SPECTRUM = {
     }
     if (rel === "clash") {
       dmg = Math.round((10 + lv * 3) * aff * (both ? 1.35 : 1));
-      log = "COUNTER! Complementary Chroma stings the opposite Wand.";
+      log = opts.wanderer
+        ? "TETRA. Wanda snipes the complementary shade. The spark goes out."
+        : "COUNTER! Complementary Chroma stings the opposite Wand.";
     } else if (rel === "resonate") {
       dmg = Math.round((3 + lv) * aff);
       steal = true;
@@ -292,8 +305,9 @@ const ACTORS = {
   misha:  { name: "Misha" },
   fyodor: { name: "Fyodor" },
   sergio: { name: "Sergio" },
-  other:  { name: "The Other Hal" },
-  foe:    { name: "Chroma" }
+  other:     { name: "The Other Hal" },
+  wanderer:  { name: "The Wanderer" },
+  foe:       { name: "Chroma" }
 };
 
 function gridFrom(rows) {
@@ -435,7 +449,8 @@ const FOES = {
   agent:    { name: "Spectrum Agent",  hue: "orange", hp: 30, atk: 8,  xp: 16, boss: false },
   sergio:   { name: "Sergio",          hue: "blue",   hp: 78, atk: 12, xp: 44, boss: true, dark: true, stolen: "blue" },
   blot:     { name: "Dark Blot",       hue: "blue",   hp: 40, atk: 10, xp: 22, boss: false, dark: true, stolen: "blue" },
-  fyodor:   { name: "Fyodor",          hue: "black",  hp: 140,atk: 14, xp: 80, boss: true }
+  fyodor:    { name: "Fyodor",          hue: "black",  hp: 90, atk: 12, xp: 50, boss: true },
+  wanderer:  { name: "The Wanderer",    hue: "red",    hp: 180,atk: 16, xp: 100, boss: true, wanderer: true }
 };
 
 const CHAPTERS = [
@@ -504,12 +519,13 @@ const CHAPTERS = [
     ]
   },
   {
-    id: "ch7", title: "THE OTHER HAL", hero: "hal", map: "whitewave", spawn: [8, 10],
-    goal: "Fyodor wants the White Wavelength. White Chroma keeps black in check. Mix if you must.",
+    id: "ch7", title: "WRATH OF THE WANDERER", hero: "wanda", map: "whitewave", spawn: [8, 10],
+    goal: "Fyodor merged with his Wand. He is a Wanderer now. Counter the rainbow. White hits the dark core.",
     intro: [
-      ["fyodor", "The poorest live like princes there. I will have every Wand. Including yours."],
-      ["other", "I am what you would have been, on another Wavelength. Do not waste the family you still have."],
-      ["wanda", "Hal — mix. Your yellow, his stolen red, my blue. Make him small enough to argue with."]
+      ["hal", "Not a dragon. A Wanderer — a human Wand. He merged with it to save his life and gave up being human."],
+      ["blish", "I'm a Blotter. In here his magic cannot land. Out there, Wandy — you are a Tetra. Thousands of shades. Sniper, not bazooka."],
+      ["other", "I am what you would have been on another Wavelength. Do not waste the family you still have."],
+      ["wanda", "Then I match every spark. Complements cancel. White for the dark core."]
     ]
   }
 ];
@@ -635,14 +651,14 @@ function finishGame() {
   hudEl.classList.remove("show");
   goalEl.classList.remove("show");
   sayMany([
-    ["fyodor", "Tomorrow will look different. That is not a threat. It is a schedule."],
-    ["wanda", "Then we keep mixing until tomorrow looks like us."],
-    ["hal", "White keeps black in check. That is the job. You are my pupil now — if you still want a Wand that used to be a paintbrush."],
-    ["wanda", "Wandaful. Not wonderful. You have to get the word right."]
+    ["wanda", "Is he dead?"],
+    ["hal", "Hard to say. A Wanderer has no body. If anything of him is left, it is too scattered to put itself back together for a long time."],
+    ["blish", "Popsicle?"],
+    ["wanda", "Lime. And Wandaful — not wonderful. You have to get the word right."]
   ], () => {
     endingUI.classList.add("show");
     document.getElementById("endingText").textContent =
-      "Fyodor is a man again, for now. Hal takes Wanda as his pupil. The Blue Wavelength keeps its color, the White Wavelength stays out of one Superwielder's pocket, and a disguised Wand still looks like whatever it needs to be.";
+      "The Wanderer is gone, or as gone as a being of pure Chroma can be. Hal takes Wanda as his pupil. The Blue Wavelength keeps its color, and a Tetra who used to paint desks now paints the Spectrum.";
     localStorage.removeItem(SAVE_KEY);
   });
 }
@@ -746,7 +762,7 @@ function startBattle(id, onWin) {
   const foe = deep(FOES[id]);
   if (!foe) return;
   foe.maxHp = foe.hp;
-  battle = { foe, onWin, log: foe.name + " takes a hue!", menu: "main", caster: state.hero, both: false };
+  battle = { foe, onWin, log: foe.wanderer ? "The rainbow takes a body. A Wanderer — a human Wand." : foe.name + " takes a hue!", menu: "main", caster: state.hero, both: false };
   mode = "battle";
   beep(520, 0.08);
   renderBattle();
@@ -781,7 +797,7 @@ function renderBattle() {
   battleEl.innerHTML = `<div class="panel wide">
     <div class="brow">
       <div class="bstat"><b>${ACTORS[b.caster].name}</b><div class="hpbar"><i style="width:${state.hp / state.maxHp * 100}%"></i></div>Vitas ${state.chroma}</div>
-      <div class="bstat"><b style="color:${hue}">${f.name}</b><div class="hpbar"><i style="width:${f.hp / f.maxHp * 100}%;background:${hue}"></i></div>Chroma: ${f.hue}${f.dark ? " · DARK" : ""}${f.stolen ? " · stole " + f.stolen : ""}</div>
+      <div class="bstat"><b style="color:${hue}">${f.name}</b><div class="hpbar"><i style="width:${f.hp / f.maxHp * 100}%;background:${hue}"></i></div>Chroma: ${f.hue}${f.wanderer ? " · RAINBOW" : ""}${f.dark ? " · DARK" : ""}${f.stolen ? " · stole " + f.stolen : ""}</div>
     </div>
     <div class="log">${b.log}</div>
     ${body}
@@ -804,6 +820,17 @@ function battleAct(act) {
   if (act === "clash") {
     if (colorCount() < 1) { battle.log = "You need Chroma to counter."; renderBattle(); return; }
     if (state.chroma < 6) { battle.log = "Not enough Vitas to braid Chroma."; renderBattle(); return; }
+    if (battle.foe.wanderer) {
+      const use = SPECTRUM.opposite(battle.foe.hue);
+      if (use && hasColor(use)) {
+        state.chroma -= 6;
+        castColor(use, true);
+        return;
+      }
+      battle.log = "The rainbow shifts to " + battle.foe.hue + ". Counter with its complement, or pick white for the dark core.";
+      renderBattle();
+      return;
+    }
     if (battle.foe.hue === "black") {
       if (hasColor("white")) {
         state.chroma -= 8;
@@ -851,11 +878,11 @@ function castColor(color, both) {
   if (!both) state.chroma -= cost;
   const res = SPECTRUM.resolve({
     color, foeHue: battle.foe.hue, caster: battle.caster,
-    level: state.lv, stolen: battle.foe.stolen, both, dark: !!battle.foe.dark
+    level: state.lv, stolen: battle.foe.stolen, both, dark: !!battle.foe.dark, wanderer: !!battle.foe.wanderer
   });
   battle.foe.hp -= res.dmg;
   if (res.heal) battle.foe.hp = Math.min(battle.foe.maxHp, battle.foe.hp + res.heal);
-  if (res.steal && battle.foe.hue !== "black" && !battle.foe.dark) {
+  if (res.steal && battle.foe.hue !== "black" && !battle.foe.dark && !battle.foe.wanderer) {
     battle.foe.stolen = battle.foe.hue;
     battle.foe.hue = color;
   }
@@ -891,6 +918,11 @@ function enemyTurn() {
   if (lastRel === "clash") dmg = Math.max(1, Math.floor(dmg * 0.7));
   state.hp -= dmg;
   battle.log += " " + battle.foe.name + " paints " + dmg + "!";
+  if (battle.foe.wanderer) {
+    const i = Math.max(0, SPECTRUM.index(battle.foe.hue));
+    battle.foe.hue = SPECTRUM.order[(i + 1) % 6];
+    battle.log += " The rainbow cycles to " + battle.foe.hue.toUpperCase() + ".";
+  }
   if (battle.foe.dark && Math.random() < 0.4) {
     const steal = SPECTRUM.order[Math.floor(Math.random() * 6)];
     battle.foe.stolen = steal;
@@ -1128,18 +1160,27 @@ function handleTile(t, tx, ty) {
   }
   if (t === "V" && state.map === "gala") {
     if (!state.flags.galaReady) {
-      state.flags.galaReady = true;
-      state.colors.white = true;
-      save();
       sayMany([
         ["fyodor", "Emmaline. It has been too long. You wear the years more kindly than I do."],
         ["em", "Wanda, do not answer. I will speak. He must believe the face."],
         ["fyodor", "Unmasked. Of course. A girl in her mother's skin, and a white Wand pretending to be a tie bar."],
         ["hal", "Then we mix. Yellow and a stolen red spark make orange. Orange against her blue."]
-      ], () => setGoal("The door is a Wavelength now. Walk through. Meet him as himself."));
+      ], () => {
+        state.colors.white = true;
+        save();
+        startBattle("fyodor", () => {
+          state.flags.galaReady = true;
+          save();
+          sayMany([
+            ["hal", "He merged with the Wand. That is a Wanderer — a human Wand. Pure magic. No body left to argue with."],
+            ["wanda", "A killer rainbow. You still haven't given me that dictionary."],
+            ["blish", "My apartment. I'm a Blotter — close to me, his magic cannot land. Out there, Wandy, you are a Tetra. Exact complementary shades."]
+          ], () => setGoal("The door. Take the stand. Complements cancel the rainbow. White hits the dark core."));
+        });
+      });
       return;
     }
-    say("fyodor", "I am already the giant in the next room. Come finish the sentence.");
+    say("fyodor", "I am already the giant in the next room. A Wanderer. Come finish the sentence.");
     return;
   }
   if (t === "V") {
@@ -1196,7 +1237,7 @@ function handleTile(t, tx, ty) {
       state.flags.final = true;
       state.colors.white = true;
       save();
-      startBattle("fyodor", () => {
+      startBattle("wanderer", () => {
         state.flags.won = true;
         finishGame();
       });
@@ -1216,7 +1257,7 @@ function handleTile(t, tx, ty) {
       lab: ["Do not spill the spectrum ink. Chromatists have searched every Wavelength for a stain remover."],
       chase: ["The street remembers the car. Sergio does too."],
       gala: ["If you applaud correctly, the rotunda is a door. If you don't, it is only a party."],
-      whitewave: ["The poorest live like princes here. That is why he wants the key."]
+      whitewave: ["Blish's stand. The Wanderer is the rainbow outside. Complements cancel. White hits the dark core."]
     };
     say("", (chatter[state.map] || ["..."])[0]);
     return;
@@ -1278,7 +1319,8 @@ function showHow() {
     ["", "Move with arrows or WASD. Confirm with Z or Space. Menu with X."],
     ["", "Combat is Chroma — magical color. Primaries: red, yellow, blue. Secondaries: green, purple, orange. Complementary hues COUNTER: red↔green, yellow↔purple, blue↔orange."],
     ["", "Same hues resonate. Adjacent hues mix and leave residue. Black + white is the most powerful reaction. Dark Chroma drinks unmatched color."],
-    ["", "Hal's native hue is yellow; his Wand reads white. Wanda's is blue. Vitas fuels every burst. Wands can look like a paintbrush, a knitting needle, a duck, a pencil."]
+    ["", "Hal's native hue is yellow; his Wand reads white. Wanda's is blue. Vitas fuels every burst. Wands can look like a paintbrush, a knitting needle, a duck, a pencil."],
+    ["", "The last fight is the Wanderer — Fyodor merged with his Wand, a human Wand of cycling rainbow. Complementary hues cancel each spark. White Chroma hits the dark core."]
   ]);
 }
 

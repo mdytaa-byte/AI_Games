@@ -70,6 +70,7 @@
   let waterMats = [];
   let rainGroup = null;
   let snowGroup = null;
+  /* Vendor THREE (Lieferdienst subset) has no Points/PointsMaterial. Weather spray is CSS. */
   let raf = 0;
   let built = false;
   let visible = false;
@@ -1212,8 +1213,6 @@
     if (fill) fill.intensity = th.fill;
     if (hemi) hemi.intensity = th.hemi;
     if (renderer) renderer.toneMappingExposure = th.exp;
-    if (rainGroup) rainGroup.visible = weather === "rain" && quality !== "low";
-    if (snowGroup) snowGroup.visible = weather === "cold" && quality !== "low";
     if (host) {
       host.setAttribute("data-weather", weather);
       const rain = host.querySelector("#kh-town-wx");
@@ -1222,34 +1221,8 @@
   }
 
   function makeWeatherParticles() {
-    rainGroup = new THREE.Group();
-    const rainGeo = new THREE.BufferGeometry();
-    const n = quality === "high" ? 900 : 400;
-    const pos = new Float32Array(n * 3);
-    for (let i = 0; i < n; i++) {
-      pos[3 * i] = (Math.random() - 0.5) * 80;
-      pos[3 * i + 1] = Math.random() * 28;
-      pos[3 * i + 2] = (Math.random() - 0.5) * 80;
-    }
-    rainGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    const rainMat = new THREE.PointsMaterial({ color: 0xc8d4de, size: 0.12, transparent: true, opacity: 0.55 });
-    rainGroup.add(new THREE.Points(rainGeo, rainMat));
-    rainGroup.visible = false;
-    scene.add(rainGroup);
-
-    snowGroup = new THREE.Group();
-    const snowGeo = new THREE.BufferGeometry();
-    const sn = quality === "high" ? 500 : 220;
-    const sp = new Float32Array(sn * 3);
-    for (let i = 0; i < sn; i++) {
-      sp[3 * i] = (Math.random() - 0.5) * 80;
-      sp[3 * i + 1] = Math.random() * 24;
-      sp[3 * i + 2] = (Math.random() - 0.5) * 80;
-    }
-    snowGeo.setAttribute("position", new THREE.BufferAttribute(sp, 3));
-    snowGroup.add(new THREE.Points(snowGeo, new THREE.PointsMaterial({ color: 0xffffff, size: 0.18, transparent: true, opacity: 0.8 })));
-    snowGroup.visible = false;
-    scene.add(snowGroup);
+    rainGroup = null;
+    snowGroup = null;
   }
 
   function initRenderer() {
@@ -1333,7 +1306,9 @@
     bodenBauen();
     strassenBauen();
     kanalBauen();
-    LANDMARKS.forEach(landmarkBauen);
+    LANDMARKS.forEach(function (lm) {
+      try { landmarkBauen(lm); } catch (err) { console.warn("Ort nicht gebaut:", lm.id, err); }
+    });
     if (quality !== "low") haeuserFuellen();
     makeWeatherParticles();
     built = true;
@@ -1425,26 +1400,6 @@
     camera.rotation.y = look.yaw;
     camera.rotation.x = 0;
     if (sky) sky.position.copy(camera.position);
-    if (rainGroup && rainGroup.visible) {
-      rainGroup.position.set(player.x, 0, player.z);
-      const pos = rainGroup.children[0].geometry.attributes.position;
-      for (let i = 0; i < pos.count; i++) {
-        let y = pos.getY(i) - 18 * dt;
-        if (y < 0) y = 26;
-        pos.setY(i, y);
-      }
-      pos.needsUpdate = true;
-    }
-    if (snowGroup && snowGroup.visible) {
-      snowGroup.position.set(player.x, 0, player.z);
-      const pos = snowGroup.children[0].geometry.attributes.position;
-      for (let i = 0; i < pos.count; i++) {
-        let y = pos.getY(i) - 4 * dt;
-        if (y < 0) y = 22;
-        pos.setXYZ(i, pos.getX(i) + Math.sin(ts * 0.001 + i) * 0.01, y, pos.getZ(i));
-      }
-      pos.needsUpdate = true;
-    }
     waterMats.forEach(function (m) {
       if (m.map) m.map.offset.x = (ts * 0.00003) % 1;
     });
@@ -1616,6 +1571,10 @@
           return;
         }
         try {
+          if (renderer && !built) KH.Town.dispose();
+          ensureHost();
+          host.hidden = false;
+          visible = true;
           initRenderer();
           buildCity();
           restoreWalk();
@@ -1628,6 +1587,7 @@
         } catch (e) {
           console.error("Kleinhausen 3D:", e);
           showLoad(false);
+          try { KH.Town.dispose(); } catch (e2) { /* ignore */ }
           if (typeof opts.onFail === "function") opts.onFail();
         }
       });

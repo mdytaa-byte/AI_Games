@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="KLEINHAUSEN-DE1-NH-v1" version="1.0"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                      http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="KLEINHAUSEN-ORG">
+    <organization identifier="KLEINHAUSEN-ORG">
+      <title>Willkommen in Kleinhausen — Deutsch 1 (ACTFL Novice High)</title>
+      <item identifier="ITEM-1" identifierref="RES-1">
+        <title>Kleinhausen — 16 Episoden</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="RES-1" type="webcontent" adlcp:scormtype="sco" href="index.html">
+      <file href="index.html"/>
+      <file href="css/app.css"/>
+      <file href="js/scorm.js"/>
+      <file href="js/store.js"/>
+      <file href="js/a11y.js"/>
+      <file href="js/world.js"/>
+      <file href="js/tasks.js"/>
+      <file href="js/modules-a.js"/>
+      <file href="js/modules-b.js"/>
+      <file href="js/sidequests.js"/>
+      <file href="js/map.js"/>
+      <file href="js/app.js"/>
+      <file href="praxis/foto-schnitzeljagd.html"/>
+      <file href="praxis/kleiderschrank.html"/>
+      <file href="praxis/lieferdienst.html"/>
+      <file href="praxis/supermarkt.html"/>
+      <file href="praxis/kaufhaus.html"/>
+      <file href="praxis/chat.html"/>
+      <file href="praxis/gespraechspartner.html"/>
+    </resource>
+  </resources>
+</manifest>

@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Einkaufen im Supermarkt — Deutsch üben</title>
+<style>
+/* ============================================================
+   EINKAUFEN IM SUPERMARKT
+   Single-file German shopping game. No external assets.
+   ============================================================ */
+
+:root{
+  --floor:#EDE7DC;
+  --floor-2:#E3DCCE;
+  --shelf:#46536B;
+  --shelf-dark:#333D50;
+  --ink:#151C26;
+  --ink-soft:#5A6472;
+  --paper:#FBF7EF;
+  --sign-yellow:#FFD23F;
+  --sign-red:#DA3633;
+  --sign-blue:#1C6EC7;
+  --green:#2F9E44;
+  --line:#CFC6B4;
+  --bg:#20262F;
+  --card:#FFFFFF;
+  --shadow:0 2px 0 rgba(21,28,38,.18);
+
+  --display:"Arial Narrow","Helvetica Neue Condensed","Liberation Sans Narrow",Impact,system-ui,sans-serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Courier New",monospace;
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--body);
+  -webkit-text-size-adjust:100%;
+  min-height:100vh;
+}
+
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--sign-yellow);outline-offset:2px}
+
+/* ---------- Shell ---------- */
+.wrap{max-width:1280px;margin:0 auto;padding:10px 12px 28px}
+
+.topbar{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:8px 12px;margin-bottom:10px;
+  background:var(--sign-red);
+  border-radius:6px;
+  box-shadow:0 3px 0 rgba(0,0,0,.35);
+}
+.logo{
+  font-family:var(--display);
+  font-weight:700;
+  font-size:clamp(18px,3.6vw,26px);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#fff;
+  line-height:1;
+  margin-right:auto;
+}
+.logo span{color:var(--sign-yellow)}
+.tool{
+  font-family:var(--display);
+  text-transform:uppercase;letter-spacing:.08em;font-weight:700;
+  font-size:14px;
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  padding:7px 11px;border-radius:4px;
+  border:1px solid rgba(255,255,255,.28);
+  white-space:nowrap;
+}
+.tool[aria-pressed="true"]{background:var(--sign-yellow);color:var(--ink);border-color:var(--sign-yellow)}
+.tool:hover{background:rgba(255,255,255,.28)}
+.tool[aria-pressed="true"]:hover{background:#ffdf6b}
+
+.stage{display:grid;grid-template-columns:1fr 300px;gap:12px;align-items:start}
+@media (max-width:900px){ .stage{grid-template-columns:1fr} }
+
+/* ---------- Canvas ---------- */
+.screenbox{position:relative;background:var(--floor);border-radius:8px;overflow:hidden;box-shadow:0 6px 0 rgba(0,0,0,.35)}
+canvas{display:block;width:100%;height:auto;aspect-ratio:960/640;touch-action:none}
+
+.hint-bar{
+  position:absolute;left:0;right:0;bottom:0;
+  padding:8px 12px;
+  background:linear-gradient(transparent,rgba(21,28,38,.82) 60%);
+  color:#fff;font-size:14px;text-align:center;pointer-events:none;
+  min-height:38px;
+}
+.hint-bar b{color:var(--sign-yellow)}
+
+/* touch controls */
+.pad{position:absolute;bottom:12px;left:12px;display:none;grid-template-columns:repeat(3,48px);grid-template-rows:repeat(3,48px);gap:4px}
+.pad button{background:rgba(255,255,255,.86);border-radius:8px;font-size:20px;box-shadow:var(--shadow);color:var(--ink)}
+.pad .u{grid-area:1/2}.pad .l{grid-area:2/1}.pad .r{grid-area:2/3}.pad .d{grid-area:3/2}
+.act{position:absolute;bottom:20px;right:14px;display:none;
+  width:86px;height:86px;border-radius:50%;background:var(--sign-yellow);color:var(--ink);
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;font-weight:700;font-size:15px;
+  box-shadow:0 4px 0 rgba(0,0,0,.35)}
+body.touch .pad{display:grid}
+body.touch .act{display:block}
+
+/* ---------- Einkaufszettel ---------- */
+.zettel{
+  background:var(--paper);
+  border-radius:6px;
+  padding:14px 14px 16px;
+  box-shadow:0 6px 0 rgba(0,0,0,.35);
+  position:relative;
+}
+.zettel h2{
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.14em;
+  font-size:17px;margin:0 0 2px;
+}
+.zettel .sub{font-size:12px;color:var(--ink-soft);margin:0 0 12px;border-bottom:2px dashed var(--line);padding-bottom:10px}
+.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.list li{display:flex;gap:9px;align-items:flex-start;font-size:15px;line-height:1.25}
+.box{
+  flex:0 0 auto;width:19px;height:19px;border:2px solid var(--ink);border-radius:3px;
+  display:grid;place-items:center;font-size:14px;font-weight:700;margin-top:1px;
+}
+.list li.done{color:#8A9099}
+.list li.done .box{background:var(--green);border-color:var(--green);color:#fff}
+.list li.done .de{text-decoration:line-through}
+.de{font-weight:600}
+.en{display:block;font-size:12px;color:var(--ink-soft);font-style:italic}
+body.no-en .en{display:none}
+.count{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+
+.cart-row{
+  margin-top:14px;padding-top:12px;border-top:2px dashed var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--mono);font-size:14px;
+}
+#cartBadge{font-weight:700}
+#cartBadge.bump{animation:bump .32s ease}
+@keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.45)}100%{transform:scale(1)}}
+
+/* ---------- Modals ---------- */
+.veil{
+  position:fixed;inset:0;background:rgba(15,19,25,.72);
+  display:none;place-items:center;padding:16px;z-index:40;overflow:auto;
+}
+.veil.on{display:grid}
+.panel{
+  background:var(--card);border-radius:10px;width:min(680px,100%);
+  padding:18px;box-shadow:0 12px 0 rgba(0,0,0,.4);
+  animation:rise .22s ease-out;
+}
+@keyframes rise{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.panel h3{
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;
+  margin:0 0 4px;font-size:20px;
+}
+.panel .lead{margin:0 0 14px;color:var(--ink-soft);font-size:14px}
+.shelf-head{display:flex;align-items:center;gap:10px;margin:-18px -18px 14px;padding:12px 18px;border-radius:10px 10px 0 0;color:#fff}
+.shelf-head h3{margin:0;color:#fff}
+.shelf-head .tag{margin-left:auto;font-size:12px;opacity:.9;font-family:var(--mono)}
+
+.goods{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:9px}
+.good{
+  background:#F6F4EF;border:2px solid var(--line);border-radius:8px;
+  padding:10px 6px 8px;text-align:center;transition:transform .12s,border-color .12s;
+}
+.good:hover{transform:translateY(-3px);border-color:var(--ink)}
+.good .pic{font-size:32px;line-height:1.1;display:block}
+.good .nm{display:block;font-weight:600;font-size:14px;margin-top:4px}
+.good .pr{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-top:2px}
+.good.taken{opacity:.45}
+.good.wrong{animation:shake .34s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+.feedback{
+  margin-top:14px;padding:11px 13px;border-radius:7px;font-size:15px;min-height:24px;
+  background:#F1EEE7;border-left:5px solid var(--line);
+}
+.feedback.ok{background:#E7F6EA;border-left-color:var(--green)}
+.feedback.no{background:#FCEBEA;border-left-color:var(--sign-red)}
+.feedback .tr{display:block;font-size:13px;color:var(--ink-soft);font-style:italic;margin-top:3px}
+body.no-en .feedback .tr{display:none}
+
+.rowbtn{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px}
+.btn{
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.09em;font-weight:700;font-size:15px;
+  background:var(--ink);color:#fff;padding:11px 18px;border-radius:5px;box-shadow:0 3px 0 rgba(0,0,0,.3);
+}
+.btn:hover{background:#2A3542}
+.btn.y{background:var(--sign-yellow);color:var(--ink)}
+.btn.y:hover{background:#ffdf6b}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:none;border:2px solid var(--line)}
+.btn.ghost:hover{background:#F1EEE7}
+
+/* dialogue at the till */
+.says{display:flex;gap:11px;align-items:flex-start;margin-bottom:14px}
+.face{
+  flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:var(--sign-blue);
+  display:grid;place-items:center;font-size:24px;color:#fff;
+}
+.bubble{background:#F1EEE7;border-radius:4px 12px 12px 12px;padding:11px 13px;font-size:16px;line-height:1.4}
+.bubble .tr{display:block;font-size:13px;color:var(--ink-soft);font-style:italic;margin-top:4px}
+body.no-en .bubble .tr{display:none}
+.answers{display:flex;flex-direction:column;gap:8px}
+.answer{
+  text-align:left;background:#fff;border:2px solid var(--line);border-radius:8px;padding:11px 13px;font-size:15px;
+  transition:border-color .12s,transform .12s;
+}
+.answer:hover{border-color:var(--ink);transform:translateX(3px)}
+.answer.right{border-color:var(--green);background:#E7F6EA}
+.answer.wrongpick{border-color:var(--sign-red);background:#FCEBEA}
+
+.belt{height:52px;border-radius:6px;background:repeating-linear-gradient(90deg,#3C4757 0 22px,#4A566A 22px 44px);
+  margin-bottom:14px;overflow:hidden;position:relative;display:flex;align-items:center}
+.belt .run{display:flex;gap:20px;padding-left:8px;font-size:26px;animation:roll 6s linear infinite}
+@keyframes roll{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+
+/* ---------- Kassenbon (signature element) ---------- */
+.bonwrap{display:grid;place-items:center}
+.bon{
+  position:relative;background:var(--paper);color:#20262F;
+  font-family:var(--mono);font-size:13px;line-height:1.65;
+  width:min(360px,100%);padding:22px 20px 30px;
+  box-shadow:0 8px 22px rgba(0,0,0,.45);
+}
+.bon::before,.bon::after{
+  content:'';position:absolute;left:0;right:0;height:12px;
+  background:
+    linear-gradient(-45deg,var(--card) 9px,transparent 0) 0 0/18px 18px,
+    linear-gradient(45deg,var(--card) 9px,transparent 0) 9px 0/18px 18px;
+}
+.bon::before{top:0;transform:scaleY(-1)}
+.bon::after{bottom:0}
+.bon .ctr{text-align:center}
+.bon .big{font-family:var(--display);font-size:20px;letter-spacing:.18em;font-weight:700}
+.bon hr{border:0;border-top:1px dashed #B9AF9A;margin:8px 0}
+.bon .li{display:flex;justify-content:space-between;gap:10px}
+.bon .li span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bon .tot{font-weight:700;font-size:15px}
+.bon .code{background:#20262F;color:var(--paper);padding:5px 8px;text-align:center;letter-spacing:.12em;margin-top:8px}
+.bon .ln{opacity:0;animation:print .28s ease forwards}
+@keyframes print{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+
+/* vocabulary review */
+.vocab{margin-top:16px;background:#F6F4EF;border-radius:8px;padding:12px 14px}
+.vocab h4{font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:14px;margin:0 0 8px}
+.vocab table{width:100%;border-collapse:collapse;font-size:14px}
+.vocab td{padding:4px 0;border-bottom:1px solid var(--line)}
+.vocab td:nth-child(2){font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+.vocab td:last-child{text-align:right;font-style:italic;color:var(--ink-soft);font-size:13px}
+
+/* start screen */
+.start .hero{
+  background:var(--sign-red);color:#fff;margin:-18px -18px 16px;padding:26px 18px;border-radius:10px 10px 0 0;
+  text-align:center;
+}
+.start .hero .kick{font-family:var(--mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;opacity:.85}
+.start .hero h1{
+  font-family:var(--display);text-transform:uppercase;letter-spacing:.06em;
+  font-size:clamp(28px,7vw,46px);margin:6px 0 4px;line-height:.98;
+}
+.start .hero h1 em{color:var(--sign-yellow);font-style:normal}
+.start .hero p{margin:0;font-size:14px;opacity:.92}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{display:flex;gap:11px;align-items:flex-start;font-size:15px;line-height:1.35}
+.steps .n{
+  flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;
+  display:grid;place-items:center;font-family:var(--mono);font-size:13px;font-weight:700;
+}
+.steps .tr{display:block;font-size:13px;color:var(--ink-soft);font-style:italic}
+body.no-en .steps .tr{display:none}
+
+.scoreline{font-family:var(--mono);font-size:14px;text-align:center;margin:12px 0 0;color:var(--ink-soft)}
+.verdict{font-family:var(--display);text-transform:uppercase;letter-spacing:.1em;font-size:26px;text-align:center;margin:4px 0 0}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="topbar">
+    <div class="logo">Super<span>markt</span></div>
+    <button class="tool" id="btnEN" aria-pressed="true">EN</button>
+    <button class="tool" id="btnTips" aria-pressed="true">Tipps</button>
+    <button class="tool" id="btnSound" aria-pressed="true">Ton</button>
+    <button class="tool" id="btnHelp">Hilfe</button>
+    <button class="tool" id="btnReset">Neu</button>
+  </header>
+
+  <div class="stage">
+    <div class="screenbox">
+      <canvas id="cv" width="960" height="640" aria-label="Supermarkt von oben. Bewege dich mit den Pfeiltasten."></canvas>
+      <div class="hint-bar" id="hint"></div>
+      <div class="pad" aria-hidden="true">
+        <button class="u" data-dir="up">▲</button>
+        <button class="l" data-dir="left">◀</button>
+        <button class="r" data-dir="right">▶</button>
+        <button class="d" data-dir="down">▼</button>
+      </div>
+      <button class="act" id="btnAct">Aktion</button>
+    </div>
+
+    <aside class="zettel">
+      <h2>Einkaufszettel</h2>
+      <p class="sub">Shopping list</p>
+      <ul class="list" id="listEl"></ul>
+      <div class="cart-row">
+        <span>🛒 Einkaufswagen</span>
+        <span id="cartBadge">0</span>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- START / HELP -->
+<div class="veil on" id="veilStart">
+  <div class="panel start">
+    <div class="hero">
+      <div class="kick">Deutsch üben · A1–A2</div>
+      <h1>Einkaufen im <em>Supermarkt</em></h1>
+      <p>Finde alles auf deinem Einkaufszettel und bezahle an der Kasse.</p>
+    </div>
+    <ol class="steps">
+      <li><span class="n">1</span><span>Geh mit den <b>Pfeiltasten</b> oder <b>W A S D</b> durch den Markt.<span class="tr">Move with the arrow keys or WASD.</span></span></li>
+      <li><span class="n">2</span><span>Stell dich vor eine Abteilung und drücke die <b>Leertaste</b>.<span class="tr">Stand in front of a section and press the space bar.</span></span></li>
+      <li><span class="n">3</span><span>Klicke die Artikel an, die auf deinem Zettel stehen.<span class="tr">Click the items that are on your list.</span></span></li>
+      <li><span class="n">4</span><span>Geh zur <b>Kasse</b> und beantworte die Fragen der Kassiererin.<span class="tr">Go to the till and answer the cashier's questions.</span></span></li>
+    </ol>
+    <div class="rowbtn">
+      <button class="btn y" id="btnStart">Los geht's</button>
+      <button class="btn ghost" id="btnCloseHelp" hidden>Zurück zum Spiel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHELF -->
+<div class="veil" id="veilShelf">
+  <div class="panel">
+    <div class="shelf-head" id="shelfHead">
+      <h3 id="shelfTitle">Abteilung</h3>
+      <span class="tag" id="shelfTag"></span>
+    </div>
+    <p class="lead" id="shelfNeed"></p>
+    <div class="goods" id="goods"></div>
+    <div class="feedback" id="shelfFb">Klicke einen Artikel an.</div>
+    <div class="rowbtn"><button class="btn" id="btnLeaveShelf">Zurück in den Gang</button></div>
+  </div>
+</div>
+
+<!-- KASSE -->
+<div class="veil" id="veilKasse">
+  <div class="panel">
+    <h3>Kasse 3</h3>
+    <p class="lead">Checkout</p>
+    <div class="belt" id="belt"><div class="run" id="beltRun"></div></div>
+    <div class="says">
+      <div class="face">🧑‍💼</div>
+      <div class="bubble"><span id="kText"></span><span class="tr" id="kTr"></span></div>
+    </div>
+    <div class="answers" id="answers"></div>
+    <div class="rowbtn"><button class="btn ghost" id="btnLeaveKasse">Moment, bitte!</button></div>
+  </div>
+</div>
+
+<!-- ENDE -->
+<div class="veil" id="veilEnd">
+  <div class="panel">
+    <h3 id="endTitle">Geschafft!</h3>
+    <p class="lead" id="endLead">You did it — here is your receipt.</p>
+    <div class="bonwrap"><div class="bon" id="bon"></div></div>
+    <p class="verdict" id="verdict"></p>
+    <p class="scoreline" id="scoreline"></p>
+    <div class="vocab" id="vocabBox"><h4>Vokabeln · Vocabulary</h4><table id="vocabTable"></table></div>
+    <div class="rowbtn">
+      <button class="btn y" id="btnAgain">Noch einmal einkaufen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   LEHRER-EINSTELLUNGEN / TEACHER SETTINGS
+   ============================================================ */
+const CONFIG = {
+  listLength: 5,        // Artikel auf dem Zettel / items on the list
+  maxQuantity: 3,       // höchste Stückzahl / largest quantity
+  codePrefix: "MARKT",  // Abschlusscode-Präfix / completion-code prefix
+  english: true,        // Übersetzungen anzeigen / show translations
+  hints: true           // Abteilungen markieren / highlight sections
+};
+
+/* ============================================================
+   DATEN
+   ============================================================ */
+const SECTIONS = [
+  {id:"obst",      de:"Obst & Gemüse",  en:"Fruit & vegetables", color:"#2F9E44", x: 60, y: 78, w:230, h:84},
+  {id:"milch",     de:"Milchprodukte",  en:"Dairy",              color:"#1C6EC7", x: 60, y:250, w:230, h:84},
+  {id:"getraenke", de:"Getränke",       en:"Drinks",             color:"#0B7D77", x: 60, y:422, w:230, h:84},
+  {id:"baeckerei", de:"Bäckerei",       en:"Bakery",             color:"#C96A11", x:670, y: 78, w:230, h:84},
+  {id:"fleisch",   de:"Fleisch & Fisch",en:"Meat & fish",        color:"#B02A4A", x:670, y:250, w:230, h:84},
+  {id:"suess",     de:"Süßwaren",       en:"Sweets & snacks",    color:"#6741C6", x:670, y:422, w:230, h:84}
+];
+
+// g = Genus (m/f/n/pl) · unit = Verpackung
+const U = {
+  flasche: {sg:"Flasche", pl:"Flaschen",  g:"f", en:"bottle", enPl:"bottles"},
+  packung: {sg:"Packung", pl:"Packungen", g:"f", en:"pack",   enPl:"packs"},
+  tafel:   {sg:"Tafel",   pl:"Tafeln",    g:"f", en:"bar",    enPl:"bars"},
+  tuete:   {sg:"Tüte",    pl:"Tüten",     g:"f", en:"bag",    enPl:"bags"},
+  becher:  {sg:"Becher",  pl:"Becher",    g:"m", en:"pot",    enPl:"pots"}
+};
+
+const ITEMS = [
+  // Obst & Gemüse
+  {id:"apfel",   sec:"obst", de:"Apfel",   pl:"Äpfel",   g:"m", en:"apple",     pic:"🍎", price:0.60},
+  {id:"banane",  sec:"obst", de:"Banane",  pl:"Bananen", g:"f", en:"banana",    pic:"🍌", price:0.35},
+  {id:"tomate",  sec:"obst", de:"Tomate",  pl:"Tomaten", g:"f", en:"tomato", enPl:"tomatoes", pic:"🍅", price:0.50},
+  {id:"kartoffel",sec:"obst",de:"Kartoffel",pl:"Kartoffeln",g:"f",en:"potato", enPl:"potatoes", pic:"🥔", price:0.30},
+  {id:"gurke",   sec:"obst", de:"Gurke",   pl:"Gurken",  g:"f", en:"cucumber",  pic:"🥒", price:0.89},
+  {id:"karotte", sec:"obst", de:"Karotte", pl:"Karotten",g:"f", en:"carrot",    pic:"🥕", price:0.25},
+
+  // Bäckerei
+  {id:"brot",    sec:"baeckerei", de:"Brot",     pl:"Brote",     g:"n", en:"loaf of bread", enPl:"loaves of bread", pic:"🍞", price:2.49},
+  {id:"broetchen",sec:"baeckerei",de:"Brötchen", pl:"Brötchen",  g:"n", en:"bread roll",    pic:"🥖", price:0.45},
+  {id:"brezel",  sec:"baeckerei", de:"Brezel",   pl:"Brezeln",   g:"f", en:"pretzel",       pic:"🥨", price:1.20},
+  {id:"kuchen",  sec:"baeckerei", de:"Kuchen",   pl:"Kuchen",    g:"m", en:"cake",          pic:"🍰", price:3.20},
+  {id:"croissant",sec:"baeckerei",de:"Croissant",pl:"Croissants",g:"n", en:"croissant",     pic:"🥐", price:1.10},
+
+  // Fleisch & Fisch
+  {id:"wurst",   sec:"fleisch", de:"Wurst",    pl:"Würste",   g:"f", en:"sausage", pic:"🌭", price:2.80},
+  {id:"schinken",sec:"fleisch", de:"Schinken", pl:"Schinken", g:"m", en:"ham",     pic:"🥓", price:3.40, unit:U.packung},
+  {id:"haehnchen",sec:"fleisch",de:"Hähnchen", pl:"Hähnchen", g:"n", en:"chicken", pic:"🍗", price:5.90},
+  {id:"steak",   sec:"fleisch", de:"Steak",    pl:"Steaks",   g:"n", en:"steak",   pic:"🥩", price:7.50},
+  {id:"fisch",   sec:"fleisch", de:"Fisch",    pl:"Fische",   g:"m", en:"fish", enPl:"fish", pic:"🐟", price:6.20},
+
+  // Milchprodukte
+  {id:"milch",   sec:"milch", de:"Milch",   pl:"Milch",    g:"f", en:"milk",   pic:"🥛", price:1.19, unit:U.flasche},
+  {id:"kaese",   sec:"milch", de:"Käse",    pl:"Käse",     g:"m", en:"cheese", pic:"🧀", price:2.95, unit:U.packung},
+  {id:"butter",  sec:"milch", de:"Butter",  pl:"Butter",   g:"f", en:"butter", pic:"🧈", price:1.85, unit:U.packung},
+  {id:"joghurt", sec:"milch", de:"Joghurt", pl:"Joghurts", g:"m", en:"yoghurt",pic:"🥣", price:0.65, unit:U.becher},
+  {id:"ei",      sec:"milch", de:"Ei",      pl:"Eier",     g:"n", en:"egg",    pic:"🥚", price:0.38},
+
+  // Getränke
+  {id:"wasser",  sec:"getraenke", de:"Wasser",   pl:"Wasser",   g:"n", en:"water",     pic:"💧", price:0.79, unit:U.flasche},
+  {id:"saft",    sec:"getraenke", de:"Saft",     pl:"Säfte",    g:"m", en:"juice",     pic:"🧃", price:1.99, unit:U.flasche},
+  {id:"limonade",sec:"getraenke", de:"Limonade", pl:"Limonaden",g:"f", en:"lemonade",  pic:"🥤", price:1.49, unit:U.flasche},
+  {id:"kaffee",  sec:"getraenke", de:"Kaffee",   pl:"Kaffees",  g:"m", en:"coffee",    pic:"☕", price:4.49, unit:U.packung},
+  {id:"tee",     sec:"getraenke", de:"Tee",      pl:"Tees",     g:"m", en:"tea",       pic:"🍵", price:2.19, unit:U.packung},
+
+  // Süßwaren
+  {id:"schokolade",sec:"suess", de:"Schokolade",  pl:"Schokoladen", g:"f",  en:"chocolate",  pic:"🍫", price:1.29, unit:U.tafel},
+  {id:"kekse",     sec:"suess", de:"Kekse",       pl:"Kekse",       g:"pl", en:"biscuits",   pic:"🍪", price:1.59, unit:U.packung},
+  {id:"gummibaerchen",sec:"suess",de:"Gummibärchen",pl:"Gummibärchen",g:"pl",en:"gummy bears",pic:"🍬", price:1.09, unit:U.tuete},
+  {id:"chips",     sec:"suess", de:"Chips",       pl:"Chips",       g:"pl", en:"crisps",     pic:"🍟", price:1.79, unit:U.tuete},
+  {id:"eis",       sec:"suess", de:"Eis",         pl:"Eis",         g:"n",  en:"ice cream",  pic:"🍦", price:2.60, unit:U.packung}
+];
+
+const byId = {}; ITEMS.forEach(i => byId[i.id] = i);
+
+/* ============================================================
+   GRAMMATIK-HELFER
+   ============================================================ */
+const NOM = {m:"der", f:"die", n:"das", pl:"die"};
+const AKK = {m:"den", f:"die", n:"das", pl:"die"};
+const EIN = {m:"ein", f:"eine", n:"ein", pl:""};
+
+const ONES = ["null","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn",
+  "elf","zwölf","dreizehn","vierzehn","fünfzehn","sechzehn","siebzehn","achtzehn","neunzehn"];
+const TENS = ["","","zwanzig","dreißig","vierzig","fünfzig","sechzig","siebzig","achtzig","neunzig"];
+
+function numWord(n){
+  n = Math.round(n);
+  if(n < 20) return ONES[n];
+  if(n < 100){
+    const o = n % 10, t = Math.floor(n / 10);
+    return (o ? ONES[o].replace("eins","ein") + "und" : "") + TENS[t];
+  }
+  const h = Math.floor(n / 100), r = n % 100;
+  return ONES[h].replace("eins","ein") + "hundert" + (r ? numWord(r) : "");
+}
+function priceWords(v){
+  const e = Math.floor(v + 1e-9), c = Math.round((v - e) * 100);
+  const euro = (e === 1 ? "ein" : numWord(e)) + " Euro";
+  return c ? euro + " " + numWord(c) : euro;
+}
+function money(v){ return v.toFixed(2).replace(".", ",") + " €"; }
+
+// "3 Äpfel" · "eine Flasche Milch" · "zwei Packungen Kekse"
+function phrase(item, n){
+  if(item.unit){
+    const u = item.unit;
+    return n === 1 ? EIN[u.g] + " " + u.sg + " " + item.de : n + " " + u.pl + " " + item.de;
+  }
+  return n === 1 ? EIN[item.g] + " " + item.de : n + " " + item.pl;
+}
+function phraseEN(item, n){
+  if(item.unit) return n + " " + (n === 1 ? item.unit.en : item.unit.enPl) + " of " + item.en;
+  return n + " " + (n === 1 ? item.en : (item.enPl || item.en + "s"));
+}
+// "den Apfel" / "die Milch" / "das Brot"
+function akkPhrase(item){
+  if(item.unit) return AKK[item.unit.g] + " " + item.unit.sg + " " + item.de;
+  return AKK[item.g] + " " + item.de;
+}
+function nomPhrase(item){ return NOM[item.g] + " " + item.de; }
+
+/* ============================================================
+   ZUSTAND
+   ============================================================ */
+const S = {
+  list: [], cart: [], seen: new Set(), mistakes: 0, dialogRight: 0, dialogTotal: 0,
+  running: false, openSection: null, kasseStep: 0, total: 0, payWords: "",
+  bag: null, payment: null, flash: null, flashUntil: 0
+};
+
+/* ============================================================
+   WELT / GEOMETRIE
+   ============================================================ */
+const W = 960, H = 640;
+const KASSE = {x:370, y:520, w:230, h:56};
+const player = {x:150, y:590, r:15, dir:0, walk:0, moving:false};
+const solids = () => SECTIONS.map(s => ({x:s.x, y:s.y, w:s.w, h:s.h})).concat([KASSE]);
+function nearRect(r, pad){
+  return player.x > r.x - pad && player.x < r.x + r.w + pad &&
+         player.y > r.y - pad && player.y < r.y + r.h + pad;
+}
+function distTo(r){
+  return Math.hypot(player.x - (r.x + r.w / 2), player.y - (r.y + r.h / 2));
+}
+function currentZone(){
+  // Bei überlappenden Zonen gewinnt die nächste Abteilung.
+  let best = null, bd = Infinity;
+  for(const s of SECTIONS){
+    if(nearRect(s, 46)){ const d = distTo(s); if(d < bd){ bd = d; best = {type:"section", sec:s}; } }
+  }
+  if(nearRect(KASSE, 46) && distTo(KASSE) < bd) return {type:"kasse"};
+  return best;
+}
+
+/* ============================================================
+   TON
+   ============================================================ */
+let actx = null, soundOn = true;
+function beep(freq, dur, type, vol){
+  if(!soundOn) return;
+  try{
+    if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = type || "square"; o.frequency.value = freq;
+    g.gain.value = vol || 0.05;
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(); o.stop(actx.currentTime + dur);
+  }catch(e){}
+}
+const sndScan  = () => beep(1180, .09, "square", .05);
+const sndRight = () => { beep(660,.09,"triangle",.07); setTimeout(()=>beep(990,.14,"triangle",.07),90); };
+const sndWrong = () => beep(150, .22, "sawtooth", .05);
+const sndDoor  = () => beep(420, .12, "sine", .04);
+
+/* ============================================================
+   EINKAUFSZETTEL BAUEN
+   ============================================================ */
+function buildList(){
+  const secs = SECTIONS.map(s => s.id).sort(() => Math.random() - .5);
+  const picked = [];
+  // erst aus verschiedenen Abteilungen, dann auffüllen
+  for(const sid of secs){
+    if(picked.length >= CONFIG.listLength) break;
+    const pool = ITEMS.filter(i => i.sec === sid);
+    picked.push(pool[Math.floor(Math.random() * pool.length)]);
+  }
+  while(picked.length < CONFIG.listLength){
+    const c = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+    if(!picked.includes(c)) picked.push(c);
+  }
+  S.list = picked.slice(0, CONFIG.listLength).map(it => ({
+    id: it.id,
+    qty: it.unit || it.g === "pl" ? 1 + Math.floor(Math.random() * 2)
+                                  : 1 + Math.floor(Math.random() * CONFIG.maxQuantity),
+    got: 0
+  }));
+}
+const entryOf = id => S.list.find(e => e.id === id);
+const listDone = () => S.list.every(e => e.got >= e.qty);
+const missing  = () => S.list.filter(e => e.got < e.qty);
+const sectionNeeded = secId => S.list.some(e => e.got < e.qty && byId[e.id].sec === secId);
+
+/* ============================================================
+   UI: ZETTEL
+   ============================================================ */
+const listEl = document.getElementById("listEl");
+const cartBadge = document.getElementById("cartBadge");
+
+function renderList(){
+  listEl.innerHTML = "";
+  S.list.forEach(e => {
+    const it = byId[e.id];
+    const li = document.createElement("li");
+    const done = e.got >= e.qty;
+    if(done) li.className = "done";
+    li.innerHTML =
+      '<span class="box">' + (done ? "✓" : "") + '</span>' +
+      '<span><span class="de">' + phrase(it, e.qty) + '</span> ' +
+      '<span class="count">' + e.got + "/" + e.qty + '</span>' +
+      '<span class="en">' + phraseEN(it, e.qty) + '</span></span>';
+    listEl.appendChild(li);
+  });
+  const n = S.cart.length;
+  cartBadge.textContent = n;
+  cartBadge.classList.remove("bump");
+  void cartBadge.offsetWidth;
+  cartBadge.classList.add("bump");
+}
+
+/* ============================================================
+   ZEICHNEN
+   ============================================================ */
+const cv = document.getElementById("cv");
+const ctx = cv.getContext("2d");
+const FONT = getComputedStyle(document.body).fontFamily;   // einmal lesen, nicht pro Frame
+const SIGN = "Arial Narrow, Helvetica, sans-serif";
+const speckles = [];
+for(let i = 0; i < 320; i++) speckles.push([Math.random()*W, Math.random()*H, Math.random()*1.8+.6, Math.random()<.5?"#D6CDBB":"#C7BCA6"]);
+
+function rr(x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y, x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x, y+h, r);
+  ctx.arcTo(x, y+h, x, y, r);
+  ctx.arcTo(x, y, x+w, y, r);
+  ctx.closePath();
+}
+
+function drawFloor(){
+  ctx.fillStyle = "#EDE7DC"; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle = "#E1D9C9"; ctx.lineWidth = 2;
+  for(let x = 0; x <= W; x += 60){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y = 0; y <= H; y += 60){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  speckles.forEach(s => { ctx.fillStyle = s[3]; ctx.fillRect(s[0], s[1], s[2], s[2]); });
+  // Wände
+  ctx.fillStyle = "#C9BFA9"; 
+  ctx.fillRect(0,0,W,18); ctx.fillRect(0,H-18,W,18); ctx.fillRect(0,0,18,H); ctx.fillRect(W-18,0,18,H);
+}
+
+function drawEntrance(t){
+  const near = player.x < 300 && player.y > 520;
+  const open = near ? 46 : 0;
+  ctx.fillStyle = "#2B3340"; ctx.fillRect(60, H-18, 200, 18);
+  ctx.fillStyle = "rgba(160,205,220,.75)";
+  ctx.fillRect(60, H-16, 96 - open, 14);
+  ctx.fillRect(164 + open, H-16, 96 - open, 14);
+  ctx.fillStyle = "#8A9099";
+  ctx.font = "600 11px " + FONT;
+  ctx.textAlign = "center";
+  ctx.fillText("EINGANG", 160, H - 26);
+}
+
+function drawShelf(s, t){
+  const need = CONFIG.hints && sectionNeeded(s.id);
+  if(need){
+    const a = .28 + .22 * Math.sin(t / 260);
+    ctx.save();
+    ctx.strokeStyle = s.color; ctx.globalAlpha = a; ctx.lineWidth = 8;
+    rr(s.x - 8, s.y - 8, s.w + 16, s.h + 16, 12); ctx.stroke();
+    ctx.restore();
+  }
+  // Korpus
+  ctx.fillStyle = "#333D50"; rr(s.x, s.y + 6, s.w, s.h, 7); ctx.fill();
+  ctx.fillStyle = "#46536B"; rr(s.x, s.y, s.w, s.h, 7); ctx.fill();
+  // Waren in den Regalen
+  const goods = ITEMS.filter(i => i.sec === s.id);
+  const cols = Math.min(goods.length, 6);
+  for(let r = 0; r < 2; r++){
+    for(let c = 0; c < cols; c++){
+      const g = goods[(c + r) % goods.length];
+      const bx = s.x + 12 + c * ((s.w - 24) / cols);
+      const by = s.y + 12 + r * 34;
+      ctx.fillStyle = "rgba(255,255,255,.10)";
+      ctx.fillRect(bx, by, (s.w - 24) / cols - 6, 26);
+      ctx.font = "17px " + FONT;
+      ctx.textAlign = "left"; ctx.textBaseline = "middle";
+      ctx.fillText(g.pic, bx + 3, by + 14);
+    }
+  }
+  // Hängeschild mit leichtem Schwingen
+  const sway = Math.sin(t / 900 + s.x) * 0.02;
+  ctx.save();
+  ctx.translate(s.x + s.w / 2, s.y - 30);
+  ctx.rotate(sway);
+  ctx.fillStyle = "rgba(0,0,0,.18)"; rr(-s.w/2 + 4, 4, s.w - 8, 26, 4); ctx.fill();
+  ctx.fillStyle = s.color; rr(-s.w/2, 0, s.w, 26, 4); ctx.fill();
+  ctx.fillStyle = "#fff";
+  ctx.font = "700 15px " + SIGN;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(s.de.toUpperCase(), 0, 14);
+  ctx.restore();
+  // Aufhängung
+  ctx.strokeStyle = "#B6AC97"; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(s.x + s.w/2 - 40, s.y - 30); ctx.lineTo(s.x + s.w/2 - 40, s.y - 46);
+  ctx.moveTo(s.x + s.w/2 + 40, s.y - 30); ctx.lineTo(s.x + s.w/2 + 40, s.y - 46); ctx.stroke();
+}
+
+function drawKasse(t){
+  const on = CONFIG.hints && listDone();
+  if(on){
+    const a = .3 + .25 * Math.sin(t / 240);
+    ctx.save(); ctx.globalAlpha = a; ctx.strokeStyle = "#FFD23F"; ctx.lineWidth = 8;
+    rr(KASSE.x - 8, KASSE.y - 8, KASSE.w + 16, KASSE.h + 16, 12); ctx.stroke(); ctx.restore();
+  }
+  ctx.fillStyle = "#8C6239"; rr(KASSE.x, KASSE.y + 6, KASSE.w, KASSE.h, 6); ctx.fill();
+  ctx.fillStyle = "#A9784B"; rr(KASSE.x, KASSE.y, KASSE.w, KASSE.h, 6); ctx.fill();
+  // Laufband
+  const off = (t / 22) % 24;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(KASSE.x + 10, KASSE.y + 12, 140, 30); ctx.clip();
+  ctx.fillStyle = "#3C4757"; ctx.fillRect(KASSE.x + 10, KASSE.y + 12, 140, 30);
+  ctx.fillStyle = "#4E5B70";
+  for(let i = -1; i < 8; i++) ctx.fillRect(KASSE.x + 10 + i * 24 + off, KASSE.y + 12, 12, 30);
+  ctx.restore();
+  // Registrierkasse
+  ctx.fillStyle = "#20262F"; rr(KASSE.x + 162, KASSE.y + 8, 56, 38, 4); ctx.fill();
+  ctx.fillStyle = (Math.floor(t / 500) % 2) ? "#63E6BE" : "#2F9E44";
+  ctx.fillRect(KASSE.x + 170, KASSE.y + 14, 40, 12);
+  // Kassiererin
+  const bob = Math.sin(t / 420) * 2;
+  ctx.fillStyle = "#1C6EC7"; rr(KASSE.x + 92, KASSE.y - 46 + bob, 34, 40, 8); ctx.fill();
+  ctx.fillStyle = "#F0C9A0"; ctx.beginPath(); ctx.arc(KASSE.x + 109, KASSE.y - 56 + bob, 14, 0, 7); ctx.fill();
+  ctx.fillStyle = "#5A3E28"; ctx.beginPath(); ctx.arc(KASSE.x + 109, KASSE.y - 62 + bob, 14, Math.PI, 0); ctx.fill();
+  // Schild
+  ctx.fillStyle = "#DA3633"; rr(KASSE.x + 8, KASSE.y - 84, 74, 24, 4); ctx.fill();
+  ctx.fillStyle = "#fff"; ctx.font = "700 14px " + SIGN;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText("KASSE", KASSE.x + 45, KASSE.y - 71);
+}
+
+function drawPlayer(t){
+  const p = player;
+  const step = p.moving ? Math.sin(p.walk / 5) : 0;
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  // Schatten
+  ctx.fillStyle = "rgba(21,28,38,.16)";
+  ctx.beginPath(); ctx.ellipse(0, 6, 20, 8, 0, 0, 7); ctx.fill();
+  // Einkaufswagen vor der Figur
+  const cd = p.dir >= 0 ? 1 : -1;
+  ctx.save();
+  ctx.translate(cd * 22, 0);
+  ctx.strokeStyle = "#93A0B4"; ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-8, -12); ctx.lineTo(10, -12); ctx.lineTo(6, 4); ctx.lineTo(-6, 4); ctx.closePath();
+  ctx.stroke();
+  ctx.strokeStyle = "#AEB9C9"; ctx.lineWidth = 1.5;
+  for(let i = -5; i <= 7; i += 4){ ctx.beginPath(); ctx.moveTo(i, -12); ctx.lineTo(i - 1, 4); ctx.stroke(); }
+  ctx.fillStyle = "#2B3340";
+  ctx.beginPath(); ctx.arc(-4, 8, 3, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(6, 8, 3, 0, 7); ctx.fill();
+  // Ware im Wagen
+  const n = Math.min(S.cart.length, 4);
+  ctx.font = "12px " + FONT;
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for(let i = 0; i < n; i++){
+    const it = byId[S.cart[S.cart.length - 1 - i].id];
+    ctx.fillText(it.pic, -4 + i * 5, -8 - i * 2);
+  }
+  ctx.restore();
+  // Beine
+  ctx.strokeStyle = "#2E3A4C"; ctx.lineWidth = 4; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(-3, 0); ctx.lineTo(-3 + step * 5, 8); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(3, 0); ctx.lineTo(3 - step * 5, 8); ctx.stroke();
+  // Körper
+  ctx.fillStyle = "#DA3633"; rr(-10, -22, 20, 24, 7); ctx.fill();
+  // Kopf
+  ctx.fillStyle = "#F0C9A0"; ctx.beginPath(); ctx.arc(0, -30, 11, 0, 7); ctx.fill();
+  ctx.fillStyle = "#3B2A1C"; ctx.beginPath(); ctx.arc(0, -33, 11, Math.PI, 0); ctx.fill();
+  ctx.restore();
+}
+
+function drawPrompt(t){
+  const z = currentZone();
+  if(!z) return;
+  const label = z.type === "kasse" ? "Leertaste: bezahlen" : "Leertaste: Regal öffnen";
+  const y = player.y - 56 + Math.sin(t / 300) * 3;
+  ctx.font = "600 13px " + FONT;
+  const w = ctx.measureText(label).width + 20;
+  ctx.fillStyle = "#151C26"; rr(player.x - w/2, y - 14, w, 24, 12); ctx.fill();
+  ctx.fillStyle = "#FFD23F"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  ctx.fillText(label, player.x, y - 1);
+}
+
+function frame(t){
+  drawFloor();
+  drawEntrance(t);
+  SECTIONS.forEach(s => drawShelf(s, t));
+  drawKasse(t);
+  drawPlayer(t);
+  drawPrompt(t);
+  updateHint();
+  requestAnimationFrame(frame);
+}
+
+/* ============================================================
+   BEWEGUNG
+   ============================================================ */
+const keys = {};
+const held = {up:false, down:false, left:false, right:false};
+let last = performance.now();
+
+function step(now){
+  const dt = Math.min(48, now - last); last = now;
+  if(S.running && !document.querySelector(".veil.on")){
+    let dx = 0, dy = 0;
+    if(keys["ArrowLeft"] || keys["a"] || held.left) dx -= 1;
+    if(keys["ArrowRight"]|| keys["d"] || held.right) dx += 1;
+    if(keys["ArrowUp"]   || keys["w"] || held.up) dy -= 1;
+    if(keys["ArrowDown"] || keys["s"] || held.down) dy += 1;
+    const len = Math.hypot(dx, dy);
+    player.moving = len > 0;
+    if(len > 0){
+      const sp = 0.20 * dt;
+      dx = dx / len * sp; dy = dy / len * sp;
+      if(dx) player.dir = dx > 0 ? 1 : -1;
+      moveAxis(dx, 0); moveAxis(0, dy);
+      player.walk += dt * 0.9;
+    }
+  } else player.moving = false;
+  requestAnimationFrame(step);
+}
+function moveAxis(dx, dy){
+  const nx = player.x + dx, ny = player.y + dy, r = player.r;
+  const blocked = solids().some(o =>
+    nx + r > o.x && nx - r < o.x + o.w && ny + r > o.y && ny - r < o.y + o.h);
+  if(blocked) return;
+  player.x = Math.max(30, Math.min(W - 30, nx));
+  player.y = Math.max(34, Math.min(H - 34, ny));
+}
+
+document.addEventListener("keydown", e => {
+  keys[e.key] = true;
+  if(e.key === " " || e.key === "Enter"){
+    if(!document.querySelector(".veil.on")){ e.preventDefault(); interact(); }
+  }
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) e.preventDefault();
+});
+document.addEventListener("keyup", e => { keys[e.key] = false; });
+
+document.querySelectorAll(".pad button").forEach(b => {
+  const d = b.dataset.dir;
+  const on = e => { e.preventDefault(); held[d] = true; };
+  const off = e => { e.preventDefault(); held[d] = false; };
+  b.addEventListener("pointerdown", on);
+  b.addEventListener("pointerup", off);
+  b.addEventListener("pointerleave", off);
+  b.addEventListener("pointercancel", off);
+});
+document.getElementById("btnAct").addEventListener("click", interact);
+if(window.matchMedia("(pointer: coarse)").matches) document.body.classList.add("touch");
+
+/* ============================================================
+   HINWEISLEISTE
+   ============================================================ */
+const hintEl = document.getElementById("hint");
+function flash(html, ms){ S.flash = html; S.flashUntil = performance.now() + (ms || 2600); }
+
+function updateHint(){
+  if(!S.running){ hintEl.innerHTML = ""; return; }
+  if(S.flash && performance.now() < S.flashUntil){ hintEl.innerHTML = S.flash; return; }
+  const z = currentZone();
+  if(z && z.type === "section"){
+    hintEl.innerHTML = "Abteilung: <b>" + z.sec.de + "</b>";
+  } else if(z && z.type === "kasse"){
+    hintEl.innerHTML = listDone() ? "<b>Kasse</b> — du hast alles!" : "<b>Kasse</b> — dir fehlt noch etwas.";
+  } else {
+    const m = missing();
+    hintEl.innerHTML = m.length
+      ? "Du brauchst noch <b>" + akkPhrase(byId[m[0].id]) + "</b>."
+      : "Alles gefunden! Geh zur <b>Kasse</b>.";
+  }
+}
+
+/* ============================================================
+   INTERAKTION
+   ============================================================ */
+function interact(){
+  if(!S.running) return;
+  const z = currentZone();
+  if(!z) return;
+  if(z.type === "section") openShelf(z.sec);
+  else openKasse();
+}
+
+/* ---------- Regal ---------- */
+const veilShelf = document.getElementById("veilShelf");
+const goodsEl = document.getElementById("goods");
+const shelfFb = document.getElementById("shelfFb");
+
+function openShelf(sec){
+  S.openSection = sec;
+  sndDoor();
+  const head = document.getElementById("shelfHead");
+  head.style.background = sec.color;
+  document.getElementById("shelfTitle").textContent = sec.de;
+  document.getElementById("shelfTag").textContent = sec.en;
+  const need = S.list.filter(e => e.got < e.qty && byId[e.id].sec === sec.id);
+  document.getElementById("shelfNeed").innerHTML = need.length
+    ? "Von deinem Zettel brauchst du hier: <b>" + need.map(e => phrase(byId[e.id], e.qty - e.got)).join(", ") + "</b>"
+    : "Hier steht nichts von deinem Zettel. Schau dich trotzdem um!";
+  shelfFb.className = "feedback";
+  shelfFb.textContent = "Klicke einen Artikel an.";
+  renderGoods(sec);
+  veilShelf.classList.add("on");
+}
+
+function renderGoods(sec){
+  goodsEl.innerHTML = "";
+  ITEMS.filter(i => i.sec === sec.id).forEach(it => {
+    const e = entryOf(it.id);
+    const full = e && e.got >= e.qty;
+    const b = document.createElement("button");
+    b.className = "good" + (full ? " taken" : "");
+    b.innerHTML = '<span class="pic">' + it.pic + '</span>' +
+                  '<span class="nm">' + nomPhrase(it) + '</span>' +
+                  '<span class="pr">' + money(it.price) + '</span>';
+    b.addEventListener("click", () => pick(it, b));
+    goodsEl.appendChild(b);
+  });
+}
+
+function pick(it, btn){
+  S.seen.add(it.id);
+  const e = entryOf(it.id);
+  if(e && e.got < e.qty){
+    e.got++;
+    S.cart.push({id: it.id});
+    sndRight();
+    shelfFb.className = "feedback ok";
+    const left = e.qty - e.got;
+    shelfFb.innerHTML = "Richtig! Du hast <b>" + akkPhrase(it) + "</b> genommen." +
+      (left > 0 ? " Du brauchst noch " + left + "." : "") +
+      '<span class="tr">Correct — ' + it.en + " added." + (left > 0 ? " " + left + " more to go." : "") + '</span>';
+    flyToCart(btn, it.pic);
+    renderList(); renderGoods(S.openSection);
+    return;
+  }
+  if(e && e.got >= e.qty){
+    shelfFb.className = "feedback";
+    shelfFb.innerHTML = "Du hast schon genug! <b>" + phrase(it, e.qty) + "</b> liegen im Wagen." +
+      '<span class="tr">You already have enough of those.</span>';
+    return;
+  }
+  // falscher Artikel
+  S.mistakes++;
+  sndWrong();
+  btn.classList.remove("wrong"); void btn.offsetWidth; btn.classList.add("wrong");
+  const m = missing();
+  const want = m.length ? byId[m[0].id] : null;
+  shelfFb.className = "feedback no";
+  shelfFb.innerHTML = "Nein — das ist <b>" + nomPhrase(it) + "</b> (" + it.en + ")." +
+    (want ? " Du brauchst <b>" + akkPhrase(want) + "</b>." : "") +
+    '<span class="tr">Not on your list. ' + (want ? "You still need: " + want.en + "." : "") + '</span>';
+}
+
+function flyToCart(from, pic){
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const a = from.getBoundingClientRect();
+  const b = cartBadge.getBoundingClientRect();
+  const fly = document.createElement("div");
+  fly.textContent = pic;
+  fly.style.cssText = "position:fixed;z-index:99;font-size:30px;pointer-events:none;left:" +
+    (a.left + a.width/2 - 15) + "px;top:" + (a.top + 8) + "px";
+  document.body.appendChild(fly);
+  fly.animate(
+    [{transform:"translate(0,0) scale(1)", opacity:1},
+     {transform:"translate(" + ((b.left - a.left) * .5) + "px," + (-70) + "px) scale(1.25)", opacity:1, offset:.45},
+     {transform:"translate(" + (b.left - a.left - a.width/2 + 15) + "px," + (b.top - a.top - 8) + "px) scale(.4)", opacity:.2}],
+    {duration:640, easing:"cubic-bezier(.4,0,.2,1)"}
+  ).onfinish = () => fly.remove();
+}
+
+document.getElementById("btnLeaveShelf").addEventListener("click", () => {
+  veilShelf.classList.remove("on"); S.openSection = null; sndDoor();
+});
+
+/* ============================================================
+   KASSE
+   ============================================================ */
+const veilKasse = document.getElementById("veilKasse");
+const kText = document.getElementById("kText");
+const kTr = document.getElementById("kTr");
+const answersEl = document.getElementById("answers");
+
+function cartTotal(){
+  return S.cart.reduce((s, c) => s + byId[c.id].price, 0);
+}
+
+function openKasse(){
+  if(!listDone()){
+    const m = missing().map(e => akkPhrase(byId[e.id]));
+    flash("Halt! Du brauchst noch <b>" + m.join(", ") + "</b>.", 3400);
+    sndWrong();
+    return;
+  }
+  S.total = Math.round(cartTotal() * 100) / 100;
+  S.payWords = priceWords(S.total);
+  S.kasseStep = 0; S.dialogRight = 0; S.dialogTotal = 0;
+  document.getElementById("beltRun").innerHTML =
+    S.cart.map(c => "<span>" + byId[c.id].pic + "</span>").join("");
+  veilKasse.classList.add("on");
+  let i = 0;
+  const scan = setInterval(() => { sndScan(); if(++i >= Math.min(S.cart.length, 6)) clearInterval(scan); }, 260);
+  nextKasse();
+}
+
+function priceOptions(){
+  // Der Preis in Worten – die Ablenker verdrehen Zehner und Einer.
+  const right = S.payWords;
+  const euros = Math.floor(S.total + 1e-9);
+  const cents = Math.round((S.total - euros) * 100);
+  const swap = n => (n % 10) * 10 + Math.floor(n / 10);
+  const candidates = [
+    priceWords(euros + swap(cents) / 100),          // 14,73 -> vierzehn Euro siebenunddreißig
+    priceWords(swap(euros % 100) + cents / 100),    // Euro-Zahl verdreht
+    priceWords(euros + 10 + cents / 100),
+    priceWords(euros + 1 + swap(cents) / 100),
+    priceWords(euros + 2 + cents / 100)
+  ];
+  const out = [right];
+  candidates.forEach(w => { if(out.length < 3 && !out.includes(w)) out.push(w); });
+  return out.map(w => ({t: w, ok: w === right})).sort(() => Math.random() - .5);
+}
+
+function kasseScript(){
+  return [
+    {
+      de: "Guten Tag! Haben Sie alles gefunden?",
+      en: "Hello! Did you find everything?",
+      opts: [
+        {t:"Ja, danke. Ich habe alles.", ok:true},
+        {t:"Nein, ich bin ein Brötchen.", ok:false},
+        {t:"Um halb drei.", ok:false}
+      ]
+    },
+    {
+      de: "Möchten Sie eine Tüte?",
+      en: "Would you like a bag?",
+      opts: [
+        {t:"Ja, bitte. Eine Tüte, bitte.", ok:true, set:{bag:"Tüte 0,20 €"}},
+        {t:"Nein, danke. Ich habe eine Tasche.", ok:true, set:{bag:null}},
+        {t:"Ich heiße Tüte.", ok:false}
+      ]
+    },
+    {
+      de: "Das macht " + money(S.total) + ". Wie sagt man diesen Preis?",
+      en: "That comes to " + money(S.total) + ". How do you say this price?",
+      opts: priceOptions()
+    },
+    {
+      de: "Wie möchten Sie bezahlen?",
+      en: "How would you like to pay?",
+      opts: [
+        {t:"Mit Karte, bitte.", ok:true, set:{payment:"EC-Karte"}},
+        {t:"Bar, bitte.", ok:true, set:{payment:"BAR"}},
+        {t:"Mit einer Banane, bitte.", ok:false}
+      ]
+    },
+    {
+      de: "Vielen Dank. Einen schönen Tag noch!",
+      en: "Thank you very much. Have a nice day!",
+      opts: [
+        {t:"Danke, gleichfalls. Auf Wiedersehen!", ok:true},
+        {t:"Guten Morgen, bitte.", ok:false},
+        {t:"Tschüss, bis bald!", ok:true}
+      ]
+    }
+  ];
+}
+
+let SCRIPT = [];
+function nextKasse(){
+  if(S.kasseStep === 0) SCRIPT = kasseScript();
+  if(S.kasseStep >= SCRIPT.length){ veilKasse.classList.remove("on"); finish(); return; }
+  const q = SCRIPT[S.kasseStep];
+  kText.textContent = q.de;
+  kTr.textContent = q.en;
+  answersEl.innerHTML = "";
+  q.opts.forEach(o => {
+    const b = document.createElement("button");
+    b.className = "answer";
+    b.textContent = o.t;
+    b.addEventListener("click", () => answer(o, b));
+    answersEl.appendChild(b);
+  });
+}
+
+function answer(o, btn){
+  S.dialogTotal++;
+  if(o.ok){
+    S.dialogRight++;
+    btn.classList.add("right");
+    sndRight();
+    if(o.set) Object.assign(S, o.set);
+    setTimeout(() => { S.kasseStep++; nextKasse(); }, 620);
+  } else {
+    S.mistakes++;
+    btn.classList.add("wrongpick");
+    btn.disabled = true;
+    sndWrong();
+  }
+}
+
+document.getElementById("btnLeaveKasse").addEventListener("click", () => veilKasse.classList.remove("on"));
+
+/* ============================================================
+   ENDE + KASSENBON
+   ============================================================ */
+function finish(){
+  S.running = false;
+  const rows = {};
+  S.cart.forEach(c => { rows[c.id] = (rows[c.id] || 0) + 1; });
+  const bagCost = S.bag ? 0.20 : 0;
+  const total = Math.round((cartTotal() + bagCost) * 100) / 100;
+
+  const points = Math.max(0, S.list.length * 10 + S.dialogRight * 5 - S.mistakes * 5);
+  const code = CONFIG.codePrefix + "-" + S.list.length + (S.mistakes === 0 ? "A" : S.mistakes < 3 ? "B" : "C")
+             + String(Math.round(total * 100) % 100).padStart(2, "0");
+
+  const lines = [];
+  lines.push('<div class="ctr big">SUPERMARKT</div>');
+  lines.push('<div class="ctr">Musterstraße 12 · 10115 Berlin</div>');
+  lines.push('<hr>');
+  Object.keys(rows).forEach(id => {
+    const it = byId[id], n = rows[id];
+    lines.push('<div class="li"><span>' + n + " x " + it.de + '</span><span>' + money(it.price * n) + '</span></div>');
+  });
+  if(S.bag) lines.push('<div class="li"><span>1 x Tragetüte</span><span>0,20 €</span></div>');
+  lines.push('<hr>');
+  lines.push('<div class="li tot"><span>SUMME</span><span>' + money(total) + '</span></div>');
+  lines.push('<div class="li"><span>' + (S.payment === "BAR" ? "BAR" : "EC-KARTE") + '</span><span>' + money(total) + '</span></div>');
+  lines.push('<div class="ctr" style="font-size:11px">in Worten: ' + priceWords(total) + '</div>');
+  lines.push('<hr>');
+  lines.push('<div class="li"><span>Artikel</span><span>' + S.cart.length + '</span></div>');
+  lines.push('<div class="li"><span>Fehler</span><span>' + S.mistakes + '</span></div>');
+  lines.push('<div class="code">CODE ' + code + '</div>');
+  lines.push('<div class="ctr" style="margin-top:8px">Vielen Dank für Ihren Einkauf!</div>');
+
+  const bon = document.getElementById("bon");
+  bon.innerHTML = lines.map((l, i) =>
+    l.replace(/^<div /, '<div style="animation-delay:' + (i * 70) + 'ms" ').replace('class="', 'class="ln ')
+  ).join("");
+
+  document.getElementById("verdict").textContent =
+    S.mistakes === 0 ? "Perfekt!" : S.mistakes <= 2 ? "Sehr gut!" : S.mistakes <= 5 ? "Gut gemacht!" : "Weiter üben!";
+  document.getElementById("scoreline").textContent =
+    "Punkte: " + points + " · Fehler: " + S.mistakes + " · Antworten richtig: " + S.dialogRight + "/" + S.dialogTotal;
+
+  const vt = document.getElementById("vocabTable");
+  vt.innerHTML = "";
+  const shown = new Set();
+  S.list.map(e => e.id).concat(Array.from(S.seen)).forEach(id => {
+    if(shown.has(id)) return; shown.add(id);
+    const it = byId[id];
+    const tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + nomPhrase(it) + "</td><td>Pl. " + it.pl + "</td><td>" + it.en + "</td>";
+    vt.appendChild(tr);
+  });
+
+  document.getElementById("veilEnd").classList.add("on");
+  setTimeout(() => { sndRight(); }, 400);
+}
+
+/* ============================================================
+   STEUERUNG OBEN
+   ============================================================ */
+function applyEnglish(){
+  document.body.classList.toggle("no-en", !CONFIG.english);
+  document.getElementById("btnEN").setAttribute("aria-pressed", CONFIG.english);
+}
+document.getElementById("btnEN").addEventListener("click", () => { CONFIG.english = !CONFIG.english; applyEnglish(); });
+document.getElementById("btnTips").addEventListener("click", e => {
+  CONFIG.hints = !CONFIG.hints; e.currentTarget.setAttribute("aria-pressed", CONFIG.hints);
+});
+document.getElementById("btnSound").addEventListener("click", e => {
+  soundOn = !soundOn; e.currentTarget.setAttribute("aria-pressed", soundOn);
+});
+document.getElementById("btnHelp").addEventListener("click", () => {
+  document.getElementById("btnStart").hidden = true;
+  document.getElementById("btnCloseHelp").hidden = false;
+  document.getElementById("veilStart").classList.add("on");
+});
+document.getElementById("btnCloseHelp").addEventListener("click", () => {
+  document.getElementById("veilStart").classList.remove("on");
+});
+document.getElementById("btnReset").addEventListener("click", newGame);
+document.getElementById("btnStart").addEventListener("click", () => {
+  document.getElementById("veilStart").classList.remove("on");
+  newGame();
+});
+document.getElementById("btnAgain").addEventListener("click", () => {
+  document.getElementById("veilEnd").classList.remove("on");
+  newGame();
+});
+
+function newGame(){
+  document.querySelectorAll(".veil").forEach(v => v.classList.remove("on"));
+  S.list = []; S.cart = []; S.seen = new Set(); S.mistakes = 0;
+  S.dialogRight = 0; S.dialogTotal = 0; S.kasseStep = 0;
+  S.bag = null; S.payment = "EC-Karte"; S.openSection = null;
+  S.flash = null; S.flashUntil = 0;
+  player.x = 150; player.y = 590; player.dir = 1;
+  buildList(); renderList();
+  S.running = true;
+}
+
+/* Start */
+applyEnglish();
+buildList(); renderList();
+requestAnimationFrame(frame);
+requestAnimationFrame(step);
+</script>
+</body>
+</html>

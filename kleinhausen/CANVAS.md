@@ -34,7 +34,7 @@ Upload the `kleinhausen` folder to **Files**, then embed `index.html` in a Page.
 **Novice High (human overlay):** student uses practiced sentences, handles a simple unexpected follow-up, is understandable to a sympathetic listener/reader, still makes gender/case errors.
 
 ## Accessibility
-Students open **Zugang** (header): contrast, type size, Verdana, reduced motion, TTS, captions/transcripts, English gloss, low-fi graphics. 3D praxis games keep their own internal accessibility panels (text mode, etc.).
+Students open **Zugang** (header): contrast, type size, Verdana, reduced motion, TTS, captions/transcripts, English gloss, low-fi graphics. High-graphics mode walks the same first-person Kleinhausen as Foto-Schnitzeljagd and Lieferdienst (shared save + weather). Low-fi is a text list — no WebGL. Praxis games opened from an episode receive that weather and can write completion back to the course.
 
 Prüfungsmodus hides extra transcripts for listening tests; leave it off unless you are proctoring.
 

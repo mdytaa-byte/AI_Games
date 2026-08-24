@@ -22,10 +22,12 @@
 
   KH.shell = function (inner, opts) {
     opts = opts || {};
+    if (!opts.town && KH.Town) KH.Town.hide();
+    document.body.classList.toggle("town-live", !!opts.town);
     const rank = KH.residentRank();
     const pts = KH.state.player.vorname ? KH.state.player.vorname : "Gast";
     document.getElementById("app").innerHTML =
-      '<div class="app-shell">' +
+      '<div class="app-shell' + (opts.town ? " app-shell--town" : "") + '">' +
       '<header class="topbar">' +
       '<button class="brand" type="button" data-go="hub"><span class="brand-mark" aria-hidden="true">K</span><span class="brand-text"><strong>Kleinhausen</strong><small>750 Jahre · ' + KH.esc(rank.de) + "</small></span></button>" +
       '<div class="points" aria-label="Punkte">' + pts + " · " +
@@ -79,7 +81,7 @@
       choice("neutral", "Schüler/in") + choice("schueler", "Schüler") + choice("schuelerin", "Schülerin") +
       "</div></div>" +
       '<div><span class="field">Grafik</span><div class="choice-row" id="gfx">' +
-      choice("high", "High — Illustration, Farbe, Bewegung") + choice("low", "Low-fi — klar, schematisch, schnell") +
+      choice("high", "High — 3D-Stadt, erste Person") + choice("low", "Low-fi — Text, Liste, kein WebGL") +
       "</div></div>" +
       '<label class="field"><input type="checkbox" name="gloss" ' + (KH.state.player.gloss ? "checked" : "") + "> English gloss anzeigen</label>" +
       '<button class="btn post" type="submit">Wohnsitz anmelden</button></form>',
@@ -113,8 +115,8 @@
     }
   };
 
-  KH.view.hub = function () {
-    const list = KH.MODULES.map(function (m) {
+  function episodeListHtml() {
+    return KH.MODULES.map(function (m) {
       const st = KH.state.episodes[m.id] || { status: "locked" };
       return '<button class="ep-btn" data-ep="' + m.id + '" data-status="' + st.status + '" ' +
         (st.status === "locked" ? "disabled" : "") + ">" +
@@ -122,25 +124,107 @@
         '<span class="sub">' + KH.esc(m.titleLong) + '</span></span>' +
         '<span class="status-pill">' + (st.status === "done" ? "Stempel" : st.status === "open" ? "offen" : "zu") + "</span></button>";
     }).join("");
-    const weather = (KH.mod("e01") && KH.state.episodes.e16.status === "done") ? "April · Jubiläum" : currentSeason();
+  }
+
+  function weatherLabel() {
+    return (KH.mod("e01") && KH.state.episodes.e16.status === "done") ? "April · Jubiläum" : currentSeason();
+  }
+
+  KH.view.hub = function () {
+    if ((KH.state.player.gfx || "high") !== "low" && KH.Town) {
+      KH.view.townHub();
+      return;
+    }
+    KH.view.hubList();
+  };
+
+  KH.view.hubList = function () {
+    const list = episodeListHtml();
     KH.shell(
-      '<div class="weather-bar">' + weather + " · " + KH.esc(KH.rolleNoun()) + " " + KH.esc(KH.state.player.vorname) + "</div>" +
+      '<div class="weather-bar">' + weatherLabel() + " · " + KH.esc(KH.rolleNoun()) + " " + KH.esc(KH.state.player.vorname) + "</div>" +
       '<div class="map-layout"><div><h1>Die Stadt</h1>' +
-      '<p class="lede">Klick ein Gebäude: du stehst dort in der Ich-Perspektive. Die gelbe Nadel bist du. Episoden rechts — oder von der Straße aus.</p>' +
-      '<div class="map-board hi-only" id="mapboard" data-weather=""></div>' +
+      '<p class="lede">Low-fi: Orte als Liste. High-Modus ist dieselbe Stadt in der Ich-Perspektive — Pflaster, Fachwerk, Wetter.</p>' +
+      '<div class="lo-only card"><p class="lowfi-note">Low-fi Stadtplan: Liste statt 3D. Ehrlich, schnell, tastaturfreundlich.</p><ul id="lolist"></ul></div>' +
+      '<div class="hi-only map-board" id="mapboard" data-weather=""></div>' +
       '<p class="hi-only" id="map-status" aria-live="polite"></p>' +
-      '<div class="lo-only card"><p class="lowfi-note">Low-fi Stadtplan: Liste statt Illustration.</p><ul id="lolist"></ul></div>' +
       '</div><aside class="side-stack"><div class="card"><p class="kicker">16 Episoden</p><div class="episode-list">' + list + '</div></div>' +
       '<div class="card"><p class="kicker">Durchgehende Geschichte</p><p>' + KH.STORY.throughline + "</p>" +
       '<p class="en">' + KH.STORY.player + "</p></div></aside></div>",
       { here: "hub" }
     );
+    bindHubChrome();
+  };
+
+  KH.view.townHub = function () {
+    const list = episodeListHtml();
+    KH.shell(
+      '<div class="town-hud">' +
+      '<div class="weather-bar">' + weatherLabel() + " · " + KH.esc(KH.rolleNoun()) + " " + KH.esc(KH.state.player.vorname) + "</div>" +
+      '<p class="town-help">Du stehst in Kleinhausen — dieselben Straßen wie Foto-Schnitzeljagd und Lieferdienst. <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> gehen · Ziehen oder <kbd>A</kbd>/<kbd>D</kbd> Blick · <kbd>E</kbd> eintreten.</p>' +
+      '<div class="town-tools">' +
+      '<button class="btn post" type="button" id="open-eps">Episoden</button>' +
+      '<button class="btn ghost" type="button" id="open-plan">Plan</button>' +
+      '<button class="btn ghost" type="button" id="open-orte">Orte</button>' +
+      "</div></div>" +
+      '<aside class="town-drawer" id="ep-drawer" hidden><p class="kicker">16 Episoden</p><div class="episode-list">' + list + "</div>" +
+      '<button class="btn ghost" type="button" id="close-eps">Straße weitergehen</button></aside>' +
+      '<div class="town-modal" id="plan-modal" hidden><div class="card"><h2>Stadtplan</h2><div class="map-board" id="mapboard"></div><button class="btn ghost" type="button" data-close="plan-modal">Schließen</button></div></div>' +
+      '<div class="town-modal" id="orte-modal" hidden><div class="card"><h2>Orte</h2><ul id="lolist"></ul><button class="btn ghost" type="button" data-close="orte-modal">Schließen</button></div></div>' +
+      '<section class="place-sheet" id="place-sheet" hidden></section>',
+      { here: "hub", town: true }
+    );
+    KH.Town.show({
+      weather: KH.weatherKey ? KH.weatherKey() : "overcast",
+      onEnter: function (id) { KH.view.place(id, { fromTown: true }); },
+      onFail: function () { KH.view.hubList(); }
+    });
+    bindHubChrome();
+    const openEps = document.getElementById("open-eps");
+    const drawer = document.getElementById("ep-drawer");
+    if (openEps && drawer) {
+      openEps.addEventListener("click", function () {
+        drawer.hidden = !drawer.hidden;
+        if (KH.Town) {
+          if (drawer.hidden) KH.Town.resume();
+          else KH.Town.pause();
+        }
+      });
+    }
+    const closeEps = document.getElementById("close-eps");
+    if (closeEps) closeEps.addEventListener("click", function () {
+      if (drawer) drawer.hidden = true;
+      if (KH.Town) KH.Town.resume();
+    });
+    document.querySelectorAll("[data-close]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        const m = document.getElementById(b.getAttribute("data-close"));
+        if (m) m.hidden = true;
+        if (KH.Town) KH.Town.resume();
+      });
+    });
+    const openPlan = document.getElementById("open-plan");
+    if (openPlan) openPlan.addEventListener("click", function () {
+      const m = document.getElementById("plan-modal");
+      if (m) m.hidden = false;
+      if (KH.Town) KH.Town.pause();
+    });
+    const openOrte = document.getElementById("open-orte");
+    if (openOrte) openOrte.addEventListener("click", function () {
+      const m = document.getElementById("orte-modal");
+      if (m) m.hidden = false;
+      if (KH.Town) KH.Town.pause();
+    });
+  };
+
+  function bindHubChrome() {
     const board = document.getElementById("mapboard");
     if (board) {
       board.setAttribute("data-weather", KH.weatherKey ? KH.weatherKey() : "overcast");
       board.innerHTML = KH.mapSVG();
       KH.bindMap(board, function (place) {
-        KH.view.place(place);
+        const modal = document.getElementById("plan-modal");
+        if (modal) modal.hidden = true;
+        KH.view.place(place, { fromTown: !!(KH.Town && KH.Town.isLive()) });
       });
       board.querySelectorAll("[data-place]").forEach(function (g) {
         function hint() {
@@ -154,6 +238,7 @@
     }
     const ul = document.getElementById("lolist");
     if (ul) {
+      ul.innerHTML = "";
       Object.keys(KH.PLACES).forEach(function (id) {
         const p = KH.PLACES[id];
         const li = document.createElement("li");
@@ -161,7 +246,11 @@
         b.className = "btn ghost";
         b.type = "button";
         b.textContent = p.name + " · " + p.district;
-        b.addEventListener("click", function () { KH.view.place(id); });
+        b.addEventListener("click", function () {
+          const modal = document.getElementById("orte-modal");
+          if (modal) modal.hidden = true;
+          KH.view.place(id, { fromTown: !!(KH.Town && KH.Town.isLive()) });
+        });
         li.appendChild(b);
         ul.appendChild(li);
       });
@@ -169,7 +258,7 @@
     document.querySelectorAll("[data-ep]").forEach(function (b) {
       b.addEventListener("click", function () { KH.view.episode(b.getAttribute("data-ep")); });
     });
-  };
+  }
 
   function currentSeason() {
     const done = Object.values(KH.state.episodes).filter(function (e) { return e.status === "done"; }).length;
@@ -183,9 +272,56 @@
     status.textContent = p.name + " · " + p.district + (locked ? " — Episode später, Ort trotzdem offen" : "");
   }
 
-  KH.view.place = function (id) {
+  function placeBodyHtml(id) {
     const meta = KH.PLACES[id];
     const loc = (KH.LOCATIONS && KH.LOCATIONS[id]) || {};
+    const ep = loc.episode;
+    const st = ep && KH.state.episodes[ep];
+    const canEp = st && st.status !== "locked";
+    const looks = loc.looks || [];
+    const npc = loc.npc && KH.NPCS[loc.npc];
+    const lookBtns = looks.map(function (h, i) {
+      return '<button type="button" data-look="' + i + '">' + (i + 1) + " · " + KH.esc(h.label) + "</button>";
+    }).join("");
+    return {
+      meta: meta, loc: loc, ep: ep, canEp: canEp, looks: looks,
+      html:
+        '<p class="kicker">Ich-Perspektive · ' + KH.esc(meta.district) + "</p>" +
+        "<h1>" + KH.esc(meta.name) + "</h1>" +
+        '<p class="you-line">' + KH.esc(loc.you || ("Du stehst vor " + meta.name + ".")) + "</p>" +
+        (loc.youEn ? '<p class="en">' + KH.esc(loc.youEn) + "</p>" : "") +
+        "<h2>Schau dich um</h2>" +
+        '<div class="look-grid" id="looks">' + lookBtns + "</div>" +
+        '<div id="look-out" class="feedback">Wähle etwas, das du siehst. Die Wörter gehören dir danach.</div>' +
+        (npc ? '<div class="card npc-row" style="margin-top:12px"><div class="portrait" style="background:' + npc.color + ';color:#fff">' + KH.esc(npc.initials) + '</div><div class="bubble"><div class="who">' + KH.esc(npc.name) + '</div><p>' + KH.esc(loc.npcLine || npc.bio) + '</p>' + (loc.npcLineEn ? '<p class="en">' + KH.esc(loc.npcLineEn) + '</p>' : "") + "</div></div>" : "") +
+        '<div class="row-btns">' +
+        (canEp ? '<button class="btn post" type="button" id="goep">Episode ' + ep.slice(1) + " hier spielen</button>" : "<p>Die Episode zu diesem Ort ist noch zu — du darfst trotzdem stehen und gucken.</p>") +
+        (loc.side ? '<button class="btn ghost" type="button" id="goside">Entdeckung</button>' : "") +
+        '<button class="btn ghost" type="button" id="leave-place">Weitergehen</button>' +
+        "</div>"
+    };
+  }
+
+  function bindPlaceLooks(looks) {
+    document.querySelectorAll("[data-look]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        const h = looks[parseInt(b.getAttribute("data-look"), 10)];
+        b.setAttribute("data-found", "1");
+        const out = document.getElementById("look-out");
+        if (out) {
+          out.className = "feedback ok";
+          out.innerHTML = "<strong>" + KH.esc(h.label) + "</strong> — " + h.de + (h.en ? '<span class="en">' + KH.esc(h.en) + "</span>" : "");
+        }
+        KH.speak(h.label + ". " + (h.de || ""));
+        KH.live(h.label);
+        if (h.discover) KH.discover(h.discover);
+      });
+    });
+  }
+
+  KH.view.place = function (id, opts) {
+    opts = opts || {};
+    const meta = KH.PLACES[id];
     if (!meta) return KH.view.hub();
     KH.currentPlace = id;
     if ((KH.state.visited || []).indexOf(id) < 0) {
@@ -194,54 +330,46 @@
       KH.addPoints("kultur", 1);
     }
     KH.save();
-    const ep = loc.episode;
-    const st = ep && KH.state.episodes[ep];
-    const canEp = st && st.status !== "locked";
-    const weather = KH.weatherKey ? KH.weatherKey() : "overcast";
-    const looks = loc.looks || [];
-    const npc = loc.npc && KH.NPCS[loc.npc];
-    const lookBtns = looks.map(function (h, i) {
-      return '<button type="button" data-look="' + i + '">' + (i + 1) + " · " + KH.esc(h.label) + "</button>";
-    }).join("");
+    const pack = placeBodyHtml(id);
+    const loc = pack.loc;
+    const fromTown = opts.fromTown || (KH.Town && KH.Town.isLive && KH.Town.isLive());
+    if (fromTown && (KH.state.player.gfx || "high") !== "low") {
+      if (KH.Town) {
+        KH.Town.goTo(id);
+        KH.Town.pause();
+      }
+      const sheet = document.getElementById("place-sheet");
+      if (sheet) {
+        sheet.hidden = false;
+        sheet.innerHTML = pack.html;
+        bindPlaceLooks(pack.looks);
+        const goep = document.getElementById("goep");
+        if (goep) goep.addEventListener("click", function () { KH.view.episode(pack.ep); });
+        const goside = document.getElementById("goside");
+        if (goside) goside.addEventListener("click", function () { KH.view.side(loc.side); });
+        const leave = document.getElementById("leave-place");
+        if (leave) leave.addEventListener("click", function () {
+          sheet.hidden = true;
+          sheet.innerHTML = "";
+          if (KH.Town) KH.Town.resume();
+        });
+        KH.live(loc.you || meta.name);
+        return;
+      }
+    }
     KH.shell(
       '<p class="kicker">Ich-Perspektive · ' + KH.esc(meta.district) + "</p>" +
       "<h1>" + KH.esc(meta.name) + "</h1>" +
-      '<div class="street hi-only" data-weather="' + weather + '">' +
-      '<div class="sky" aria-hidden="true"></div><div class="ground" aria-hidden="true"></div>' +
-      '<div class="facade facade-' + KH.esc(loc.facade || "markt") + '" aria-hidden="true"></div>' +
-      '<div class="vignette" aria-hidden="true"></div></div>' +
-      '<p class="you-line">' + KH.esc(loc.you || ("Du stehst vor " + meta.name + ".")) + "</p>" +
-      '<p class="lo-only lowfi-note">Low-fi: Text statt Fassade — derselbe Ort.</p>' +
-      (loc.youEn ? '<p class="en">' + KH.esc(loc.youEn) + "</p>" : "") +
-      "<h2>Schau dich um</h2>" +
-      '<div class="look-grid" id="looks">' + lookBtns + "</div>" +
-      '<div id="look-out" class="feedback">Wähle etwas, das du siehst. Die Wörter gehören dir danach.</div>' +
-      (npc ? '<div class="card npc-row" style="margin-top:12px"><div class="portrait" style="background:' + npc.color + ';color:#fff">' + KH.esc(npc.initials) + '</div><div class="bubble"><div class="who">' + KH.esc(npc.name) + '</div><p>' + KH.esc(loc.npcLine || npc.bio) + '</p>' + (loc.npcLineEn ? '<p class="en">' + KH.esc(loc.npcLineEn) + '</p>' : '') + '</div></div>' : '') +
-      '<div class="row-btns">' +
-      (canEp ? '<button class="btn post" type="button" id="goep">Episode ' + ep.slice(1) + " hier spielen</button>" : '<p>Die Episode zu diesem Ort ist noch zu — du darfst trotzdem stehen und gucken.</p>') +
-      (loc.side ? '<button class="btn ghost" type="button" id="goside">Entdeckung</button>' : "") +
-      '<button class="btn ghost" type="button" data-go="hub">Zurück zum Plan</button>' +
-      "</div>",
+      '<p class="lo-only lowfi-note">Low-fi: Text statt 3D — derselbe Ort, dasselbe Wetter, derselbe Stand.</p>' +
+      pack.html.replace('id="leave-place"', 'data-go="hub"'),
       { here: "hub" }
     );
-    document.querySelectorAll("[data-look]").forEach(function (b) {
-      b.addEventListener("click", function () {
-        const h = looks[parseInt(b.getAttribute("data-look"), 10)];
-        b.setAttribute("data-found", "1");
-        const out = document.getElementById("look-out");
-        out.className = "feedback ok";
-        out.innerHTML = "<strong>" + KH.esc(h.label) + "</strong> — " + h.de + (h.en ? '<span class="en">' + KH.esc(h.en) + "</span>" : "");
-        KH.speak(h.label + ". " + (h.de || ""));
-        KH.live(h.label);
-        if (h.discover) KH.discover(h.discover);
-      });
-    });
+    bindPlaceLooks(pack.looks);
     const goep = document.getElementById("goep");
-    if (goep) goep.addEventListener("click", function () { KH.view.episode(ep); });
+    if (goep) goep.addEventListener("click", function () { KH.view.episode(pack.ep); });
     const goside = document.getElementById("goside");
     if (goside) goside.addEventListener("click", function () { KH.view.side(loc.side); });
-    const tts = loc.you || meta.name;
-    KH.live(tts);
+    KH.live(loc.you || meta.name);
   };
 
   KH.view.episode = function (id) {
@@ -405,7 +533,7 @@
       '<label>Schrift <select id="size"><option value="m">Standard</option><option value="l">Groß</option><option value="xl">Sehr groß</option></select></label>' +
       '<label>Schriftart <select id="font"><option value="default">Kurs</option><option value="lesbar">Lesbar (Verdana)</option></select></label>' +
       '<label>Bewegung <select id="motion"><option value="full">an</option><option value="reduce">reduziert</option></select></label>' +
-      '<label>Grafik <select id="gfx"><option value="high">High</option><option value="low">Low-fi</option></select></label>' +
+      '<label>Grafik <select id="gfx"><option value="high">High — 3D-Stadt</option><option value="low">Low-fi — Text</option></select></label>' +
       "</div>" +
       '<p style="margin-top:18px"><button class="btn warn" type="button" id="reset">Fortschritt löschen</button></p>',
       { here: "settings" }
@@ -454,7 +582,7 @@
       "<li>Spieler*in = Gastschüler/in bei Familie Fröhlich (Lena/Jonas = Gastgeschwister, nicht die Geschenk-Geschwister-Kollision: eine Familie).</li>" +
       "<li>Café Federkiel, Bäckerei Sonnenkorn, Kaufhaus Fröhlich am Markt; Frau + Herr Vogel verwandt.</li>" +
       "<li>Konflikt: Nordpark GmbH vs. Festplatz — schulgeeignet, ernst, ohne Bösewicht-Karikatur.</li>" +
-      "<li>Bestehende HTML-Spiele sind Praxis-Missionen in den Episoden.</li></ul>",
+      "<li>Bestehende HTML-Spiele sind Praxis-Missionen in den Episoden. High-Modus: die Stadt <em>ist</em> das 3D-Kleinhausen (Lieferdienst-Raster, gleiches Wetter und derselbe Spielstand).</li></ul>",
       { here: "teacher" }
     );
     document.getElementById("unlock").addEventListener("click", function () {

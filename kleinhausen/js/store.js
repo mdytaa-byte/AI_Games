@@ -44,6 +44,8 @@
       journal: [],
       sidequests: {},
       visited: [],
+      walk: null,
+      praxis: {},
       episodes,
       onboarding: false
     };
@@ -195,5 +197,8 @@
     root.setAttribute("data-size", p.size || "m");
     root.setAttribute("data-font", p.font || "default");
     root.setAttribute("data-motion", p.motion || "full");
+    if ((p.gfx || "high") === "low" && KH.Town && KH.Town.isLive && KH.Town.isLive()) {
+      KH.Town.dispose();
+    }
   };
 })(window);

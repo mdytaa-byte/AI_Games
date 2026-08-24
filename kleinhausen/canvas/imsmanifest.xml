@@ -31,6 +31,9 @@
       <file href="js/modules-b.js"/>
       <file href="js/sidequests.js"/>
       <file href="js/map.js"/>
+      <file href="js/town3d.js"/>
+      <file href="js/vendor/three.r128.js"/>
+      <file href="js/praxis-bridge.js"/>
       <file href="js/app.js"/>
       <file href="praxis/foto-schnitzeljagd.html"/>
       <file href="praxis/kleiderschrank.html"/>

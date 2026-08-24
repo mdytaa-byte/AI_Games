@@ -569,13 +569,24 @@
     const frame = document.createElement("iframe");
     frame.className = "activity-frame";
     frame.title = scene.title;
-    frame.src = scene.src;
+    const q = new URLSearchParams({
+      kh: "1",
+      weather: KH.weatherKey ? KH.weatherKey() : "overcast",
+      name: KH.state.player.vorname || "",
+      gfx: KH.state.player.gfx || "high"
+    });
+    const src = scene.src + (scene.src.indexOf("?") >= 0 ? "&" : "?") + q.toString();
+    frame.src = src;
     box.appendChild(frame);
+    const note = document.createElement("p");
+    note.className = "praxis-weather";
+    note.textContent = "Dasselbe Wetter und derselbe Name wie in der Stadt — wenn du fertig bist, zählt die Praxis für den Kurs.";
+    box.appendChild(note);
     const row = document.createElement("div");
     row.className = "row-btns";
     const open = document.createElement("a");
     open.className = "btn ghost";
-    open.href = scene.src;
+    open.href = src;
     open.target = "_blank";
     open.rel = "noopener";
     open.textContent = "In neuem Tab öffnen";
@@ -583,10 +594,23 @@
     doneBtn.className = "btn post";
     doneBtn.type = "button";
     doneBtn.textContent = "Aufgabe erledigt — zurück in die Geschichte";
-    doneBtn.addEventListener("click", function () {
+    let finished = false;
+    function finishActivity() {
+      if (finished) return;
+      finished = true;
+      window.removeEventListener("message", onMsg);
       KH.addPoints("verstehen", scene.points || 8);
+      KH.state.praxis = KH.state.praxis || {};
+      KH.state.praxis[scene.src] = { at: Date.now(), weather: q.get("weather") };
+      KH.save();
       done({ kind: "activity", ok: true });
-    });
+    }
+    function onMsg(ev) {
+      if (!ev.data || ev.data.type !== "kh-praxis") return;
+      if (ev.data.event === "done" || ev.data.event === "exit") finishActivity();
+    }
+    window.addEventListener("message", onMsg);
+    doneBtn.addEventListener("click", finishActivity);
     row.appendChild(open);
     row.appendChild(doneBtn);
     box.appendChild(row);

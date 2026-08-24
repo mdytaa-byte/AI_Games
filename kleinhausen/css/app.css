@@ -860,3 +860,187 @@ html[data-gfx="high"] .lo-only { display: none !important; }
 html[data-gfx="low"] .street { display: none; }
 html[data-contrast="hoch"] .street { border-width: 4px; }
 html[data-contrast="hoch"] .you-line { background: #fff; border-bottom: 2px solid #000; }
+
+/* ---------- 3D town hub (high gfx) ---------- */
+#kh-town {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: #0b0d12;
+}
+#kh-town-stage,
+#kh-town-stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+#kh-town-wx {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+#kh-town-wx[data-weather="rain"] {
+  background: repeating-linear-gradient(-18deg, transparent 0 13px, rgba(255,255,255,.08) 13px 14px);
+  box-shadow: inset 0 0 140px rgba(6, 10, 16, .45);
+}
+#kh-town-wx[data-weather="cold"] { box-shadow: inset 0 0 120px rgba(210, 224, 235, .25); }
+#kh-town-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  padding: 76px 12px 12px;
+}
+#kh-town-hud .town-plate,
+#kh-town-hud .town-prompt,
+#kh-town-hud .tbtn,
+#kh-town-hud #town-enter { pointer-events: auto; }
+.town-plate {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: .35em .8em;
+  background: #1e5a8a;
+  color: #fffaf0;
+  border: 3px solid #f5c400;
+  font-family: var(--display);
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.town-compass {
+  flex-direction: column;
+  min-width: 52px;
+  margin-left: 8px;
+  line-height: 1;
+}
+.town-compass small { font-size: .55rem; letter-spacing: .12em; opacity: .75; }
+.town-prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 92px;
+  transform: translateX(-50%);
+  background: rgba(10, 12, 18, .86);
+  border: 2px solid var(--post);
+  color: #fffaf0;
+  padding: .45em 1em;
+  font-family: var(--display);
+  letter-spacing: .04em;
+}
+#town-enter {
+  position: absolute;
+  right: 12px;
+  bottom: 18px;
+}
+.town-touch {
+  display: none;
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  gap: 8px;
+}
+@media (pointer: coarse) {
+  .town-touch { display: flex; }
+}
+.tbtn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,250,240,.45);
+  background: rgba(18, 20, 26, .75);
+  color: #fff;
+  font-size: 1.4rem;
+}
+#kh-town-load {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  background: #0b0d12;
+  color: #f5c400;
+  font-family: var(--display);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+#kh-town-load[hidden] { display: none !important; }
+
+body.town-live { overflow: hidden; background: #0b0d12; }
+body.town-live .app-shell {
+  min-height: 0;
+  background: transparent;
+  position: relative;
+  z-index: 4;
+}
+body.town-live .app-shell--town { display: block; }
+body.town-live .foot { display: none; }
+body.town-live .main {
+  max-width: none;
+  padding: 10px 14px 0;
+}
+.town-hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: center;
+  background: linear-gradient(180deg, rgba(243, 238, 227, .92), rgba(243, 238, 227, .55) 70%, transparent);
+  padding: 4px 4px 18px;
+}
+.town-help { margin: 0; max-width: 62ch; font-size: .92rem; color: var(--navy); }
+.town-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.town-drawer {
+  position: fixed;
+  top: 72px;
+  right: 10px;
+  bottom: 10px;
+  width: min(360px, 94vw);
+  overflow: auto;
+  z-index: 8;
+  background: var(--paper-2);
+  border: 3px solid var(--navy);
+  border-radius: var(--radius);
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+.town-drawer[hidden],
+.town-modal[hidden],
+.place-sheet[hidden] { display: none !important; }
+.town-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  background: rgba(10, 14, 20, .55);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.town-modal .card { width: min(720px, 100%); max-height: 88vh; overflow: auto; }
+.place-sheet {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  z-index: 8;
+  max-height: 46vh;
+  overflow: auto;
+  background: rgba(251, 247, 239, .96);
+  border: 3px solid var(--navy);
+  border-radius: var(--radius);
+  padding: 14px 16px 16px;
+  box-shadow: var(--shadow);
+}
+.place-sheet h1 { font-size: 1.45rem; }
+.praxis-weather {
+  font-size: .88rem;
+  color: var(--ink-soft);
+  margin: 8px 0 0;
+}
+html[data-contrast="hoch"] .place-sheet,
+html[data-contrast="hoch"] .town-drawer {
+  background: #fff;
+  border-width: 4px;
+}

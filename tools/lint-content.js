@@ -19,6 +19,7 @@ load("js/locations.js");
 load("js/modules-a.js");
 load("js/modules-b.js");
 load("js/sidequests.js");
+load("js/town3d.js");
 
 const KH = sandbox.KH;
 const mods = KH.MODULES || [];
@@ -58,6 +59,12 @@ if ((KH.SIDEQUESTS || []).length < 6) errors.push("Need at least 6 sidequests");
 
 Object.keys(KH.PLACES || {}).forEach(function (id) {
   if (!KH.LOCATIONS || !KH.LOCATIONS[id]) errors.push("Missing first-person location: " + id);
+});
+
+const marks = (KH.Town && KH.Town.landmarks) || [];
+Object.keys(KH.PLACES || {}).forEach(function (id) {
+  const hit = marks.some(function (l) { return l.place === id; });
+  if (!hit) errors.push("3D landmark missing for place: " + id);
 });
 
 if (errors.length) {

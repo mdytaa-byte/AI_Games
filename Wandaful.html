@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Wandaful — 16-bit RPG</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect fill='%23f0d060' width='16' height='16'/></svg>">
   <style>
     :root { --gold:#f0d060; --pale:#fff6d8; --ink:#14081c; }
     * { box-sizing: border-box; }
@@ -779,6 +780,8 @@ function openCodex() {
 function startBattle(id, onWin) {
   const foe = deep(FOES[id]);
   if (!foe) return;
+  dialogQ = []; dialogCb = null; typeFull = typing = "";
+  dialogEl.classList.remove("show");
   foe.maxHp = foe.hp;
   battle = { foe, onWin, log: foe.wanderer ? "The rainbow takes a body. A Wanderer — a human Wand." : foe.name + " takes a hue!", menu: "main", caster: state.hero, both: false };
   mode = "battle";
@@ -890,6 +893,12 @@ function battleAct(act) {
       return;
     }
     battle.log = "You do not have the complementary Chroma yet.";
+    const native = state.hero === "wanda" ? "blue" : "yellow";
+    const fallback = hasColor(native) ? native : SPECTRUM.order.find((c) => hasColor(c));
+    if (fallback && state.chroma >= 3) {
+      castColor(fallback, false);
+      return;
+    }
     renderBattle();
   }
 }
@@ -1037,6 +1046,7 @@ function unlock(color, lines, then) {
 }
 
 function handleTile(t, tx, ty) {
+  if (mode === "battle" || mode === "ending") return;
   const ch = state.ch;
   if (state.map === "whitewave" && "ROYGBV".includes(t)) {
     const hue = { R: "red", O: "orange", Y: "yellow", G: "green", B: "blue", V: "purple" }[t];
@@ -1325,6 +1335,7 @@ function tryEncounter() {
   if (!randomFoe()) return;
   if (mode !== "explore") return;
   if (state.map === "whitewave" || state.map === "gala") return;
+  if (state.map === "portal" && !state.flags.metWanda) return;
   if (Math.random() > 0.018) return;
   encounterCool = 70;
   startBattle(randomFoe());

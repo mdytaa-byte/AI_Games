@@ -422,7 +422,7 @@ const MAPS = {
     "#...G..B..V......#",
     "#................#",
     "#.......U........#",
-    "#......SSS.......#",
+    "#......S.S.......#",
     "#......S.S.......#",
     "#......S.D.......#",
     "##################"
@@ -447,10 +447,10 @@ const FOES = {
   misha:    { name: "Misha",           hue: "red",    hp: 52, atk: 8,  xp: 28, boss: true },
   residue:  { name: "Purple Haze",     hue: "purple", hp: 26, atk: 7,  xp: 14, boss: false },
   agent:    { name: "Spectrum Agent",  hue: "orange", hp: 30, atk: 8,  xp: 16, boss: false },
-  sergio:   { name: "Sergio",          hue: "blue",   hp: 78, atk: 12, xp: 44, boss: true, dark: true, stolen: "blue" },
+  sergio:   { name: "Sergio",          hue: "blue",   hp: 78, atk: 10, xp: 44, boss: true, dark: true, stolen: "blue" },
   blot:     { name: "Dark Blot",       hue: "blue",   hp: 40, atk: 10, xp: 22, boss: false, dark: true, stolen: "blue" },
   fyodor:    { name: "Fyodor",          hue: "black",  hp: 90, atk: 12, xp: 50, boss: true },
-  wanderer:  { name: "The Wanderer",    hue: "red",    hp: 180,atk: 16, xp: 100, boss: true, wanderer: true }
+  wanderer:  { name: "The Wanderer",    hue: "red",    hp: 140,atk: 11, xp: 100, boss: true, wanderer: true }
 };
 
 const CHAPTERS = [
@@ -731,8 +731,26 @@ function menuAct(a) {
     pauseEl.innerHTML = `<div class="panel"><h2>ITEMS</h2>
       <p>Candy ${state.items.candy || 0} — restore HP.</p>
       <p>Milkshake ${state.items.milkshake || 0} — restore Vitas (Chroma fuel).</p>
+      <button data-a="candy">EAT CANDY</button>
+      <button data-a="milk">DRINK MILKSHAKE</button>
       <button data-a="close">CLOSE</button></div>`;
-    pauseEl.querySelector("button").onclick = () => menuAct("close");
+    pauseEl.querySelectorAll("button").forEach((b) => {
+      b.onclick = () => {
+        if (b.dataset.a === "candy") {
+          if (!state.items.candy) { say("", "No candy left."); closeMenu(); return; }
+          state.items.candy--;
+          state.hp = Math.min(state.maxHp, state.hp + 18);
+          save(); closeMenu(); say("", "Candy. Color returns to your face."); return;
+        }
+        if (b.dataset.a === "milk") {
+          if (!state.items.milkshake) { say("", "The glass is empty."); closeMenu(); return; }
+          state.items.milkshake--;
+          state.chroma = Math.min(state.maxChroma, state.chroma + 12);
+          save(); closeMenu(); say("", "A milkshake. Vitas brightens."); return;
+        }
+        menuAct("close");
+      };
+    });
   }
 }
 
@@ -821,6 +839,11 @@ function battleAct(act) {
     if (colorCount() < 1) { battle.log = "You need Chroma to counter."; renderBattle(); return; }
     if (state.chroma < 6) { battle.log = "Not enough Vitas to braid Chroma."; renderBattle(); return; }
     if (battle.foe.wanderer) {
+      if (hasColor("white") && state.chroma >= 8) {
+        state.chroma -= 8;
+        castColor("white", true);
+        return;
+      }
       const use = SPECTRUM.opposite(battle.foe.hue);
       if (use && hasColor(use)) {
         state.chroma -= 6;
@@ -896,6 +919,9 @@ function castColor(color, both) {
   }
   battle.log = (both ? "Hal and Wanda — " : ACTORS[battle.caster].name + " — ") + color.toUpperCase() + ". " + res.log +
     (res.dmg ? " " + res.dmg + " damage." : "") + (res.heal ? " Foe mends " + res.heal + "." : "");
+  if (battle.foe.wanderer && (res.rel === "clash" || res.rel === "core")) {
+    state.chroma = Math.min(state.maxChroma, state.chroma + 2);
+  }
   beep(color === "white" ? 880 : 340 + SPECTRUM.index(color) * 70, 0.09);
   spawnFx(color);
   if (battle.foe.hp <= 0) { winBattle(); return; }
@@ -932,14 +958,19 @@ function enemyTurn() {
   battle.caster = (state.party.includes("wanda") && battle.caster === "hal") ? "wanda" : "hal";
   if (state.hp <= 0) {
     state.hp = 1;
-    battle.log = "You drop. The blue portal flickers you home.";
+    const ch = chapter();
+    battle.log = "You drop. Blish's Blotter field yanks you back.";
     renderBattle();
     setTimeout(() => {
       endBattle(false);
-      state.map = "portal";
-      state.x = 4 * TS; state.y = 6 * TS;
-      state.hp = Math.max(8, Math.floor(state.maxHp / 2));
-      say("wanda", "We lived. That's a kind of Chroma.");
+      if (ch) {
+        state.map = ch.map;
+        state.x = ch.spawn[0] * TS;
+        state.y = ch.spawn[1] * TS;
+      }
+      state.hp = Math.max(12, Math.floor(state.maxHp / 2));
+      state.chroma = Math.max(state.chroma, Math.floor(state.maxChroma / 2));
+      say("blish", "Stay near the Popsicles until you can stand. Then go back out.");
     }, 700);
     return;
   }
@@ -959,6 +990,7 @@ function winBattle() {
     battle.log += " Level up!";
   }
   const cb = battle.onWin;
+  if (battle.foe.boss) state.hp = Math.min(state.maxHp, Math.max(state.hp, 16) + 12);
   renderBattle();
   setTimeout(() => { endBattle(true); if (cb) cb(); }, 550);
 }
@@ -1233,15 +1265,17 @@ function handleTile(t, tx, ty) {
       say("fyodor", "Not yet. The White Wavelength is a prize, not a hallway.");
       return;
     }
-    if (!state.flags.final) {
-      state.flags.final = true;
-      state.colors.white = true;
-      save();
-      startBattle("wanderer", () => {
-        state.flags.won = true;
-        finishGame();
-      });
+    if (state.flags.won) {
+      say("hal", "He's scattered. Leave him scattered.");
+      return;
     }
+    if (mode === "battle") return;
+    state.colors.white = true;
+    save();
+    startBattle("wanderer", () => {
+      state.flags.won = true;
+      finishGame();
+    });
     return;
   }
   if (t === "*") {
@@ -1277,6 +1311,7 @@ function tryEncounter() {
   if (encounterCool > 0) { encounterCool--; return; }
   if (!randomFoe()) return;
   if (mode !== "explore") return;
+  if (state.map === "whitewave" || state.map === "gala") return;
   if (Math.random() > 0.018) return;
   encounterCool = 70;
   startBattle(randomFoe());
@@ -1295,6 +1330,8 @@ function goTitle() {
 }
 
 function startNew() {
+  dialogQ = []; dialogCb = null; typeFull = typing = "";
+  dialogEl.classList.remove("show");
   state = newState();
   loadChapter(0);
   renderHud();
@@ -1305,6 +1342,8 @@ function startNew() {
 function startContinue() {
   const s = loadSave();
   if (!s) { say("", "No saved Wavelength."); return; }
+  dialogQ = []; dialogCb = null; typeFull = typing = "";
+  dialogEl.classList.remove("show");
   state = s;
   mode = "explore";
   titleUI.classList.remove("show");
@@ -1312,6 +1351,7 @@ function startContinue() {
   setGoal(chapter().goal);
   renderHud();
   ensureAudio();
+  canvas.focus();
 }
 
 function showHow() {
@@ -1477,6 +1517,8 @@ function keyOn(k, down) {
   if (!down) return;
   if (id === "z" || id === " " || id === "enter" || id === "ok") confirm();
   if (id === "x" || id === "escape" || id === "menu") {
+    if (dialogEl.classList.contains("show")) return;
+    if (mode === "battle") return;
     if (mode === "pause" || mode === "codex") { closeMenu(); codexEl.classList.remove("show"); mode = "explore"; }
     else openMenu();
   }
@@ -1493,6 +1535,8 @@ window.addEventListener("keyup", (e) => {
   if (e.code && e.code.startsWith("Arrow")) keyOn(e.code, false);
 });
 stage.addEventListener("pointerdown", () => canvas.focus());
+dialogEl.addEventListener("pointerdown", (e) => { e.preventDefault(); confirm(); });
+window.addEventListener("blur", () => { keys = Object.create(null); });
 document.querySelectorAll("#mobile b[data-k]").forEach((b) => {
   const k = b.dataset.k;
   const go = (d) => (e) => { e.preventDefault(); keyOn(k, d); };

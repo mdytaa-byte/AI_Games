@@ -180,6 +180,8 @@
         {
           type: "listen",
           title: "Morgensendung",
+          listenId: "sq-radio",
+          speaker: "hanna",
           audio: "Guten Morgen, Kleinhausen, hier ist Hanna am Mikrofon. Der Hahnfluss führt viel Wasser. Die Bäckerei Sonnenkorn hat heute keine Sonnenblumenkerne, sorry. Um zehn spricht die Bürgermeisterin im Rathaus. Und das Rätsel: Welches Gebäude hat eine goldene Brezel? Anrufen, oder einfach hingehen und hungrig sein.",
           questions: [
             {

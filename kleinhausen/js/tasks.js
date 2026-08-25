@@ -227,11 +227,30 @@
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = '<p class="kicker">Hören · Interpretive</p><h2>' + KH.esc(scene.title || "Hör zu") + "</h2>" +
-      "<p>" + (scene.intro || "Hör die Durchsage. Du kannst sie mehrmals hören.") + "</p>" +
+      "<p>" + (scene.intro || "Hör die Aufnahme. Du kannst sie mehrmals und langsamer hören — ohne Transkript.") + "</p>" +
       (scene.introEn ? '<p class="en">' + scene.introEn + "</p>" : "");
     box.appendChild(card);
     const audioText = scene.audio;
-    box.appendChild(ttsBar(audioText));
+    const qHost = document.createElement("div");
+    qHost.className = "listen-questions is-locked";
+    const lockNote = document.createElement("p");
+    lockNote.className = "listen-lock-note";
+    lockNote.textContent = "Fragen nach dem ersten Hören. Tempo ½ ist erlaubt. Transkript ist kein Tempo.";
+    qHost.appendChild(lockNote);
+    let unlocked = false;
+    function unlock() {
+      if (unlocked) return;
+      unlocked = true;
+      qHost.classList.remove("is-locked");
+      if (lockNote.parentNode) lockNote.remove();
+      askQuestions(qHost, scene.questions, done, "listen");
+    }
+    if (KH.mountListenPlayer) {
+      KH.mountListenPlayer(box, scene, unlock);
+    } else {
+      box.appendChild(ttsBar(audioText));
+      unlock();
+    }
     const cap = document.createElement("button");
     cap.className = "btn ghost";
     cap.type = "button";
@@ -241,7 +260,6 @@
     pre.style.whiteSpace = "pre-wrap";
     pre.textContent = audioText;
     cap.addEventListener("click", function () {
-      const allow = KH.state.player.captions || KH.state.player.exam === false;
       if (KH.state.player.exam && !KH.state.player.captions) {
         KH.live("Im Prüfungsmodus ist das Transkript aus.");
         return;
@@ -252,7 +270,8 @@
     if (KH.state.player.captions && !KH.state.player.exam) pre.classList.remove("hidden");
     box.appendChild(cap);
     box.appendChild(pre);
-    askQuestions(box, scene.questions, done, "listen");
+    box.appendChild(qHost);
+    if (KH.state.player.captions && !KH.state.player.exam) unlock();
   };
 
   function askQuestions(box, questions, done, kind) {

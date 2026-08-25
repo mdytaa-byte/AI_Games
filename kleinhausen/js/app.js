@@ -596,11 +596,11 @@
     const p = KH.state.player;
     KH.shell(
       "<h1>Zugang &amp; Darstellung</h1>" +
-      '<p>WCAG-orientiert: Tastatur, Skip-Link, Vorlesen, Kontrast, Schrift, Bewegung, Transkripte. <strong>Sprechen</strong> ist Pflicht: kurze Aufnahme plus Nachfrage. Nur die zwei Schalter unten erlauben einen Weg ohne Mikrofon.</p>' +
+      '<p>WCAG-orientiert: Tastatur, Skip-Link, Vorlesen, Kontrast, Schrift, Bewegung, Transkripte. <strong>Hören</strong> ist eine Aufnahme (Lena ≠ Frau Vogel ≠ Otto), kein Browser-Vorlesen. TTS bleibt Ersatz und liest Texte vor. <strong>Sprechen</strong> ist Pflicht: kurze Aufnahme plus Nachfrage.</p>' +
       '<div class="a11y-panel card">' +
       tog("gloss", "English gloss", p.gloss) +
       tog("contrast", "Hoher Kontrast", p.contrast) +
-      tog("tts", "Vorlesen (TTS)", p.tts) +
+      tog("tts", "Vorlesen (TTS · Texte & Hör-Ersatz)", p.tts) +
       tog("captions", "Transkripte sichtbar", p.captions) +
       tog("exam", "Prüfungsmodus (klickbares Sprechen, stille Aufsicht)", p.exam) +
       tog("accommodation", "Nachteilsausgleich: Sprechen als Text", p.accommodation) +
@@ -665,7 +665,8 @@
       "<li>Café Federkiel, Bäckerei Sonnenkorn, Kaufhaus Fröhlich am Markt; Frau + Herr Vogel verwandt.</li>" +
       "<li>Konflikt: Nordpark GmbH vs. Festplatz — schulgeeignet, ernst, ohne Bösewicht-Karikatur.</li>" +
       "<li>Bestehende HTML-Spiele sind Praxis-Missionen in den Episoden. High-Modus: die Stadt <em>ist</em> das 3D-Kleinhausen (Lieferdienst-Raster, gleiches Wetter und derselbe Spielstand).</li>" +
-      "<li>Sprechen: 15-Sekunden-Aufnahme + unerwartete Nachfrage; Canvas-Partnerhören. Prüfungsmodus und Nachteilsausgleich sind die einzigen Klick-/Text-Ausnahmen.</li></ul>",
+      "<li>Sprechen: 15-Sekunden-Aufnahme + unerwartete Nachfrage; Canvas-Partnerhören. Prüfungsmodus und Nachteilsausgleich sind die einzigen Klick-/Text-Ausnahmen.</li>" +
+      "<li>Hören: vorproduzierte Stimmen (Lena ≠ Frau Vogel ≠ Otto) plus Ortsrauschen. Tempo 1 / ¾ / ½ ohne Transkript. Browser-TTS nur Ersatz und Vorlesen von Texten.</li></ul>",
       { here: "teacher" }
     );
     document.getElementById("unlock").addEventListener("click", function () {

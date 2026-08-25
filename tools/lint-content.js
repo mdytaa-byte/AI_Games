@@ -17,6 +17,7 @@ function load(rel) {
 load("js/world.js");
 load("js/locations.js");
 load("js/speak.js");
+load("js/listen.js");
 load("js/modules-a.js");
 load("js/modules-b.js");
 load("js/sidequests.js");
@@ -55,13 +56,38 @@ mods.forEach(function (m) {
         errors.push(m.id + " IPA interpersonal missing followUp");
       }
     }
+    checkListen(m.id, s);
+    if (s.type === "ipa") {
+      checkListen(m.id + " IPA", s.interpretive);
+    }
   });
   if (!m.canDo || !m.canDo.length) errors.push(m.id + " missing can-do");
 });
 
 if ((KH.SIDEQUESTS || []).length < 6) errors.push("Need at least 6 sidequests");
+(KH.SIDEQUESTS || []).forEach(function (q) {
+  (q.scenes || []).forEach(function (s) { checkListen("side:" + q.id, s); });
+});
+
+function checkListen(where, s) {
+  if (!s || s.type !== "listen") return;
+  if (!s.listenId) errors.push(where + " listen missing listenId");
+  const clip = KH.LISTEN_CLIPS && KH.LISTEN_CLIPS[s.listenId];
+  if (s.listenId && !clip) errors.push(where + " unknown listenId " + s.listenId);
+  if (clip) {
+    const file = path.join(root, clip.src);
+    if (!fs.existsSync(file)) errors.push(where + " missing audio " + clip.src);
+    if (clip.speaker === "lena" && s.speaker && s.speaker !== "lena") {
+      errors.push(where + " Lena clip assigned to someone else");
+    }
+  }
+}
 
 if (typeof KH.voiceRequired !== "function") errors.push("speak.js did not export voiceRequired");
+if (!KH.LISTEN_CLIPS || !KH.LISTEN_CLIPS["e01-bahnhof"]) errors.push("listen.js missing clip catalog");
+if (KH.SPEAKERS.lena && KH.SPEAKERS.vogel && KH.SPEAKERS.otto) {
+  if (KH.SPEAKERS.lena.name === KH.SPEAKERS.vogel.name) errors.push("Lena and Frau Vogel must be distinct");
+}
 const fus = KH.IPA_FOLLOWUPS || {};
 for (let i = 1; i <= 16; i++) {
   const id = "e" + String(i).padStart(2, "0");
@@ -69,6 +95,7 @@ for (let i = 1; i <= 16; i++) {
 }
 const indexHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
 if (indexHtml.indexOf("js/speak.js") < 0) errors.push("index.html must load speak.js");
+if (indexHtml.indexOf("js/listen.js") < 0) errors.push("index.html must load listen.js");
 const manifest = fs.readFileSync(path.join(root, "canvas/imsmanifest.xml"), "utf8");
 if (manifest.indexOf("js/speak.js") < 0) errors.push("SCORM manifest missing speak.js");
 if (!fs.existsSync(path.join(root, "js/speak.js"))) errors.push("missing js/speak.js");

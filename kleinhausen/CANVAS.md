@@ -40,6 +40,8 @@ Students **cannot** finish the year on clicks alone. Dialogue and speak scenes w
 ## Accessibility
 Students open **Zugang** (header): contrast, type size, Verdana, reduced motion, TTS, captions/transcripts, English gloss, low-fi graphics. High-graphics mode walks the same first-person Kleinhausen as Foto-Schnitzeljagd and Lieferdienst (shared save + weather). Low-fi is a text list — no WebGL. Praxis games opened from an episode receive that weather and can write completion back to the course.
 
+**Listening is not browser TTS.** Hören scenes play a pre-rendered clip (Lena, Frau Vogel, Otto, and a small cast) with place noise. Students can slow to ¾ or ½ without opening the transcript. TTS remains the accessibility / backup control (“Vorlesen”). Prüfungsmodus still hides transcripts.
+
 Prüfungsmodus hides extra transcripts for listening tests **and** turns oral scenes back into click-through — leave it off unless you are proctoring a silent exam.
 
 **Nachteilsausgleich** (Zugang → “Sprechen als Text”) is the documented accommodation: students type the line plus the follow-up instead of recording. Do not treat it as the default path.

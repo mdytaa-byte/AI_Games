@@ -35,6 +35,8 @@
         title: "Durchsage am Bahnhof",
         intro: "Hör die Bahnhofsansage. Was ist wichtig für dich?",
         introEn: "Listen to the station announcement.",
+        listenId: "e01-bahnhof",
+        speaker: "ansage",
         audio: "Nächster Halt: Kleinhausen. Bitte aussteigen. Der Zug nach Kassel fährt heute von Gleis zwei. Achtung, der Aufzug ist defekt. Nutzen Sie bitte die Treppe. Willkommen in Kleinhausen.",
         questions: [
           {
@@ -246,6 +248,8 @@
           type: "listen",
           title: "Lena im Walkie (okay, im Handy)",
           intro: "Lena schickt eine Sprachnachricht.",
+          listenId: "e02-lena",
+          speaker: "lena",
           audio: "Okay. Du stehst am Brunnen. Das Rathaus ist das große Gebäude mit der Uhr. Links von dir ist die Bäckerei, rechts die Gasse zur Kirche. Geradeaus siehst du das Kaufhaus — das ist uns. Komm zum Café Federkiel, neben dem Kaufhaus. Ich bestelle schon.",
           questions: [
             {
@@ -370,9 +374,12 @@
         type: "ipa",
         title: "Erste Woche — Nachweis",
         interpretive: {
-          type: "read",
-          title: "Nachricht im Schulportal",
-          html: "<p><strong>Achtung, 10b</strong></p><p>Morgen fällt die zweite Stunde aus (Frau Klein, krank). Bitte in der Bibliothek arbeiten. Die Umwelt-AG trifft sich Mittwoch, 12:10, Raum B3. Gäste willkommen — auch Gastschüler/innen.</p><p>MfG Vogel</p>",
+          type: "listen",
+          title: "Frau Vogel, nach der Glocke",
+          intro: "Sie spricht in die Klasse. Nicht ins Portal.",
+          listenId: "e03-vogel",
+          speaker: "vogel",
+          audio: "Achtung, zehn b. Morgen fällt die zweite Stunde aus. Frau Klein ist krank. Bitte in der Bibliothek arbeiten. Die Umwelt-A-G trifft sich Mittwoch, zwölf Uhr zehn, Raum B drei. Gäste willkommen — auch Gastschülerinnen und Gastschüler. Mit freundlichen Grüßen. Vogel.",
           questions: [
             {
               de: "Was fällt aus?",
@@ -494,6 +501,8 @@
         interpretive: {
           type: "listen",
           title: "Wetterbericht — Radio Kleinhausen",
+          listenId: "e04-hanna",
+          speaker: "hanna",
           audio: "Guten Morgen, Kleinhausen. Heute früh neun Grad, später Regen von Westen. Windig. Morgen etwas milder, fünfzehn Grad, Wolken. Am Wochenende Sonne — ideal für den Markt, schlecht für Leute ohne Sonnenhut. Und jetzt die Nachrichten: Die Debatte um den Festplatz geht weiter.",
           questions: [
             {
@@ -602,6 +611,8 @@
         interpretive: {
           type: "listen",
           title: "An der Kasse",
+          listenId: "e05-kasse",
+          speaker: "kasse",
           audio: "So, das macht zwölf Euro dreißig. Haben Sie eine Kundenkarte? Nein? Bar oder Karte? Die Tüte kostet zehn Cent, oder haben Sie eine eigene?",
           questions: [
             {
@@ -927,6 +938,8 @@
         interpretive: {
           type: "listen",
           title: "Sprachnachricht von Lena",
+          listenId: "e08-lena",
+          speaker: "lena",
           audio: "Okay. Atme. Frau Vogel ist streng, aber nicht gemein. Schreib: Entschuldigung, die letzte Mail war unpassend. Dann die Frage klar. Keine Emojis. Keine lg. Du schaffst das. Und komm trotzdem um fünf zum Festplatz.",
           questions: [
             {

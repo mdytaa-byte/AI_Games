@@ -158,6 +158,8 @@
         type: "listen",
         title: "Trainer an der Linie",
         intro: "Hör zu. Was soll das Team tun?",
+        listenId: "e10-trainer",
+        speaker: "trainer",
         audio: "Okay, Leute, zuhört! Wir spielen auf rechts. Karl, pass das Ball — den Ball — auf Lena… gast, äh, auf unseren Gast. Nicht so aggressiv. Nach zwanzig Minuten Wechsel. Wasser trinken! Und nach dem Spiel den Platz aufräumen, bitte, die Dosen sind peinlich.",
         questions: [
           {
@@ -397,6 +399,8 @@
         interpretive: {
           type: "listen",
           title: "Birgit am Telefon",
+          listenId: "e12-birgit",
+          speaker: "birgit",
           audio: "Ich bin gleich da. Danke, dass du gegangen bist. Ist Lena wach? Hat sie getrunken? Wenn das Fieber steigt, rufst du mich an, nicht Jonas, der hört Musik. Und kauf bitte Zitronen, wenn die Apotheke welche hat. Ich bringe Brötchen.",
           questions: [
             {
@@ -473,6 +477,8 @@
       {
         type: "listen",
         title: "Heute die Durchsage, die niemand will",
+        listenId: "e13-ansage",
+        speaker: "ansage",
         audio: "Liebe Fahrgäste, der Regionalzug nach Frankfurt hat fünfundzwanzig Minuten Verspätung. Grund: Eis auf der Oberleitung. Bitte bleiben Sie auf Gleis zwei. Der Anschluss um neun Uhr zweiundfünfzig ist gefährdet. Ersatz: Bussteig B, Abfahrt acht Uhr vierzig, nur bei Bedarf. Wir bitten um Entschuldigung.",
         questions: [
           {
@@ -611,6 +617,8 @@
         interpretive: {
           type: "listen",
           title: "Die Linden, zwischen zwei Songs",
+          listenId: "e14-jonas",
+          speaker: "jonas",
           audio: "Hey. Wir sind Die Linden. Danke, dass ihr hier steht und nicht im Wohnzimmer. Dieser Platz ist kalt und wichtig. Nächster Song ist leise, weil Oma in der ersten Reihe sitzt. Danach räumt ihr mit uns auf. Das ist der Refrain des Abends.",
           questions: [
             {
@@ -734,6 +742,8 @@
         interpretive: {
           type: "listen",
           title: "Herr Otto, Aufnahme 3",
+          listenId: "e15-otto",
+          speaker: "otto",
           audio: "Ich backe seit dreißig Jahren. Der Festplatz? Da standen Buden, da haben Leute geweint und getanzt. Ein Parkhaus kauft niemand Brötchen um sechs Uhr früh. Aber Frau Haller hat recht mit den Treppen. Baut einen Aufzug zu mir, nicht nur Beton für Autos.",
           questions: [
             {
@@ -825,6 +835,8 @@
         interpretive: {
           type: "listen",
           title: "Frau Aydin eröffnet",
+          listenId: "e16-aydin",
+          speaker: "aydin",
           audio: "Liebe Gäste, liebe Kleinhausenerinnen und Kleinhausener. Wir sind 750 Jahre alt und immer noch nicht fertig. Danke an die, die gekehrt, geliefert, gemessen, widersprochen und Punsch gekocht haben. Unser Gast aus dem Austauschjahr spricht jetzt — kurz, klar, auf Deutsch. Bitte begrüßt …",
           questions: [
             {

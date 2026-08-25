@@ -121,6 +121,7 @@
     .mode-card h3{margin:0 0 6px;font-size:15px;color:#f0d089}
     .mode-card p{margin:0;color:#cbbda3;line-height:1.45;font-size:14px}
     .menu-actions{display:flex;justify-content:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+    .belt-record{margin:16px 0 0;color:#d7b56a;letter-spacing:.14em;text-transform:uppercase;font-size:11px;min-height:1.3em;text-shadow:0 4px 14px #000}
 
     .modal-backdrop{position:fixed;inset:0;background:#000c;display:grid;place-items:center;padding:18px;z-index:30;backdrop-filter:blur(7px)}
     .modal{width:min(760px,100%);max-height:90vh;overflow:auto;background:linear-gradient(145deg,#191c21,#0c0e11);border:1px solid var(--gold);box-shadow:0 28px 90px #000;padding:28px;border-radius:6px;position:relative}
@@ -316,6 +317,7 @@
           <p>Recreate King Caecus’s challenge against Captain Motim. Play to the first win. The stake is the helm.</p>
         </button>
       </div>
+      <p class="belt-record" id="beltRecord">No belts taken yet.</p>
       <div class="menu-actions">
         <button class="ghost-btn" id="practiceBtn" type="button">Practice the signs</button>
         <button class="ghost-btn" id="titleRulesBtn" type="button">How to play</button>
@@ -589,6 +591,7 @@
     save.unlocked = save.unlocked || { seven:false, taught:false };
     save.unlocked.taught = !!save.unlocked.taught;
     save.stats = save.stats || { matches:0, throws:0, meritsWon:0 };
+    save.stats.belts = Array.isArray(save.stats.belts) ? save.stats.belts : [];
 
     let audio;
     const AudioFX = {
@@ -605,7 +608,11 @@
         this.enabled = true;
         this.ambience();
       },
-      resume() { this.ensure(); this.ctx && this.ctx.resume(); },
+      resume() {
+        this.ensure();
+        this.ctx && this.ctx.resume();
+        try { speechSynthesis.getVoices(); } catch (e) {}
+      },
       tone(freq, dur, type='sine', gain=0.08, at=0) {
         if (!this.ctx) return;
         const t = this.ctx.currentTime + at;
@@ -634,6 +641,45 @@
         this.tone((map[name]||180)*3.1, 0.18, 'sine', 0.03);
         this.tone(70, 0.12, 'sine', 0.07);
       },
+      pickVoice() {
+        try {
+          const vs = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+          return vs.find(v => /en/i.test(v.lang) && /male|daniel|david|fred|george|arthur/i.test(v.name))
+            || vs.find(v => /^en/i.test(v.lang)) || vs[0] || null;
+        } catch (e) { return null; }
+      },
+      utter(text, opts={}) {
+        try {
+          if (!window.speechSynthesis || !text) return;
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = 'en-GB';
+          u.rate = opts.rate ?? 0.9;
+          u.pitch = opts.pitch ?? 0.95;
+          u.volume = opts.volume ?? 0.92;
+          const v = this.pickVoice();
+          if (v) u.voice = v;
+          speechSynthesis.speak(u);
+        } catch (e) {}
+      },
+      speakBeat(name, hitch=false) {
+        const word = (SIGN_META[name] && SIGN_META[name].name) || '';
+        if (!word) return;
+        try { speechSynthesis.cancel(); } catch (e) {}
+        this.utter(word, hitch
+          ? { rate: 0.58, pitch: 0.38, volume: 0.78 }
+          : { rate: 0.88, pitch: 0.92, volume: 0.95 });
+      },
+      whisper(sign) {
+        const word = (SIGN_META[sign] && SIGN_META[sign].name) || sign;
+        this.utter(word, { rate: 0.62, pitch: 0.32, volume: 0.42 });
+      },
+      speakLine(text, opts={}) {
+        try { speechSynthesis.cancel(); } catch (e) {}
+        this.utter(text, opts);
+      },
+      silence() {
+        try { speechSynthesis.cancel(); } catch (e) {}
+      },
       coins() { this.tone(880, .08, 'square', .03); this.tone(1320, .12, 'sine', .04, .05); },
       win() { [523,659,784,1046].forEach((f,i)=>this.tone(f,.25,'sine',.05,i*.09)); },
       lose() { this.tone(180,.4,'sawtooth',.04); this.tone(120,.5,'sine',.05,.05); },
@@ -643,6 +689,8 @@
         this.tone(980,.09,'sine',.04);
         this.tone(1240,.05,'triangle',.02,.04);
         this.tone(160,.16,'sine',.05,.02);
+        this.noise(0.12, 0.035);
+        this.tone(90,.22,'sawtooth',.03,.03);
       },
       ambience() {
         if (!this.ctx) return;
@@ -712,6 +760,30 @@
         middle:{splay:0.0, j:[1.4,1.52,1.05]},
         ring:{splay:0.02, j:[1.36,1.46,1.05]},
         pinky:{splay:0.08, j:[1.28,1.38,0.95]}
+      },
+      fistTight: {
+        wrist:[-0.78, 0.12, 0.42],
+        thumb:{splay:0.22, j:[1.22,1.12,0.82]},
+        index:{splay:0.02, j:[1.58,1.68,1.22]},
+        middle:{splay:0.02, j:[1.6,1.7,1.22]},
+        ring:{splay:0.04, j:[1.56,1.64,1.2]},
+        pinky:{splay:0.1, j:[1.48,1.56,1.12]}
+      },
+      palm: {
+        wrist:[-1.02, 0.04, 0.02],
+        thumb:{splay:0.92, j:[0.12,0.1,0.08]},
+        index:{splay:-0.05, j:[0.06,0.05,0.04]},
+        middle:{splay:0.0, j:[0.06,0.05,0.04]},
+        ring:{splay:0.04, j:[0.07,0.06,0.04]},
+        pinky:{splay:0.08, j:[0.08,0.07,0.05]}
+      },
+      knuckle: {
+        wrist:[-0.22, 0.18, 0.62],
+        thumb:{splay:0.28, j:[0.95,0.82,0.55]},
+        index:{splay:0.02, j:[0.85,0.72,0.48]},
+        middle:{splay:0.02, j:[0.88,0.74,0.5]},
+        ring:{splay:0.04, j:[0.86,0.72,0.48]},
+        pinky:{splay:0.08, j:[0.8,0.68,0.44]}
       }
     };
     POSES.ehl = JSON.parse(JSON.stringify(POSES.hah));
@@ -776,6 +848,7 @@
 
     let world = null;
     let playSeq = 0;
+    let endTimer = 0;
 
     function stale(seq) { return seq !== playSeq; }
     function bumpPlay() { playSeq++; }
@@ -801,6 +874,8 @@
       state.busy = false;
       state.passing = false;
       state.listening = false;
+      clearTimeout(endTimer);
+      audio && audio.silence && audio.silence();
       document.body.classList.remove('listening');
       document.body.classList.remove('lesson');
       resetChantLabels();
@@ -1020,6 +1095,56 @@
       }
       lanternMesh(-1.55, 3.25, 1.35); lanternMesh(2.35, 2.75, -0.55);
 
+      function cloakedWitness(x, z, yaw, clothHex, skinHex) {
+        const g = new THREE.Group();
+        const cloth = new THREE.MeshStandardMaterial({ color:clothHex, roughness:0.94, metalness:0.04 });
+        const skin = makeSkin(skinHex);
+        const robe = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.36, 1.55, 10), cloth);
+        robe.position.y = 1.12;
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.15, 12, 10), skin);
+        head.position.y = 1.96;
+        const hood = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 10, 0, Math.PI*2, 0, Math.PI*0.7), cloth);
+        hood.position.y = 2.06; hood.rotation.x = 0.18;
+        const arm = (side) => {
+          const m = new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.52, 4, 8), cloth);
+          m.position.set(side*0.28, 1.42, 0.06);
+          m.rotation.z = -side*0.38;
+          return m;
+        };
+        g.add(robe, head, hood, arm(-1), arm(1));
+        g.position.set(x, 0, z);
+        g.rotation.y = yaw;
+        g.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+        scene.add(g);
+        return g;
+      }
+      cloakedWitness(-3.55, -1.85, 0.72, 0x1a1816, 0x8a6a52);
+      cloakedWitness(3.65, -1.55, -0.78, 0x161820, 0x6e5848);
+
+      const farSailor = new THREE.Group();
+      const farCloth = new THREE.MeshStandardMaterial({ color:0x2a241c, roughness:0.88, metalness:0.06 });
+      const farTorso = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.3, 0.82, 12), farCloth);
+      farTorso.position.y = 1.28;
+      const beltMat = new THREE.MeshStandardMaterial({
+        map:goldMap, color:0xd4b06a, metalness:0.88, roughness:0.28,
+        emissive:0x5a3a10, emissiveIntensity:0.32
+      });
+      const meritBelt = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.048, 10, 28), beltMat);
+      meritBelt.rotation.x = Math.PI/2;
+      meritBelt.position.y = 0.98;
+      farSailor.add(farTorso, meritBelt);
+      for (let i=0;i<6;i++) {
+        const d = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.018, 16), beltMat);
+        const a = -0.9 + i*0.36;
+        d.position.set(Math.sin(a)*0.32, 0.86, Math.cos(a)*0.32);
+        d.rotation.set(0.55, a, 0.15);
+        farSailor.add(d);
+      }
+      farSailor.position.set(-0.52, 0, -1.78);
+      farSailor.rotation.y = 0.18;
+      farSailor.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      scene.add(farSailor);
+
       const room = new THREE.Mesh(
         new THREE.BoxGeometry(16, 8, 14),
         new THREE.MeshStandardMaterial({ color:0x15120f, roughness:0.9, side:THREE.BackSide })
@@ -1035,19 +1160,27 @@
       const frame = new THREE.Mesh(new THREE.PlaneGeometry(2.85,1.85), new THREE.MeshStandardMaterial({ color:0x2a2016, metalness:0.3 }));
       frame.position.set(0,3.1,-6.82); scene.add(frame);
 
-      const coins = [];
       const coinGeo = new THREE.CylinderGeometry(0.11, 0.11, 0.022, 20);
       const coinMat = new THREE.MeshStandardMaterial({ map:goldMap, metalness:0.85, roughness:0.28, emissive:0x3a2808, emissiveIntensity:0.22 });
-      function stack(x,z,n) {
-        for (let i=0;i<n;i++) {
+      const youCoinRoot = new THREE.Group(); youCoinRoot.position.set(1.72, 0.81, 1.42); scene.add(youCoinRoot);
+      const oppCoinRoot = new THREE.Group(); oppCoinRoot.position.set(-1.62, 0.81, -0.62); scene.add(oppCoinRoot);
+      function fillStack(root, n) {
+        while (root.children.length) root.remove(root.children[0]);
+        const count = clamp(n, 0, 14);
+        for (let i=0;i<count;i++) {
           const c = new THREE.Mesh(coinGeo, coinMat);
           c.rotation.x = Math.PI/2;
-          c.position.set(x+(Math.random()-.5)*0.04, 0.81+i*0.024, z+(Math.random()-.5)*0.04);
+          c.position.set((Math.random()-.5)*0.05, i*0.024, (Math.random()-.5)*0.05);
           c.rotation.z = Math.random()*Math.PI;
-          c.castShadow = true; scene.add(c); coins.push(c);
+          c.castShadow = true;
+          root.add(c);
         }
       }
-      stack(-1.55, 0.85, 7); stack(1.55, 0.85, 7); stack(0, 1.55, 4);
+      fillStack(youCoinRoot, 7);
+      fillStack(oppCoinRoot, 7);
+      const flying = [];
+      const tmpFrom = new THREE.Vector3();
+      const tmpTo = new THREE.Vector3();
 
       const youHand = createHand(0xc49b78, 0x2c3a4e, false);
       youHand.position.set(0.92, 1.42, 1.72);
@@ -1091,12 +1224,21 @@
       const YOU_OFF  = { rest: xf(2.35,0.92,1.85,-0.85,-0.55,0.55,0.55), sky: xf(1.12,2.80,1.28,-1.48,0.32,-0.12,0.92) };
       const OPP_SIGN = { rest: xf(-0.82,1.58,-1.15,-0.08,2.82,0.04,1.05), sky: xf(-0.38,3.08,-0.72,-1.42,2.98,0.02,1.05) };
       const OPP_OFF  = { rest: xf(-2.35,0.98,-0.70,-0.70,3.50,-0.35,0.55), sky: xf(-1.12,2.94,-0.78,-1.46,3.28,0.08,0.90) };
+      const YOU_SHAKE = { offer: xf(0.22,1.52,0.38,-1.02,-0.16,0.06,1.08), press: xf(0.06,1.46,0.18,-0.42,0.38,0.58,1.02) };
+      const OPP_SHAKE = { offer: xf(-0.16,1.58,-0.08,-0.92,2.98,0.04,1.02), press: xf(-0.02,1.50,0.12,-0.38,2.52,-0.42,1.0) };
+      let youWagerAmt = 3, oppWagerAmt = 3;
+      function fistScale(w){ return 0.50 + clamp(w,1,8)*0.042; }
+      function fistPose(w){ return lerpPose(POSES.fist, POSES.fistTight, clamp((w-1)/7, 0, 1)); }
       function readXf(h){ return xf(h.position.x,h.position.y,h.position.z,h.rotation.x,h.rotation.y,h.rotation.z,h.scale.x); }
       function putXf(h,a){ h.position.set(a.x,a.y,a.z); h.rotation.set(a.rx,a.ry,a.rz); h.scale.setScalar(a.sc); }
       function mixXf(a,b,t){ return xf(lerp(a.x,b.x,t),lerp(a.y,b.y,t),lerp(a.z,b.z,t),lerp(a.rx,b.rx,t),lerp(a.ry,b.ry,t),lerp(a.rz,b.rz,t),lerp(a.sc,b.sc,t)); }
       function signXf(bank, sign){ return (sign==='ehl'||sign==='akh') ? bank.sky : bank.rest; }
-      function offXf(bank, sign){ return sign==='akh' ? bank.sky : bank.rest; }
-      function offPose(sign){ return sign==='akh' ? POSES.hah : POSES.fist; }
+      function offXf(bank, sign, w){
+        const base = sign==='akh' ? bank.sky : bank.rest;
+        if (sign==='akh') return base;
+        return xf(base.x, base.y, base.z, base.rx, base.ry, base.rz, fistScale(w));
+      }
+      function offPose(sign, w){ return sign==='akh' ? POSES.hah : fistPose(w); }
       const anim = {
         youFrom: POSES.hah, youTo: POSES.hah, oppFrom: POSES.hah, oppTo: POSES.hah,
         youOffFrom: POSES.fist, youOffTo: POSES.fist, oppOffFrom: POSES.fist, oppOffTo: POSES.fist,
@@ -1136,6 +1278,21 @@
           m.position.addScaledVector(m.userData.v, dt);
           if (m.position.y>5.2) m.position.y=0.7;
         });
+        meritBelt.material.emissiveIntensity = 0.28 + Math.sin(t*2.2)*0.06 + (meritBelt.userData.glow||0);
+        for (let i=flying.length-1;i>=0;i--) {
+          const f = flying[i];
+          f.t += dt;
+          if (f.t < 0) continue;
+          const u = Math.min(1, f.t / f.dur);
+          const e = 1 - Math.pow(1-u, 3);
+          f.mesh.position.lerpVectors(f.from, f.to, e);
+          f.mesh.position.y += Math.sin(u * Math.PI) * 0.62;
+          f.mesh.rotation.z += dt * 9;
+          if (u >= 1) {
+            scene.remove(f.mesh);
+            flying.splice(i, 1);
+          }
+        }
         if (anim.t < 1) {
           anim.t = Math.min(1, anim.t + dt/anim.dur);
           const e = easeHand(anim.t, anim.dur);
@@ -1174,16 +1331,74 @@
           anim.oppOffFrom = oppFist.userData.pose;
           anim.youTo = POSES[youSign] || POSES.hah;
           anim.oppTo = POSES[oppSign] || POSES.hah;
-          anim.youOffTo = offPose(youSign);
-          anim.oppOffTo = offPose(oppSign);
+          anim.youOffTo = offPose(youSign, youWagerAmt);
+          anim.oppOffTo = offPose(oppSign, oppWagerAmt);
           anim.youNow = anim.youFrom; anim.oppNow = anim.oppFrom;
           anim.youOffNow = anim.youOffFrom; anim.oppOffNow = anim.oppOffFrom;
           anim.youXfFrom = readXf(youHand); anim.youXfTo = signXf(YOU_SIGN, youSign);
           anim.oppXfFrom = readXf(oppHand); anim.oppXfTo = signXf(OPP_SIGN, oppSign);
-          anim.youOffXfFrom = readXf(youFist); anim.youOffXfTo = offXf(YOU_OFF, youSign);
-          anim.oppOffXfFrom = readXf(oppFist); anim.oppOffXfTo = offXf(OPP_OFF, oppSign);
+          anim.youOffXfFrom = readXf(youFist); anim.youOffXfTo = offXf(YOU_OFF, youSign, youWagerAmt);
+          anim.oppOffXfFrom = readXf(oppFist); anim.oppOffXfTo = offXf(OPP_OFF, oppSign, oppWagerAmt);
           anim.t = 0; anim.dur = Math.max(0.08, dur);
         },
+        setWagers(yw, ow) {
+          youWagerAmt = clamp(yw||1, 1, 8);
+          oppWagerAmt = clamp(ow||1, 1, 8);
+          if (anim.t >= 1) {
+            youFist.scale.setScalar(fistScale(youWagerAmt));
+            oppFist.scale.setScalar(fistScale(oppWagerAmt));
+            applyPose(youFist, livePose(fistPose(youWagerAmt), clock.elapsedTime, 0.7));
+            applyPose(oppFist, livePose(fistPose(oppWagerAmt), clock.elapsedTime, 2.1));
+            youFist.userData.pose = fistPose(youWagerAmt);
+            oppFist.userData.pose = fistPose(oppWagerAmt);
+            anim.youOffTo = fistPose(youWagerAmt);
+            anim.oppOffTo = fistPose(oppWagerAmt);
+            anim.youOffNow = anim.youOffTo;
+            anim.oppOffNow = anim.oppOffTo;
+          }
+        },
+        setPurses(youMerits, oppMerits) {
+          const count = (m) => m<=0 ? 0 : 2 + Math.round(clamp(m, 0, 48)/4);
+          fillStack(youCoinRoot, count(youMerits));
+          fillStack(oppCoinRoot, count(oppMerits));
+        },
+        transferCoins(toYou, n) {
+          const fromRoot = toYou ? oppCoinRoot : youCoinRoot;
+          const toRoot = toYou ? youCoinRoot : oppCoinRoot;
+          const count = clamp(n|0, 1, 8);
+          fromRoot.getWorldPosition(tmpFrom); tmpFrom.y += 0.12;
+          toRoot.getWorldPosition(tmpTo); tmpTo.y += 0.12;
+          for (let i=0;i<count;i++) {
+            const c = new THREE.Mesh(coinGeo, coinMat);
+            c.rotation.x = Math.PI/2;
+            c.castShadow = true;
+            const from = tmpFrom.clone().add(new THREE.Vector3((Math.random()-.5)*0.12, i*0.02, (Math.random()-.5)*0.12));
+            const to = tmpTo.clone().add(new THREE.Vector3((Math.random()-.5)*0.1, i*0.024, (Math.random()-.5)*0.1));
+            c.position.copy(from);
+            scene.add(c);
+            flying.push({ mesh:c, from, to, t: -i*0.08, dur: 0.72 });
+          }
+        },
+        handshake(youWon) {
+          anim.youFrom = youHand.userData.pose;
+          anim.oppFrom = oppHand.userData.pose;
+          anim.youOffFrom = youFist.userData.pose;
+          anim.oppOffFrom = oppFist.userData.pose;
+          anim.youTo = youWon ? POSES.palm : POSES.knuckle;
+          anim.oppTo = youWon ? POSES.knuckle : POSES.palm;
+          anim.youOffTo = fistPose(youWagerAmt);
+          anim.oppOffTo = fistPose(oppWagerAmt);
+          anim.youNow = anim.youFrom; anim.oppNow = anim.oppFrom;
+          anim.youOffNow = anim.youOffFrom; anim.oppOffNow = anim.oppOffFrom;
+          anim.youXfFrom = readXf(youHand); anim.youXfTo = youWon ? YOU_SHAKE.offer : YOU_SHAKE.press;
+          anim.oppXfFrom = readXf(oppHand); anim.oppXfTo = youWon ? OPP_SHAKE.press : OPP_SHAKE.offer;
+          anim.youOffXfFrom = readXf(youFist); anim.youOffXfTo = offXf(YOU_OFF, 'hah', youWagerAmt);
+          anim.oppOffXfFrom = readXf(oppFist); anim.oppOffXfTo = offXf(OPP_OFF, 'hah', oppWagerAmt);
+          anim.t = 0; anim.dur = 0.72;
+          punch = 0.1;
+          camHome.z = 5.15;
+        },
+        setBeltGlow(on) { meritBelt.userData.glow = on ? 0.38 : 0; },
         punchIn() { punch = 0.18; camHome.z = 5.7; },
         resetCam() { camHome.set(0, 2.35, 5.55); },
         flash(color) { scene.fog.color.set(color); setTimeout(()=>scene.fog.color.set(0x0b1018), 180); }
@@ -1271,7 +1486,15 @@
         $('#oppWager').textContent = 'none';
         $('#youMerits').textContent = '—';
       }
-      if (state.mode==='circuit') $('#modeLabel').textContent = `Merit Belt Circuit · ${state.circuitIndex+1} / ${OPPONENTS.length}`;
+      if (state.mode==='circuit') {
+        const taken = (save.stats.belts||[]).length;
+        $('#modeLabel').textContent = `Merit Belt Circuit · ${state.circuitIndex+1} / ${OPPONENTS.length}` + (taken ? ` · ${taken} belt${taken===1?'':'s'} taken` : '');
+      }
+      if (world && !state.busy && (state.phase==='wager' || state.phase==='idle') && state.mode!=='practice') {
+        const yw = state.you.wager || 1;
+        const ow = (state.hotseat ? state.p2 && state.p2.wager : state.opp && state.opp.wager) || 1;
+        world.setWagers(yw, ow);
+      }
       if (state.full) {
         const base = $('#modeLabel').textContent;
         $('#modeLabel').textContent = base + ' · Full sequence';
@@ -1467,6 +1690,8 @@
         setChant(s);
         world && world.setHands(s, s, i>=5 ? 0.4 : 0.34);
         audio.beat(s);
+        const hitching = s===tellBeat && !!(state.you.feint || (state.hotseat ? state.p2.feint : state.oppTell));
+        audio.speakBeat(s, hitching);
         if (s===tellBeat) {
           const youH = state.you.feint;
           const oppH = state.hotseat ? state.p2.feint : state.oppTell;
@@ -1476,6 +1701,11 @@
             if (oppH) {
               $('#resultBanner').textContent = `A hitch in the ${SIGN_META[tellBeat].name} — it leans toward ${SIGN_META[oppH].name}.`;
               if (state.mode==='lesson') setCoach(`${SIGN_META[oppH].name} loses to Sheh. Click Sheh before the silence, or keep your throw.`);
+              const whisperer = state.mode==='lesson' || (!state.hotseat && state.opp && state.opp.skill==='motim');
+              if (whisperer) {
+                const beatSeq = seqId;
+                setTimeout(() => { if (!stale(beatSeq)) audio.whisper(oppH); }, 260);
+              }
             } else {
               $('#resultBanner').textContent = `Your ${SIGN_META[tellBeat].name} hitch is in the throat.`;
             }
@@ -1580,15 +1810,20 @@
         state.you.wins++;
         save.stats.meritsWon = (save.stats.meritsWon||0)+ow; persist();
         audio.coins();
+        world && world.transferCoins(true, ow);
         log(`You take ${ow} merit${ow===1?'':'s'} from ${other.name}. ${yn} beats ${on}.`);
       } else {
         state.you.merits -= yw;
         other.merits += yw;
         other.wins++;
+        audio.coins();
+        world && world.transferCoins(false, yw);
         log(`${other.name} takes ${yw} merit${yw===1?'':'s'} from you. ${on} beats ${yn}.`);
       }
       state.you.merits = Math.max(0, state.you.merits);
       other.merits = Math.max(0, other.merits);
+      const youM = state.you.merits, oppM = other.merits;
+      setTimeout(() => { world && world.setPurses(youM, oppM); }, 1100);
       state.clenched = false;
       state.throwIndex++;
       renderHud();
@@ -1619,11 +1854,26 @@
       /* stay on opponent until match end */
     }
 
+    function renderBeltRecord() {
+      const el = $('#beltRecord');
+      if (!el) return;
+      const belts = save.stats.belts || [];
+      el.textContent = belts.length
+        ? `Belts taken · ${belts.length}: ${belts.join(' · ')}`
+        : 'No belts taken yet.';
+    }
+
     function endMatch(won, text) {
-      state.busy = false; state.phase = 'resolve';
+      state.busy = true; state.phase = 'resolve';
+      clearTimeout(endTimer);
       if (state.mode!=='lesson') save.stats.matches = (save.stats.matches||0)+1;
       if (won && state.mode!=='lesson') save.unlocked.seven = true;
+      if (won && state.mode==='circuit' && state.opp) {
+        save.stats.belts = save.stats.belts || [];
+        if (!save.stats.belts.includes(state.opp.name)) save.stats.belts.push(state.opp.name);
+      }
       persist();
+      renderBeltRecord();
       $('#endTitle').textContent = won ? 'A decisive hand' : 'The wager is lost';
       if (state.mode==='lesson') $('#endTitle').textContent = won ? 'The hitch was true' : 'The hitch was true';
       $('#endBody').textContent = text;
@@ -1635,10 +1885,18 @@
       }
       if (state.mode==='lesson') $('#endAgain').textContent = won ? 'Play for gold' : 'Hear it again';
       else $('#endAgain').textContent = state.mode==='circuit' && won && state.circuitIndex < OPPONENTS.length-1 ? 'Next challenger' : 'Sit again';
-      $('#endModal').classList.remove('hidden');
       if (state.mode==='story') {
         $('#storyTitle').textContent = won ? 'Forward. Only forward.' : 'The brig waits';
+        if (won) {
+          log('Motim slams the table. “Cheat! You hitch on purpose!”');
+          audio.speakLine('Cheat! You hitch on purpose!', { pitch: 0.48, rate: 0.82, volume: 0.95 });
+        }
       }
+      world && world.handshake(won);
+      endTimer = setTimeout(() => {
+        state.busy = false;
+        $('#endModal').classList.remove('hidden');
+      }, 1450);
     }
 
     function fillOpponents() {
@@ -1701,6 +1959,12 @@
         renderHud();
       }
       world && world.setHands('hah','hah', 0.4);
+      world && world.setBeltGlow(state.mode==='circuit' || state.mode==='story');
+      world && world.resetCam();
+      if (state.you && state.opp) {
+        world.setPurses(state.you.merits, state.opp.merits);
+        world.setWagers(Math.max(1, state.you.wager||1), Math.max(1, state.opp.wager||1));
+      }
     }
 
     function beginThrow() {
@@ -1751,8 +2015,10 @@
       $('#storyContinue').textContent = 'Raise the hand';
       setFull(!!save.full, {force:true, persist:false});
       syncLessonCta();
+      renderBeltRecord();
       world && world.resetCam();
       world && world.setHands('hah','hah', 0.5);
+      world && world.setBeltGlow(false);
     }
 
     function setFull(on, opts={}) {
@@ -1854,6 +2120,8 @@
       setCoach('Keep the voice even. Choose a throw — Shah is a fair first hand — then raise it.');
       renderHud();
       world && world.setHands('hah','hah', 0.4);
+      world && world.setBeltGlow(false);
+      world && world.setPurses(0, 0);
     }
 
     function startPractice() {
@@ -1878,6 +2146,8 @@
       $('#readyBtn').textContent = 'Run a practice chant';
       renderHud();
       world && world.setHands(state.you.throw, state.you.throw, 0.3);
+      world && world.setBeltGlow(false);
+      world && world.setPurses(0, 0);
     }
 
     function bind() {
@@ -1926,6 +2196,9 @@
           resetChantLabels();
           log(`${state.opp.name} sits. The belt still hangs heavy.`);
           state.phase='wager'; renderHud();
+          world && world.resetCam();
+          world && world.setBeltGlow(true);
+          world && world.setPurses(keep, state.opp.merits);
           world && world.setHands('hah','hah', 0.35);
         } else if (state.mode==='story') { openSetup('story'); }
         else beginMatch();
@@ -2005,6 +2278,7 @@
       for (const s of seq) {
         if (stale(seqId)) return;
         setChant(s); world && world.setHands(s,s, s==='ehl'||s==='akh'?0.4:0.34); audio.beat(s);
+        audio.speakBeat(s, s===tellBeat && !!state.you.feint);
         if (s===tellBeat && state.you.feint) {
           audio.hitch();
           world && world.setHands(state.you.feint, state.you.feint, 0.18);
@@ -2037,6 +2311,7 @@
     function boot() {
       bind();
       syncLessonCta();
+      renderBeltRecord();
       setFull(!!save.full, {force:true});
       if (!window.THREE || !window.THREE.WebGLRenderer) {
         toast('WebGL is unavailable — signs still play in the HUD.');

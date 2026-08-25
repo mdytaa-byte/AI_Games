@@ -547,6 +547,7 @@ let battle = null;
 let audioCtx = null;
 let musicTimer = 0;
 let encounterCool = 0;
+let lastEncTile = "";
 let fx = [];
 
 function deep(o) { return JSON.parse(JSON.stringify(o)); }
@@ -624,6 +625,8 @@ function loadChapter(i, extraIntro) {
   if (i >= 1 && !state.party.includes("wanda")) state.party.push("wanda");
   state.x = ch.spawn[0] * TS;
   state.y = ch.spawn[1] * TS;
+  lastEncTile = ch.spawn[0] + "," + ch.spawn[1];
+  encounterCool = Math.max(encounterCool, 90);
   state.dir = "down";
   state.maxHp = 42 + state.lv * 5;
   state.hp = state.maxHp;
@@ -1010,7 +1013,9 @@ function endBattle(won) {
   battleEl.innerHTML = "";
   battle = null;
   mode = "explore";
-  encounterCool = won ? 90 : 40;
+  keys = Object.create(null);
+  encounterCool = won ? 200 : 120;
+  if (state) lastEncTile = Math.floor((state.x + 8) / TS) + "," + Math.floor((state.y + 8) / TS);
   renderHud();
   save();
 }
@@ -1331,13 +1336,17 @@ function randomFoe() {
 }
 
 function tryEncounter() {
-  if (encounterCool > 0) { encounterCool--; return; }
+  if (encounterCool > 0) encounterCool--;
+  if (!state || !state.moving || encounterCool > 0) return;
   if (!randomFoe()) return;
   if (mode !== "explore") return;
   if (state.map === "whitewave" || state.map === "gala") return;
   if (state.map === "portal" && !state.flags.metWanda) return;
-  if (Math.random() > 0.018) return;
-  encounterCool = 70;
+  const tile = Math.floor((state.x + 8) / TS) + "," + Math.floor((state.y + 8) / TS);
+  if (tile === lastEncTile) return;
+  lastEncTile = tile;
+  if (Math.random() > 0.08) return;
+  encounterCool = 160;
   startBattle(randomFoe());
 }
 
@@ -1356,6 +1365,12 @@ function goTitle() {
 function startNew() {
   dialogQ = []; dialogCb = null; typeFull = typing = "";
   dialogEl.classList.remove("show");
+  battle = null;
+  battleEl.classList.remove("show");
+  battleEl.innerHTML = "";
+  keys = Object.create(null);
+  encounterCool = 0;
+  lastEncTile = "";
   state = newState();
   loadChapter(0);
   renderHud();
@@ -1370,6 +1385,9 @@ function startContinue() {
   dialogEl.classList.remove("show");
   state = s;
   mode = "explore";
+  keys = Object.create(null);
+  encounterCool = 160;
+  lastEncTile = Math.floor((state.x + 8) / TS) + "," + Math.floor((state.y + 8) / TS);
   titleUI.classList.remove("show");
   hudEl.classList.add("show");
   setGoal(chapter().goal);
@@ -1640,7 +1658,7 @@ window.WANDAFUL = {
   get battle() { return battle; },
   SPECTRUM, MAPS, CHAPTERS, BLOCK, FOES,
   startNew, interact, keyOn, nextLine, startBattle, castColor, battleAct, handleTile, winBattle,
-  confirm, battleConfirm,
+  confirm, battleConfirm, tryEncounter, endBattle,
   explore() { mode = "explore"; dialogEl.classList.remove("show"); dialogQ.length = 0; dialogCb = null; }
 };
 

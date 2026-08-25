@@ -384,6 +384,7 @@
       KH.addPoints("sprechen", 3);
       KH.addPoints("mut", 1);
       go.disabled = true;
+      go.className = "btn ghost";
       ta.disabled = true;
       card.appendChild(slipBox(rec));
       host.appendChild(continueRow("Weiter", function () { onDone({ mode: "text", text: text }); }));
@@ -475,11 +476,13 @@
     retry.type = "button";
     retry.textContent = "Noch einmal";
     retry.hidden = true;
+    retry.classList.add("hidden");
     const dl = document.createElement("button");
     dl.className = "btn ghost";
     dl.type = "button";
     dl.textContent = "Datei laden (.webm)";
     dl.hidden = true;
+    dl.classList.add("hidden");
     row.appendChild(start);
     row.appendChild(stop);
     row.appendChild(retry);
@@ -532,12 +535,17 @@
       media = null;
     }
 
+    function showBtn(el, on) {
+      el.hidden = !on;
+      el.classList.toggle("hidden", !on);
+    }
+
     function resetPlayer() {
       playerHost.innerHTML = "";
       blob = null;
       played = false;
       weiterHost.innerHTML = "";
-      dl.hidden = true;
+      showBtn(dl, false);
     }
 
     start.addEventListener("click", function () {
@@ -560,7 +568,7 @@
         setState("recording");
         start.disabled = true;
         stop.disabled = false;
-        retry.hidden = true;
+        showBtn(retry, false);
         status.textContent = "Aufnahme läuft. Sprich weiter — die Nachfrage gehört dazu.";
         KH.live("Aufnahme läuft");
         tick = setInterval(function () {
@@ -585,7 +593,7 @@
       setState("idle");
       start.disabled = false;
       stop.disabled = true;
-      retry.hidden = true;
+      showBtn(retry, false);
       meter.textContent = "0 / " + min + " s";
       meter.classList.remove("ok", "hot");
       status.textContent = "Noch einmal — mindestens " + min + " Sekunden.";
@@ -601,7 +609,7 @@
       stop.disabled = true;
       if (s < min) {
         setState("short");
-        retry.hidden = false;
+        showBtn(retry, true);
         start.disabled = false;
         status.textContent = "Zu kurz (" + s + " s). Novice High braucht die Linie und die Nachfrage — noch einmal, mindestens " + min + " Sekunden.";
         KH.live("Aufnahme zu kurz");
@@ -611,8 +619,8 @@
       blob = new Blob(chunks, { type: mime || "audio/webm" });
       chunks = [];
       setState("ready");
-      retry.hidden = false;
-      dl.hidden = false;
+      showBtn(retry, true);
+      showBtn(dl, true);
       status.textContent = "Gut. Hör dich an — Weiter geht erst nach dem Abspielen.";
       const audio = document.createElement("audio");
       audio.controls = true;

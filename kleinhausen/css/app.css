@@ -1044,3 +1044,65 @@ html[data-contrast="hoch"] .town-drawer {
   background: #fff;
   border-width: 4px;
 }
+
+.voice-chip {
+  display: inline-block;
+  margin: 8px 0 0;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: var(--navy);
+  color: var(--post);
+  font-size: .78rem;
+  letter-spacing: .04em;
+  font-weight: 700;
+}
+.voice-chip--text { background: var(--enamel); color: #fff; }
+.voice-chip--exam { background: var(--ink-soft); color: #fff; }
+
+.followup-row { margin-top: 14px; }
+.followup-bubble { border: 2px dashed var(--navy); }
+.oral-hint {
+  margin-top: 8px;
+  font-size: .9rem;
+  color: var(--ink-soft);
+}
+.oral-exam-note {
+  margin-top: 12px;
+  font-size: .92rem;
+  color: var(--ink-soft);
+}
+
+.recorder {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 3px solid var(--navy);
+  border-radius: var(--radius);
+  background: var(--paper-2);
+}
+.recorder[data-state="recording"] { border-color: var(--brick); }
+.recorder[data-state="ready"] { border-color: var(--moss); }
+.recorder--text { border-style: dashed; }
+.recorder-meter {
+  font-family: var(--mono);
+  font-size: 1.45rem;
+  color: var(--navy);
+  margin: 8px 0 4px;
+}
+.recorder-meter.hot { color: var(--brick); }
+.recorder-meter.ok { color: var(--moss); }
+.recorder-status { margin: 0 0 8px; font-size: .95rem; }
+.recorder-player audio { width: 100%; margin-top: 10px; }
+.listen-slip-wrap { margin-top: 12px; }
+.listen-slip {
+  font-family: var(--mono);
+  font-size: .78rem;
+  white-space: pre-wrap;
+  background: var(--navy);
+  color: var(--paper);
+  padding: 12px 14px;
+  border-radius: 8px;
+  overflow: auto;
+}
+.recording-entry { border-left-color: var(--navy); }
+html[data-gfx="low"] .recorder { border-radius: 4px; }
+html[data-contrast="hoch"] .recorder { border-width: 4px; }

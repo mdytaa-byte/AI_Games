@@ -16,6 +16,7 @@ function load(rel) {
 
 load("js/world.js");
 load("js/locations.js");
+load("js/speak.js");
 load("js/modules-a.js");
 load("js/modules-b.js");
 load("js/sidequests.js");
@@ -50,12 +51,27 @@ mods.forEach(function (m) {
       if (!s.interpretive || !s.interpersonal || !s.presentational) {
         errors.push(m.id + " IPA incomplete");
       }
+      if (s.interpersonal && (!s.interpersonal.followUp || !s.interpersonal.followUp.de)) {
+        errors.push(m.id + " IPA interpersonal missing followUp");
+      }
     }
   });
   if (!m.canDo || !m.canDo.length) errors.push(m.id + " missing can-do");
 });
 
 if ((KH.SIDEQUESTS || []).length < 6) errors.push("Need at least 6 sidequests");
+
+if (typeof KH.voiceRequired !== "function") errors.push("speak.js did not export voiceRequired");
+const fus = KH.IPA_FOLLOWUPS || {};
+for (let i = 1; i <= 16; i++) {
+  const id = "e" + String(i).padStart(2, "0");
+  if (!fus[id] || !fus[id].de) errors.push("IPA follow-up missing for " + id);
+}
+const indexHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
+if (indexHtml.indexOf("js/speak.js") < 0) errors.push("index.html must load speak.js");
+const manifest = fs.readFileSync(path.join(root, "canvas/imsmanifest.xml"), "utf8");
+if (manifest.indexOf("js/speak.js") < 0) errors.push("SCORM manifest missing speak.js");
+if (!fs.existsSync(path.join(root, "js/speak.js"))) errors.push("missing js/speak.js");
 
 Object.keys(KH.PLACES || {}).forEach(function (id) {
   if (!KH.LOCATIONS || !KH.LOCATIONS[id]) errors.push("Missing first-person location: " + id);

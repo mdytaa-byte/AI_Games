@@ -85,6 +85,7 @@
         interpersonal: {
           npc: "ursula",
           line: "Ach, du. Setz dich. Wie findest du uns? Zu laut? Und liesst du Krimis, oder nur Schulbuch?",
+          followUp: { de: "Welches Buch willst du zuerst — und warum?", en: "Which book first, and why?" },
           options: [
             { de: "Ich finde euch gut. Ein bisschen laut, aber gut. Krimis: vielleicht. Welches Buch magst du?", ok: true, trust: 1, feedback: "Mord im Schwarzwald wandert über den Tisch." },
             { de: "Zu laut.", ok: false, feedback: "Nur das. Sie ist 75 und hört den Rest." },
@@ -188,6 +189,7 @@
         interpersonal: {
           npc: "amira",
           line: "Schöne Stangen, was? Die Vermessung. Sie tun so, als wäre der Platz schon tot. Kommst du Mittwoch zur AG? Wir zählen, wer den Platz wirklich nutzt.",
+          followUp: { de: "Mittwoch: um wie viel Uhr, und wen bringst du mit?", en: "Wednesday: what time, and who comes with you?" },
           options: [
             { de: "Ja. Ich habe gesehen, dass wir hier sitzen. Ich komme.", ok: true, trust: 1, feedback: "Sie macht ein Häkchen. Du bist nicht mehr nur Kakao." },
             { de: "Sport und Politik mischen sich nicht.", ok: false, feedback: "Ihr sitzt im Gemisch. Es ist zu spät für diese Theorie." },
@@ -304,6 +306,7 @@
         interpersonal: {
           npc: "haller",
           line: "Lasst einen Weg! Ich muss durch. Ihr seid lieb, aber der Platz ist auch für alte Knie. Wenn ihr pflanzt, nicht in der Mitte, ja?",
+          followUp: { de: "Wer hält den Weg frei, wenn wir pflanzen — du oder wir alle?", en: "Who keeps the path free — you, or all of us?" },
           options: [
             { de: "Ja, Frau Haller. Der Weg bleibt frei. Die Pflanzen an den Rand.", ok: true, trust: 1, feedback: "Sie nickt. Fast ein Lächeln. Das ist viel." },
             { de: "Der Platz ist für uns.", ok: false, trust: -1, feedback: "„Uns“ ohne sie ist der Fehler, den Nordpark auch macht, nur mit Geld." },
@@ -409,6 +412,7 @@
         interpersonal: {
           npc: "lena",
           line: "Du siehst aus wie ein Arzt im Film. Schrecklich. Danke. Erzähl was vom Festplatz, ich langweile mich. Aber leise.",
+          followUp: { de: "Was soll ich trinken, und kommt Birgit bald?", en: "What should I drink, and is Birgit coming soon?" },
           options: [
             { de: "Gute Besserung. Wir haben Müll gewogen. Frau Haller will einen Weg. Amira will Bäume. Du fotografierst später.", ok: true, trust: 1, feedback: "Sie schließt die Augen. Das ist Zufriedenheit, nicht Schlaf nur." },
             { de: "Du hast die Demo verpasst, schade.", ok: false, feedback: "Sie ist krank, nicht faul." },
@@ -517,6 +521,7 @@
         interpersonal: {
           npc: "aylin",
           line: "In Frankfurt wäre ich schon im Museum. Hier lerne ich Warten. Willst du Karten oder Wortschatz? Ich quizze dich: Was heißt ‚der Anschluss‘?",
+          followUp: { de: "Was machen wir jetzt — warten, Karten oder Wortschatz?", en: "What now — wait, cards, or vocab?" },
           options: [
             { de: "Der nächste Zug oder Bus, den man braucht.", ok: true, trust: 1, feedback: "Sie wirft dir einen Gummibär. Pädagogik." },
             { de: "Ein Stecker fürs Handy.", ok: "ok", feedback: "Auch Anschluss. Hier: Verkehr." },
@@ -620,6 +625,7 @@
         interpersonal: {
           npc: "ursula",
           line: "Ich habe Krimi und Punsch. Die Band ist laut genug. Sag: Feiern wir 750 Jahre — oder verabschieden wir den Platz?",
+          followUp: { de: "Ein Satz mehr: warum ist der Platz wichtig für dich?", en: "One more sentence: why does the square matter to you?" },
           options: [
             { de: "Heute feiern wir. Morgen reden wir. Der Platz ist noch da.", ok: true, trust: 1, feedback: "Sie stößt mit Punsch an. Zucker, Zimt, Ernst." },
             { de: "Der Platz ist schon weg.", ok: false, feedback: "Vermessung ist nicht Abriss. Sprache vorsichtig." },
@@ -742,6 +748,7 @@
         interpersonal: {
           npc: "haller",
           line: "Man hat gesagt, ich hasse Jugend. Ich hasse Treppen. Unterschied. Willst du das so ins Buch schreiben? Wortlich?",
+          followUp: { de: "Schreibst du auch, was die Jugend will — oder nur mich?", en: "Will you also write what the youth want — or only me?" },
           options: [
             { de: "Ja. Sie hassen Treppen, nicht Jugend. Ich schreibe das so. Danke, dass Sie reden.", ok: true, trust: 1, feedback: "Sie klopft auf den Rollator. Interview beendet, Beziehung nicht." },
             { de: "Alle hassen irgendwas.", ok: false, feedback: "Zu cool für 67 und für 15." },
@@ -832,6 +839,7 @@
         interpersonal: {
           npc: "lena",
           line: "Bevor du raufgehst: Wir sind nervös. Sag ‚wir‘, wenn du willst. Du musst nicht perfekt sein. Du musst da sein. Bello ist zu Hause, der versteht Reden nicht. Ich schon.",
+          followUp: { de: "Wen dankst du zuerst auf der Bühne — und warum?", en: "Who do you thank first on stage, and why?" },
           options: [
             { de: "Danke. Ich sage wir. Ich bin da.", ok: true, trust: 1, feedback: "Sie drückt deine Schulter. Kamera aus. Mensch an." },
             { de: "Ich will allein Held sein.", ok: false, feedback: "Falscher Film. Falsche Stadt." },

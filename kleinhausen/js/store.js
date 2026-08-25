@@ -33,7 +33,8 @@
         tts: true,
         ttsRate: 0.9,
         captions: false,
-        exam: false
+        exam: false,
+        accommodation: false
       },
       points: { verstehen: 0, sprechen: 0, kultur: 0, mut: 0 },
       npcs: {},
@@ -46,6 +47,7 @@
       visited: [],
       walk: null,
       praxis: {},
+      recordings: [],
       episodes,
       onboarding: false
     };
@@ -96,7 +98,8 @@
         stamps: KH.state.stamps,
         flags: KH.state.flags,
         discoveries: KH.state.discoveries,
-        onboarding: KH.state.onboarding
+        onboarding: KH.state.onboarding,
+        spoken: (KH.spokenEpisodes ? KH.spokenEpisodes() : []).slice()
       };
       Object.keys(KH.state.episodes).forEach(function (id) {
         const e = KH.state.episodes[id];
@@ -116,6 +119,7 @@
   KH.reset = function () {
     KH.state = KH.defaultState();
     try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ }
+    if (KH.clearVoiceDb) KH.clearVoiceDb();
     KH.save();
   };
 
@@ -197,6 +201,7 @@
     root.setAttribute("data-size", p.size || "m");
     root.setAttribute("data-font", p.font || "default");
     root.setAttribute("data-motion", p.motion || "full");
+    root.setAttribute("data-voice", p.exam ? "exam" : (p.accommodation ? "text" : "required"));
     if ((p.gfx || "high") === "low" && KH.Town && KH.Town.isLive && KH.Town.isLive()) {
       KH.Town.dispose();
     }

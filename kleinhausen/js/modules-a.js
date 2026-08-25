@@ -157,6 +157,7 @@
           npc: "birgit",
           line: "So, du bist da. Wie war die Reise? Bist du müde? Möchtest du Wasser oder Tee?",
           lineEn: "How was the trip? Tired? Water or tea?",
+          followUp: { de: "Mit Zucker oder ohne? Und warum bist du müde — Flugzeug oder Zug?", en: "Sugar? And why tired — plane or train?" },
           prompt: "Antworte in ganzen, einfachen Sätzen.",
           options: [
             { de: "Danke, Frau Fröhlich. Die Reise war lang. Ich bin müde. Tee, bitte.", ok: true, feedback: "Höflich, vollständig, klar." },
@@ -260,6 +261,7 @@
         interpersonal: {
           npc: "otto",
           line: "Na? Neu in der Stadt? Ein Brötchen? Wir haben Roggen, Körner, und — für Touristen — etwas Süßes.",
+          followUp: { de: "Zum Mitnehmen oder hier essen? Und wie heißt du?", en: "To go or here? What’s your name?" },
           prompt: "Bestelle höflich. Du bist hungrig.",
           options: [
             { de: "Guten Tag. Ein Körnerbrötchen, bitte.", ok: true, feedback: "Klassiker. Herr Otto nickt wie eine Note." },
@@ -385,6 +387,7 @@
         interpersonal: {
           npc: "karl",
           line: "Hey. Ich bin Karl. Spielst du Fußball? Oder bist du eher … Bücher?",
+          followUp: { de: "Spielst du mit, oder schaust du nur zu? Warum?", en: "Play along or only watch? Why?" },
           options: [
             { de: "Hallo Karl. Ich mag Sport, aber ich bin neu. Darf ich zuschauen?", ok: true, feedback: "Einladung angenommen, Druck raus." },
             { de: "Fußball ist langweilig.", ok: false, feedback: "Karl ist SV. Du hast eine Tür zugemacht, keine Meinung geöffnet." },
@@ -506,6 +509,7 @@
         interpersonal: {
           npc: "lena",
           line: "Also? Jacke oder nur Pullover? Wir müssen pünktlich sein. Frau Vogel sieht nasse Haare als Charakter.",
+          followUp: { de: "Und die Schuhe — Turnschuhe oder Stiefel? Warum?", en: "Sneakers or boots — why?" },
           options: [
             { de: "Ich ziehe die Regenjacke an. Es regnet später. Und den Schal.", ok: true, feedback: "Praktisch und lokal." },
             { de: "Ich ziehe das T-Shirt an. Mode.", ok: false, feedback: "Neun Grad. Mode hilft nicht gegen Husten in Episode 12." },
@@ -613,6 +617,7 @@
         interpersonal: {
           npc: "haller",
           line: "Sie auch hier? Der MarktPunkt hat einen Aufzug. Otto hat Treppen. Ich mag Otto. Meine Knie mögen den Aufzug.",
+          followUp: { de: "Was kaufst du bei Otto, und was hier?", en: "What from Otto, and what here?" },
           options: [
             { de: "Ja, ich verstehe. Ich war auch bei Otto. Beides ist die Stadt.", ok: true, trust: 1, feedback: "Du hältst zwei Wahrheiten. Das braucht Kleinhausen." },
             { de: "Dann kaufen Sie halt nur hier.", ok: false, feedback: "Klingt nach Abweisen. Sie wollte gesehen werden, nicht belehrt." },
@@ -714,6 +719,7 @@
         interpersonal: {
           npc: "hvogel",
           line: "Werkstatt. Ja? Ah, Post. Steht das auf Vogel oder auf die Schule? Meine Schwester lässt alles hier, wenn das Sekretariat zu ist. Und: Fahrradkette ölen lassen? Schülerpreis.",
+          followUp: { de: "Ist das ein Brief oder Werkzeug? Wohin gehst du danach?", en: "Letter or tools? Where next?" },
           options: [
             { de: "Das Paket ist für die Werkstatt, denke ich. Danke. Die Kette … vielleicht nächste Woche?", ok: true, feedback: "Sachlich. Er nimmt beides ernst." },
             { de: "Ihre Schwester ist streng.", ok: false, feedback: "Er ist stolz auf sie. Falsches Smalltalk-Thema." },
@@ -811,6 +817,7 @@
         interpersonal: {
           npc: "jonas",
           line: "Stehst du auf Amiras Liste, oder trinkst du nur? Ich spiel Samstag mit den Linden am Jugendzentrum. Wenn das zu ist, spielen wir im Keller. Kellerakustik ist ehrlich, aber kalt.",
+          followUp: { de: "Kommst du Samstag wirklich? Band oder nur Tee — was ist wichtiger?", en: "Are you really coming Saturday? Band or just tea?" },
           options: [
             { de: "Ich weiß noch nicht. Ich will eure Band hören. Und ich will verstehen, was der Festplatz ist.", ok: true, trust: 1, feedback: "Jonas zieht ein Ohrhörerkabel raus. Respekt light." },
             { de: "Keller ist cool.", ok: "ok", feedback: "Ästhetik. Politik später." },
@@ -935,6 +942,7 @@
         interpersonal: {
           npc: "vogel",
           line: "Ich habe deine erste Mail erhalten. Und die zweite. Danke für die Korrektur. In meiner Klasse darf man Fehler machen. Man muss sie aber ausbessern. Verstanden?",
+          followUp: { de: "Eine Frage noch: wann schreibst du formell, und wann lg?", en: "When is a mail formal, and when is lg okay?" },
           options: [
             { de: "Ja, Frau Vogel. Danke. Es tut mir leid. Die Frage war, ob die Stunde stattfindet.", ok: true, trust: 1, feedback: "Sie nickt. Thema beendet. Das ist Gnade." },
             { de: "Es war nur ein Witz.", ok: false, trust: -1, feedback: "Sie mag Witze. Nicht als Ausrede." },

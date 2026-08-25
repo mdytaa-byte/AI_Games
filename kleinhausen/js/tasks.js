@@ -169,14 +169,32 @@
     }
     box.appendChild(card);
     box.appendChild(ttsBar(scene.line || ""));
-    let picked = null;
     optionList(box, scene.options, function (opt) {
-      picked = opt;
       box.appendChild(feedbackEl(opt));
       if (opt.trust) KH.trust(scene.npc, opt.trust);
-      box.appendChild(continueBtn("Weiter", function () {
-        done({ kind: "dialogue", ok: opt.ok === true || opt.ok === "good" || opt.ok === "ok", data: opt.id || opt.de });
-      }));
+      const follow = KH.followUpFor(scene, opt);
+      const ok = opt.ok === true || opt.ok === "good" || opt.ok === "ok";
+      function finishOral(res) {
+        done({
+          kind: "dialogue",
+          ok: ok,
+          spoken: !!(res && (res.mode === "record" || res.mode === "text")),
+          data: opt.id || opt.de
+        });
+      }
+      if (!KH.voiceOnSpine || !KH.voiceOnSpine()) {
+        box.appendChild(continueBtn("Weiter", function () { finishOral({ mode: "skip" }); }));
+        return;
+      }
+      KH.mountOralGate(box, {
+        npc: scene.npc,
+        followUp: follow,
+        line: opt.de,
+        title: (npc.name || "Gespräch") + (scene.ipa ? " · IPA" : ""),
+        kind: scene.ipa ? "ipa-inter" : "dialogue",
+        ep: KH.currentEpisode,
+        minChars: 40
+      }, finishOral);
     });
   };
 
@@ -436,61 +454,48 @@
       m.addEventListener("click", function () { KH.speak(scene.model); });
       box.appendChild(m);
     }
+    function finishSpeak(opt, res) {
+      const ok = !opt || opt.ok === true || opt.ok === "good" || opt.ok === "ok";
+      done({
+        kind: "speak",
+        ok: ok,
+        spoken: !!(res && (res.mode === "record" || res.mode === "text")),
+        text: res && res.text
+      });
+    }
+    function gate(line, opt) {
+      const follow = KH.followUpFor(scene, opt);
+      KH.mountOralGate(box, {
+        npc: scene.npc,
+        followUp: follow,
+        line: line || scene.model || scene.prompt || "",
+        title: scene.title || "Sprechen",
+        kind: scene.ipa ? "ipa-present" : "speak",
+        ep: KH.currentEpisode,
+        label: scene.options
+          ? "Sag die gewählte Linie laut und antworte auf die Nachfrage."
+          : "Sprich den Auftrag. Mindestens fünfzehn Sekunden — ein Klick reicht nicht.",
+        minChars: 50
+      }, function (res) { finishSpeak(opt, res); });
+    }
     if (scene.options) {
       optionList(box, scene.options, function (opt) {
         box.appendChild(feedbackEl(opt));
-        if (opt.ok === true || opt.ok === "good" || opt.ok === "ok") KH.addPoints("sprechen", 4);
-        KH.addPoints("mut", 2);
-        box.appendChild(continueBtn("Weiter", function () {
-          done({ kind: "speak", ok: opt.ok === true || opt.ok === "good" || opt.ok === "ok" });
-        }));
+        if (!KH.voiceOnSpine || !KH.voiceOnSpine()) {
+          if (opt.ok === true || opt.ok === "good" || opt.ok === "ok") KH.addPoints("sprechen", 4);
+          KH.addPoints("mut", 2);
+          box.appendChild(continueBtn("Weiter", function () { finishSpeak(opt, { mode: "skip" }); }));
+          return;
+        }
+        gate(opt.de, opt);
       });
       return;
     }
-    const recNote = document.createElement("p");
-    recNote.textContent = "Nimm dich auf (optional) oder schreib, was du sagen würdest. Mut-Punkte gibt es fürs Versuchen.";
-    box.appendChild(recNote);
-    const ta = document.createElement("textarea");
-    ta.setAttribute("aria-label", "Was du sagst");
-    box.appendChild(ta);
-    const recBtn = document.createElement("button");
-    recBtn.className = "btn ghost";
-    recBtn.type = "button";
-    recBtn.textContent = "Mikrofon (optional)";
-    let media, recorder, chunks = [];
-    recBtn.addEventListener("click", async function () {
-      try {
-        if (!recorder) {
-          media = await navigator.mediaDevices.getUserMedia({ audio: true });
-          recorder = new MediaRecorder(media);
-          chunks = [];
-          recorder.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
-          recorder.onstop = function () {
-            const blob = new Blob(chunks, { type: "audio/webm" });
-            const a = document.createElement("audio");
-            a.controls = true;
-            a.src = URL.createObjectURL(blob);
-            box.appendChild(a);
-          };
-          recorder.start();
-          recBtn.textContent = "Stopp";
-          KH.live("Aufnahme läuft");
-        } else {
-          recorder.stop();
-          media.getTracks().forEach(function (t) { t.stop(); });
-          recorder = null;
-          recBtn.textContent = "Fertig aufgenommen";
-          recBtn.disabled = true;
-        }
-      } catch (err) {
-        recBtn.textContent = "Mikrofon nicht erlaubt — schreib statt dessen";
-      }
-    });
-    box.appendChild(recBtn);
-    box.appendChild(continueBtn("Ich habe gesprochen / geschrieben", function () {
-      KH.addPoints("mut", 3);
-      done({ kind: "speak", ok: true, text: ta.value });
-    }));
+    if (!KH.voiceOnSpine || !KH.voiceOnSpine()) {
+      box.appendChild(continueBtn("Weiter", function () { finishSpeak(null, { mode: "skip" }); }));
+      return;
+    }
+    gate(scene.model || "", null);
   };
 
   KH.scenes.culture = function (box, scene, done) {
@@ -631,8 +636,8 @@
     box.appendChild(host);
     const parts = [
       Object.assign({ type: scene.interpretive.type || "read" }, scene.interpretive),
-      Object.assign({ type: "dialogue" }, scene.interpersonal),
-      Object.assign({ type: scene.presentational.type || "write" }, scene.presentational)
+      Object.assign({ type: "dialogue", ipa: true, ipaPart: "interpersonal" }, scene.interpersonal),
+      Object.assign({ type: scene.presentational.type || "write", ipa: true, ipaPart: "presentational" }, scene.presentational)
     ];
     let i = 0;
     const scores = [];

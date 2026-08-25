@@ -118,7 +118,7 @@
         <button class="menu-btn" id="btnNew">NEW QUEST</button>
         <button class="menu-btn" id="btnContinue">CONTINUE</button>
         <button class="menu-btn" id="btnHow">HOW TO PLAY</button>
-        <p style="margin-top:14px;font-size:10px;color:#c090a8">ARROWS / WASD MOVE · Z / SPACE CONFIRM · X MENU</p>
+        <p style="margin-top:14px;font-size:10px;color:#c090a8">ARROWS / WASD MOVE · Z / SPACE CONFIRM · X MENU · Z COUNTER IN BATTLE</p>
       </div>
       <div id="endingUI" class="overlay">
         <h1>THE SPECTRUM HOLDS</h1>
@@ -247,7 +247,7 @@ const SPECTRUM = {
     let status = null;
     let log = "";
     if (opts.wanderer && color === "white") {
-      dmg = Math.round((22 + lv * 5) * (both ? 1.25 : 1));
+      dmg = Math.round((24 + lv * 5) * (both ? 1.25 : 1));
       log = "The dark core. Wanda threads white Chroma through the rainbow.";
       return { rel: "core", dmg, heal: 0, steal: false, status: null, log };
     }
@@ -805,7 +805,7 @@ function renderBattle() {
     </div>`;
   } else if (b.menu === "color") {
     body = `<div class="blist">${colors}</div><button data-back="1">BACK</button>
-      <p style="font-size:10px;color:#c090a8">Caster: ${ACTORS[b.caster].name}. Z to confirm a hue.</p>`;
+      <p style="font-size:10px;color:#c090a8">Caster: ${ACTORS[b.caster].name}. Z COUNTER · 1–6 a hue · 7 white.</p>`;
   } else if (b.menu === "item") {
     body = `<button data-it="candy">CANDY (${state.items.candy || 0})</button>
       <button data-it="milkshake">MILKSHAKE (${state.items.milkshake || 0})</button>
@@ -827,7 +827,7 @@ function renderBattle() {
 }
 
 function battleAct(act) {
-  if (!battle || battle.foe.hp <= 0) return;
+  if (!battle || battle.resolved || battle.foe.hp <= 0) return;
   if (act === "color") { battle.menu = "color"; renderBattle(); return; }
   if (act === "item") { battle.menu = "item"; renderBattle(); return; }
   if (act === "run") {
@@ -920,7 +920,7 @@ function castColor(color, both) {
   battle.log = (both ? "Hal and Wanda — " : ACTORS[battle.caster].name + " — ") + color.toUpperCase() + ". " + res.log +
     (res.dmg ? " " + res.dmg + " damage." : "") + (res.heal ? " Foe mends " + res.heal + "." : "");
   if (battle.foe.wanderer && (res.rel === "clash" || res.rel === "core")) {
-    state.chroma = Math.min(state.maxChroma, state.chroma + 2);
+    state.chroma = Math.min(state.maxChroma, state.chroma + 4);
   }
   beep(color === "white" ? 880 : 340 + SPECTRUM.index(color) * 70, 0.09);
   spawnFx(color);
@@ -958,6 +958,7 @@ function enemyTurn() {
   battle.caster = (state.party.includes("wanda") && battle.caster === "hal") ? "wanda" : "hal";
   if (state.hp <= 0) {
     state.hp = 1;
+    battle.resolved = true;
     const ch = chapter();
     battle.log = "You drop. Blish's Blotter field yanks you back.";
     renderBattle();
@@ -1037,6 +1038,11 @@ function unlock(color, lines, then) {
 
 function handleTile(t, tx, ty) {
   const ch = state.ch;
+  if (state.map === "whitewave" && "ROYGBV".includes(t)) {
+    const hue = { R: "red", O: "orange", Y: "yellow", G: "green", B: "blue", V: "purple" }[t];
+    say("hal", "A " + hue + " spark. Match its complement, or save white Chroma for the dark core.");
+    return;
+  }
   if (t === "Y" && state.map === "portal") {
     if (!state.flags.metWanda) {
       state.flags.metWanda = true;
@@ -1282,6 +1288,13 @@ function handleTile(t, tx, ty) {
     say("hal", "A Wavelength seam. White is not a seventh color — it is the Wand that keeps the others from eating the painting.");
     return;
   }
+  if (t === "S" && state.map === "whitewave") {
+    state.hp = state.maxHp;
+    state.chroma = state.maxChroma;
+    save();
+    say("blish", "Popsicle. Lime. Stay in the stand until the color comes back, then go out.");
+    return;
+  }
   if (t === "S" || t === "H") {
     const chatter = {
       portal: ["Blue city, blue air, blue rules. Don't drink the tap water until you know which Spectrum bottled it."],
@@ -1356,7 +1369,7 @@ function startContinue() {
 
 function showHow() {
   sayMany([
-    ["", "Move with arrows or WASD. Confirm with Z or Space. Menu with X."],
+    ["", "Move with arrows or WASD. Confirm with Z or Space. Menu with X. In battle, Z COUNTERs; click a hue or press 1–6 (7 white)."],
     ["", "Combat is Chroma — magical color. Primaries: red, yellow, blue. Secondaries: green, purple, orange. Complementary hues COUNTER: red↔green, yellow↔purple, blue↔orange."],
     ["", "Same hues resonate. Adjacent hues mix and leave residue. Black + white is the most powerful reaction. Dark Chroma drinks unmatched color."],
     ["", "Hal's native hue is yellow; his Wand reads white. Wanda's is blue. Vitas fuels every burst. Wands can look like a paintbrush, a knitting needle, a duck, a pencil."],
@@ -1503,7 +1516,19 @@ function drawTitle() {
 function confirm() {
   if (dialogEl.classList.contains("show")) { nextLine(); return; }
   if (mode === "title") return;
+  if (mode === "battle") { battleConfirm(); return; }
   if (mode === "explore") interact();
+}
+
+function battleConfirm() {
+  if (!battle || battle.resolved || battle.foe.hp <= 0) return;
+  if (battle.menu === "item") {
+    if (state.items.candy) battleItem("candy");
+    else if (state.items.milkshake) battleItem("milkshake");
+    else { battle.log = "None left."; renderBattle(); }
+    return;
+  }
+  battleAct("clash");
 }
 
 function keyOn(k, down) {
@@ -1516,6 +1541,17 @@ function keyOn(k, down) {
   if (down) keys[id] = true; else keys[id] = false;
   if (!down) return;
   if (id === "z" || id === " " || id === "enter" || id === "ok") confirm();
+  if (mode === "battle" && battle && !battle.resolved) {
+    if (id === "c") { battleAct("color"); return; }
+    if (id === "i") { battleAct("item"); return; }
+    const hues = ["red", "orange", "yellow", "green", "blue", "purple", "white"];
+    const n = parseInt(id, 10);
+    if (n >= 1 && n <= 7 && hues[n - 1] && hasColor(hues[n - 1])) {
+      battle.menu = "color";
+      castColor(hues[n - 1], false);
+      return;
+    }
+  }
   if (id === "x" || id === "escape" || id === "menu") {
     if (dialogEl.classList.contains("show")) return;
     if (mode === "battle") return;
@@ -1525,9 +1561,13 @@ function keyOn(k, down) {
 }
 
 window.addEventListener("keydown", (e) => {
+  const k = String(e.key || "").toLowerCase();
+  if (e.repeat && ["z", " ", "enter", "x", "escape"].includes(k)) {
+    e.preventDefault();
+    return;
+  }
   keyOn(e.key, true);
   if (e.code && e.code.startsWith("Arrow")) keyOn(e.code, true);
-  const k = String(e.key || "").toLowerCase();
   if (["arrowup","arrowdown","arrowleft","arrowright"," ","z","x"].includes(k) || k === " ") e.preventDefault();
 });
 window.addEventListener("keyup", (e) => {
@@ -1589,7 +1629,8 @@ window.WANDAFUL = {
   get battle() { return battle; },
   SPECTRUM, MAPS, CHAPTERS, BLOCK, FOES,
   startNew, interact, keyOn, nextLine, startBattle, castColor, battleAct, handleTile, winBattle,
-  explore() { mode = "explore"; dialogEl.classList.remove("show"); dialogQ.length = 0; }
+  confirm, battleConfirm,
+  explore() { mode = "explore"; dialogEl.classList.remove("show"); dialogQ.length = 0; dialogCb = null; }
 };
 
 goTitle();

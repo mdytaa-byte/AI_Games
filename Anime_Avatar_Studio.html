@@ -110,6 +110,9 @@ button{cursor:pointer}
 .right{
   background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);overflow:auto;max-height:calc(100vh - 182px)
 }
+.right .thumb{padding:8px 6px;font-size:12px}
+.right .thumb .icon{font-size:22px;margin-bottom:2px}
+.cast-fill{padding:6px 9px;font-size:11px;white-space:nowrap}
 .right h3{margin:0 0 10px}
 .variants{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .variant{border:1px solid var(--line);border-radius:12px;background:#fff;padding:8px;text-align:center;font-weight:900}
@@ -625,13 +628,21 @@ details.look .group{margin-top:12px}
       </div>
 
       <div class="group">
-        <div class="labelrow">Presets</div>
-        <div class="grid2">
-          <button class="thumb" data-preset="student"><span class="icon">🎒</span>School Student</button>
-          <button class="thumb" data-preset="teacher"><span class="icon">🏫</span>Teacher</button>
-          <button class="thumb" data-preset="festival"><span class="icon">🎐</span>Festival</button>
-          <button class="thumb" data-preset="station"><span class="icon">🚉</span>Station</button>
+        <div class="labelrow">Cast
+          <button type="button" class="btn cast-fill" id="fillClassBtn">Fill A · B · C</button>
         </div>
+        <div class="grid3">
+          <button class="thumb" data-cast="haruto"><span class="icon">🎒</span>Energetic</button>
+          <button class="thumb" data-cast="aiko"><span class="icon">🙏</span>Polite</button>
+          <button class="thumb" data-cast="yuki"><span class="icon">📛</span>President</button>
+          <button class="thumb" data-cast="kenji"><span class="icon">👓</span>Glasses</button>
+          <button class="thumb" data-cast="mei"><span class="icon">🌸</span>Shy</button>
+          <button class="thumb" data-cast="ren"><span class="icon">🎧</span>Club</button>
+          <button class="thumb" data-cast="sato"><span class="icon">🏫</span>Teacher</button>
+          <button class="thumb" data-cast="hana"><span class="icon">🎐</span>Festival</button>
+          <button class="thumb" data-cast="nakamura"><span class="icon">🚉</span>Station</button>
+        </div>
+        <div class="art-notes">Each card loads a full look onto this variant. Fill A · B · C puts Energetic, Polite, and Teacher on the three slots for a lesson dialogue.</div>
       </div>
 
       <div class="group">
@@ -750,7 +761,7 @@ How are you today?</textarea>
     </div>
     <p>Build a Japanese lesson character, give them dialogue, then project or export. The character is a vector illustration you can customize; the classroom tools around it are for teaching.</p>
     <ul>
-      <li><b>Cast:</b> Variants A, B, and C are three characters you can switch while keeping a lesson scene. Save a finished student to the browser library, then click their card to load them back.</li>
+      <li><b>Cast:</b> Variants A, B, and C are three characters you can switch while keeping a lesson scene. Cast cards load a full look (body, hair, outfit, face, and a starter line) onto the active slot. Fill A · B · C puts Energetic, Polite, and Teacher on the three slots for a conversation. Save a finished student to the browser library, then click their card to load them back.</li>
       <li><b>Dialogue:</b> Write Japanese with optional furigana like <span class="jp-text">先生(せんせい)</span>. Use ◀ ▶ on the speech bubble to step through a conversation, and 🔊 to hear Japanese speech.</li>
       <li><b>Present:</b> Hide the editor and show only the character and dialogue — useful on a classroom projector. Press <kbd>P</kbd> to enter or exit.</li>
       <li><b>Export:</b> PNG and SVG download the character (optionally with the scene). Lesson Card makes a simple HTML slide with the portrait and lines. Open Project reloads a saved JSON file.</li>
@@ -1984,6 +1995,136 @@ const EXPRESSION_PRESETS = {
   angry:{browRaise:-52,eyeOpen:6,eyeSquint:34,eyeWide:0,mouthSmile:-38,mouthOpen:0,blush:0},
   tired:{browRaise:-4,eyeOpen:-62,eyeSquint:76,eyeWide:0,mouthSmile:-12,mouthOpen:0,blush:0}
 };
+
+const CAST = {
+  haruto:{
+    castId:'haruto', name:'Haruto', role:'Student', gender:'masculine',
+    faceShape:'soft', eyeStyle:'anime', hairStyle:'messy', hair:'#24242b',
+    skin:'#f2c7a5', eyes:'#47688c', outfit:'school', schoolStyle:'blazer',
+    shirt:'#243b63', trim:'#f7f8fb', expression:'happy', pose:'wave',
+    scene:'classroom', prop:'book', accessories:[],
+    cheekFullness:8, jawWidth:10, gazeY:0, headTurn:0,
+    jp:'おはようございます！', en:'Good morning!',
+    dialogue:[
+      {jp:'おはようございます！', en:'Good morning!'},
+      {jp:'今日(きょう)は 元気(げんき)ですか？', en:'How are you today?'}
+    ],
+    notes:'Energetic student — Lesson: Greetings (あいさつ)\\nUse for おはよう and everyday check-ins.'
+  },
+  aiko:{
+    castId:'aiko', name:'Aiko', role:'Student', gender:'feminine',
+    faceShape:'round', eyeStyle:'gentle', hairStyle:'bob', hair:'#654735',
+    skin:'#f7d7c4', eyes:'#c45c6a', outfit:'school', schoolStyle:'sailor',
+    shirt:'#243b63', trim:'#fff6e8', expression:'polite', pose:'bow',
+    scene:'classroom', prop:'none', accessories:['hairclip'],
+    cheekFullness:22, faceWidth:-10, gazeY:12, headTurn:8,
+    jp:'よろしく お願(ねが)いします。', en:'Nice to meet you.',
+    dialogue:[
+      {jp:'よろしく お願(ねが)いします。', en:'Nice to meet you.'},
+      {jp:'お願いします。', en:'Please. / Go ahead.'}
+    ],
+    notes:'Polite student — Lesson: Introductions (じこしょうかい)\\nUse for お願いします and first-meeting lines.'
+  },
+  yuki:{
+    castId:'yuki', name:'Yuki', role:'Student', gender:'feminine',
+    faceShape:'sharp', eyeStyle:'serious', hairStyle:'hime', hair:'#1d3454',
+    skin:'#e6b18f', eyes:'#3d6f5b', outfit:'school', schoolStyle:'blazer',
+    shirt:'#243b63', trim:'#f7f8fb', expression:'determined', pose:'hips',
+    scene:'classroom', prop:'none', accessories:['badge'],
+    jawWidth:8, eyeTilt:-14, browHeight:-6, gazeY:0,
+    jp:'わかりました！', en:'I understand!',
+    dialogue:[
+      {jp:'わかりました！', en:'I understand!'},
+      {jp:'がんばります。', en:"I'll do my best."}
+    ],
+    notes:'Class president — Lesson: Classroom language\\nUse for わかりました and がんばります.'
+  },
+  kenji:{
+    castId:'kenji', name:'Kenji', role:'Student', gender:'masculine',
+    faceShape:'sharp', eyeStyle:'serious', hairStyle:'short', hair:'#24242b',
+    skin:'#c98f67', eyes:'#614637', outfit:'school', schoolStyle:'gakuran',
+    shirt:'#2c2f38', trim:'#d3ae52', expression:'thinking', pose:'hold',
+    scene:'classroom', prop:'book', accessories:['glasses'],
+    browHeight:-10, jawWidth:12, chinLength:8, gazeY:6,
+    jp:'えっと…', en:'Um...',
+    dialogue:[
+      {jp:'えっと…', en:'Um...'},
+      {jp:'もう 一度(いちど) お願(ねが)いします。', en:'One more time, please.'}
+    ],
+    notes:'Diligent student — Lesson: Asking for help\\nUse for えっと and もう一度.'
+  },
+  mei:{
+    castId:'mei', name:'Mei', role:'Student', gender:'feminine',
+    faceShape:'round', eyeStyle:'gentle', hairStyle:'bun', hair:'#e89ab5',
+    skin:'#f7d7c4', eyes:'#7d5ba6', outfit:'school', schoolStyle:'cardigan',
+    shirt:'#6b3448', trim:'#f5f7fb', expression:'embarrassed', pose:'seated',
+    scene:'classroom', prop:'none', accessories:['hairclip'],
+    cheekFullness:28, faceWidth:-6, gazeY:38, headTurn:-18, gazeX:-12,
+    jp:'すみません。', en:"Excuse me. / I'm sorry.",
+    dialogue:[
+      {jp:'すみません。', en:"Excuse me. / I'm sorry."},
+      {jp:'ちょっと 待(ま)ってください。', en:'Please wait a moment.'}
+    ],
+    notes:'Shy student — Lesson: Apologies and requests\\nUse for すみません and 待ってください.'
+  },
+  ren:{
+    castId:'ren', name:'Ren', role:'Student', gender:'androgynous',
+    faceShape:'soft', eyeStyle:'anime', hairStyle:'side', hair:'#7aa7d9',
+    skin:'#f2c7a5', eyes:'#5a5f6b', outfit:'casual', schoolStyle:'blazer',
+    shirt:'#45546c', trim:'#efefef', expression:'neutral', pose:'hips',
+    scene:'classroom', prop:'phone', accessories:[],
+    cheekFullness:4, jawWidth:0, gazeY:0, headTurn:-22,
+    jp:'だいじょうぶ。', en:"It's okay.",
+    dialogue:[
+      {jp:'だいじょうぶ。', en:"It's okay."},
+      {jp:'行(い)こう！', en:"Let's go!"}
+    ],
+    notes:'Club kid — Lesson: Casual speech\\nUse for だいじょうぶ and 行こう.'
+  },
+  sato:{
+    castId:'sato', name:'Sato', role:'Teacher', gender:'feminine',
+    faceShape:'soft', eyeStyle:'serious', hairStyle:'short', hair:'#654735',
+    skin:'#e6b18f', eyes:'#614637', outfit:'teacher', schoolStyle:'blazer',
+    shirt:'#3d4658', trim:'#f8f8f6', expression:'determined', pose:'point',
+    scene:'classroom', prop:'book', accessories:[],
+    browHeight:-4, jawWidth:4, eyeTilt:-8, gazeY:0,
+    jp:'今日(きょう)の 目標(もくひょう)です。', en:"Today's goal.",
+    dialogue:[
+      {jp:'今日(きょう)の 目標(もくひょう)です。', en:"Today's goal."},
+      {jp:'静(しず)かに。', en:'Quiet, please.'}
+    ],
+    notes:'Homeroom teacher — Lesson: Classroom instructions\\nUse for 目標です and 静かに.'
+  },
+  hana:{
+    castId:'hana', name:'Hana', role:'Student', gender:'feminine',
+    faceShape:'round', eyeStyle:'anime', hairStyle:'twintails', hair:'#e89ab5',
+    skin:'#f7d7c4', eyes:'#c45c6a', outfit:'festival', schoolStyle:'sailor',
+    shirt:'#6b3448', trim:'#d2b15e', expression:'happy', pose:'wave',
+    scene:'park', prop:'none', accessories:['hairclip'],
+    cheekFullness:18, faceWidth:-8, gazeY:0,
+    jp:'きれい！', en:"It's beautiful!",
+    dialogue:[
+      {jp:'きれい！', en:"It's beautiful!"},
+      {jp:'見(み)てください。', en:'Look at this.'}
+    ],
+    notes:'Festival student — Lesson: Describing\\nUse for きれい and 見てください. Outfit includes geta.'
+  },
+  nakamura:{
+    castId:'nakamura', name:'Nakamura', role:'Station attendant', gender:'masculine',
+    faceShape:'sharp', eyeStyle:'serious', hairStyle:'spiky', hair:'#1d3454',
+    skin:'#c98f67', eyes:'#47688c', outfit:'station', schoolStyle:'blazer',
+    shirt:'#334f6d', trim:'#c9a54a', expression:'determined', pose:'point',
+    scene:'station', prop:'none', accessories:['badge'],
+    jawWidth:14, browHeight:-8, eyeTilt:-6,
+    jp:'次(つぎ)は 新宿(しんじゅく)です。', en:'Next is Shinjuku.',
+    dialogue:[
+      {jp:'次(つぎ)は 新宿(しんじゅく)です。', en:'Next is Shinjuku.'},
+      {jp:'こちらです。', en:'This way.'}
+    ],
+    notes:'Station attendant — Lesson: Directions and transit\\nUse for 次は and こちらです.'
+  }
+};
+const CAST_CLASS = {A:'haruto', B:'aiko', C:'sato'};
 function expressionProfile(s){
   const base=EXPRESSION_PRESETS[s.expression]||EXPRESSION_PRESETS.neutral;
   return {
@@ -3379,6 +3520,7 @@ function updateSelectionUI(){
   $$('[data-set]').forEach(b => b.classList.toggle('selected', s[b.dataset.set] === b.dataset.val));
   $$('[data-accessory]').forEach(b => b.classList.toggle('selected', s.accessories.includes(b.dataset.accessory)));
   $$('[data-colorKey]').forEach(b => b.classList.toggle('selected', s[b.dataset.colorKey] === b.dataset.colorVal));
+  $$('[data-cast]').forEach(b => b.classList.toggle('selected', current().castId === b.dataset.cast));
   $$('.variant').forEach(v => v.classList.toggle('active', v.dataset.variant === activeVariant));
   const schoolGroup=$('#schoolStyleGroup');
   if(schoolGroup) schoolGroup.style.display = s.outfit==='school' ? '' : 'none';
@@ -3447,20 +3589,46 @@ function setValue(key, value){
   }
   renderAvatar();
 }
-function applyPreset(preset){
+function characterFromCast(id){
+  const spec = CAST[id];
+  if(!spec) return clone(DEFAULT);
+  const s = Object.assign(clone(DEFAULT), clone(spec));
+  if(EXPRESSION_PRESETS[s.expression]) Object.assign(s, EXPRESSION_PRESETS[s.expression], {expression:s.expression});
+  s.accessories = Array.isArray(spec.accessories) ? spec.accessories.slice() : [];
+  s.dialogue = clone(spec.dialogue && spec.dialogue.length ? spec.dialogue : DEFAULT.dialogue);
+  s.lineIndex = 0;
+  s.altManual = false;
+  s.alt = autoAltText(s);
+  return s;
+}
+function applyCast(id){
+  if(!CAST[id]) return;
   snapshot();
-  const s = current();
-  if(preset==='student'){
-    Object.assign(s,{role:'Student', outfit:'school', schoolStyle:'blazer', shirt:'#243b63', trim:'#f7f8fb', pose:'wave', scene:'classroom', prop:'book'});
-  } else if(preset==='teacher'){
-    Object.assign(s,{role:'Teacher', outfit:'teacher', shirt:'#3d4658', trim:'#f8f8f6', pose:'point', scene:'classroom', prop:'book', expression:'determined', ...EXPRESSION_PRESETS.determined});
-  } else if(preset==='festival'){
-    Object.assign(s,{role:'Student', outfit:'festival', shirt:'#335f82', trim:'#d2b15e', pose:'neutral', scene:'park', prop:'none'});
-  } else if(preset==='station'){
-    Object.assign(s,{role:'Station attendant', outfit:'station', shirt:'#334f6d', trim:'#c9a54a', pose:'point', scene:'station', prop:'none'});
-  }
+  Object.assign(current(), characterFromCast(id));
   renderAvatar();
-  toast('Preset applied');
+  toast(`${current().name} loaded on ${activeVariant}`);
+}
+function applyPreset(preset){
+  const map = {student:'haruto', teacher:'sato', festival:'hana', station:'nakamura'};
+  applyCast(map[preset] || preset);
+}
+function fillClassCast(){
+  snapshot();
+  variants.A = characterFromCast(CAST_CLASS.A);
+  variants.B = characterFromCast(CAST_CLASS.B);
+  variants.C = characterFromCast(CAST_CLASS.C);
+  activeVariant = 'A';
+  renderAllVariants();
+  toast('Class loaded: Haruto, Aiko, and Sato-sensei');
+}
+function renderAllVariants(){
+  const keep = activeVariant;
+  ['A','B','C'].forEach(id=>{
+    activeVariant = id;
+    renderAvatar();
+  });
+  activeVariant = keep;
+  renderAvatar();
 }
 function copyFromA(kind){
   const srcId = ($('#copySource') && $('#copySource').value) || 'A';
@@ -3531,6 +3699,7 @@ function randomize(){
   s.shirt = pick(COLORS.shirt);
   s.trim = pick(COLORS.trim);
   s.accessories = ['glasses','badge','hairclip','scarf','backpack'].filter(()=>Math.random()<0.22);
+  s.castId = null;
   renderAvatar();
 }
 function saveStateFile(){
@@ -3782,6 +3951,8 @@ document.addEventListener('click', e=>{
   if(varBtn){ activeVariant = varBtn.dataset.variant; renderAvatar(); }
   const presetBtn = e.target.closest('[data-preset]');
   if(presetBtn){ applyPreset(presetBtn.dataset.preset); }
+  const castBtn = e.target.closest('[data-cast]');
+  if(castBtn){ applyCast(castBtn.dataset.cast); }
   const copyBtn = e.target.closest('[data-copy]');
   if(copyBtn){ copyFromA(copyBtn.dataset.copy); }
   const delSaved = e.target.closest('[data-del-saved]');
@@ -4033,8 +4204,12 @@ $('#saveCharBtn').onclick = saveCharacter;
 $('#canvasBtn').onclick = canvasExport;
 
 refreshSavedGrid();
+if($('#fillClassBtn')) $('#fillClassBtn').onclick = fillClassCast;
 try{
   const q = new URLSearchParams(location.search);
+  variants.A = characterFromCast('haruto');
+  variants.B = characterFromCast('aiko');
+  variants.C = characterFromCast('ren');
   const hairQ = q.get('hair');
   if(['messy','side','bob','ponytail','short','spiky','twintails','hime','bun','braid'].includes(hairQ)){
     current().hairStyle = hairQ;
@@ -4044,15 +4219,16 @@ try{
     current().expression = exprQ;
     Object.assign(current(), EXPRESSION_PRESETS[exprQ]);
   }
-}catch(err){}
-renderAvatar();
-['B','C'].forEach(id=>{
-  const keep = activeVariant;
-  activeVariant = id;
-  renderAvatar();
-  activeVariant = keep;
-});
-renderAvatar();
+  const castQ = q.get('cast');
+  if(castQ && CAST[castQ]){
+    variants[activeVariant] = characterFromCast(castQ);
+  }
+}catch(err){
+  variants.A = characterFromCast('haruto');
+  variants.B = characterFromCast('aiko');
+  variants.C = characterFromCast('ren');
+}
+renderAllVariants();
 </script>
 </body>
 </html>

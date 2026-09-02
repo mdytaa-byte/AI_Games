@@ -1309,6 +1309,11 @@ function advance(){
 }
 
 function finishChat(){
+  if (window.KHPraxis) KHPraxis.complete({
+    title: 'Chat-Log',
+    artifact: (CHATS[state.chat] && CHATS[state.chat].name) ? ('Chat mit ' + CHATS[state.chat].name + ' liegt im Heft.') : 'Ein Chat ist zu Ende.',
+    score: state.cur
+  });
   const i = state.chat, c = CHATS[i];
   if(!state.results[i]) state.results[i] = { score: state.cur, missed: state.curMissed.slice() };
   state.active = false;

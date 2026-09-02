@@ -16,6 +16,8 @@ function load(rel) {
 
 load("js/world.js");
 load("js/locations.js");
+load("js/memory.js");
+load("js/class.js");
 load("js/speak.js");
 load("js/listen.js");
 load("js/modules-a.js");
@@ -47,6 +49,15 @@ mods.forEach(function (m) {
     }
     if (s.type === "simulate" && (!s.steps || s.steps.length < 2)) {
       errors.push(m.id + " simulation too short");
+    }
+    if (s.type === "counter" && (!s.items || s.items.length < 3)) {
+      errors.push(m.id + " counter too thin");
+    }
+    if (s.type === "form" && (!s.fields || s.fields.length < 2)) {
+      errors.push(m.id + " form too thin");
+    }
+    if (s.type === "funk" && (!s.calls || s.calls.length < 2)) {
+      errors.push(m.id + " funk too short");
     }
     if (s.type === "ipa") {
       if (!s.interpretive || !s.interpersonal || !s.presentational) {
@@ -96,9 +107,15 @@ for (let i = 1; i <= 16; i++) {
 const indexHtml = fs.readFileSync(path.join(root, "index.html"), "utf8");
 if (indexHtml.indexOf("js/speak.js") < 0) errors.push("index.html must load speak.js");
 if (indexHtml.indexOf("js/listen.js") < 0) errors.push("index.html must load listen.js");
+if (indexHtml.indexOf("js/memory.js") < 0) errors.push("index.html must load memory.js");
+if (indexHtml.indexOf("js/class.js") < 0) errors.push("index.html must load class.js");
 const manifest = fs.readFileSync(path.join(root, "canvas/imsmanifest.xml"), "utf8");
 if (manifest.indexOf("js/speak.js") < 0) errors.push("SCORM manifest missing speak.js");
+if (manifest.indexOf("js/memory.js") < 0) errors.push("SCORM manifest missing memory.js");
+if (manifest.indexOf("css/enamel.css") < 0) errors.push("SCORM manifest missing enamel.css");
 if (!fs.existsSync(path.join(root, "js/speak.js"))) errors.push("missing js/speak.js");
+if (!fs.existsSync(path.join(root, "js/memory.js"))) errors.push("missing js/memory.js");
+if (!fs.existsSync(path.join(root, "css/enamel.css"))) errors.push("missing css/enamel.css");
 
 Object.keys(KH.PLACES || {}).forEach(function (id) {
   if (!KH.LOCATIONS || !KH.LOCATIONS[id]) errors.push("Missing first-person location: " + id);

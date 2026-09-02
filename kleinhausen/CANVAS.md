@@ -32,6 +32,9 @@ Upload the `kleinhausen` folder to **Files**, then embed `index.html` in a Page.
 | Oral | 15-second recording + follow-up in every spine dialogue / IPA interpersonal | File + listen slip; partner or teacher hears it |
 | Speak codes | `SPR-E01-NAME-####` in Heft / stamp screen | Paste next to the audio file |
 | Capstone | Episode 16 speech / script | Human scored with the Novice High rubric below |
+| Minutes | Time-on-task in the hub (Lehrerzimmer + JSON) | Attendance / effort note — not a grade |
+| Roster | Import student `Heft → JSON` in **Lehrerzimmer** | Static class list: episodes, IPA, oral, minutes, town flags |
+| Town flags | Haller / Otto / Amira / Aylin remembered | Not graded; they change later lines and the compromise’s texture |
 
 **Novice High (human overlay):** student uses practiced sentences, handles a simple unexpected follow-up, is understandable to a sympathetic listener/reader, still makes gender/case errors.
 
@@ -63,8 +66,12 @@ Create a Canvas **Module** named *Kleinhausen* with:
    - Alternative: one **portfolio** assignment (16 files) due at midterm and finals.
 4. One **Assignment**: Episode 16 Rede (file upload or media). Human IPA overlay.
 5. Optional **SCORM** assignment for the overall course score.
+6. One **Page** (or file) with the printable IPA rubric from **Lehrerzimmer → IPA-Rubrik drucken**. Same three modes as the in-course mini-IPA. Auto-score is a first pass; this sheet is the grade.
+7. Optional: collect Heft-JSON once at midterm and once at finals. Import in Lehrerzimmer for a roster without an LTI server.
 
-Students live in the town (first-person streets). They paste the stamp-screen code into that week’s assignment. Heft → JSON is the portfolio backup. Audio blobs are **not** stored in SCORM `suspend_data` — the Canvas file *is* the oral evidence the LMS can keep.
+Students live in the town (first-person streets). They paste the stamp-screen code into that week’s assignment. Heft → JSON is the portfolio backup (minutes, flags, praxis slips, texts). Audio blobs are **not** stored in SCORM `suspend_data` — the Canvas file *is* the oral evidence the LMS can keep.
+
+There is **no LTI per-episode server** in this build. Codes + JSON roster + printable rubric + minutes-on-task are the class layer that survives a gradebook.
 
 ## Existing Kleinhausen games
-Wrapped as praxis missions inside episodes 2, 4, 5, 6, 7, 8, 9, 16 so the town is one umbrella, not a pile of links.
+Wrapped as praxis missions inside episodes 2, 4, 5, 6, 7, 8, 9, 16. A finished photo hunt, shift, checkout, or chat **writes a slip into the Heft** and can open a street. “Aufgabe erledigt” is not the task — the in-game ending is. Praxis iframes inherit the hub’s enamel, weather, type, and contrast (`?kh=1`).

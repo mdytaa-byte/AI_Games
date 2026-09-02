@@ -1041,6 +1041,13 @@ function bestellen(){
 }
 
 function zeigeErgebnis(){
+  if (window.KHPraxis) {
+    KHPraxis.complete({
+      title: 'Paketzettel Kaufhaus Fröhlich',
+      artifact: 'Das Paket ist unterwegs. Der Zettel liegt im Heft.',
+      score: (zustand.korb && zustand.korb.length) ? zustand.korb.length * 10 : 0
+    });
+  }
   var d = zustand.daten, treffer = 0, reaktionen = '';
   for(var i=0;i<PERSONEN.length;i++){
     var p = PERSONEN[i], hat = zustand.korb.indexOf(p.will)>-1;

@@ -21,11 +21,14 @@
     <resource identifier="RES-1" type="webcontent" adlcp:scormtype="sco" href="index.html">
       <file href="index.html"/>
       <file href="css/app.css"/>
+      <file href="css/enamel.css"/>
       <file href="js/scorm.js"/>
       <file href="js/store.js"/>
       <file href="js/a11y.js"/>
       <file href="js/world.js"/>
       <file href="js/locations.js"/>
+      <file href="js/memory.js"/>
+      <file href="js/class.js"/>
       <file href="js/speak.js"/>
       <file href="js/listen.js"/>
       <file href="js/tasks.js"/>

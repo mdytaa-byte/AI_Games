@@ -16,6 +16,7 @@
       if (KH.state.player.motion !== "full-forced") KH.state.player.motion = "reduce";
     }
     KH.applyPrefs();
+    if (KH.startClock) KH.startClock();
     if (!KH.state.onboarding) KH.view.splash();
     else KH.view.hub();
   };
@@ -98,6 +99,8 @@
       KH.state.player.gloss = !!fd.get("gloss");
       KH.state.onboarding = true;
       KH.state.episodes.e01.status = "open";
+      if (KH.ensureTime) KH.ensureTime();
+      KH.state.time.sessions = (KH.state.time.sessions || 0) + 1;
       KH.applyPrefs();
       KH.save();
       KH.view.hub();
@@ -280,6 +283,8 @@
     const canEp = st && st.status !== "locked";
     const looks = loc.looks || [];
     const npc = loc.npc && KH.NPCS[loc.npc];
+    const voice = (KH.placeNpcLine && KH.placeNpcLine(id, loc)) || { de: loc.npcLine || "", en: loc.npcLineEn || "" };
+    const opened = (KH.state.streets || []).indexOf(id) >= 0;
     const lookBtns = looks.map(function (h, i) {
       return '<button type="button" data-look="' + i + '">' + (i + 1) + " · " + KH.esc(h.label) + "</button>";
     }).join("");
@@ -293,7 +298,8 @@
         "<h2>Schau dich um</h2>" +
         '<div class="look-grid" id="looks">' + lookBtns + "</div>" +
         '<div id="look-out" class="feedback">Wähle etwas, das du siehst. Die Wörter gehören dir danach.</div>' +
-        (npc ? '<div class="card npc-row" style="margin-top:12px"><div class="portrait" style="background:' + npc.color + ';color:#fff">' + KH.esc(npc.initials) + '</div><div class="bubble"><div class="who">' + KH.esc(npc.name) + '</div><p>' + KH.esc(loc.npcLine || npc.bio) + '</p>' + (loc.npcLineEn ? '<p class="en">' + KH.esc(loc.npcLineEn) + '</p>' : "") + "</div></div>" : "") +
+        (opened ? '<p class="street-open">Diese Straße zählt — eine Praxis hat sie ins Heft gelegt.</p>' : "") +
+        (npc ? '<div class="card npc-row" style="margin-top:12px"><div class="portrait" style="background:' + npc.color + ';color:#fff">' + KH.esc(npc.initials) + '</div><div class="bubble"><div class="who">' + KH.esc(npc.name) + '</div><p>' + KH.esc(voice.de || loc.npcLine || npc.bio) + '</p>' + (voice.en || loc.npcLineEn ? '<p class="en">' + KH.esc(voice.en || loc.npcLineEn) + '</p>' : "") + "</div></div>" : "") +
         '<div class="row-btns">' +
         (canEp ? '<button class="btn post" type="button" id="goep">Episode ' + ep.slice(1) + " hier spielen</button>" : "<p>Die Episode zu diesem Ort ist noch zu — du darfst trotzdem stehen und gucken.</p>") +
         (loc.side ? '<button class="btn ghost" type="button" id="goside">Entdeckung</button>' : "") +
@@ -393,6 +399,7 @@
     KH.voiceSpine = true;
     const scenes = mod.scenes;
     if (index >= scenes.length) return finish(mod);
+    if (KH.sceneOpen && !KH.sceneOpen(scenes[index])) return playScene(mod, index + 1);
     KH.state.episodes[mod.id].scene = index;
     KH.save();
     const pct = Math.round((index / scenes.length) * 100);
@@ -412,7 +419,8 @@
     );
     document.getElementById("tohub").addEventListener("click", KH.view.hub);
     const root = document.getElementById("scene-root");
-    KH.mountScene(root, scenes[index], function (res) {
+    const scene = KH.resolveScene ? KH.resolveScene(scenes[index]) : scenes[index];
+    KH.mountScene(root, scene, function (res) {
       if (res && res.ok) KH.addPoints("verstehen", 2);
       if (res && res.kind === "ipa") {
         KH.state.episodes[mod.id].summative = {
@@ -498,7 +506,15 @@
       (KH.voiceRequired && KH.state.player && !KH.state.player.exam && !KH.state.player.accommodation
         ? " · ohne Aufnahme kein Stempel"
         : "") + "</p>" +
+      '<p class="voice-chip">Minuten in der Stadt: <strong>' + (KH.minutesOnTask ? KH.minutesOnTask() : 0) + "</strong></p>" +
       '<h2 style="margin-top:22px">Stempel</h2><div class="stamp-sheet">' + stamps + "</div>" +
+      '<h2 style="margin-top:22px">Die Stadt merkt sich</h2>' +
+      ((KH.memoryCards && KH.memoryCards().length)
+        ? '<div class="memory-grid">' + KH.memoryCards().map(function (c) {
+          return '<article class="memory-card"><p class="kicker">' + KH.esc(c.who) + "</p><p>" + KH.esc(c.de) + "</p>" +
+            (c.en ? '<p class="en">' + KH.esc(c.en) + "</p>" : "") + "</article>";
+        }).join("") + "</div>"
+        : "<p>Noch nichts, das später eine Linie ändert. Haller, Otto, Amira, Aylin — sie hören mit.</p>") +
       '<h2 style="margin-top:22px">Beziehungen</h2><div class="card">' + npcHtml + "</div>",
       { here: "pass" }
     );
@@ -521,12 +537,17 @@
       }).join("")
       : "<p>Noch keine mündlichen Belege. Gespräche in den 16 Episoden verlangen eine Aufnahme (außer Prüfungsmodus / Nachteilsausgleich).</p>";
     const entries = (KH.state.journal || []).slice().reverse().map(function (j) {
-      return '<article class="journal-entry"><h3>' + KH.esc(j.title || "Text") + "</h3><p>" + KH.esc(j.text || "") + "</p>" +
+      return '<article class="journal-entry' + (j.kind === "praxis" ? " journal-praxis" : "") + '"><h3>' +
+        KH.esc(j.title || "Text") + "</h3><p>" + KH.esc(j.text || "") + "</p>" +
         (j.score != null ? "<p>Auto-Score: " + j.score + "</p>" : "") + "</article>";
-    }).join("") || "<p>Noch leer. Schreibaufgaben landen hier.</p>";
-    KH.shell("<h1>Heft</h1><p>Texte und Stimme. Die Aufnahme-Datei gehört ins Canvas-Assignment <strong>Sprechen — Partner hört zu</strong> — Blobs bleiben im Browser, nicht im SCORM-Save.</p>" +
+    }).join("") || "<p>Noch leer. Schreibaufgaben und fertige Praxis (Postkarte, Bon, Schicht) landen hier.</p>";
+    const mem = (KH.memoryCards ? KH.memoryCards() : []).map(function (c) {
+      return '<article class="memory-card"><p class="kicker">' + KH.esc(c.who) + "</p><p>" + KH.esc(c.de) + "</p></article>";
+    }).join("");
+    KH.shell("<h1>Heft</h1><p>Texte, Stimme, Postkarten. Die Aufnahme-Datei gehört ins Canvas-Assignment <strong>Sprechen — Partner hört zu</strong> — Blobs bleiben im Browser, nicht im SCORM-Save.</p>" +
       '<div class="row-btns"><button class="btn ghost" type="button" id="exp">JSON exportieren</button></div>' +
-      "<h2>Aufnahmen</h2>" + recHtml + "<h2>Texte</h2>" + entries, { here: "journal" });
+      (mem ? "<h2>Was die Stadt behält</h2><div class=\"memory-grid\">" + mem + "</div>" : "") +
+      "<h2>Aufnahmen</h2>" + recHtml + "<h2>Texte &amp; Praxis</h2>" + entries, { here: "journal" });
     document.getElementById("exp").addEventListener("click", function () {
       const blob = new Blob([JSON.stringify(KH.state, null, 2)], { type: "application/json" });
       const a = document.createElement("a");
@@ -649,24 +670,38 @@
       return "<tr><td>" + m.n + "</td><td>" + KH.esc(m.title) + "</td><td>" + e.status + "</td><td>" +
         ((e.summative && e.summative.score) || "—") + "</td><td>" + ((e.summative && e.summative.code) || "—") +
         "</td><td>" + (spoken ? "ja" : "nein") + "</td><td>" +
-        KH.esc((rec && rec.code) || (e.summative && e.summative.speakCode) || "—") + "</td></tr>";
+        KH.esc((rec && rec.code) || (e.summative && e.summative.speakCode) || "—") +
+        "</td><td>" + (KH.episodeMinutes ? KH.episodeMinutes(m.id) : "—") + "</td></tr>";
     }).join("");
+    const roster = (KH.rosterLoad ? KH.rosterLoad() : []).map(function (r) {
+      return "<tr><td>" + KH.esc(r.vorname) + "</td><td>" + r.done + "/16</td><td>" +
+        (r.ipa != null ? r.ipa : "—") + "</td><td>" + r.spoken + "</td><td>" + r.minutes +
+        "</td><td>" + KH.esc((r.flags || []).slice(0, 4).join(", ") || "—") + "</td></tr>";
+    }).join("") || "<tr><td colspan=\"6\">Noch leer. Schüler exportieren Heft → JSON; du lädst die Dateien hier.</td></tr>";
+    const me = KH.summarizeStudent ? KH.summarizeStudent() : {};
     KH.shell(
       "<h1>Lehrerzimmer</h1>" +
-      "<p>Zielniveau: ACTFL <strong>Novice High</strong> in Interpretive (Lesen/Hören), Interpersonal und Presentational (Sprechen/Schreiben). Jede Episode endet mit einer Mini-IPA. Formative Szenen geben Feedback; der Stempel ist summativ.</p>" +
-      "<p><strong>Sprechen ist nicht optional.</strong> Spine-Dialoge und IPA-Interpersonal gehen nur mit Aufnahme (15&nbsp;s) plus Nachfrage weiter — außer Prüfungsmodus oder Nachteilsausgleich. Seitengassen bleiben klickbar. Partnerhören: Canvas-Assignment „Sprechen — Partner hört zu“; der Zettel im Heft ist die Rubrik, die Datei ist der Beleg.</p>" +
-      "<p>Canvas: SCORM-Paket im Ordner <code>kleinhausen/canvas</code> zippen, oder diese Seite als External URL einbetten. Codes unten in eine Aufgabe „Textfeld“ kleben lassen.</p>" +
+      "<p>Zielniveau: ACTFL <strong>Novice High</strong>. Jede Episode endet mit einer Mini-IPA. Der Stempel ist summativ. Minuten, Codes und die Stadt-Flags (Haller / Otto / Amira / Aylin) überleben im JSON — ohne LTI-Server.</p>" +
+      "<p><strong>Sprechen ist nicht optional.</strong> Spine-Dialoge brauchen Aufnahme plus Nachfrage. Partnerhören: Canvas „Sprechen — Partner hört zu“.</p>" +
+      "<p>Dieser Browser: <strong>" + KH.esc(me.vorname || "Gast") + "</strong> · " +
+      (me.minutes || 0) + " min · " + (me.done || 0) + "/16 Episoden · mündlich " + (me.spoken || 0) + ".</p>" +
       '<p><button class="btn" type="button" id="unlock">Alle Episoden öffnen (Demo)</button> ' +
-      '<button class="btn ghost" type="button" id="exp2">Klassenstand JSON</button></p>' +
-      '<div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Episode</th><th>Status</th><th>IPA</th><th>Code</th><th>Mündlich</th><th>SPR-Code</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
+      '<button class="btn ghost" type="button" id="exp2">Dieser Stand JSON</button> ' +
+      '<button class="btn ghost" type="button" id="print-rubric">IPA-Rubrik drucken</button></p>' +
+      '<div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Episode</th><th>Status</th><th>IPA</th><th>Code</th><th>Mündlich</th><th>SPR-Code</th><th>Min</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
+      "<h2>Klassenliste (statisch)</h2>" +
+      "<p>Kein Roster-Server. Du importierst die JSON-Exporte aus dem Heft. Canvas bleibt: 16 Code-Aufgaben + Sprechen-Upload + optional SCORM-Gesamtwert.</p>" +
+      '<p><label class="btn ghost">JSON importieren <input type="file" id="roster-in" accept="application/json" multiple hidden></label> ' +
+      '<button class="btn ghost" type="button" id="roster-clear">Liste leeren</button></p>' +
+      '<div class="card" style="overflow:auto"><table><thead><tr><th>Name</th><th>Fertig</th><th>IPA</th><th>Mündlich</th><th>Min</th><th>Stadt merkt</th></tr></thead><tbody>' + roster + "</tbody></table></div>" +
+      '<section class="print-only" id="rubric-print">' + (KH.rubricHtml ? KH.rubricHtml() : "") + "</section>" +
       "<h2>Annahmen dieses Builds</h2><ul>" +
       "<li>US-Schuljahr / College German 1, ca. 16 Sitzungen plus Hauspraxis.</li>" +
-      "<li>Spieler*in = Gastschüler/in bei Familie Fröhlich (Lena/Jonas = Gastgeschwister, nicht die Geschenk-Geschwister-Kollision: eine Familie).</li>" +
-      "<li>Café Federkiel, Bäckerei Sonnenkorn, Kaufhaus Fröhlich am Markt; Frau + Herr Vogel verwandt.</li>" +
-      "<li>Konflikt: Nordpark GmbH vs. Festplatz — schulgeeignet, ernst, ohne Bösewicht-Karikatur.</li>" +
-      "<li>Bestehende HTML-Spiele sind Praxis-Missionen in den Episoden. High-Modus: die Stadt <em>ist</em> das 3D-Kleinhausen (Lieferdienst-Raster, gleiches Wetter und derselbe Spielstand).</li>" +
-      "<li>Sprechen: 15-Sekunden-Aufnahme + unerwartete Nachfrage; Canvas-Partnerhören. Prüfungsmodus und Nachteilsausgleich sind die einzigen Klick-/Text-Ausnahmen.</li>" +
-      "<li>Hören: vorproduzierte Stimmen (Lena ≠ Frau Vogel ≠ Otto) plus Ortsrauschen. Tempo 1 / ¾ / ½ ohne Transkript. Browser-TTS nur Ersatz und Vorlesen von Texten.</li></ul>",
+      "<li>Spieler*in = Gastschüler/in bei Familie Fröhlich (eine Lena, ein Jonas).</li>" +
+      "<li>Café Federkiel, Bäckerei Sonnenkorn, Kaufhaus Fröhlich; Frau + Herr Vogel verwandt.</li>" +
+      "<li>Konflikt: Nordpark vs. Festplatz — Kompromiss, kein Bösewicht-Sieg. Die Stadt merkt sich Haller, Otto, Amira, Aylin.</li>" +
+      "<li>Praxis schreibt ins Heft und öffnet Straßen. High-Modus ist dieselbe 3D-Stadt.</li>" +
+      "<li>Sprechen: 15 s + Nachfrage. Hören: Cast-Clips, nicht Browser-TTS.</li></ul>",
       { here: "teacher" }
     );
     document.getElementById("unlock").addEventListener("click", function () {
@@ -682,6 +717,32 @@
       a.href = URL.createObjectURL(blob);
       a.download = "kleinhausen-lehrer.json";
       a.click();
+    });
+    document.getElementById("print-rubric").addEventListener("click", function () { window.print(); });
+    const input = document.getElementById("roster-in");
+    if (input) {
+      input.addEventListener("change", function () {
+        const files = Array.prototype.slice.call(input.files || []);
+        let left = files.length;
+        if (!left) return;
+        files.forEach(function (file) {
+          const reader = new FileReader();
+          reader.onload = function () {
+            try {
+              const parsed = JSON.parse(reader.result);
+              if (KH.rosterAdd) KH.rosterAdd(parsed.player ? parsed : (parsed.state || parsed));
+            } catch (e) { /* skip */ }
+            left -= 1;
+            if (!left) KH.view.teacher();
+          };
+          reader.readAsText(file);
+        });
+      });
+    }
+    const clear = document.getElementById("roster-clear");
+    if (clear) clear.addEventListener("click", function () {
+      if (KH.rosterClear) KH.rosterClear();
+      KH.view.teacher();
     });
   };
 })(window);

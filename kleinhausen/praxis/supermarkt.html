@@ -1125,6 +1125,14 @@ document.getElementById("btnLeaveKasse").addEventListener("click", () => veilKas
    ============================================================ */
 function finish(){
   S.running = false;
+  if (window.KHPraxis) setTimeout(function(){
+    KHPraxis.complete({
+      title: 'Kassenbon MarktPunkt',
+      artifact: 'Summe ' + (typeof money === 'function' ? money(cartTotal()) : '') + (S.payment ? ' · ' + S.payment : ''),
+      code: CONFIG && CONFIG.codePrefix ? (CONFIG.codePrefix + '-' + S.list.length) : '',
+      score: Math.max(0, S.list.length * 10 + S.dialogRight * 5 - S.mistakes * 5)
+    });
+  }, 0);
   const rows = {};
   S.cart.forEach(c => { rows[c.id] = (rows[c.id] || 0) + 1; });
   const bagCost = S.bag ? 0.20 : 0;

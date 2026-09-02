@@ -15,7 +15,8 @@
         formativeMax: 0,
         summative: null,
         startedAt: null,
-        completedAt: null
+        completedAt: null,
+        timeMs: 0
       };
     }
     return {
@@ -45,9 +46,11 @@
       journal: [],
       sidequests: {},
       visited: [],
+      streets: [],
       walk: null,
       praxis: {},
       recordings: [],
+      time: { totalMs: 0, lastTick: null, sessions: 0 },
       episodes,
       onboarding: false
     };
@@ -98,7 +101,10 @@
         stamps: KH.state.stamps,
         flags: KH.state.flags,
         discoveries: KH.state.discoveries,
+        streets: KH.state.streets,
         onboarding: KH.state.onboarding,
+        time: { totalMs: (KH.state.time && KH.state.time.totalMs) || 0 },
+        praxis: Object.keys(KH.state.praxis || {}),
         spoken: (KH.spokenEpisodes ? KH.spokenEpisodes() : []).slice()
       };
       Object.keys(KH.state.episodes).forEach(function (id) {
@@ -108,7 +114,8 @@
           scene: e.scene,
           formative: e.formative,
           summative: e.summative,
-          completedAt: e.completedAt
+          completedAt: e.completedAt,
+          timeMs: e.timeMs || 0
         };
       });
       const done = Object.values(KH.state.episodes).filter(function (e) { return e.status === "done"; }).length;

@@ -1,0 +1,142 @@
+/* Shared Kleinhausen enamel — praxis iframes inherit hub tokens, weather, type. */
+html[data-kh="1"] {
+  --post: #f5c400;
+  --post-deep: #d4a800;
+  --navy: #14385c;
+  --navy-deep: #0c243c;
+  --enamel: #1e5a8a;
+  --paper: #f3eee3;
+  --paper-2: #fbf7ef;
+  --cream: #fffaf0;
+  --ink: #1a1f2b;
+  --ink-soft: #5a6272;
+  --moss: #2f6a52;
+  --warn: #b54732;
+  --line: #d8d0c2;
+  --display: Georgia, "Iowan Old Style", Palatino, "Palatino Linotype", "Times New Roman", serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --lesbar: Verdana, Tahoma, "Trebuchet MS", "Segoe UI", sans-serif;
+
+  --gelb: #f5c400;
+  --gelb-tief: #d4a800;
+  --petrol: #14385c;
+  --petrol-hell: #1e5a8a;
+  --papier: #f3eee3;
+  --papier-tief: #e8dfcc;
+  --postgelb: #f5c400;
+  --postgelb-tief: #d4a800;
+  --tinte: #1a1f2b;
+  --tinte-weich: #14385c;
+  --emaille: #f3eee3;
+  --verkehrsblau: #14385c;
+  --verkehrsblau-hell: #1e5a8a;
+  --sign-yellow: #f5c400;
+  --sign-blue: #14385c;
+  --brass: #c4922a;
+  --brass-deep: #d4a800;
+  --dye: #14385c;
+  --dye-deep: #0c243c;
+  --soap: #e3efe8;
+  --tag: #fffaf0;
+  --gold: #c4922a;
+  --tinte-deep: #0c243c;
+  --tinte-wash: #e8eef5;
+}
+
+html[data-kh="1"][data-gfx="low"] {
+  --paper: #f7f7f4;
+  --papier: #f7f7f4;
+  --emaille: #ffffff;
+  --display: var(--sans);
+  --font-display: var(--sans);
+}
+
+html[data-kh="1"][data-contrast="hoch"],
+html[data-kh="1"][data-kontrast="an"],
+html[data-kh="1"][data-kontrast="1"] {
+  --paper: #fff;
+  --papier: #fff;
+  --emaille: #fff;
+  --ink: #000;
+  --tinte: #000;
+  --navy: #000;
+  --petrol: #000;
+  --post: #ffe100;
+  --gelb: #ffe100;
+  --postgelb: #ffe100;
+}
+
+html[data-kh="1"][data-size="l"],
+html[data-kh="1"][data-schrift="gross"] { --fs: 1.2rem; }
+html[data-kh="1"][data-size="xl"],
+html[data-kh="1"][data-schrift="sehr-gross"] { --fs: 1.38rem; }
+
+html[data-kh="1"][data-font="lesbar"],
+html[data-kh="1"][data-lesbar="an"],
+html[data-kh="1"][data-lesbar="1"] {
+  --sans: Verdana, Tahoma, "Trebuchet MS", "Segoe UI", sans-serif;
+  --display: Verdana, Tahoma, sans-serif;
+  --font-display: Verdana, Tahoma, sans-serif;
+  --font-body: Verdana, Tahoma, sans-serif;
+}
+
+html[data-kh="1"][data-motion="reduce"] *,
+html[data-kh="1"][data-bewegung="aus"] *,
+html[data-kh="1"][data-motion="reduce"] *::before,
+html[data-kh="1"][data-motion="reduce"] *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+html[data-kh="1"] #kh-course-bar {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: 10px;
+  z-index: 80;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: .5em .8em;
+  background: var(--navy);
+  color: var(--cream);
+  border: 3px solid var(--post);
+  font: 700 .88rem/1.3 var(--sans);
+  letter-spacing: .02em;
+}
+html[data-kh="1"] #kh-course-bar button {
+  min-height: 40px;
+  padding: .35em .8em;
+  border: 2px solid var(--post);
+  background: var(--post);
+  color: var(--navy-deep);
+  font: 700 .85rem var(--sans);
+  cursor: pointer;
+}
+html[data-kh="1"] #kh-course-bar button[disabled] {
+  opacity: .45;
+  cursor: not-allowed;
+}
+html[data-kh="1"] #kh-course-wx {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 7;
+}
+html[data-kh="1"][data-kh-weather="rain"] #kh-course-wx {
+  background: repeating-linear-gradient(-18deg, transparent 0 13px, rgba(255,255,255,.1) 13px 14px);
+  box-shadow: inset 0 0 120px rgba(10,16,24,.35);
+}
+html[data-kh="1"][data-kh-weather="cold"] #kh-course-wx {
+  box-shadow: inset 0 0 140px rgba(200,220,235,.28);
+}
+html[data-kh="1"][data-kh-weather="sun"] #kh-course-wx {
+  box-shadow: inset 0 0 80px rgba(242,194,48,.08);
+}
+html[data-kh="1"] #kh-course-note {
+  flex: 1 1 12em;
+  font-weight: 600;
+  font-size: .8rem;
+  color: var(--post);
+}

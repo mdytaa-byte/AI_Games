@@ -2647,6 +2647,12 @@ function abschluss(){
     '</div></div></div>';
   zeigeSeite('s-abschluss');
   zeichnePostkarte(el('ab-canvas'), foto, text, S.spielerName);
+  if (window.KHPraxis) KHPraxis.complete({
+    title: 'Postkarte nach Hause',
+    artifact: (text || 'Eine Postkarte aus Kleinhausen.').slice(0, 240),
+    code: code,
+    score: prozent
+  });
   el('ab-bild').addEventListener('click', function(){
     el('ab-canvas').toBlob(function(b){
       if(!b){ ansage('Das Bild konnte nicht gespeichert werden.', true); return; }

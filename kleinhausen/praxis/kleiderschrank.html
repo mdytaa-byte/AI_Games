@@ -1605,6 +1605,14 @@ function folgeFertig(){
    9. ERGEBNIS UND ABGABECODE
    ========================================================== */
 function zeigeErgebnis(){
+  if (window.KHPraxis) {
+    const n = Object.keys(S.ergebnisse).length;
+    KHPraxis.complete({
+      title: 'Wäschezettel',
+      artifact: n + ' Folge(n) im Schrank. Der Zettel liegt im Heft.',
+      score: n * 10
+    });
+  }
   const eintraege = Object.keys(S.ergebnisse).map(Number).sort((a,b)=>a-b);
   let ges = 0, max = 0;
   const body = $("sum-body"); body.innerHTML = "";

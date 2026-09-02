@@ -205,14 +205,15 @@
         en: "Lena takes you on a names-not-selfies tour. At the fountain, the town argument has already started."
       },
       {
-        type: "match",
-        title: "Was ist das?",
-        pairs: [
-          { left: "das Rathaus", leftEn: "town hall", right: "Hier arbeitet die Bürgermeisterin." },
-          { left: "der Brunnen", leftEn: "fountain", right: "In der Mitte vom Marktplatz. Münzen hinein." },
-          { left: "die Kirche", leftEn: "church", right: "St. Nikolai. Glocken um zwölf." },
-          { left: "die Bäckerei", leftEn: "bakery", right: "Goldene Brezel über der Tür." },
-          { left: "das Museum", leftEn: "museum", right: "Alte Fotos, ein Schlossmodell, 750 Jahre." }
+        type: "room",
+        title: "Marktplatz: schau dich um",
+        intro: "Keine Zuordnungstabelle. Du stehst am Brunnen. Tippe, was du siehst — die Wörter bleiben.",
+        hotspots: [
+          { x: 48, y: 42, label: "das Rathaus", de: "Hier arbeitet die Bürgermeisterin. Die Uhr will recht haben.", en: "Town hall. The clock wants to be right." },
+          { x: 52, y: 62, label: "der Brunnen", de: "Mitte vom Markt. Münzen unten. Wünsche auf Deutsch, sagt Lena.", en: "Fountain. Coins. Wishes in German." },
+          { x: 18, y: 40, label: "die Kirche", de: "St. Nikolai. Glocken um zwölf — auch Streit macht Pause.", en: "St. Nikolai. Bells at noon." },
+          { x: 36, y: 70, label: "die Bäckerei", de: "Goldene Brezel über der Tür. Otto ist pünktlicher als die Kette.", en: "Golden pretzel. Otto." },
+          { x: 72, y: 55, label: "das Museum", de: "Alte Fotos, ein Schlossmodell, später 750 Stimmen.", en: "Museum. Later: 750 voices." }
         ]
       },
       {
@@ -222,17 +223,22 @@
         lineEn: "Pretty fountain. But you can’t park here. With my knees, a garage on the festival square would be better.",
         prompt: "Du kennst sie noch nicht. Sie ist älter.",
         options: [
-          { de: "Guten Tag. Ich bin neu hier. Ich höre zu.", ok: true, trust: 1, feedback: "Du widersprichst nicht und du verachtest nicht. Das ist der Anfang von Nachbarschaft." },
-          { de: "Parkhäuser sind hässlich!", ok: false, trust: -1, feedback: "Vielleicht wahr — aber du kennst ihre Knie nicht. Lena zieht dich weg." },
-          { de: "Whatever.", ok: false, feedback: "Englisch und Desinteresse. Sie dreht sich um." }
+          { de: "Guten Tag. Ich bin neu hier. Ich höre zu.", ok: true, trust: 1, flag: "hallerHeard", feedback: "Du widersprichst nicht und du verachtest nicht. Das ist der Anfang von Nachbarschaft." },
+          { de: "Parkhäuser sind hässlich!", ok: false, trust: -1, flag: "hallerColder", feedback: "Vielleicht wahr — aber du kennst ihre Knie nicht. Lena zieht dich weg." },
+          { de: "Whatever.", ok: false, flag: "hallerIgnored", feedback: "Englisch und Desinteresse. Sie dreht sich um." }
         ]
       },
       {
         type: "activity",
         title: "Foto-Schnitzeljagd",
         src: "praxis/foto-schnitzeljagd.html",
-        de: "Lauf in der Ich-Perspektive durch Kleinhausen. Lies die Aufgaben auf Deutsch, finde die Gebäude, mach Fotos. Am Ende: eine Postkarte.",
-        en: "First-person 3D photo hunt through town. This is the same Kleinhausen — now it counts as Episode 2 praxis.",
+        praxisId: "foto",
+        flag: "praxisFoto",
+        unlock: ["turm", "schloss"],
+        artifactTitle: "Postkarte nach Hause",
+        artifactText: "Die Postkarte liegt im Heft. Turm und Schloss sind keine Kulisse mehr.",
+        de: "Lauf in der Ich-Perspektive durch Kleinhausen. Lies die Aufgaben auf Deutsch, finde die Gebäude, mach Fotos. Am Ende: eine Postkarte — die zählt, nicht der Button.",
+        en: "First-person 3D photo hunt. Finish the postcard; it drops into the journal and opens the tower street.",
         points: 12
       },
       {
@@ -438,14 +444,16 @@
         en: "Weather, school, and civic life all want different outfits. Welcome to German October."
       },
       {
-        type: "match",
-        title: "Wetter → Kleidung",
-        pairs: [
-          { left: "Es schneit.", right: "die Winterjacke, die Handschuhe" },
-          { left: "Es ist heiß und sonnig.", right: "das T-Shirt, die Sonnenbrille" },
-          { left: "Es regnet.", right: "die Regenjacke, die Schuhe mit Profil" },
-          { left: "Es ist windig und 9 Grad.", right: "der Pullover, der Schal, die Jeans" },
-          { left: "Sportunterricht.", right: "die Turnschuhe, die Trainingshose" }
+        type: "counter",
+        title: "Rucksack unter Zeitdruck",
+        intro: "Lena zählt laut. Pack nicht alles — pack die richtige Menge für heute: Regen, Referat, Sport.",
+        introEn: "Count the pieces. Not a matching grid — a bag.",
+        okText: "Der Rucksack schließt. Werner meckert nur über die Schuhe.",
+        items: [
+          { label: "Regenjacke", en: "rain jacket", target: 1, max: 3, unit: "×" },
+          { label: "Schal (9°, Wind)", en: "scarf", target: 1, max: 3, unit: "×" },
+          { label: "T-Shirt nur", en: "just a T-shirt", target: 0, max: 3, unit: "×" },
+          { label: "Turnschuhe (Sport)", en: "trainers", target: 1, max: 2, unit: "Paar" }
         ]
       },
       {
@@ -485,8 +493,10 @@
         type: "activity",
         title: "Kleiderschrank Kleinhausen",
         src: "praxis/kleiderschrank.html",
-        de: "Lies jede Situation (Wetter, Fest, Schule, Sport). Öffne den Schrank. Zieh an, was passt — und begründe.",
-        en: "The wardrobe game is canon: you live here, you dress for Kleinhausen weather and rituals.",
+        praxisId: "kleid",
+        artifactTitle: "Wäschezettel",
+        de: "Lies jede Situation (Wetter, Fest, Schule, Sport). Öffne den Schrank. Wenn das Ergebnis da ist, liegt der Zettel im Heft.",
+        en: "Finish a wardrobe run. The result slips into the journal.",
         points: 12
       },
       {
@@ -565,8 +575,8 @@
         npc: "otto",
         line: "Guten Morgen. Was darf's sein? Die Roggen sind noch warm. Die süßen Teilchen sind für Leute, die es eilig haben, ihre Großmutter zu beeindrucken.",
         options: [
-          { de: "Guten Morgen. Sechs Brötchen, bitte. Vier Roggen, zwei Körner.", ok: true, trust: 1, feedback: "Er legt sie in die Tüte, als wäre das schon Routine." },
-          { de: "Alles, was billig ist.", ok: false, feedback: "Otto hebt eine Augenbraue. Billig ist der MarktPunkt. Hier ist warm." },
+          { de: "Guten Morgen. Sechs Brötchen, bitte. Vier Roggen, zwei Körner.", ok: true, trust: 1, flag: "ottoRegular", feedback: "Er legt sie in die Tüte, als wäre das schon Routine." },
+          { de: "Alles, was billig ist.", ok: false, flag: "marktPunktOnly", feedback: "Otto hebt eine Augenbraue. Billig ist der MarktPunkt. Hier ist warm." },
           { de: "Ich hätte gern ein Brot und … äh … das da.", ok: "ok", feedback: "Zeigen geht am Anfang. Nächstes Mal: das Wort." }
         ]
       },
@@ -574,8 +584,13 @@
         type: "activity",
         title: "Supermarkt — Einkaufszettel",
         src: "praxis/supermarkt.html",
-        de: "Lauf durch die Gänge, lies Schilder, nimm, was auf dem Zettel steht, zahl an der Kasse. In der Story ist das der MarktPunkt am Ortsrand — praktisch, anonym, billig.",
-        en: "Relocate this supermarket in your head: MarktPunkt on the bypass road.",
+        praxisId: "markt",
+        flag: "praxisMarkt",
+        flags: { marktPunktOnly: true },
+        unlock: ["supermarkt"],
+        artifactTitle: "Kassenbon MarktPunkt",
+        de: "Lauf durch die Gänge, zahl an der Kasse. Der Bon landet im Heft — Ottos Linie ändert sich, wenn das die einzige Tüte ist.",
+        en: "Checkout writes a receipt into the journal. Otto notices the bag.",
         points: 10
       },
       {
@@ -630,8 +645,8 @@
           line: "Sie auch hier? Der MarktPunkt hat einen Aufzug. Otto hat Treppen. Ich mag Otto. Meine Knie mögen den Aufzug.",
           followUp: { de: "Was kaufst du bei Otto, und was hier?", en: "What from Otto, and what here?" },
           options: [
-            { de: "Ja, ich verstehe. Ich war auch bei Otto. Beides ist die Stadt.", ok: true, trust: 1, feedback: "Du hältst zwei Wahrheiten. Das braucht Kleinhausen." },
-            { de: "Dann kaufen Sie halt nur hier.", ok: false, feedback: "Klingt nach Abweisen. Sie wollte gesehen werden, nicht belehrt." },
+            { de: "Ja, ich verstehe. Ich war auch bei Otto. Beides ist die Stadt.", ok: true, trust: 1, flag: "hallerHeard", feedback: "Du hältst zwei Wahrheiten. Das braucht Kleinhausen." },
+            { de: "Dann kaufen Sie halt nur hier.", ok: false, flag: "hallerColder", feedback: "Klingt nach Abweisen. Sie wollte gesehen werden, nicht belehrt." },
             { de: "Was ist ein Aufzug?", ok: "ok", feedback: "Fair. Aufzug = elevator. Dann zur Sache zurück." }
           ]
         },
@@ -671,27 +686,39 @@
         en: "Part-time courier. Your first envelope is from the parking company to city hall."
       },
       {
-        type: "cloze",
-        title: "Funkspruch",
-        parts: [
-          { t: "Geh die Bahnhofstraße " },
-          { gap: 0 },
-          { t: ", dann " },
-          { gap: 1 },
-          { t: " in die Marktstraße. Das Rathaus ist " },
-          { gap: 2 },
-          { t: " der Sparkasse. Klingle an der " },
-          { gap: 3 },
-          { t: " Tür." }
-        ],
-        gaps: [["entlang", "geradeaus"], ["links", "rechts"], ["gegenüber", "neben"], ["großen", "roten", "grossen"]]
+        type: "funk",
+        title: "Funkspruch — Schicht A",
+        intro: "Zentrale spricht Imperative. Du antwortest, du fährst nicht nur.",
+        introEn: "Dispatch. Short replies. Not a gap-fill.",
+        calls: [
+          {
+            from: "Tour 1",
+            de: "Geh die Bahnhofstraße entlang, dann links in die Marktstraße. Rathaus gegenüber der Sparkasse. Verstanden?",
+            options: [
+              { de: "Verstanden. Bahnhofstraße, links, Rathaus gegenüber Sparkasse.", ok: true, feedback: "Ganze Sätze. Die Zentrale mag das." },
+              { de: "Wohin?", ok: false, feedback: "Sie hat es gesagt. Wiederholen ist der Job." }
+            ]
+          },
+          {
+            from: "Korrektur",
+            de: "Nicht die große rote Tür vom Museum. Die Rathaustür. Klingeln. Umschlag auf den Stapel kontrovers.",
+            options: [
+              { de: "Klingle an der Rathaustür. Stapel kontrovers. Ende.", ok: true, feedback: "Genau. Du bist Kurier, kein Architekt." },
+              { de: "Ich lege es in den Brunnen.", ok: false, feedback: "Poetisch. Unzustellbar." }
+            ]
+          }
+        ]
       },
       {
         type: "activity",
         title: "Lieferdienst Kleinhausen",
         src: "praxis/lieferdienst.html",
-        de: "Du bist Kurier/Kurierin. Folge den Wegbeschreibungen in der Ich-Perspektive. Falsche Abzweigung = Umleitung, kein Game Over. Schicht A ist dein Job in dieser Episode.",
-        en: "First-person delivery sim. Canon job: the post office.",
+        praxisId: "liefer",
+        flag: "praxisLiefer",
+        unlock: ["rathaus", "post"],
+        artifactTitle: "Lieferschein",
+        de: "Du bist Kurier/Kurierin. Schicht A. Wenn die Schicht endet, liegt der Schein im Heft und das Rathaus kennt deine Klingel.",
+        en: "Finish the shift. The slip unlocks the town-hall street.",
         points: 14
       },
       {
@@ -700,7 +727,7 @@
         line: "Danke. Sie sind der neue Kurier? Legen Sie das bitte auf den Stapel „kontrovers“. Und: Wie finden Sie Kleinhausen — zu klein zum Parken, oder groß genug zum Feiern?",
         options: [
           { de: "Ich bin neu, Frau Aydin. Ich lerne die Stadt noch. Der Marktplatz gefällt mir.", ok: true, trust: 1, feedback: "Sie lächelt knapp. Politikerinnen hören, was du nicht entscheidest." },
-          { de: "Parkhaus. Punkt.", ok: false, feedback: "Zu schnell. Du hast Amiras Seite noch nicht gehört." },
+          { de: "Parkhaus. Punkt.", ok: false, flag: "hallerColder", feedback: "Zu schnell. Du hast Amiras Seite noch nicht gehört." },
           { de: "Ich darf das Paket nicht kommentieren.", ok: "ok", feedback: "Beruflich korrekt. Menschlich eine verpasste Chance." }
         ]
       },
@@ -773,14 +800,15 @@
         en: "Café as classroom and civic table."
       },
       {
-        type: "match",
-        title: "Bestellchunks",
-        pairs: [
-          { left: "Ich hätte gern einen Kaffee.", right: "Höfliche Bestellung" },
-          { left: "Geht noch ein Stück Kuchen?", right: "Nachbestellen" },
-          { left: "Die Rechnung, bitte. Getrennt.", right: "Jeder zahlt für sich" },
-          { left: "Zusammen, bitte.", right: "Eine Person zahlt" },
-          { left: "Zum Mitnehmen.", right: "Nicht hier sitzen" }
+        type: "form",
+        title: "Bestellzettel Federkiel",
+        intro: "Die Bedienung hat keine Zeit für ein Raster. Schreib den Zettel, wie man ihn an die Theke legt.",
+        introEn: "Fill the real slip. Not matching chunks.",
+        okText: "Der Zettel geht durch. Kakao darf Politik sein.",
+        fields: [
+          { label: "Ich hätte gern …", en: "polite order", placeholder: "einen Kakao / einen Kaffee", needles: ["hätte", "haette", "bitte", "kakao", "kaffee", "tee", "kuchen"] },
+          { label: "Hier oder mitnehmen?", en: "here or to go", placeholder: "hier sitzen", needles: ["hier", "sitzen", "mitnehmen", "to go", "bleiben"] },
+          { label: "Rechnung", en: "bill", placeholder: "getrennt / zusammen", needles: ["getrennt", "zusammen", "rechnung"] }
         ]
       },
       {
@@ -788,17 +816,19 @@
         npc: "amira",
         line: "Hi. Ich bin Amira. Umwelt-AG. Wir treffen uns hier, weil das Jugendzentrum bald keinen Strom mehr hat, wenn der Festplatz weg ist. Willst du nur Kakao, oder willst du auch zuhören?",
         options: [
-          { de: "Beides. Einen Kakao, bitte — und erzähl langsam.", ok: true, trust: 1, feedback: "Sie lacht. Langsam kann sie. Wütend auch." },
-          { de: "Nur Kakao. Keine Politik.", ok: "ok", trust: 0, feedback: "Erlaubt. Die Flyer bleiben trotzdem liegen." },
-          { de: "Ich bin nur Gast. Das ist nicht mein Problem.", ok: false, trust: -1, feedback: "Aylin sieht dich an. Sie ist auch Gast. Fast." }
+          { de: "Beides. Einen Kakao, bitte — und erzähl langsam.", ok: true, trust: 1, flag: "amiraListened", feedback: "Sie lacht. Langsam kann sie. Wütend auch." },
+          { de: "Nur Kakao. Keine Politik.", ok: "ok", trust: 0, flag: "amiraCocoaOnly", feedback: "Erlaubt. Die Flyer bleiben trotzdem liegen." },
+          { de: "Ich bin nur Gast. Das ist nicht mein Problem.", ok: false, trust: -1, flag: "amiraColder", feedback: "Aylin sieht dich an. Sie ist auch Gast. Fast." }
         ]
       },
       {
         type: "activity",
         title: "Gesprächspartner — Café",
         src: "praxis/gespraechspartner.html",
-        de: "Übe gesprochene Dialoge. Wähle Niveau Anfänger (Novice). Thema Café / Essen passt zu dieser Episode; andere Themen sind Freispiel.",
-        en: "Speaking trees. Stay Novice for now; later episodes will send you back.",
+        praxisId: "gespraech",
+        artifactTitle: "Café-Gespräch",
+        de: "Übe gesprochene Dialoge (Novice, Café). Wenn das Gespräch endet, liegt es im Heft — nicht als Side-Tab.",
+        en: "Finish a novice café tree. It reports into the journal.",
         points: 10
       },
       {
@@ -907,8 +937,10 @@
         type: "activity",
         title: "Chatsprache & Abkürzungen",
         src: "praxis/chat.html",
-        de: "Lerne lg, hdgdl, Register. Lena, die Bande, Aylin, Frau Vogel — dieselben Namen wie in der Serie. Pass auf: Was für Lena okay ist, ist für Frau Vogel eine kleine Katastrophe.",
-        en: "Slang trainer. Canon names already match.",
+        praxisId: "chat",
+        artifactTitle: "Chat-Log",
+        de: "Lerne lg, hdgdl, Register. Wenn ein Chat endet, liegt das Log im Heft. Später, nach dem Gerücht, entscheidet sich, ob Aylins Chat wieder aufgeht.",
+        en: "Finish a chat thread. Later Aylin remembers whether the rumor got repaired.",
         points: 12
       },
       {

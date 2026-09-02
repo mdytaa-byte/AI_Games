@@ -171,6 +171,7 @@
     box.appendChild(ttsBar(scene.line || ""));
     optionList(box, scene.options, function (opt) {
       box.appendChild(feedbackEl(opt));
+      if (KH.applyChoice) KH.applyChoice(opt);
       if (opt.trust) KH.trust(scene.npc, opt.trust);
       const follow = KH.followUpFor(scene, opt);
       const ok = opt.ok === true || opt.ok === "good" || opt.ok === "ok";
@@ -500,6 +501,7 @@
     if (scene.options) {
       optionList(box, scene.options, function (opt) {
         box.appendChild(feedbackEl(opt));
+        if (KH.applyChoice) KH.applyChoice(opt);
         if (!KH.voiceOnSpine || !KH.voiceOnSpine()) {
           if (opt.ok === true || opt.ok === "good" || opt.ok === "ok") KH.addPoints("sprechen", 4);
           KH.addPoints("mut", 2);
@@ -588,24 +590,35 @@
     card.innerHTML = '<p class="kicker">Praxis in der Stadt</p><h2>' + KH.esc(scene.title) + "</h2>" +
       "<p>" + (scene.de || "") + "</p>" +
       (scene.en ? '<p class="en">' + scene.en + "</p>" : "") +
-      "<p>Das Minispiel öffnet sich hier. Wenn du fertig bist, komm zurück und markiere die Aufgabe.</p>";
+      "<p>Das Minispiel ist die Aufgabe — nicht der Button darunter. Postkarte, Kasse, Schicht oder Chat-Ende schreiben ins Heft und öffnen die nächste Straße.</p>";
     box.appendChild(card);
     const frame = document.createElement("iframe");
     frame.className = "activity-frame";
     frame.title = scene.title;
+    const p = KH.state.player || {};
     const q = new URLSearchParams({
       kh: "1",
       weather: KH.weatherKey ? KH.weatherKey() : "overcast",
-      name: KH.state.player.vorname || "",
-      gfx: KH.state.player.gfx || "high"
+      name: p.vorname || "",
+      gfx: p.gfx || "high",
+      contrast: p.contrast ? "hoch" : "normal",
+      size: p.size || "m",
+      font: p.font || "default",
+      motion: p.motion || "full"
     });
     const src = scene.src + (scene.src.indexOf("?") >= 0 ? "&" : "?") + q.toString();
     frame.src = src;
     box.appendChild(frame);
     const note = document.createElement("p");
     note.className = "praxis-weather";
-    note.textContent = "Dasselbe Wetter und derselbe Name wie in der Stadt — wenn du fertig bist, zählt die Praxis für den Kurs.";
+    note.textContent = "Dasselbe Wetter, dieselbe Schrift, derselbe Name. Fertig ist fertig — nicht „Aufgabe erledigt“.";
     box.appendChild(note);
+    const status = document.createElement("p");
+    status.className = "praxis-wait";
+    status.textContent = scene.optional
+      ? "Optional: wenn die Praxis endet, landet sie im Heft. Du darfst auch weitergehen."
+      : "Warte auf das Ende der Mission (Postkarte, Bon, Schicht, Gespräch).";
+    box.appendChild(status);
     const row = document.createElement("div");
     row.className = "row-btns";
     const open = document.createElement("a");
@@ -617,27 +630,222 @@
     const doneBtn = document.createElement("button");
     doneBtn.className = "btn post";
     doneBtn.type = "button";
-    doneBtn.textContent = "Aufgabe erledigt — zurück in die Geschichte";
+    doneBtn.textContent = scene.optional ? "Weiter in die Geschichte" : "Warte auf die Praxis…";
+    doneBtn.disabled = !scene.optional && !(KH.state.player && KH.state.player.exam);
+    if (KH.state.player && KH.state.player.exam) {
+      doneBtn.disabled = false;
+      doneBtn.textContent = "Prüfungsmodus: weiter";
+    }
     let finished = false;
-    function finishActivity() {
+    function finishActivity(payload) {
       if (finished) return;
       finished = true;
       window.removeEventListener("message", onMsg);
+      if (poll) clearInterval(poll);
       KH.addPoints("verstehen", scene.points || 8);
-      KH.state.praxis = KH.state.praxis || {};
-      KH.state.praxis[scene.src] = { at: Date.now(), weather: q.get("weather") };
-      KH.save();
-      done({ kind: "activity", ok: true });
+      if (KH.recordPraxis) KH.recordPraxis(Object.assign({ ep: KH.currentEpisode }, scene), payload || {});
+      done({ kind: "activity", ok: true, praxis: true });
     }
-    function onMsg(ev) {
-      if (!ev.data || ev.data.type !== "kh-praxis") return;
-      if (ev.data.event === "done" || ev.data.event === "exit") finishActivity();
+    function accept(data) {
+      if (!data || data.type !== "kh-praxis") return;
+      if (!data.complete && data.event !== "done") return;
+      if (!data.complete && !scene.optional) return;
+      status.textContent = data.artifact || data.title || "Im Heft. Die Straße merkt sich das.";
+      status.className = "praxis-wait is-done";
+      doneBtn.disabled = false;
+      doneBtn.textContent = "Zurück in die Geschichte";
+      finishActivity(data);
+    }
+    function onMsg(ev) { accept(ev.data); }
+    function readOutbox() {
+      try {
+        const raw = localStorage.getItem("kleinhausen.praxis.outbox");
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        if (data && data.complete) accept(data);
+      } catch (e) { /* ignore */ }
     }
     window.addEventListener("message", onMsg);
-    doneBtn.addEventListener("click", finishActivity);
+    const poll = setInterval(readOutbox, 1200);
+    doneBtn.addEventListener("click", function () {
+      if (doneBtn.disabled) return;
+      finishActivity({ complete: true, skipped: scene.optional || !!(KH.state.player && KH.state.player.exam) });
+    });
     row.appendChild(open);
     row.appendChild(doneBtn);
     box.appendChild(row);
+  };
+
+  KH.scenes.counter = function (box, scene, done) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = '<p class="kicker">Zählen · in der Stadt</p><h2>' + KH.esc(scene.title || "Zähl mit") + "</h2>" +
+      "<p>" + (scene.intro || "Stell die Mengen ein. Das ist Theke, nicht Raster.") + "</p>" +
+      (scene.introEn ? '<p class="en">' + scene.introEn + "</p>" : "");
+    box.appendChild(card);
+    const items = scene.items || [];
+    const board = document.createElement("div");
+    board.className = "counter-board";
+    const vals = items.map(function (it) { return it.start || 0; });
+    items.forEach(function (it, i) {
+      const row = document.createElement("div");
+      row.className = "counter-row";
+      const lab = document.createElement("div");
+      lab.innerHTML = "<strong>" + KH.esc(it.label) + "</strong>" +
+        (it.en ? '<span class="en">' + KH.esc(it.en) + "</span>" : "");
+      const ctrl = document.createElement("div");
+      ctrl.className = "counter-ctrl";
+      const minus = document.createElement("button");
+      minus.type = "button";
+      minus.className = "btn ghost";
+      minus.textContent = "−";
+      const num = document.createElement("span");
+      num.className = "counter-num";
+      num.textContent = String(vals[i]) + (it.unit ? " " + it.unit : "");
+      const plus = document.createElement("button");
+      plus.type = "button";
+      plus.className = "btn ghost";
+      plus.textContent = "+";
+      function paint() {
+        num.textContent = String(vals[i]) + (it.unit ? " " + it.unit : "");
+      }
+      minus.addEventListener("click", function () {
+        vals[i] = Math.max(it.min != null ? it.min : 0, vals[i] - (it.step || 1));
+        paint();
+      });
+      plus.addEventListener("click", function () {
+        vals[i] = Math.min(it.max != null ? it.max : 99, vals[i] + (it.step || 1));
+        paint();
+      });
+      ctrl.appendChild(minus);
+      ctrl.appendChild(num);
+      ctrl.appendChild(plus);
+      row.appendChild(lab);
+      row.appendChild(ctrl);
+      board.appendChild(row);
+    });
+    box.appendChild(board);
+    const chk = document.createElement("button");
+    chk.className = "btn post";
+    chk.type = "button";
+    chk.textContent = "So wiegen / so bestellen";
+    chk.addEventListener("click", function () {
+      let n = 0;
+      items.forEach(function (it, i) {
+        if (vals[i] === it.target) n += 1;
+      });
+      const f = document.createElement("div");
+      f.className = "feedback " + (n === items.length ? "ok" : "no");
+      f.textContent = n === items.length
+        ? (scene.okText || "Genau. Die Zahlen stimmen.")
+        : (scene.hint || "Stimmt noch nicht. Schau auf die Zettel / die Waage.");
+      box.appendChild(f);
+      chk.disabled = true;
+      box.appendChild(continueBtn("Weiter", function () {
+        done({ kind: "counter", ok: n >= items.length - 1, score: Math.round((n / Math.max(items.length, 1)) * 100) });
+      }));
+    });
+    box.appendChild(chk);
+  };
+
+  KH.scenes.form = function (box, scene, done) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = '<p class="kicker">Formular · Alltag</p><h2>' + KH.esc(scene.title || "Ausfüllen") + "</h2>" +
+      "<p>" + (scene.intro || "Füll das echte Blatt aus. Kein Zuordnungsraster.") + "</p>" +
+      (scene.introEn ? '<p class="en">' + scene.introEn + "</p>" : "");
+    box.appendChild(card);
+    const form = document.createElement("form");
+    form.className = "town-form";
+    form.setAttribute("autocomplete", "off");
+    const fields = scene.fields || [];
+    const inputs = [];
+    fields.forEach(function (f) {
+      const lab = document.createElement("label");
+      lab.className = "field";
+      lab.innerHTML = KH.esc(f.label) + (f.en ? '<span class="en">' + KH.esc(f.en) + "</span>" : "");
+      const inp = f.lines > 1 ? document.createElement("textarea") : document.createElement("input");
+      if (inp.tagName === "INPUT") inp.type = "text";
+      inp.setAttribute("aria-label", f.label);
+      if (f.placeholder) inp.placeholder = f.placeholder;
+      lab.appendChild(inp);
+      form.appendChild(lab);
+      inputs.push({ inp: inp, field: f });
+    });
+    box.appendChild(form);
+    const chk = document.createElement("button");
+    chk.className = "btn post";
+    chk.type = "button";
+    chk.textContent = "Abgeben";
+    chk.addEventListener("click", function () {
+      let n = 0;
+      inputs.forEach(function (g) {
+        const ok = !g.field.needles || !g.field.needles.length || KH.containsAny(g.inp.value, g.field.needles);
+        g.inp.style.borderColor = ok ? "var(--moss)" : "var(--warn)";
+        if (ok) n += 1;
+      });
+      chk.disabled = true;
+      const f = document.createElement("div");
+      f.className = "feedback " + (n >= fields.length - 1 ? "ok" : "no");
+      f.textContent = n === fields.length ? (scene.okText || "Der Zettel geht durch.") : (scene.hint || "Ein Feld fehlt noch — lies den Auftrag noch einmal.");
+      box.appendChild(f);
+      box.appendChild(continueBtn("Weiter", function () {
+        done({ kind: "form", ok: n >= Math.ceil(fields.length * 0.6), score: Math.round((n / Math.max(fields.length, 1)) * 100) });
+      }));
+    });
+    box.appendChild(chk);
+  };
+
+  KH.scenes.funk = function (box, scene, done) {
+    const card = document.createElement("div");
+    card.className = "card funk-card";
+    card.innerHTML = '<p class="kicker">Funk · Zentrale</p><h2>' + KH.esc(scene.title || "Zentrale ruft") + "</h2>" +
+      "<p>" + (scene.intro || "Kurze Sprüche. Antwort in einem Satz. Kein Blatt mit Paaren.") + "</p>" +
+      (scene.introEn ? '<p class="en">' + scene.introEn + "</p>" : "");
+    box.appendChild(card);
+    const host = document.createElement("div");
+    box.appendChild(host);
+    const calls = scene.calls || [];
+    let i = 0;
+    let good = 0;
+    function step() {
+      if (i >= calls.length) {
+        box.appendChild(continueBtn("Funk aus", function () {
+          done({ kind: "funk", ok: good >= Math.ceil(calls.length * 0.6), score: Math.round((good / Math.max(calls.length, 1)) * 100) });
+        }));
+        return;
+      }
+      host.innerHTML = "";
+      const c = calls[i];
+      const p = document.createElement("div");
+      p.className = "card funk-call";
+      p.innerHTML = '<div class="who">Zentrale' + (c.from ? " · " + KH.esc(c.from) : "") + "</div><p>" + (c.de || "") + "</p>" +
+        (c.en ? '<p class="en">' + c.en + "</p>" : "");
+      host.appendChild(p);
+      if (KH.speak && c.de) {
+        const tts = document.createElement("button");
+        tts.className = "btn ghost";
+        tts.type = "button";
+        tts.textContent = "Funk hören";
+        tts.addEventListener("click", function () { KH.speak(c.de); });
+        host.appendChild(tts);
+      }
+      optionList(host, c.options, function (opt) {
+        if (KH.applyChoice) KH.applyChoice(opt);
+        host.appendChild(feedbackEl(opt));
+        if (opt.ok === true || opt.ok === "good" || opt.ok === "ok") good += 1;
+        const nxt = document.createElement("div");
+        nxt.className = "row-btns";
+        const b = document.createElement("button");
+        b.className = "btn post";
+        b.type = "button";
+        b.textContent = "Verstanden";
+        b.addEventListener("click", function () { i += 1; step(); });
+        nxt.appendChild(b);
+        host.appendChild(nxt);
+      });
+    }
+    step();
   };
 
   KH.scenes.ipa = function (box, scene, done) {
@@ -713,6 +921,7 @@
       host.appendChild(p);
       optionList(host, s.options, function (opt) {
         host.appendChild(feedbackEl(opt));
+        if (KH.applyChoice) KH.applyChoice(opt);
         if (opt.ok === true || opt.ok === "good" || opt.ok === "ok") good += 1;
         const nxt = document.createElement("div");
         nxt.className = "row-btns";

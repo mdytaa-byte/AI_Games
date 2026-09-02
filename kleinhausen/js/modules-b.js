@@ -29,23 +29,27 @@
         en: "Birthday logistics, then the civic argument at Sunday lunch. Families disagree without becoming villains."
       },
       {
-        type: "match",
-        title: "Wer ist wer?",
-        pairs: [
-          { left: "Birgit", right: "Gastmutter, Sparkasse" },
-          { left: "Stefan", right: "Gastvater, Kaufhaus" },
-          { left: "Lena", right: "Gastschwester, Kamera" },
-          { left: "Jonas", right: "Gastbruder, Band" },
-          { left: "Ursula", right: "Oma, Krimis" },
-          { left: "Werner", right: "Opa, Rosen" }
+        type: "room",
+        title: "Sonntagstisch: wer sitzt wo",
+        intro: "Kein Namensraster. Der Tisch ist der Raum. Tippe die Plätze — die Familie sitzt nicht alphabetisch.",
+        hotspots: [
+          { x: 20, y: 40, label: "Birgit", de: "Gastmutter. Sparkasse. Sie schenkt ein und schlichtet.", en: "Host mother. Bank. Peacekeeper." },
+          { x: 40, y: 38, label: "Stefan", de: "Gastvater. Kaufhaus. Rabatt FAMILIE10, wenn er wegschaut.", en: "Host father. The store." },
+          { x: 60, y: 42, label: "Lena", de: "Gastschwester. Kamera. Sitzt neben dir, nicht gegenüber.", en: "Host sister. Camera." },
+          { x: 78, y: 48, label: "Jonas", de: "Gastbruder. Band. Gitarre nicht mit Omas Krimi verwechseln.", en: "Host brother. Band." },
+          { x: 30, y: 70, label: "Ursula", de: "Oma. Krimis. Kaffee um vier ist wichtiger als die Party.", en: "Grandma. Mysteries." },
+          { x: 55, y: 72, label: "Werner", de: "Opa. Rosen. Kehrwoche ist Moral, nicht Hobby.", en: "Grandpa. Roses. The broom." }
         ]
       },
       {
         type: "activity",
         title: "Kaufhaus Fröhlich — Geschenke",
         src: "praxis/kaufhaus.html",
-        de: "Der Online-Shop ist das Kaufhaus der Familie, nicht Leipzig: Marktstraße, Kleinhausen. Lies die Wunschzettel, halte das Budget, nutze den Code, wenn du ihn findest.",
-        en: "Gift simulation. Canon: the family store.",
+        praxisId: "kaufhaus",
+        unlock: ["kaufhaus"],
+        artifactTitle: "Paketzettel",
+        de: "Der Shop ist das Familienkaufhaus. Wenn das Paket unterwegs ist, liegt der Zettel im Heft.",
+        en: "Checkout writes the parcel slip into the journal.",
         points: 12
       },
       {
@@ -59,8 +63,8 @@
         npc: "werner",
         line: "Du kehrst mit. Nicht weil du Schuld bist. Weil du hier wohnst. Danach trinken wir Saft. Und dann sagst du mir: Ist ein Festplatz Dreck — oder ein Versprechen?",
         options: [
-          { de: "Ich kehre mit. Ich denke, ein Platz kann beides sein. Man kann ihn sauber halten und feiern.", ok: true, trust: 1, feedback: "Er gibt dir den Besen, als wäre das ein Ritterschlag." },
-          { de: "Das ist nicht meine Aufgabe.", ok: false, trust: -1, feedback: "Für Werner ist Wohnen eine Aufgabe. Punkt." },
+          { de: "Ich kehre mit. Ich denke, ein Platz kann beides sein. Man kann ihn sauber halten und feiern.", ok: true, trust: 1, flag: "kehrwoche", feedback: "Er gibt dir den Besen, als wäre das ein Ritterschlag." },
+          { de: "Das ist nicht meine Aufgabe.", ok: false, trust: -1, flag: "kehrwocheRefused", feedback: "Für Werner ist Wohnen eine Aufgabe. Punkt." },
           { de: "Was heißt kehren?", ok: "ok", feedback: "Fegen. Dann die große Frage noch einmal." }
         ]
       },
@@ -128,14 +132,14 @@
         en: "Sports club as belonging technology. The festival square is already being marked."
       },
       {
-        type: "match",
-        title: "Körper und Sport",
-        pairs: [
-          { left: "der Kopf", right: "Helm / Kopfball / Achtung!" },
-          { left: "das Bein", right: "laufen, treten, Krampf" },
-          { left: "der Arm", right: "werfen, halten" },
-          { left: "müde", right: "Ich brauche Pause." },
-          { left: "das Team", right: "Wir spielen zusammen." }
+        type: "form",
+        title: "Zettel an den Trainer",
+        intro: "Kein Wortgitter. Der Trainer will einen Zettel: was weh tut, ob du wiederkommst.",
+        introEn: "A real club slip. Body + weekend.",
+        fields: [
+          { label: "Was tut weh?", en: "what hurts", placeholder: "das Bein / der Arm / nichts", needles: ["bein", "arm", "kopf", "nichts", "müde", "muede"] },
+          { label: "Nächste Woche?", en: "next week", placeholder: "Ja, ich will wiederkommen.", needles: ["ja", "wieder", "komm", "training", "dienstag"] },
+          { label: "Team", en: "team", placeholder: "Wir spielen zusammen.", needles: ["wir", "team", "zusammen", "spielen"] }
         ]
       },
       {
@@ -191,10 +195,14 @@
         interpersonal: {
           npc: "amira",
           line: "Schöne Stangen, was? Die Vermessung. Sie tun so, als wäre der Platz schon tot. Kommst du Mittwoch zur AG? Wir zählen, wer den Platz wirklich nutzt.",
+          lineWhen: {
+            amiraColder: "Du warst nur Kakao. Die Stangen sind trotzdem da. Kommst du Mittwoch — oder wieder nur zuschauen?",
+            amiraListened: "Du hast am Fenster gehört. Gut. Die Vermessung tut so, als wäre der Platz tot. Mittwoch zählen wir. Du schon auf der Liste."
+          },
           followUp: { de: "Mittwoch: um wie viel Uhr, und wen bringst du mit?", en: "Wednesday: what time, and who comes with you?" },
           options: [
-            { de: "Ja. Ich habe gesehen, dass wir hier sitzen. Ich komme.", ok: true, trust: 1, feedback: "Sie macht ein Häkchen. Du bist nicht mehr nur Kakao." },
-            { de: "Sport und Politik mischen sich nicht.", ok: false, feedback: "Ihr sitzt im Gemisch. Es ist zu spät für diese Theorie." },
+            { de: "Ja. Ich habe gesehen, dass wir hier sitzen. Ich komme.", ok: true, trust: 1, flag: "amiraListened", feedback: "Sie macht ein Häkchen. Du bist nicht mehr nur Kakao." },
+            { de: "Sport und Politik mischen sich nicht.", ok: false, flag: "amiraColder", feedback: "Ihr sitzt im Gemisch. Es ist zu spät für diese Theorie." },
             { de: "Was heißt vermessen?", ok: "ok", feedback: "Land vermessen: messen, planen, oft vor dem Bauen." }
           ]
         },
@@ -234,14 +242,16 @@
         en: "Cleanup as civic data. Haller needs a path. Both can be true."
       },
       {
-        type: "match",
-        title: "Wohin damit?",
-        pairs: [
-          { left: "die Flasche mit Pfand", right: "Pfandautomat / zurück zum Markt" },
-          { left: "Papier", right: "blaue Tonne / Altpapier" },
-          { left: "Bio / Apfelrest", right: "braune Tonne" },
-          { left: "Verpackung (Joghurtbecher)", right: "gelbe Tonne / gelber Sack" },
-          { left: "Restmüll", right: "schwarze / graue Tonne" }
+        type: "counter",
+        title: "Amiras Waage",
+        intro: "Zahlen wirken auf Erwachsene. Stell die Waage auf das, was ihr wirklich gefunden habt — nicht auf ein Idealsortierblatt.",
+        introEn: "Weigh the bags. Not a matching chart.",
+        okText: "Amira schreibt die Kilo auf. Haller guckt, ob der Weg frei bleibt.",
+        items: [
+          { label: "Pfandflaschen", en: "deposit bottles", target: 6, max: 12, unit: "×" },
+          { label: "Gelber Sack (Becher)", en: "yellow bag", target: 3, max: 8, unit: "kg" },
+          { label: "Altpapier (Plakat, trocken)", en: "paper", target: 1, max: 5, unit: "kg" },
+          { label: "Bio / Apfelrest", en: "compost", target: 1, max: 4, unit: "kg" }
         ]
       },
       {
@@ -277,8 +287,8 @@
         npc: "tadesse",
         line: "Danke, dass ihr kommt. Eine Stadt ohne Bäume ist ein Parkplatz mit Laternen. Wollt ihr Setzlinge für den Festplatz-Rand? Kostenlos. Bedingung: gießen.",
         options: [
-          { de: "Ja, bitte. Wir gießen. Wie oft?", ok: true, trust: 1, feedback: "Zweimal die Woche, sagt er, außer wenn es regnet. Es regnet oft." },
-          { de: "Bäume helfen nicht gegen Autos.", ok: false, feedback: "Er sieht dich an, als hättest du gesagt, Brot hilft nicht gegen Hunger." },
+          { de: "Ja, bitte. Wir gießen. Wie oft?", ok: true, trust: 1, flag: "treesYes", feedback: "Zweimal die Woche, sagt er, außer wenn es regnet. Es regnet oft." },
+          { de: "Bäume helfen nicht gegen Autos.", ok: false, flag: "treesNo", feedback: "Er sieht dich an, als hättest du gesagt, Brot hilft nicht gegen Hunger." },
           { de: "Ich habe keinen grünen Daumen.", ok: "ok", feedback: "Idiom verstanden. Er: Dann hast du eine Gießkanne. Das reicht am Anfang." }
         ]
       },
@@ -308,10 +318,14 @@
         interpersonal: {
           npc: "haller",
           line: "Lasst einen Weg! Ich muss durch. Ihr seid lieb, aber der Platz ist auch für alte Knie. Wenn ihr pflanzt, nicht in der Mitte, ja?",
+          lineWhen: {
+            hallerHeard: "Sie wieder. Sie haben damals zugehört. Also: ein Weg. Nicht in der Mitte pflanzen. Meine Knie zählen mit.",
+            hallerColder: "Jugend pflanzt. Jugend erklärt. Ich muss trotzdem durch. Ein Weg — oder ist der Platz nur für euch?"
+          },
           followUp: { de: "Wer hält den Weg frei, wenn wir pflanzen — du oder wir alle?", en: "Who keeps the path free — you, or all of us?" },
           options: [
-            { de: "Ja, Frau Haller. Der Weg bleibt frei. Die Pflanzen an den Rand.", ok: true, trust: 1, feedback: "Sie nickt. Fast ein Lächeln. Das ist viel." },
-            { de: "Der Platz ist für uns.", ok: false, trust: -1, feedback: "„Uns“ ohne sie ist der Fehler, den Nordpark auch macht, nur mit Geld." },
+            { de: "Ja, Frau Haller. Der Weg bleibt frei. Die Pflanzen an den Rand.", ok: true, trust: 1, flag: "hallerPath", feedback: "Sie nickt. Fast ein Lächeln. Das ist viel." },
+            { de: "Der Platz ist für uns.", ok: false, trust: -1, flag: "platzOhneHaller", feedback: "„Uns“ ohne sie ist der Fehler, den Nordpark auch macht, nur mit Geld." },
             { de: "Sorry.", ok: "ok", feedback: "Dann auf Deutsch die Lösung: Weg frei, Rand pflanzen." }
           ]
         },
@@ -352,14 +366,14 @@
         en: "You are the functioning household. Pharmacy is a formal, high-stakes Novice task."
       },
       {
-        type: "match",
-        title: "Was fehlt?",
-        pairs: [
-          { left: "Kopfschmerzen", right: "der Kopf tut weh" },
-          { left: "Halsschmerzen", right: "der Hals tut weh" },
-          { left: "Fieber", right: "die Temperatur ist hoch" },
-          { left: "müde", right: "ich brauche Schlaf" },
-          { left: "Gute Besserung", right: "was man Kranken sagt" }
+        type: "form",
+        title: "Zettel für Frau Sowinski",
+        intro: "Die Schlange ist lang. Schreib, bevor du an der Reihe bist: wer, was, wie lange, Allergie.",
+        introEn: "Pharmacy slip. Formal, slow, complete.",
+        fields: [
+          { label: "Wer ist krank?", en: "who is ill", placeholder: "meine Gastschwester Lena", needles: ["lena", "schwester", "gast"] },
+          { label: "Was fehlt?", en: "symptoms", placeholder: "Hals und Fieber", needles: ["hals", "fieber", "kopf"] },
+          { label: "Seit wann? Allergie?", en: "how long / allergy", placeholder: "seit gestern, keine Allergie", needles: ["gestern", "tag", "allerg", "keine"] }
         ]
       },
       {
@@ -527,6 +541,10 @@
         interpersonal: {
           npc: "aylin",
           line: "In Frankfurt wäre ich schon im Museum. Hier lerne ich Warten. Willst du Karten oder Wortschatz? Ich quizze dich: Was heißt ‚der Anschluss‘?",
+          lineWhen: {
+            amiraColder: "Du warst nur Kakao, hat Amira gesagt. Egal. Warten ist trotzdem Wortschatz. Was heißt ‚der Anschluss‘?",
+            aylinRepaired: "Danke nochmal fürs Transkript — später. Jetzt: Anschluss. Quiz."
+          },
           followUp: { de: "Was machen wir jetzt — warten, Karten oder Wortschatz?", en: "What now — wait, cards, or vocab?" },
           options: [
             { de: "Der nächste Zug oder Bus, den man braucht.", ok: true, trust: 1, feedback: "Sie wirft dir einen Gummibär. Pädagogik." },
@@ -588,6 +606,10 @@
         type: "dialogue",
         npc: "aydin",
         line: "Ich zähle Köpfe. Das ist nicht poesie, das ist Haushalt. Sagen Sie mir in einem Satz, warum dieser Abend den Platz verdient — ohne zu schreien.",
+        lineWhen: {
+          hallerPath: "Ich zähle Köpfe — und einen Weg, den jemand freigehalten hat. Ein Satz: warum der Platz bleibt. Ohne zu schreien.",
+          praxisLiefer: "Der Kurier. Stapel kontrovers. Jetzt Köpfe. Ein Satz, warum der Abend den Platz verdient."
+        },
         options: [
           { de: "Weil Kinder, Band, Punsch und Frau Haller hier zusammen sind. Ein Parkhaus trennt das.", ok: true, trust: 1, feedback: "Sie schreibt nichts. Sie merkt sich das. Schlimmer / besser." },
           { de: "Weil Tradition immer gewinnt.", ok: false, feedback: "Sie hat gegen Traditionen gewonnen, die weh taten. Zu einfach." },
@@ -725,9 +747,9 @@
         npc: "aylin",
         line: "Ich will nicht, dass du Held spielst. Ich will, dass jemand schreibt: Ich war dabei, das Zitat ist falsch. Kurz. Öffentlich. Ohne Drama-Herz-Emojis.",
         options: [
-          { de: "Ich schreibe in die Gruppe: Das Zitat ist falsch. Aylin will Weg UND Platz. Hier ist das Transkript.", ok: true, trust: 1, feedback: "Sie atmet aus. Freundschaft ist ein Korrekturlesen." },
-          { de: "Ignorieren. Internet.", ok: false, trust: -1, feedback: "Für sie ist die Klasse das Internet. Es hat zwanzig Personen." },
-          { de: "Ich schreibe Frau Vogel eine Mail über alle.", ok: false, feedback: "Eskalation nach oben, bevor die Gruppe es selbst richtet. Zu früh." }
+          { de: "Ich schreibe in die Gruppe: Das Zitat ist falsch. Aylin will Weg UND Platz. Hier ist das Transkript.", ok: true, trust: 1, flag: "aylinRepaired", feedback: "Sie atmet aus. Freundschaft ist ein Korrekturlesen. Der Chat geht wieder auf." },
+          { de: "Ignorieren. Internet.", ok: false, trust: -1, flag: "aylinRumorStands", feedback: "Für sie ist die Klasse das Internet. Es hat zwanzig Personen." },
+          { de: "Ich schreibe Frau Vogel eine Mail über alle.", ok: false, flag: "aylinEscalated", feedback: "Eskalation nach oben, bevor die Gruppe es selbst richtet. Zu früh." }
         ]
       },
       {
@@ -793,12 +815,11 @@
       {
         type: "narrate",
         title: "Der Stadtrat entscheidet nicht wie ein Film.",
+        parasFrom: "endingOpen",
         paras: [
-          "Kein Held, der Nordpark mit einem Satz besiegt. Ein Kompromiss, der nach Arbeit riecht: Festplatz bleibt, kleiner. Zwölf Parkplätze am Rand, nicht sechzig in der Erde. Jugendzentrum: zwei Jahre Miete vom Kaufhaus Fröhlich gesponsert — Stefan sieht aus, als hätte er das nicht vorgehabt, und hatte es doch.",
-          "Frau Haller hat einen Parkplatz mit Schild. Amira hat Bäume. Jonas hat eine Bühne, die nicht im Keller steht. Du hast eine Nummer auf der Rednerliste. Drei Minuten. Novice High. Es reicht, wenn es wahr ist.",
-          "Lena fotografiert dich von hinten, weil Gesichter in Reden zittern."
+          "Kein Held, der Nordpark mit einem Satz besiegt. Ein Kompromiss, der nach Arbeit riecht."
         ],
-        en: "Adult ending: compromise, not annihilation. You speak. You live here."
+        en: "Adult ending: compromise, not annihilation. The texture depends on who you heard."
       },
       {
         type: "read",
@@ -825,8 +846,11 @@
         type: "activity",
         title: "Letzte Postkarte",
         src: "praxis/foto-schnitzeljagd.html",
-        de: "Wenn du willst: noch einmal durch die Stadt, Fotos, Postkarte nach Hause. Diesmal nicht als Tourist. Als jemand, der den Brunnen mit Streit und mit Punsch kennt.",
-        en: "Optional replay of the photo hunt as a resident, not a visitor.",
+        praxisId: "foto-ende",
+        optional: true,
+        artifactTitle: "Letzte Postkarte",
+        de: "Optional: noch einmal durch die Stadt. Diesmal als jemand, der den Brunnen mit Streit und Punsch kennt. Die Karte landet im Heft, wenn du sie abschickst.",
+        en: "Optional resident postcard. Skip if you already belong.",
         points: 6
       },
       {
@@ -853,7 +877,7 @@
           line: "Bevor du raufgehst: Wir sind nervös. Sag ‚wir‘, wenn du willst. Du musst nicht perfekt sein. Du musst da sein. Bello ist zu Hause, der versteht Reden nicht. Ich schon.",
           followUp: { de: "Wen dankst du zuerst auf der Bühne — und warum?", en: "Who do you thank first on stage, and why?" },
           options: [
-            { de: "Danke. Ich sage wir. Ich bin da.", ok: true, trust: 1, feedback: "Sie drückt deine Schulter. Kamera aus. Mensch an." },
+            { de: "Danke. Ich sage wir. Ich bin da.", ok: true, trust: 1, flag: "saidWir", feedback: "Sie drückt deine Schulter. Kamera aus. Mensch an." },
             { de: "Ich will allein Held sein.", ok: false, feedback: "Falscher Film. Falsche Stadt." },
             { de: "Ich kann nicht.", ok: "ok", feedback: "Angst ist erlaubt. Dann: zwei Sätze. Name, Dank, Platz. Das ist eine Rede." }
           ]
@@ -875,13 +899,11 @@
       {
         type: "narrate",
         title: "Danach.",
+        parasFrom: "endingClose",
         paras: [
-          "Punsch. Bello darf kurz auf den Platz, trotz Regel, weil Opa sagt, Regeln brauchen Ausnahmen, und Werner sonst keine macht.",
-          "Dein Reisepass im Kurs — nicht der echte — bekommt den letzten Stempel: Jubiläum.",
-          "Du bist nicht fertig mit Deutsch. Novice High ist eine Station, kein Bahnhof zum Bleiben. Aber der Zug, der dich brachte, fährt nicht mehr ohne dass du weißt, wie man auf Gleis 2 wartet.",
-          "Willkommen in Kleinhausen. Immer noch. Jetzt erst recht."
+          "Punsch. Stempel. Willkommen in Kleinhausen. Immer noch."
         ],
-        en: "Stamp. Belonging. The language course continues; the story of year one closes."
+        en: "Stamp. Belonging. The close remembers the year you actually lived."
       }
     ]
   });

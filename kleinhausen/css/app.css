@@ -1137,3 +1137,77 @@ html[data-contrast="hoch"] .recorder { border-width: 4px; }
 }
 html[data-gfx="low"] .listen-deck { border-radius: 4px; }
 html[data-contrast="hoch"] .listen-deck { border-width: 4px; }
+
+.memory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 12px 0 8px;
+}
+.memory-card {
+  border: 3px solid var(--navy);
+  background: var(--paper-2);
+  padding: 12px 14px;
+  border-radius: var(--radius);
+}
+.memory-card .kicker { margin-top: 0; }
+.journal-praxis { border-left: 6px solid var(--post); }
+.street-open {
+  margin: 10px 0;
+  padding: .45em .7em;
+  background: var(--navy);
+  color: var(--post);
+  font-weight: 700;
+  font-size: .9rem;
+}
+.praxis-wait { color: var(--ink-soft); font-size: .95rem; }
+.praxis-wait.is-done { color: var(--moss); font-weight: 700; }
+
+.counter-board { display: flex; flex-direction: column; gap: 10px; margin: 12px 0; }
+.counter-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 2px solid var(--line);
+  background: var(--paper-2);
+  border-radius: var(--radius);
+}
+.counter-ctrl { display: flex; align-items: center; gap: 8px; }
+.counter-num {
+  min-width: 4.5em;
+  text-align: center;
+  font-family: var(--mono);
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.town-form { display: grid; gap: 12px; margin: 12px 0; }
+.funk-card { border-color: var(--post); }
+.funk-call .who {
+  font-family: var(--mono);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--navy);
+  font-size: .78rem;
+}
+
+.rubric-sheet { max-width: 40em; }
+.rubric-table { width: 100%; border-collapse: collapse; margin: 0 0 18px; }
+.rubric-table th, .rubric-table td {
+  border: 1px solid var(--line);
+  padding: .45em .6em;
+  text-align: left;
+  vertical-align: top;
+}
+.rubric-table .tick { width: 3em; text-align: center; font-size: 1.2rem; }
+.rubric-score { font-weight: 700; }
+.print-only { display: none; }
+
+@media print {
+  .topbar, .foot, .top-tools, .row-btns, .skip { display: none !important; }
+  .print-only, .rubric-sheet { display: block !important; }
+  body { background: #fff; }
+  .app-shell { box-shadow: none; }
+}

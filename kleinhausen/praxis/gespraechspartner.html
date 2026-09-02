@@ -2993,6 +2993,12 @@ function completionCode(){
 }
 
 function showEnd(){
+  if (window.KHPraxis) KHPraxis.complete({
+    title: "Café-Gespräch",
+    artifact: "Gespräch beendet. " + (typeof completionCode === "function" ? completionCode() : ""),
+    code: typeof completionCode === "function" ? completionCode() : "",
+    score: S.firstTry
+  });
   show("end");
   const total = dialogue().turns.length;
   $("statTurns").textContent = total;

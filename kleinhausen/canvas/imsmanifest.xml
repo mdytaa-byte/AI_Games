@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="KLEINHAUSEN-DE1-NH-v1" version="1.0"
+  xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+  xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.imsproject.org/xsd/imscp_rootv1p1p2 imscp_rootv1p1p2.xsd
+                      http://www.adlnet.org/xsd/adlcp_rootv1p2 adlcp_rootv1p2.xsd">
+  <metadata>
+    <schema>ADL SCORM</schema>
+    <schemaversion>1.2</schemaversion>
+  </metadata>
+  <organizations default="KLEINHAUSEN-ORG">
+    <organization identifier="KLEINHAUSEN-ORG">
+      <title>Willkommen in Kleinhausen — Deutsch 1 (ACTFL Novice High)</title>
+      <item identifier="ITEM-1" identifierref="RES-1">
+        <title>Kleinhausen — 16 Episoden</title>
+      </item>
+    </organization>
+  </organizations>
+  <resources>
+    <resource identifier="RES-1" type="webcontent" adlcp:scormtype="sco" href="index.html">
+      <file href="index.html"/>
+      <file href="css/app.css"/>
+      <file href="css/enamel.css"/>
+      <file href="js/scorm.js"/>
+      <file href="js/store.js"/>
+      <file href="js/a11y.js"/>
+      <file href="js/world.js"/>
+      <file href="js/locations.js"/>
+      <file href="js/memory.js"/>
+      <file href="js/class.js"/>
+      <file href="js/speak.js"/>
+      <file href="js/listen.js"/>
+      <file href="js/tasks.js"/>
+      <file href="audio/clips/e01-bahnhof.mp3"/>
+      <file href="audio/clips/e02-lena.mp3"/>
+      <file href="audio/clips/e03-vogel.mp3"/>
+      <file href="audio/clips/e04-hanna.mp3"/>
+      <file href="audio/clips/e05-kasse.mp3"/>
+      <file href="audio/clips/e08-lena.mp3"/>
+      <file href="audio/clips/e10-trainer.mp3"/>
+      <file href="audio/clips/e12-birgit.mp3"/>
+      <file href="audio/clips/e13-ansage.mp3"/>
+      <file href="audio/clips/e14-jonas.mp3"/>
+      <file href="audio/clips/e15-otto.mp3"/>
+      <file href="audio/clips/e16-aydin.mp3"/>
+      <file href="audio/clips/sq-radio.mp3"/>
+      <file href="js/modules-a.js"/>
+      <file href="js/modules-b.js"/>
+      <file href="js/sidequests.js"/>
+      <file href="js/map.js"/>
+      <file href="js/town3d.js"/>
+      <file href="js/vendor/three.r128.js"/>
+      <file href="js/praxis-bridge.js"/>
+      <file href="js/app.js"/>
+      <file href="praxis/foto-schnitzeljagd.html"/>
+      <file href="praxis/kleiderschrank.html"/>
+      <file href="praxis/lieferdienst.html"/>
+      <file href="praxis/supermarkt.html"/>
+      <file href="praxis/kaufhaus.html"/>
+      <file href="praxis/chat.html"/>
+      <file href="praxis/gespraechspartner.html"/>
+    </resource>
+  </resources>
+</manifest>

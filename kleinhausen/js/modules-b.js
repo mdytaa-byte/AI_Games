@@ -181,7 +181,7 @@
         interpretive: {
           type: "read",
           title: "Aushang im Vereinsheim",
-          html: "<p>Training: Di + Do 17:00</p><p>Beitrag Jugend: 8 € / Monat</p><p>Gäste: drei Male frei, dann anmelden</p><p>Erste-Hilfe-Kasten: neben der Theke. Eis: im Kühlschrank, nicht für Cola.",
+          html: "<p>Training: Di + Do 17:00</p><p>Beitrag Jugend: 8 € / Monat</p><p>Gäste: drei Male frei, dann anmelden</p><p>Erste-Hilfe-Kasten: neben der Theke. Eis: im Kühlschrank, nicht für Cola.</p>",
           questions: [
             {
               de: "Wie oft darfst du kostenlos kommen?",

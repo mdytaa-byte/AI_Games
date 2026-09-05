@@ -79,6 +79,11 @@
     let used = false;
     function click(i) {
       if (used || !options[i]) return;
+      const groups = document.querySelectorAll(".options");
+      for (let g = 0; g < groups.length; g++) {
+        if (groups[g] === list) break;
+        if (groups[g].querySelector(".opt:not([disabled])")) return;
+      }
       const btn = list.children[i];
       if (btn) btn.click();
     }
@@ -604,7 +609,9 @@
       contrast: p.contrast ? "hoch" : "normal",
       size: p.size || "m",
       font: p.font || "default",
-      motion: p.motion || "full"
+      motion: p.motion || "full",
+      ep: KH.currentEpisode || "",
+      praxis: scene.praxisId || ""
     });
     const src = scene.src + (scene.src.indexOf("?") >= 0 ? "&" : "?") + q.toString();
     frame.src = src;
@@ -637,19 +644,31 @@
       doneBtn.textContent = "Prüfungsmodus: weiter";
     }
     let finished = false;
+    const OUTBOX = "kleinhausen.praxis.outbox";
+    function clearOutbox() {
+      try { localStorage.removeItem(OUTBOX); } catch (e) { /* ignore */ }
+    }
+    clearOutbox();
+    function matchesPraxis(data) {
+      if (!data || data.type !== "kh-praxis") return false;
+      if (!data.complete && data.event !== "done") return false;
+      if (!data.complete && !scene.optional) return false;
+      if (data.praxis && scene.praxisId && data.praxis !== scene.praxisId) return false;
+      if (data.ep && KH.currentEpisode && data.ep !== KH.currentEpisode) return false;
+      return true;
+    }
     function finishActivity(payload) {
       if (finished) return;
       finished = true;
       window.removeEventListener("message", onMsg);
       if (poll) clearInterval(poll);
+      clearOutbox();
       KH.addPoints("verstehen", scene.points || 8);
       if (KH.recordPraxis) KH.recordPraxis(Object.assign({ ep: KH.currentEpisode }, scene), payload || {});
       done({ kind: "activity", ok: true, praxis: true });
     }
     function accept(data) {
-      if (!data || data.type !== "kh-praxis") return;
-      if (!data.complete && data.event !== "done") return;
-      if (!data.complete && !scene.optional) return;
+      if (!matchesPraxis(data)) return;
       status.textContent = data.artifact || data.title || "Im Heft. Die Straße merkt sich das.";
       status.className = "praxis-wait is-done";
       doneBtn.disabled = false;
@@ -659,7 +678,7 @@
     function onMsg(ev) { accept(ev.data); }
     function readOutbox() {
       try {
-        const raw = localStorage.getItem("kleinhausen.praxis.outbox");
+        const raw = localStorage.getItem(OUTBOX);
         if (!raw) return;
         const data = JSON.parse(raw);
         if (data && data.complete) accept(data);
@@ -876,7 +895,12 @@
         codeWrap.innerHTML = "<h3>Ergebnis</h3><p>Dein vorläufiger IPA-Wert: <strong>" + avg +
           "%</strong>. Deine Lehrerin / dein Lehrer kann mündlich nachbewerten.</p>";
         box.appendChild(codeWrap);
-        box.appendChild(continueBtn("Stempel holen", function () {
+        const mod = KH.currentEpisode && KH.mod && KH.mod(KH.currentEpisode);
+        const sc = KH.currentEpisode && KH.state.episodes[KH.currentEpisode]
+          ? KH.state.episodes[KH.currentEpisode].scene
+          : 0;
+        const last = !mod || !mod.scenes || sc >= mod.scenes.length - 1;
+        box.appendChild(continueBtn(last ? "Stempel holen" : "Weiter", function () {
           done({ kind: "ipa", ok: avg >= 60, score: avg, parts: scores });
         }));
         return;

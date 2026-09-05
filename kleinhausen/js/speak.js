@@ -431,11 +431,25 @@
       (opts.line ? "<br><strong>Sag zuerst:</strong> " + KH.esc(opts.line) : "");
     card.appendChild(instr);
 
+    function oralEscape() {
+      if (card.querySelector("[data-oral-escape]")) return;
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn ghost";
+      b.setAttribute("data-oral-escape", "1");
+      b.textContent = "Zugang: Text oder Prüfung";
+      b.addEventListener("click", function () {
+        if (KH.view && KH.view.settings) KH.view.settings();
+      });
+      card.appendChild(b);
+    }
+
     if (!global.isSecureContext) {
       const bad = document.createElement("div");
       bad.className = "feedback no";
       bad.textContent = "Aufnahmen brauchen HTTPS oder localhost. Ohne Mikrofon geht diese Szene nicht weiter — außer Nachteilsausgleich oder Prüfungsmodus unter Zugang.";
       card.appendChild(bad);
+      oralEscape();
       host.appendChild(card);
       return;
     }
@@ -445,6 +459,7 @@
       bad.className = "feedback no";
       bad.textContent = "Dieser Browser kann nicht aufnehmen. Nutze Chrome oder Firefox — oder schalte unter Zugang den Nachteilsausgleich ein.";
       card.appendChild(bad);
+      oralEscape();
       host.appendChild(card);
       return;
     }
@@ -581,6 +596,7 @@
       }).catch(function () {
         showError("Mikrofon ist aus oder blockiert. Ohne Aufnahme geht es nicht weiter — außer Nachteilsausgleich oder Prüfungsmodus unter Zugang.");
         setState("blocked");
+        oralEscape();
       });
     });
 

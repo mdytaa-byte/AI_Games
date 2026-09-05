@@ -59,7 +59,8 @@
     const scored = done.map(function (id) { return eps[id].summative && eps[id].summative.score; }).filter(function (n) { return typeof n === "number"; });
     const avg = scored.length ? Math.round(scored.reduce(function (a, b) { return a + b; }, 0) / scored.length) : null;
     const spoken = (state.recordings || []).reduce(function (set, r) {
-      if (r && r.ep) set[r.ep] = true;
+      if (!r || !r.ep || r.mode === "exam") return set;
+      if (r.mode === "text" || (r.seconds || 0) >= 15 || r.ready) set[r.ep] = true;
       return set;
     }, {});
     const codes = done.map(function (id) {

@@ -71,14 +71,45 @@ mods.forEach(function (m) {
     if (s.type === "ipa") {
       checkListen(m.id + " IPA", s.interpretive);
     }
+    walkHtml(m.id + "#" + i, s);
   });
   if (!m.canDo || !m.canDo.length) errors.push(m.id + " missing can-do");
 });
 
 if ((KH.SIDEQUESTS || []).length < 6) errors.push("Need at least 6 sidequests");
 (KH.SIDEQUESTS || []).forEach(function (q) {
-  (q.scenes || []).forEach(function (s) { checkListen("side:" + q.id, s); });
+  (q.scenes || []).forEach(function (s, i) {
+    checkListen("side:" + q.id, s);
+    walkHtml("side:" + q.id + "#" + i, s);
+  });
 });
+
+function checkHtml(where, html) {
+  if (!html) return;
+  const tags = [];
+  const re = /<\/?([a-zA-Z0-9]+)(\s[^>]*)?>/g;
+  const voidish = { br: 1, hr: 1, img: 1, input: 1, meta: 1, link: 1, source: 1, wbr: 1 };
+  let m;
+  while ((m = re.exec(html))) {
+    const name = m[1].toLowerCase();
+    if (voidish[name]) continue;
+    if (m[0].startsWith("</")) {
+      const last = tags.pop();
+      if (last !== name) errors.push(where + " HTML closed <" + name + "> expected <" + last + ">");
+    } else if (!/\/>$/.test(m[0])) {
+      tags.push(name);
+    }
+  }
+  if (tags.length) errors.push(where + " unclosed <" + tags.join(">,<") + ">");
+}
+
+function walkHtml(where, s) {
+  if (!s) return;
+  if (s.html) checkHtml(where, s.html);
+  (s.paras || []).forEach(function (p, i) { checkHtml(where + " para" + i, p); });
+  if (s.interpretive) walkHtml(where + " interp", s.interpretive);
+  if (s.presentational) walkHtml(where + " pres", s.presentational);
+}
 
 function checkListen(where, s) {
   if (!s || s.type !== "listen") return;

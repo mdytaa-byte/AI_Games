@@ -79,11 +79,18 @@
     let used = false;
     function click(i) {
       if (used || !options[i]) return;
+      if (KH._optionKeyLock) return;
       const groups = document.querySelectorAll(".options");
+      let firstLive = null;
       for (let g = 0; g < groups.length; g++) {
-        if (groups[g] === list) break;
-        if (groups[g].querySelector(".opt:not([disabled])")) return;
+        if (groups[g].querySelector(".opt:not([disabled])")) {
+          firstLive = groups[g];
+          break;
+        }
       }
+      if (firstLive && firstLive !== list) return;
+      KH._optionKeyLock = true;
+      setTimeout(function () { KH._optionKeyLock = false; }, 0);
       const btn = list.children[i];
       if (btn) btn.click();
     }

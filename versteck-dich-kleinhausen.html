@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="de" data-spots="an">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title lang="de">Versteck dich! — Präpositionen &amp; Befehle in Kleinhausen</title>
+<meta name="description" lang="de" content="Ein Versteckspiel für Deutschlernende: Befehle verstehen, Präpositionen und Positionen üben. Wer den Hinweisen folgt, wird nicht gefunden.">
+<style>
+/* ============================================================
+   VERSTECK DICH · KLEINHAUSEN
+   Dusk garden + lamplit parlor. Pine, lamp-gold, cream paper.
+   ============================================================ */
+:root{
+  --nadel:#18291f;
+  --nadel-2:#24382c;
+  --moos:#2f5d3f;
+  --blatt:#6ea56f;
+  --gold:#e2b441;
+  --gold-tief:#b8891c;
+  --papier:#fbf6ea;
+  --papier-2:#f3ead3;
+  --tinte:#1c241c;
+  --tinte-weich:#5a6458;
+  --ziegel:#c24a38;
+  --ziegel-wasch:#f6e4df;
+  --ok:#2c7a4a;
+  --ok-wasch:#e3f1e6;
+  --himmel:#8eb8d0;
+  --erde:#7a5130;
+  --wand:#f0e0c4;
+  --boden:#c9a36a;
+  --schatten:rgba(24,41,31,.18);
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:ui-sans-serif,system-ui,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --fs:1rem;
+  --radius:10px;
+}
+
+html[data-size="gross"]{--fs:1.14rem;}
+html[data-size="sehr-gross"]{--fs:1.3rem;}
+html[data-lesbar="an"]{
+  --serif:Verdana,Tahoma,Geneva,sans-serif;
+  --sans:Verdana,Tahoma,Geneva,sans-serif;
+  --mono:Verdana,Tahoma,Geneva,sans-serif;
+}
+html[data-lesbar="an"] body{letter-spacing:.03em;word-spacing:.12em;}
+
+html[data-contrast="hoch"]{
+  --nadel:#000; --nadel-2:#000; --moos:#000; --blatt:#004d00;
+  --gold:#fff000; --gold-tief:#6a5200;
+  --papier:#fff; --papier-2:#fff;
+  --tinte:#000; --tinte-weich:#000;
+  --ziegel:#9b0000; --ziegel-wasch:#fff;
+  --ok:#004d1f; --ok-wasch:#fff;
+  --himmel:#9ad; --erde:#000; --wand:#fff; --boden:#ccc;
+  --schatten:rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--papier);
+  background-image:
+    radial-gradient(circle at 12% -8%, rgba(226,184,65,.18), transparent 42%),
+    repeating-linear-gradient(0deg, transparent 0 21px, rgba(24,41,31,.035) 21px 22px);
+  color:var(--tinte);
+  font-family:var(--sans);
+  font-size:var(--fs);
+  line-height:1.55;
+  -webkit-text-size-adjust:100%;
+}
+html[data-contrast="hoch"] body{background-image:none;}
+
+.skip{
+  position:absolute;left:-9999px;top:0;z-index:400;
+  background:var(--gold);color:var(--nadel);padding:.7em 1.1em;font-weight:800;text-decoration:none;
+}
+.skip:focus{left:0;}
+:focus-visible{outline:4px solid var(--gold);outline-offset:3px;}
+html[data-contrast="hoch"] :focus-visible{outline:5px solid #000;background:var(--gold);}
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;
+}
+[hidden]{display:none !important;}
+
+.topbar{
+  background:var(--nadel);
+  color:var(--papier);
+  border-bottom:5px solid var(--gold);
+}
+.topbar-in{
+  max-width:1180px;margin:0 auto;
+  padding:.75rem clamp(.7rem,2.4vw,1.6rem);
+  display:flex;flex-wrap:wrap;gap:.8rem 1.2rem;align-items:center;justify-content:space-between;
+}
+.brand{display:flex;align-items:baseline;gap:.35rem .65rem;flex-wrap:wrap;}
+.brand h1{
+  font-family:var(--serif);font-size:1.32em;font-weight:700;margin:0;letter-spacing:.01em;
+}
+.brand .sub{
+  font-family:var(--mono);font-size:.68em;letter-spacing:.16em;text-transform:uppercase;color:#c9d6c4;
+}
+.level{
+  flex-basis:100%;margin:.1rem 0 0;font-size:.78em;font-weight:700;letter-spacing:.02em;
+  color:var(--gold);line-height:1.35;
+}
+.level .en{color:inherit;font-weight:600;}
+html[data-contrast="hoch"] .brand .sub,
+html[data-contrast="hoch"] .level{color:#fff;}
+.settings{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;}
+.set-btn{
+  font:inherit;font-size:.8em;background:transparent;color:var(--papier);
+  border:2px solid #5d7364;border-radius:999px;padding:.3em .85em;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.4em;min-height:44px;
+}
+.set-btn:hover{border-color:var(--gold);}
+.set-btn[aria-pressed="true"]{background:var(--gold);color:var(--nadel);border-color:var(--gold);font-weight:700;}
+.set-btn .dot{width:.55em;height:.55em;border-radius:50%;border:2px solid currentColor;}
+.set-btn[aria-pressed="true"] .dot{background:currentColor;}
+
+.wrap{max-width:1180px;margin:0 auto;padding:0 clamp(.7rem,2.4vw,1.6rem) 3rem;}
+.screen{display:none;padding-top:1.5rem;}
+.screen.on{display:block;}
+h2{font-family:var(--serif);font-size:1.75em;line-height:1.2;margin:0 0 .35em;font-weight:700;}
+h2:focus{outline:none;}
+h2:focus-visible{outline:4px solid var(--gold);outline-offset:3px;}
+h3{font-family:var(--serif);font-size:1.18em;margin:1.3em 0 .45em;}
+.eyebrow{
+  font-family:var(--mono);font-size:.72em;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--tinte-weich);margin:0 0 .35em;
+}
+.lede{max-width:64ch;margin:0 0 1.1rem;}
+.en{color:var(--tinte-weich);font-style:italic;}
+.en::before{content:"– ";}
+
+.btn{
+  font:inherit;font-weight:800;letter-spacing:.02em;
+  background:var(--gold);color:var(--nadel);
+  border:3px solid var(--nadel);border-radius:999px;
+  padding:.62em 1.15em;min-height:46px;cursor:pointer;
+  box-shadow:0 3px 0 var(--nadel);
+}
+.btn:hover{filter:brightness(1.05);}
+.btn:active{transform:translateY(2px);box-shadow:none;}
+.btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none;}
+.btn-ghost{background:var(--papier);color:var(--tinte);}
+.btn-row{display:flex;flex-wrap:wrap;gap:.65rem;margin:1.1rem 0;}
+.karten{display:grid;gap:.9rem;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:1.2rem 0;}
+.karte{
+  background:var(--papier-2);border:3px solid var(--nadel);border-radius:var(--radius);
+  padding:1rem 1.1rem;box-shadow:0 4px 0 var(--schatten);text-align:left;cursor:pointer;
+  font:inherit;color:inherit;
+}
+.karte:hover{background:#fff;}
+.karte .nr{
+  font-family:var(--mono);font-size:.72em;letter-spacing:.14em;text-transform:uppercase;color:var(--moos);
+}
+.karte h3{margin:.15em 0 .35em;}
+.karte .meta{font-size:.9em;color:var(--tinte-weich);margin:0;}
+.karte .score{margin-top:.5em;font-weight:700;font-size:.9em;}
+.karte .score-hinweis{font-size:.82em;font-weight:600;color:var(--moos);margin:.25em 0 0;}
+
+details{margin:1.1rem 0;background:var(--papier-2);border:2px solid #d7cdb4;border-radius:var(--radius);padding:.4rem 1rem;}
+details summary{cursor:pointer;font-weight:700;padding:.4rem 0;}
+table.gram{
+  width:100%;border-collapse:collapse;margin:.6rem 0 1rem;font-size:.95em;
+}
+table.gram th, table.gram td{border-bottom:1px solid #d7cdb4;text-align:left;padding:.4em .5em;vertical-align:top;}
+table.gram th{font-family:var(--mono);font-size:.75em;letter-spacing:.08em;text-transform:uppercase;}
+kbd{
+  font-family:var(--mono);font-size:.85em;background:#fff;border:1px solid #bbb;border-bottom-width:2px;
+  border-radius:4px;padding:.05em .4em;
+}
+
+/* ----- play HUD ----- */
+.hud{
+  display:flex;flex-wrap:wrap;gap:.7rem 1.2rem;align-items:flex-start;justify-content:space-between;
+  margin-bottom:.8rem;
+}
+.pips{display:flex;gap:6px;align-items:center;}
+.pip{width:11px;height:11px;border-radius:50%;background:#d7cdb4;border:2px solid var(--nadel);}
+.pip.now{background:var(--gold);transform:scale(1.2);}
+.pip.ok{background:var(--ok);}
+.pip.bad{background:var(--ziegel);}
+.leben{font-weight:800;font-family:var(--serif);}
+
+.mia{
+  display:grid;grid-template-columns:76px 1fr;gap:.85rem;align-items:start;
+  background:#fff;border:3px solid var(--nadel);border-radius:var(--radius);
+  padding:.85rem 1rem;margin-bottom:.9rem;box-shadow:0 4px 0 var(--schatten);
+}
+.mia svg{width:76px;height:76px;display:block;}
+.bubble .wer{
+  font-family:var(--mono);font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:var(--moos);margin:0 0 .2em;
+}
+.befehl{
+  font-family:var(--serif);font-size:1.28em;line-height:1.3;margin:0;font-weight:700;
+}
+.befehl em{font-style:normal;background:var(--gold);padding:0 .18em;border-radius:4px;}
+.speak-btn{
+  font:inherit;font-size:.82em;font-weight:700;margin-top:.45em;cursor:pointer;
+  background:var(--papier-2);border:2px solid var(--nadel);border-radius:999px;padding:.25em .8em;
+  min-height:44px;
+}
+
+/* ----- scene ----- */
+.szene-box{
+  position:relative;width:100%;border:4px solid var(--nadel);border-radius:14px;overflow:hidden;
+  background:#9ec9b0;box-shadow:0 8px 0 var(--schatten);margin-bottom:.7rem;
+}
+.szene-box svg{display:block;width:100%;height:auto;}
+.hotspot{
+  position:absolute;padding:0;border:3px solid transparent;background:transparent;cursor:pointer;
+  border-radius:12px;z-index:3;
+}
+.hotspot:hover, .hotspot:focus-visible{
+  background:rgba(226,184,65,.28);border-color:var(--gold);
+}
+html[data-lesbar="an"] .hotspot .tag,
+html[data-lesbar="an"] .ort-btn{letter-spacing:.02em;}
+.hotspot .tag{
+  position:absolute;left:50%;bottom:4px;transform:translateX(-50%);
+  background:var(--nadel);color:var(--papier);font-size:.68rem;font-weight:800;
+  letter-spacing:.02em;padding:.15em .45em;border-radius:6px;white-space:nowrap;
+  opacity:0;pointer-events:none;
+}
+.hotspot:hover .tag, .hotspot:focus-visible .tag, html[data-contrast="hoch"] .hotspot .tag{opacity:1;}
+.hotspot.ziel-ok{box-shadow:inset 0 0 0 4px var(--ok);}
+.hotspot.ziel-bad{box-shadow:inset 0 0 0 4px var(--ziegel);}
+html[data-spots="an"] .hotspot .tag{opacity:1;}
+
+.max{
+  position:absolute;bottom:4%;width:8%;min-width:52px;z-index:6;pointer-events:none;
+  left:-14%;
+}
+.max-body{display:block;width:100%;}
+.max-spruch{
+  position:absolute;left:50%;bottom:100%;transform:translate(-50%,-.2em);
+  background:var(--papier);color:var(--tinte);border:3px solid var(--nadel);
+  border-radius:10px;padding:.2em .45em;font-size:.7rem;font-weight:800;
+  white-space:nowrap;margin:0;
+}
+.max.suchen{animation:zur-stelle 1.15s ease-out forwards;}
+.max.vorbei{animation:vorbei 1.15s ease-in forwards;}
+.max.stop{left:var(--halt,42%);z-index:8;}
+@keyframes zur-stelle{from{left:-14%}to{left:var(--halt,42%)}}
+@keyframes vorbei{from{left:var(--halt,42%)}to{left:112%}}
+html[data-motion="aus"] .max.suchen,
+html[data-motion="aus"] .max.stop{animation:none;left:var(--halt,42%);}
+html[data-motion="aus"] .max.vorbei{animation:none;left:112%;}
+
+.spieler{
+  position:absolute;z-index:5;width:7.5%;min-width:44px;pointer-events:none;
+  transform:translate(-50%,-40%);
+}
+.spieler svg{display:block;width:100%;height:auto;}
+.spieler .pose-sitzen,
+.spieler .pose-ducken{display:none;}
+.spieler.sitzen .pose-stehen,
+.spieler.ducken .pose-stehen{display:none;}
+.spieler.sitzen .pose-sitzen{display:block;}
+.spieler.ducken .pose-ducken{display:block;}
+.spieler.versteckt.ducken{opacity:.82;transform:translate(-50%,-28%) scale(.82);}
+.spieler.versteckt.sitzen{transform:translate(-50%,-18%) scale(.92);}
+.spieler.versteckt.stehen{opacity:.9;transform:translate(-50%,-36%) scale(.95);}
+.spieler.entdeckt{opacity:1;z-index:7;transform:translate(-50%,-42%) scale(1.05);}
+.spieler.an{animation:hinhocken .35s ease-out;}
+@keyframes hinhocken{from{opacity:0;transform:translate(-50%,-80%) scale(.6)}to{opacity:1}}
+html[data-motion="aus"] .spieler.an{animation:none;}
+
+.spiel-feld{display:flex;flex-direction:column;}
+.ort-mobile-hinweis{display:none;margin:0 0 .45rem;font-weight:700;}
+
+.zaehl{
+  position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+  background:rgba(24,41,31,.78);color:var(--papier);text-align:center;padding:1rem;
+}
+.zaehl .zahl{
+  font-family:var(--serif);font-size:clamp(2.4rem,8vw,5rem);margin:.2em 0;color:var(--gold);
+}
+.stempel{
+  position:absolute;z-index:6;top:18%;left:50%;transform:translateX(-50%) rotate(-8deg);
+  font-family:var(--serif);font-weight:800;font-size:clamp(1.6rem,5vw,3rem);
+  letter-spacing:.06em;border:6px solid;padding:.15em .5em;border-radius:8px;
+  background:rgba(251,246,234,.92);pointer-events:none;
+}
+.stempel.sicher{color:var(--ok);border-color:var(--ok);}
+.stempel.gefunden{color:var(--ziegel);border-color:var(--ziegel);}
+
+.ort-leiste{
+  display:flex;flex-wrap:wrap;gap:.45rem;margin:.2rem 0 1rem;
+}
+.ort-btn{
+  font:inherit;font-size:.88em;font-weight:700;cursor:pointer;
+  background:#fff;border:2px solid var(--nadel);border-radius:999px;padding:.4em .8em;
+  min-height:44px;
+}
+.ort-btn .gloss{ display:block; font-weight:600; font-size:.82em; }
+.ort-btn:hover{background:var(--gold);}
+.ort-btn.ziel-ok{background:var(--ok-wasch);border-color:var(--ok);}
+.ort-btn.ziel-bad{background:var(--ziegel-wasch);border-color:var(--ziegel);}
+
+.feedback{
+  background:#fff;border:3px solid var(--nadel);border-left-width:12px;border-radius:var(--radius);
+  padding:.9rem 1.1rem;margin:0 0 1rem;
+}
+.feedback.ok{border-left-color:var(--ok);}
+.feedback.bad{border-left-color:var(--ziegel);}
+.feedback h3{margin:.1em 0 .35em;}
+
+.wahl{display:grid;gap:.5rem;margin:.6rem 0;}
+.wahl button{
+  font:inherit;text-align:left;cursor:pointer;padding:.7em .9em;
+  background:var(--papier-2);border:2px solid var(--nadel);border-radius:10px;
+  min-height:44px;
+}
+.wahl button:hover{background:#fff;}
+.wahl button.richtig{background:var(--ok-wasch);border-color:var(--ok);}
+.wahl button.falsch{background:var(--ziegel-wasch);border-color:var(--ziegel);}
+
+.status-bar{min-height:1.3em;font-size:.92em;color:var(--tinte-weich);}
+footer.wrap{color:var(--tinte-weich);font-size:.9em;padding-bottom:2.4rem;}
+
+.code-box{
+  background:var(--nadel);color:var(--papier);border-radius:var(--radius);padding:1rem 1.15rem;margin:1rem 0;
+}
+.code-val{font-family:var(--mono);font-size:1.15em;letter-spacing:.06em;display:block;margin:.4em 0 .7em;word-break:break-all;}
+.name-feld{margin:.8rem 0;}
+.name-feld label{display:block;font-weight:700;margin-bottom:.3em;}
+.name-feld input{
+  font:inherit;width:min(420px,100%);padding:.5em .7em;border:2px solid var(--nadel);border-radius:8px;background:#fff;
+}
+.tabelle{width:100%;border-collapse:collapse;margin:1rem 0;}
+.tabelle th,.tabelle td{border-bottom:1px solid #d7cdb4;padding:.45em .5em;text-align:left;}
+.tabelle .num{text-align:right;font-variant-numeric:tabular-nums;}
+
+@media (max-width:700px){
+  .mia{grid-template-columns:1fr;}
+  .mia svg{width:64px;height:64px;}
+  .hotspot{pointer-events:none !important;}
+  .hotspot .tag{display:none;}
+  .ort-mobile-hinweis{display:block;}
+  .spiel-feld .szene-box{order:3;}
+  .spiel-feld #ort-hilfe{order:1;}
+  .spiel-feld .ort-mobile-hinweis{order:1;}
+  .spiel-feld .ort-leiste{order:2;display:grid;grid-template-columns:1fr 1fr;margin-bottom:.8rem;}
+  .ort-btn{width:100%;justify-content:flex-start;text-align:left;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+}
+html[data-motion="aus"] *{
+  animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;
+}
+@media print{
+  .settings,.btn,.hotspot,.zaehl,.max,.spieler{display:none !important;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body lang="de">
+<a class="skip" href="#hauptinhalt" lang="de">Zum Hauptinhalt springen <span class="sr-only gloss" lang="en">Skip to main content</span></a>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <h1 lang="de" translate="no">Versteck dich!</h1>
+      <span class="sub" lang="de">Kleinhausen · Präpositionen &amp; Befehle</span>
+      <p class="level" lang="de">A1/A2 · Imperativ + Wechselpräpositionen
+        <span class="en gloss" lang="en">A1/A2 · Imperative + two-way prepositions</span>
+      </p>
+    </div>
+    <div class="settings" role="group" lang="de" aria-label="Einstellungen">
+      <button type="button" class="set-btn" id="s-en" aria-pressed="true" lang="en">
+        <span class="dot" aria-hidden="true"></span>English
+      </button>
+      <button type="button" class="set-btn" id="s-audio" aria-pressed="false">
+        <span class="dot" aria-hidden="true"></span><span lang="de">Vorlesen</span>
+        <span class="sr-only gloss" lang="en">Read aloud</span>
+      </button>
+      <button type="button" class="set-btn" id="s-spots" aria-pressed="true">
+        <span class="dot" aria-hidden="true"></span><span lang="de">Orte zeigen</span>
+        <span class="sr-only gloss" lang="en">Show place labels</span>
+      </button>
+      <button type="button" class="set-btn" id="s-motion" aria-pressed="true">
+        <span class="dot" aria-hidden="true"></span><span lang="de">Animation</span>
+        <span class="sr-only gloss" lang="en">Motion</span>
+      </button>
+      <button type="button" class="set-btn" id="s-contrast" aria-pressed="false">
+        <span class="dot" aria-hidden="true"></span><span lang="de">Kontrast</span>
+        <span class="sr-only gloss" lang="en">High contrast</span>
+      </button>
+      <button type="button" class="set-btn" id="s-size" aria-label="Schriftgröße: normal">
+        <span lang="de" data-size-label>Schrift: A</span>
+        <span class="sr-only gloss" lang="en">Text size</span>
+      </button>
+      <button type="button" class="set-btn" id="s-lesbar" aria-pressed="false">
+        <span class="dot" aria-hidden="true"></span><span lang="de">Leseschrift</span>
+        <span class="sr-only gloss" lang="en">Readable font</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap" id="hauptinhalt" lang="de">
+
+  <section class="screen on" id="screen-start" aria-labelledby="h-start" lang="de">
+    <p class="eyebrow" lang="de">A1/A2 · Imperativ + Wechselpräpositionen
+      <span class="en gloss" lang="en">A1/A2 · Imperative + two-way prepositions</span></p>
+    <h2 id="h-start" tabindex="-1">Max zählt. Mia flüstert. Du versteckst dich.</h2>
+    <p class="lede">Samstagnachmittag in Kleinhausen, im Haus von Oma Helga. Max ist der Sucher: <em lang="de" translate="no">Augen zu!</em> Deine Cousine Mia flüstert dir deutsche <strong lang="de" translate="no">Befehle</strong> zu. Folge den Hinweisen und versteck dich an einem guten Ort – dann findet Max dich nicht. Ignorierst du die Präposition oder versteckst du dich dort, wo man dich sieht, bist du <strong lang="de" translate="no">gefunden</strong>.
+      <span class="en gloss" lang="en">Saturday in Kleinhausen. Follow Mia’s German commands. Hide in a good spot and Max will miss you. Ignore the hint or hide in a visible place and you will be found.</span></p>
+
+    <div class="karten" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+      <div class="karte" style="cursor:default">
+        <p class="nr" lang="de" translate="no">Befehle</p>
+        <h3 lang="de">Imperativ</h3>
+        <p class="meta" lang="de" translate="no">Versteck dich! Geh! Kriech! Lauf! Bleib still! Schau nicht!</p>
+        <p class="en gloss" lang="en">Commands: Hide! Go! Crawl! Run! Stay still! Don’t look!</p>
+      </div>
+      <div class="karte" style="cursor:default">
+        <p class="nr" lang="de" translate="no">Wohin?</p>
+        <h3 lang="de">Akkusativ</h3>
+        <p class="meta" lang="de" translate="no">Bewegung: hinter <em>das</em> Sofa, unter <em>den</em> Tisch, in <em>den</em> Schrank.</p>
+        <p class="en gloss" lang="en">Where to? Accusative for movement.</p>
+      </div>
+      <div class="karte" style="cursor:default">
+        <p class="nr" lang="de" translate="no">Wo?</p>
+        <h3 lang="de">Dativ</h3>
+        <p class="meta" lang="de" translate="no">Position: hinter <em>dem</em> Sofa, unter <em>dem</em> Tisch, in <em>dem</em> Schrank.</p>
+        <p class="en gloss" lang="en">Where? Dative for location.</p>
+      </div>
+    </div>
+
+    <h3 lang="de">So spielst du</h3>
+    <ol class="lede">
+      <li>Lies (oder hör) Mias Befehl. Die Präposition sagt dir, <em lang="de" translate="no">wohin</em>. <span class="en gloss" lang="en">The preposition tells you where to go.</span></li>
+      <li>Klicke im Bild auf den Ort – oder auf die Ortsleiste darunter. <span class="en gloss" lang="en">Click the hiding place in the picture or the list.</span></li>
+      <li>Gute, versteckte Orte + richtiger Hinweis = Max geht vorbei. Sonst: <em lang="de" translate="no">Gefunden!</em> <span class="en gloss" lang="en">A good hidden spot plus the right hint means Max walks past.</span></li>
+      <li>Danach: <em lang="de" translate="no">Wo bist du?</em> – wähle den Dativ. <span class="en gloss" lang="en">Then choose the dative phrase for where you are.</span></li>
+    </ol>
+
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-folgen">Folgen auswählen <span class="sr-only gloss" lang="en">Choose episodes</span></button>
+      <button type="button" class="btn btn-ghost" id="btn-alle">Alle Folgen am Stück spielen <span class="sr-only gloss" lang="en">Play all episodes in a row</span></button>
+    </div>
+
+    <details>
+      <summary>Wechselpräpositionen: <span lang="de" translate="no">Wo?</span> und <span lang="de" translate="no">Wohin?</span> <span class="en gloss" lang="en">Two-way prepositions</span></summary>
+      <table class="gram">
+        <caption class="sr-only"><span lang="de">Präpositionen mit Dativ und Akkusativ</span> <span class="en gloss" lang="en">Prepositions with dative and accusative</span></caption>
+        <thead>
+          <tr>
+            <th scope="col" lang="de">Präposition</th>
+            <th scope="col" lang="de" translate="no">Wo? (Dativ)</th>
+            <th scope="col" lang="de" translate="no">Wohin? (Akkusativ)</th>
+            <th scope="col" lang="de">Englisch <span class="en gloss" lang="en">English</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td lang="de" translate="no">hinter</td><td lang="de" translate="no">hinter dem Sofa</td><td lang="de" translate="no">hinter das Sofa</td><td lang="en">behind</td></tr>
+          <tr><td lang="de" translate="no">unter</td><td lang="de" translate="no">unter dem Tisch</td><td lang="de" translate="no">unter den Tisch</td><td lang="en">under</td></tr>
+          <tr><td lang="de" translate="no">in</td><td lang="de" translate="no">in dem Schrank / im Schrank</td><td lang="de" translate="no">in den Schrank</td><td lang="en">in</td></tr>
+          <tr><td lang="de" translate="no">auf</td><td lang="de" translate="no">auf dem Sessel</td><td lang="de" translate="no">auf den Sessel</td><td lang="en">on</td></tr>
+          <tr><td lang="de" translate="no">vor</td><td lang="de" translate="no">vor der Tür</td><td lang="de" translate="no">vor die Tür</td><td lang="en">in front of</td></tr>
+          <tr><td lang="de" translate="no">neben</td><td lang="de" translate="no">neben dem Fenster</td><td lang="de" translate="no">neben das Fenster</td><td lang="en">next to</td></tr>
+          <tr><td lang="de" translate="no">zwischen</td><td lang="de" translate="no">zwischen den Vorhängen</td><td lang="de" translate="no">zwischen die Vorhänge</td><td lang="en">between</td></tr>
+        </tbody>
+      </table>
+      <p>Sichtbare Orte sind schlechte Verstecke: <strong lang="de" translate="no">vor der Tür</strong>, <strong lang="de" translate="no">auf dem Sessel</strong>, <strong lang="de" translate="no">neben dem Fenster</strong>, <strong lang="de" translate="no">auf der Schaukel</strong>, <strong lang="de" translate="no">vor dem Zaun</strong>. Mia warnt dich oft mit <em lang="de" translate="no">nicht</em>.
+        <span class="en gloss" lang="en">Visible places are bad hides. Mia often warns you with “nicht” (not).</span></p>
+    </details>
+
+    <details>
+      <summary>Tastatur und Barrierefreiheit <span class="en gloss" lang="en">Keyboard and accessibility</span></summary>
+      <ul>
+        <li><kbd>Tab</kbd> bewegt den Fokus zur Ortsleiste unter dem Bild, nicht zu den Flächen im Bild. <kbd>1</kbd>–<kbd>8</kbd> wählen einen Ort. Auf dem Handy ist die Ortsliste die Steuerung; das Bild ist nur zum Anschauen. <span class="en gloss" lang="en">Tab moves to the place list under the picture, not the picture hotspots. Keys 1–8 pick a place. On phones, the place list is the control; the picture is only to look at.</span></li>
+        <li>Jedes Versteck hat einen Namen als Text. Das Bild ist zusätzlich, nicht die einzige Information. <span class="en gloss" lang="en">Every hiding place is also named in text. The picture is extra, not the only information.</span></li>
+        <li><strong lang="de">Orte zeigen</strong> lässt die Labels im Bild immer sichtbar. <span class="en gloss" lang="en">“Show places” keeps picture labels visible.</span></li>
+        <li><strong lang="de">Vorlesen</strong> spricht Befehle auf Deutsch (wenn eine de-Stimme vorhanden ist). <span class="en gloss" lang="en">Read-aloud speaks commands in German if your device has a German voice.</span></li>
+        <li><strong lang="de">Leseschrift</strong> wechselt auf Verdana/Tahoma mit etwas mehr Abstand. <span class="en gloss" lang="en">Readable font switches to Verdana/Tahoma with extra spacing.</span></li>
+        <li><strong lang="de">Animation</strong>, <strong lang="de">Kontrast</strong> und <strong lang="de">Schrift</strong> wie in den anderen Kleinhausen-Spielen. <span class="en gloss" lang="en">Motion, contrast, and text size match the other Kleinhausen games.</span></li>
+      </ul>
+    </details>
+  </section>
+
+  <section class="screen" id="screen-episodes" aria-labelledby="h-eps" lang="de">
+    <p class="eyebrow">Drei Folgen · Wohnzimmer, Warnungen, Garten</p>
+    <h2 id="h-eps" tabindex="-1">Welche Folge möchtest du spielen?</h2>
+    <p class="lede">Die Folgen werden schwerer. In jeder Runde kann Max dich finden – dann gibt es null Punkte fürs Verstecken, aber du darfst die <span lang="de" translate="no">Wo?</span>-Frage trotzdem beantworten. Dein bester Versuch zählt: nochmal spielen ändert ihn nicht, wenn du schlechter bist.
+      <span class="en gloss" lang="en">Episodes get harder. Getting found scores 0 for that hide, but you can still answer the location question. Your best score is kept; a worse retry does not overwrite it.</span></p>
+    <div class="karten" id="ep-liste"></div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-ghost" id="btn-zurueck-start">Zurück zum Anfang <span class="sr-only gloss" lang="en">Back to the start</span></button>
+      <button type="button" class="btn" id="btn-alle-2">Alle Folgen am Stück spielen <span class="sr-only gloss" lang="en">Play all episodes in a row</span></button>
+      <button type="button" class="btn btn-ghost" id="btn-zum-ergebnis" hidden>Ergebnis und Code ansehen <span class="sr-only gloss" lang="en">View results and code</span></button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-play" aria-labelledby="h-play" lang="de">
+    <div class="hud">
+      <div>
+        <p class="eyebrow" id="folge-label">Folge</p>
+        <h2 id="h-play" tabindex="-1" lang="de" translate="no">Versteck dich!</h2>
+        <p class="lede" id="szene-intro" style="margin:0;max-width:52ch"></p>
+      </div>
+      <div>
+        <p class="eyebrow" id="runde-label">Runde</p>
+        <div class="pips" id="pips" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="mia" id="mia-box">
+      <svg viewBox="0 0 76 76" aria-hidden="true" focusable="false">
+        <circle cx="38" cy="38" r="36" fill="#f3ead3" stroke="#18291f" stroke-width="3"/>
+        <ellipse cx="38" cy="28" rx="16" ry="18" fill="#f0c7a0" stroke="#18291f" stroke-width="2"/>
+        <path d="M22 28 Q38 8 54 28" fill="#2a1c14"/>
+        <circle cx="32" cy="28" r="2.2" fill="#18291f"/>
+        <circle cx="44" cy="28" r="2.2" fill="#18291f"/>
+        <path d="M34 36 Q38 40 42 36" fill="none" stroke="#18291f" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M24 50 Q38 68 52 52" fill="#3d6b48" stroke="#18291f" stroke-width="2"/>
+      </svg>
+      <div class="bubble">
+        <p class="wer" id="wer-label" lang="de">Mia flüstert</p>
+        <p class="befehl" id="befehl-text" lang="de" translate="no"></p>
+        <p class="en gloss" id="befehl-en" lang="en"></p>
+        <p><button type="button" class="speak-btn" id="btn-sprich" lang="de">Befehl vorlesen <span class="sr-only gloss" lang="en">Read the command aloud</span></button></p>
+      </div>
+    </div>
+
+    <div id="befehl-wahl" class="wahl" hidden role="group" lang="de" aria-label="Befehle"></div>
+
+    <div class="spiel-feld">
+      <p class="ort-mobile-hinweis" id="ort-mobile-hinweis" lang="de">
+        Auf dem Handy: Tipp auf einen Ort in der Liste. Das Bild zeigt nur, wo du dich versteckst.
+        <span class="en gloss" lang="en">On a phone: tap a place in the list. The picture only shows where you hid.</span>
+      </p>
+      <div class="szene-box" id="szene-box" role="group" lang="de" aria-label="Szene zum Verstecken">
+        <div id="szene-wohnzimmer"></div>
+        <div id="szene-garten" hidden></div>
+        <div class="zaehl" id="zaehl" hidden role="status" aria-live="polite" aria-atomic="true" lang="de">
+          <div>
+            <p class="eyebrow" style="color:#e2b441" lang="de">Max</p>
+            <p style="margin:0;font-weight:800" lang="de" translate="no">Augen zu! Ich zähle!</p>
+            <p class="zahl" id="zaehl-zahl">1</p>
+            <p id="zaehl-sub" lang="de" translate="no">Eins …</p>
+            <p class="en gloss" lang="en">Eyes closed! I’m counting!</p>
+          </div>
+        </div>
+        <div class="spieler" id="spieler" hidden aria-hidden="true"></div>
+        <div class="max" id="max" hidden aria-hidden="true">
+          <div class="max-body" id="max-body"></div>
+          <p class="max-spruch" id="max-spruch" hidden lang="de" translate="no"></p>
+        </div>
+        <p class="stempel sicher" id="stempel" hidden aria-hidden="true">SICHER!</p>
+      </div>
+      <h3 class="eyebrow" id="ort-hilfe" style="margin:.4rem 0 .35rem">Orte zum Verstecken <span class="en gloss" lang="en">Places to hide</span></h3>
+      <p class="sr-only" lang="de">Wähle ein Versteck. Tasten 1 bis 8 wählen in der Ortsleiste. <span class="en gloss" lang="en">Choose a hiding place. Keys 1 to 8 select from the list.</span></p>
+      <div class="ort-leiste" id="ort-leiste" role="group" lang="de" aria-labelledby="ort-hilfe"></div>
+    </div>
+
+    <div class="feedback" id="feedback" hidden tabindex="-1" lang="de" role="status" aria-live="polite"></div>
+    <div id="wo-box" hidden lang="de">
+      <p class="eyebrow" id="wo-eyebrow" lang="de" translate="no">Wo bist du?</p>
+      <p class="befehl" id="wo-frage" lang="de" translate="no" style="font-size:1.1em"></p>
+      <p class="en gloss" id="wo-en" lang="en"></p>
+      <div class="wahl" id="wo-opts" role="group" lang="de" aria-label="Antworten"></div>
+      <p id="wo-fb" lang="de" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-weiter" hidden>Weiter <span class="sr-only gloss" lang="en">Continue</span></button>
+      <button type="button" class="btn btn-ghost" id="btn-abbrechen">Folge verlassen <span class="sr-only gloss" lang="en">Leave this episode</span></button>
+    </div>
+    <p class="status-bar" id="status" role="status" aria-live="polite" aria-atomic="true" lang="de"></p>
+  </section>
+
+  <section class="screen" id="screen-summary" aria-labelledby="h-sum" lang="de">
+    <p class="eyebrow">Ergebnis</p>
+    <h2 id="h-sum" tabindex="-1">Das Spiel ist aus!</h2>
+    <p class="lede" id="sum-text" lang="de"></p>
+    <p class="meta" id="sum-retry-note" lang="de">Wenn du eine Folge nochmal spielst, bleibt dein bester Versuch. Schlechtere Punkte überschreiben ihn nicht.
+      <span class="en gloss" lang="en">If you replay an episode, your best score is kept. A worse retry does not overwrite it.</span></p>
+    <table class="tabelle" id="sum-tabelle">
+      <caption lang="de">Deine Punkte pro Folge <span class="en gloss" lang="en">Your points per episode</span></caption>
+      <thead><tr><th scope="col" lang="de">Folge</th><th scope="col" lang="de">Thema</th><th scope="col" lang="de">Punkte</th><th scope="col" lang="de">Prozent</th></tr></thead>
+      <tbody id="sum-body"></tbody>
+      <tfoot id="sum-foot"></tfoot>
+    </table>
+    <div class="name-feld">
+      <label for="name-in">Dein Name (für den Abgabecode) <span class="en gloss" lang="en">Your name, for the Canvas submission code</span></label>
+      <input type="text" id="name-in" autocomplete="name" spellcheck="false" placeholder="Vorname Nachname" lang="de">
+    </div>
+    <div class="code-box">
+      <p><strong lang="de">Dein Abgabecode</strong> <span class="en gloss" lang="en" style="color:#c9d6c4">Your submission code</span></p>
+      <code class="code-val" id="code-val" lang="de" aria-live="polite">Bitte gib zuerst deinen Namen ein.</code>
+      <p lang="de">Kopiere diesen Code in die Canvas-Aufgabe. Der Code gehört zu deinem Namen. Am besten den Knopf <em lang="de">Code kopieren</em> nutzen, nicht abtippen.
+        <span class="en gloss" lang="en">Copy this code into the Canvas assignment. Use the copy button rather than typing it.</span></p>
+      <p><button type="button" class="btn" id="btn-copy" style="background:var(--gold)"><span id="btn-copy-label" lang="de">Code kopieren</span> <span class="sr-only gloss" lang="en">Copy code</span></button></p>
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn" id="btn-folge-nochmal">Diese Folge nochmal <span class="sr-only gloss" lang="en">Retry this episode</span></button>
+      <button type="button" class="btn btn-ghost" id="btn-nochmal">Weitere Folge spielen <span class="sr-only gloss" lang="en">Play another episode</span></button>
+      <button type="button" class="btn btn-ghost" id="btn-neustart">Alles zurücksetzen <span class="sr-only gloss" lang="en">Reset everything</span></button>
+    </div>
+    <details id="lehrer">
+      <summary>Für Lehrkräfte: Code prüfen <span class="en gloss" lang="en">For teachers: verify a code</span></summary>
+      <p lang="de">Gib den Namen der Lernenden und den abgegebenen Code ein.
+        <span class="en gloss" lang="en">Enter the learner’s name and the submitted code.</span></p>
+      <p class="name-feld"><label for="v-name" lang="de">Name</label><input type="text" id="v-name" spellcheck="false" autocomplete="name" lang="de"></p>
+      <p class="name-feld"><label for="v-code" lang="en">Code</label><input type="text" id="v-code" spellcheck="false" lang="en" inputmode="text" autocapitalize="characters"></p>
+      <p><button type="button" class="btn" id="btn-verify">Prüfen <span class="sr-only gloss" lang="en">Check</span></button></p>
+      <p id="v-out" role="status" aria-live="polite" lang="de"></p>
+    </details>
+  </section>
+</main>
+
+<footer class="wrap" lang="de">
+  <p>Versteck dich! Kleinhausen · A1/A2 · Imperativ + Wechselpräpositionen. Eine Datei, keine Cookies – Fortschritt gilt nur für diesen Besuch.
+    <span class="en gloss" lang="en">Vocabulary: two-way prepositions, positions, imperative. One file, no cookies — progress lasts only for this visit.</span></p>
+</footer>
+
+<script>
+/* ============================================================
+   1. ORTE
+   ============================================================ */
+const SPOTS = {
+  sofa:{ szene:"wohnzimmer", label:"das Sofa", wo:"hinter dem Sofa", wohin:"hinter das Sofa",
+    prep:"hinter", gut:true, en:"behind the sofa", style:"left:30%;top:54%;width:25%;height:20%", halt:"42%" },
+  tisch:{ szene:"wohnzimmer", label:"der Tisch", wo:"unter dem Tisch", wohin:"unter den Tisch",
+    prep:"unter", gut:true, en:"under the table", style:"left:37%;top:75%;width:13%;height:10%", halt:"44%" },
+  schrank:{ szene:"wohnzimmer", label:"der Schrank", wo:"in dem Schrank", wohin:"in den Schrank",
+    prep:"in", gut:true, en:"in the wardrobe", style:"left:80%;top:28%;width:17%;height:50%", halt:"86%" },
+  vorhaenge:{ szene:"wohnzimmer", label:"die Vorhänge", wo:"zwischen den Vorhängen", wohin:"zwischen die Vorhänge",
+    prep:"zwischen", gut:true, en:"between the curtains", style:"left:50%;top:8%;width:20%;height:36%", halt:"60%" },
+  pflanze:{ szene:"wohnzimmer", label:"die Pflanze", wo:"hinter der Pflanze", wohin:"hinter die Pflanze",
+    prep:"hinter", gut:true, en:"behind the plant", style:"left:68%;top:46%;width:10%;height:28%", halt:"72%" },
+  tuer:{ szene:"wohnzimmer", label:"die Tür", wo:"vor der Tür", wohin:"vor die Tür",
+    prep:"vor", gut:false, en:"in front of the door", style:"left:3%;top:54%;width:11%;height:24%", halt:"8%" },
+  sessel:{ szene:"wohnzimmer", label:"der Sessel", wo:"auf dem Sessel", wohin:"auf den Sessel",
+    prep:"auf", gut:false, en:"on the armchair", style:"left:16%;top:54%;width:13%;height:20%", halt:"22%" },
+  fenster:{ szene:"wohnzimmer", label:"das Fenster", wo:"neben dem Fenster", wohin:"neben das Fenster",
+    prep:"neben", gut:false, en:"next to the window", style:"left:71%;top:9%;width:8%;height:26%", halt:"74%" },
+  baum:{ szene:"garten", label:"der Baum", wo:"hinter dem Baum", wohin:"hinter den Baum",
+    prep:"hinter", gut:true, en:"behind the tree", style:"left:4%;top:14%;width:17%;height:48%", halt:"12%" },
+  bank:{ szene:"garten", label:"die Bank", wo:"unter der Bank", wohin:"unter die Bank",
+    prep:"unter", gut:true, en:"under the bench", style:"left:25%;top:64%;width:14%;height:14%", halt:"30%" },
+  huette:{ szene:"garten", label:"die Hütte", wo:"in der Hütte", wohin:"in die Hütte",
+    prep:"in", gut:true, en:"in the shed", style:"left:81%;top:32%;width:17%;height:42%", halt:"88%" },
+  buesche:{ szene:"garten", label:"die Büsche", wo:"zwischen den Büschen", wohin:"zwischen die Büsche",
+    prep:"zwischen", gut:true, en:"between the bushes", style:"left:42%;top:62%;width:12%;height:16%", halt:"50%" },
+  tonne:{ szene:"garten", label:"die Tonne", wo:"hinter der Tonne", wohin:"hinter die Tonne",
+    prep:"hinter", gut:true, en:"behind the bin", style:"left:73%;top:65%;width:6%;height:13%", halt:"74%" },
+  zaun:{ szene:"garten", label:"der Zaun", wo:"vor dem Zaun", wohin:"vor den Zaun",
+    prep:"vor", gut:false, en:"in front of the fence", style:"left:2%;top:71%;width:18%;height:14%", halt:"10%" },
+  schaukel:{ szene:"garten", label:"die Schaukel", wo:"auf der Schaukel", wohin:"auf die Schaukel",
+    prep:"auf", gut:false, en:"on the swing", style:"left:64%;top:33%;width:10%;height:30%", halt:"66%" },
+  brunnen:{ szene:"garten", label:"der Brunnen", wo:"neben dem Brunnen", wohin:"neben den Brunnen",
+    prep:"neben", gut:false, en:"next to the fountain", style:"left:56%;top:68%;width:7%;height:14%", halt:"58%" }
+};
+
+const FOLGEN = [
+  {
+    nr:1, szene:"wohnzimmer", thema:"Wohnzimmer · hinter, unter, in, vor",
+    titel:"Im Wohnzimmer",
+    intro:"Oma Helgas Wohnzimmer. Gute Verstecke: hinter dem Sofa, unter dem Tisch, im Schrank, zwischen den Vorhängen, hinter der Pflanze.",
+    introEn:"Oma Helga’s living room. Good hides: behind the sofa, under the table, in the wardrobe, between the curtains, behind the plant.",
+    runden:[
+      {
+        befehl:"Versteck dich <em>hinter dem Sofa</em>!",
+        sprich:"Versteck dich hinter dem Sofa!",
+        en:"Hide behind the sofa!",
+        ziel:"sofa",
+        woFrage:"Wo bist du jetzt?",
+        woEn:"Where are you now?",
+        woOptionen:[
+          {t:"hinter dem Sofa", ok:true},
+          {t:"hinter das Sofa", ok:false, warum:"Wohin? nimmt den Akkusativ. Wo? braucht den Dativ: hinter dem Sofa."},
+          {t:"unter dem Sofa", ok:false, warum:"Die Präposition war hinter, nicht unter."}
+        ]
+      },
+      {
+        befehl:"Kriech <em>unter den Tisch</em>!",
+        sprich:"Kriech unter den Tisch!",
+        en:"Crawl under the table!",
+        ziel:"tisch",
+        woFrage:"Wo bist du jetzt?",
+        woEn:"Where are you now?",
+        woOptionen:[
+          {t:"unter dem Tisch", ok:true},
+          {t:"unter den Tisch", ok:false, warum:"Das ist Wohin? Du bist schon da: Wo? → unter dem Tisch."},
+          {t:"auf dem Tisch", ok:false, warum:"Auf dem Tisch sieht Max dich sofort."}
+        ]
+      },
+      {
+        befehl:"Geh <em>in den Schrank</em>!",
+        sprich:"Geh in den Schrank!",
+        en:"Go into the wardrobe!",
+        ziel:"schrank",
+        woFrage:"Wo bist du jetzt?",
+        woEn:"Where are you now?",
+        woOptionen:[
+          {t:"in dem Schrank", ok:true},
+          {t:"in den Schrank", ok:false, warum:"in den Schrank = Wohin? (Akkusativ). Wo? = in dem Schrank."},
+          {t:"neben dem Schrank", ok:false, warum:"Neben dem Schrank steht man offen im Zimmer."}
+        ]
+      },
+      {
+        befehl:"Lauf <em>zwischen die Vorhänge</em>!",
+        sprich:"Lauf zwischen die Vorhänge!",
+        en:"Run between the curtains!",
+        ziel:"vorhaenge",
+        woFrage:"Wo bist du jetzt?",
+        woEn:"Where are you now?",
+        woOptionen:[
+          {t:"zwischen den Vorhängen", ok:true},
+          {t:"zwischen die Vorhänge", ok:false, warum:"Akkusativ ist Wohin? Für Wo? steht der Dativ: den Vorhängen."},
+          {t:"vor den Vorhängen", ok:false, warum:"Vor den Vorhängen sieht man dich vom Sofa aus."}
+        ]
+      },
+      {
+        befehl:"Bleib still <em>hinter der Pflanze</em>!",
+        sprich:"Bleib still hinter der Pflanze!",
+        en:"Stay still behind the plant!",
+        ziel:"pflanze",
+        woFrage:"Wo bist du jetzt?",
+        woEn:"Where are you now?",
+        woOptionen:[
+          {t:"hinter der Pflanze", ok:true},
+          {t:"hinter die Pflanze", ok:false, warum:"Bleib ist kein Bewegungsverb. Wo? + Dativ: hinter der Pflanze."},
+          {t:"vor der Pflanze", ok:false, warum:"Vor der Pflanze bist du nicht versteckt."}
+        ]
+      }
+    ]
+  },
+  {
+    nr:2, szene:"wohnzimmer", thema:"Nicht dort! · Warnungen und schlechte Orte",
+    titel:"Nicht dort!",
+    intro:"Mia sagt dir auch, wo du dich <em>nicht</em> verstecken sollst. Vor der Tür, auf dem Sessel und neben dem Fenster sieht Max dich sofort.",
+    introEn:"Mia also tells you where not to hide. In front of the door, on the armchair, and next to the window, Max will see you at once.",
+    runden:[
+      {
+        befehl:"Versteck dich hinter dem Sofa. Setz dich <em>nicht auf den Sessel</em>!",
+        sprich:"Versteck dich hinter dem Sofa. Setz dich nicht auf den Sessel!",
+        en:"Hide behind the sofa. Don’t sit on the armchair!",
+        ziel:"sofa", warnung:"sessel",
+        woFrage:"Wo sollst du sein?",
+        woEn:"Where should you be?",
+        woOptionen:[
+          {t:"hinter dem Sofa", ok:true},
+          {t:"auf dem Sessel", ok:false, warum:"Auf dem Sessel sitzt du offen. Mia hat gesagt: nicht!"},
+          {t:"vor der Tür", ok:false, warum:"Vor der Tür ist kein Versteck."}
+        ]
+      },
+      {
+        befehl:"Kriech unter den Tisch – geh <em>nicht vor die Tür</em>!",
+        sprich:"Kriech unter den Tisch – geh nicht vor die Tür!",
+        en:"Crawl under the table — don’t go in front of the door!",
+        ziel:"tisch", warnung:"tuer",
+        woFrage:"Wo sollst du sein?",
+        woEn:"Where should you be?",
+        woOptionen:[
+          {t:"unter dem Tisch", ok:true},
+          {t:"vor der Tür", ok:false, warum:"Vor der Tür steht man im Licht. Max macht die Tür auf und sieht dich."},
+          {t:"in dem Schrank", ok:false, warum:"Der Befehl war unter den Tisch, nicht in den Schrank."}
+        ]
+      },
+      {
+        befehl:"Geh in den Schrank, <em>nicht neben das Fenster</em>!",
+        sprich:"Geh in den Schrank, nicht neben das Fenster!",
+        en:"Go into the wardrobe, not next to the window!",
+        ziel:"schrank", warnung:"fenster",
+        woFrage:"Wo sollst du sein?",
+        woEn:"Where should you be?",
+        woOptionen:[
+          {t:"in dem Schrank", ok:true},
+          {t:"neben dem Fenster", ok:false, warum:"Neben dem Fenster steht das Licht hinter dir. Man sieht dich."},
+          {t:"hinter dem Sofa", ok:false, warum:"Richtiges Versteck, aber nicht Mias Befehl."}
+        ]
+      },
+      {
+        befehl:"Lauf zwischen die Vorhänge. Bleib <em>nicht vor der Tür</em>!",
+        sprich:"Lauf zwischen die Vorhänge. Bleib nicht vor der Tür!",
+        en:"Run between the curtains. Don’t stay in front of the door!",
+        ziel:"vorhaenge", warnung:"tuer",
+        woFrage:"Wo sollst du sein?",
+        woEn:"Where should you be?",
+        woOptionen:[
+          {t:"zwischen den Vorhängen", ok:true},
+          {t:"vor der Tür", ok:false, warum:"Mia hat ausdrücklich gesagt: nicht vor der Tür."},
+          {t:"auf dem Sessel", ok:false, warum:"Auf dem Sessel ist kein Versteck."}
+        ]
+      },
+      {
+        typ:"befehl",
+        lage:"Der Sessel ist zu offen. Die Tür ist zu nah an Max.",
+        lageEn:"The armchair is too exposed. The door is too close to Max.",
+        frage:"Welchen Befehl flüstert Mia?",
+        frageEn:"Which command does Mia whisper?",
+        optionen:[
+          {t:"Versteck dich hinter der Pflanze!", ok:true},
+          {t:"Setz dich auf den Sessel!", ok:false, warum:"Auf dem Sessel sieht Max dich."},
+          {t:"Geh vor die Tür!", ok:false, warum:"Vor der Tür ist das schlechteste Versteck im Zimmer."}
+        ],
+        befehl:"Versteck dich <em>hinter der Pflanze</em>!",
+        sprich:"Versteck dich hinter der Pflanze!",
+        en:"Hide behind the plant!",
+        ziel:"pflanze",
+        woFrage:"Wo bist du jetzt?",
+        woEn:"Where are you now?",
+        woOptionen:[
+          {t:"hinter der Pflanze", ok:true},
+          {t:"auf dem Sessel", ok:false, warum:"Das wäre ein schlechter Befehl gewesen."},
+          {t:"vor der Tür", ok:false, warum:"Vor der Tür findet Max dich immer."}
+        ]
+      }
+    ]
+  },
+  {
+    nr:3, szene:"garten", thema:"Garten · hinter, unter, in, zwischen, auf",
+    titel:"Im Garten",
+    intro:"Hinter dem Haus: Baum, Bank, Hütte, Büsche, Tonne. Schlecht: auf der Schaukel, vor dem Zaun, neben dem Brunnen.",
+    introEn:"Behind the house: tree, bench, shed, bushes, bin. Bad: on the swing, in front of the fence, next to the fountain.",
+    runden:[
+      {
+        befehl:"Lauf <em>hinter den Baum</em>!",
+        sprich:"Lauf hinter den Baum!",
+        en:"Run behind the tree!",
+        ziel:"baum",
+        woFrage:"Wo bist du jetzt?",
+        woEn:"Where are you now?",
+        woOptionen:[
+          {t:"hinter dem Baum", ok:true},
+          {t:"hinter den Baum", ok:false, warum:"hinter den Baum = Wohin? Jetzt bist du da: hinter dem Baum."},
+          {t:"vor dem Baum", ok:false, warum:"Vor dem Baum sieht Max dich vom Haus aus."}
+        ]
+      },
+      {
+        befehl:"Kriech <em>unter die Bank</em>!",
+        sprich:"Kriech unter die Bank!",
+        en:"Crawl under the bench!",
+        ziel:"bank",
+        woFrage:"Wo bist du jetzt?",
+        woEn:"Where are you now?",
+        woOptionen:[
+          {t:"unter der Bank", ok:true},
+          {t:"unter die Bank", ok:false, warum:"Bewegung war unter die Bank. Position ist unter der Bank."},
+          {t:"auf der Bank", ok:false, warum:"Auf der Bank sitzt du wie auf einer Bühne."}
+        ]
+      },
+      {
+        befehl:"Geh in die Hütte – <em>nicht auf die Schaukel</em>!",
+        sprich:"Geh in die Hütte – nicht auf die Schaukel!",
+        en:"Go into the shed — not onto the swing!",
+        ziel:"huette", warnung:"schaukel",
+        woFrage:"Wo sollst du sein?",
+        woEn:"Where should you be?",
+        woOptionen:[
+          {t:"in der Hütte", ok:true},
+          {t:"auf der Schaukel", ok:false, warum:"Auf der Schaukel schwingst du in der Luft. Max sieht dich von weitem."},
+          {t:"neben dem Brunnen", ok:false, warum:"Neben dem Brunnen steht man offen auf der Wiese."}
+        ]
+      },
+      {
+        befehl:"Versteck dich zwischen den Büschen, <em>nicht vor dem Zaun</em>!",
+        sprich:"Versteck dich zwischen den Büschen, nicht vor dem Zaun!",
+        en:"Hide between the bushes, not in front of the fence!",
+        ziel:"buesche", warnung:"zaun",
+        woFrage:"Wo sollst du sein?",
+        woEn:"Where should you be?",
+        woOptionen:[
+          {t:"zwischen den Büschen", ok:true},
+          {t:"vor dem Zaun", ok:false, warum:"Vor dem Zaun gibt es keine Deckung."},
+          {t:"zwischen die Büsche", ok:false, warum:"Das ist Wohin? Für Wo? brauchst du den Dativ: den Büschen."}
+        ]
+      },
+      {
+        befehl:"Geh hinter die Tonne. Setz dich <em>nicht neben den Brunnen</em>!",
+        sprich:"Geh hinter die Tonne. Setz dich nicht neben den Brunnen!",
+        en:"Go behind the bin. Don’t sit next to the fountain!",
+        ziel:"tonne", warnung:"brunnen",
+        woFrage:"Wo sollst du sein?",
+        woEn:"Where should you be?",
+        woOptionen:[
+          {t:"hinter der Tonne", ok:true},
+          {t:"neben dem Brunnen", ok:false, warum:"Neben dem Brunnen bist du die erste Person, die Max sieht."},
+          {t:"auf der Schaukel", ok:false, warum:"Auch die Schaukel ist kein Versteck."}
+        ]
+      }
+    ]
+  }
+];
+
+FOLGEN.forEach(f=>{
+  f.max = f.runden.reduce((n,r)=> n + 10 + 5 + (r.typ==="befehl"?5:0), 0);
+});
+
+/* ============================================================
+   2. SVG-SZENEN
+   ============================================================ */
+const SVG_WOHN = `
+<svg viewBox="0 0 1000 540" aria-hidden="true" focusable="false">
+  <rect width="1000" height="540" fill="#f0e0c4"/>
+  <rect y="330" width="1000" height="210" fill="#c9a36a"/>
+  <g stroke="#7a5130" stroke-width="2" opacity=".35">
+    <path d="M0 360 H1000 M0 390 H1000 M0 420 H1000 M0 450 H1000 M0 480 H1000 M0 510 H1000"/>
+  </g>
+  <rect y="318" width="1000" height="14" fill="#6b4423"/>
+  <rect x="30" y="70" width="90" height="260" fill="#6b4423" stroke="#18291f" stroke-width="3"/>
+  <rect x="42" y="88" width="30" height="90" fill="#d7c09a" stroke="#18291f" stroke-width="2"/>
+  <rect x="78" y="88" width="30" height="90" fill="#d7c09a" stroke="#18291f" stroke-width="2"/>
+  <rect x="42" y="190" width="30" height="120" fill="#d7c09a" stroke="#18291f" stroke-width="2"/>
+  <rect x="78" y="190" width="30" height="120" fill="#d7c09a" stroke="#18291f" stroke-width="2"/>
+  <circle cx="108" cy="210" r="5" fill="#e2b441"/>
+  <rect x="520" y="48" width="180" height="210" fill="#8eb8d0" stroke="#18291f" stroke-width="4"/>
+  <path d="M610 48 V258 M520 153 H700" stroke="#18291f" stroke-width="3"/>
+  <path d="M500 48 Q530 160 508 258" fill="#c24a38" stroke="#18291f" stroke-width="2"/>
+  <path d="M720 48 Q690 160 712 258" fill="#c24a38" stroke="#18291f" stroke-width="2"/>
+  <rect x="500" y="48" width="16" height="210" fill="#6b4423"/>
+  <rect x="704" y="48" width="16" height="210" fill="#6b4423"/>
+  <ellipse cx="430" cy="470" rx="210" ry="42" fill="#7a3a32" opacity=".55"/>
+  <rect x="300" y="300" width="250" height="110" rx="18" fill="#2f5d3f" stroke="#18291f" stroke-width="3"/>
+  <rect x="312" y="312" width="70" height="55" rx="10" fill="#3d6b48"/>
+  <rect x="390" y="312" width="70" height="55" rx="10" fill="#3d6b48"/>
+  <rect x="468" y="312" width="70" height="55" rx="10" fill="#3d6b48"/>
+  <rect x="308" y="400" width="18" height="28" fill="#4a2e18"/>
+  <rect x="524" y="400" width="18" height="28" fill="#4a2e18"/>
+  <ellipse cx="430" cy="430" rx="70" ry="22" fill="#8b5a2b" stroke="#18291f" stroke-width="3"/>
+  <rect x="400" y="408" width="60" height="10" fill="#6b4423"/>
+  <path d="M160 300 q20-70 70-70 q50 0 70 70 v90 h-140 z" fill="#8b3a3a" stroke="#18291f" stroke-width="3"/>
+  <rect x="175" y="380" width="14" height="30" fill="#4a2e18"/>
+  <rect x="255" y="380" width="14" height="30" fill="#4a2e18"/>
+  <rect x="800" y="150" width="170" height="270" fill="#6b4423" stroke="#18291f" stroke-width="3"/>
+  <path d="M885 150 V420" stroke="#18291f" stroke-width="3"/>
+  <circle cx="870" cy="290" r="6" fill="#e2b441"/>
+  <circle cx="900" cy="290" r="6" fill="#e2b441"/>
+  <rect x="820" y="168" width="50" height="70" fill="#d7c09a" opacity=".35"/>
+  <rect x="900" y="168" width="50" height="70" fill="#d7c09a" opacity=".35"/>
+  <path d="M690 250 C660 210 700 160 730 190 C760 150 800 210 760 250 C800 280 740 340 710 300 C680 340 660 280 690 250Z" fill="#2f5d3f" stroke="#18291f" stroke-width="2"/>
+  <rect x="718" y="300" width="18" height="90" fill="#6b4423"/>
+  <ellipse cx="727" cy="400" rx="28" ry="12" fill="#8b3a3a" stroke="#18291f" stroke-width="2"/>
+  <rect x="200" y="80" width="70" height="54" fill="#fbf6ea" stroke="#18291f" stroke-width="3"/>
+  <circle cx="235" cy="107" r="16" fill="#8eb8d0"/>
+  <rect x="60" y="240" width="28" height="90" fill="#c24a38" opacity=".0"/>
+</svg>`;
+
+const SVG_GARTEN = `
+<svg viewBox="0 0 1000 540" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8eb8d0"/><stop offset="1" stop-color="#cfe6c8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1000" height="540" fill="url(#sky)"/>
+  <ellipse cx="200" cy="80" rx="70" ry="22" fill="#fff" opacity=".7"/>
+  <ellipse cx="700" cy="60" rx="90" ry="24" fill="#fff" opacity=".55"/>
+  <path d="M0 300 Q250 250 500 280 T1000 260 V540 H0Z" fill="#6ea56f"/>
+  <path d="M0 360 Q200 330 400 370 T1000 350 V540 H0Z" fill="#4e8b5c"/>
+  <g stroke="#18291f" stroke-width="3" fill="#d7c09a">
+    <rect x="20" y="390" width="12" height="70"/>
+    <rect x="52" y="390" width="12" height="70"/>
+    <rect x="84" y="390" width="12" height="70"/>
+    <rect x="116" y="390" width="12" height="70"/>
+    <rect x="148" y="390" width="12" height="70"/>
+    <rect x="180" y="390" width="12" height="70"/>
+    <rect x="14" y="382" width="184" height="12" fill="#6b4423"/>
+  </g>
+  <circle cx="130" cy="200" r="88" fill="#2f5d3f" stroke="#18291f" stroke-width="3"/>
+  <circle cx="90" cy="230" r="50" fill="#3d6b48"/>
+  <circle cx="170" cy="220" r="56" fill="#24543a"/>
+  <rect x="112" y="250" width="36" height="160" fill="#6b4423" stroke="#18291f" stroke-width="3"/>
+  <rect x="250" y="355" width="140" height="16" rx="4" fill="#8b5a2b" stroke="#18291f" stroke-width="3"/>
+  <rect x="258" y="370" width="12" height="42" fill="#4a2e18"/>
+  <rect x="370" y="370" width="12" height="42" fill="#4a2e18"/>
+  <rect x="250" y="348" width="140" height="10" fill="#6b4423"/>
+  <ellipse cx="470" cy="390" rx="55" ry="40" fill="#2f5d3f" stroke="#18291f" stroke-width="2"/>
+  <ellipse cx="520" cy="400" rx="48" ry="36" fill="#3d6b48" stroke="#18291f" stroke-width="2"/>
+  <ellipse cx="490" cy="368" rx="30" ry="22" fill="#c24a38"/>
+  <ellipse cx="580" cy="400" rx="36" ry="20" fill="#8eb8d0" stroke="#18291f" stroke-width="3"/>
+  <rect x="560" y="400" width="40" height="36" fill="#a9b7c2" stroke="#18291f" stroke-width="2"/>
+  <path d="M580 372 q8 16 0 28 q-8-12 0-28" fill="#fff" opacity=".7"/>
+  <g stroke="#18291f" stroke-width="4" fill="none">
+    <path d="M640 180 H760 V400"/>
+    <path d="M640 180 V400"/>
+  </g>
+  <rect x="678" y="260" width="44" height="36" rx="6" fill="#c24a38" stroke="#18291f" stroke-width="2"/>
+  <path d="M700 180 V260" stroke="#18291f" stroke-width="3"/>
+  <rect x="730" y="350" width="44" height="62" rx="6" fill="#3d5a4c" stroke="#18291f" stroke-width="3"/>
+  <rect x="736" y="358" width="32" height="14" fill="#2f5d3f"/>
+  <path d="M800 240 L980 240 L960 400 H820 Z" fill="#8b5a2b" stroke="#18291f" stroke-width="3"/>
+  <polygon points="790,240 890,170 990,240" fill="#6b4423" stroke="#18291f" stroke-width="3"/>
+  <rect x="870" y="300" width="44" height="70" fill="#4a2e18" stroke="#18291f" stroke-width="2"/>
+  <rect x="40" y="470" width="40" height="18" fill="#c24a38" opacity="0"/>
+</svg>`;
+
+const SVG_MAX = `
+<svg viewBox="0 0 80 120" aria-hidden="true" focusable="false">
+  <ellipse cx="40" cy="112" rx="22" ry="6" fill="#18291f" opacity=".25"/>
+  <circle cx="40" cy="28" r="16" fill="#f0c7a0" stroke="#18291f" stroke-width="2"/>
+  <path d="M24 24 Q40 8 56 22" fill="#2a1c14"/>
+  <rect x="28" y="42" width="24" height="38" rx="6" fill="#2f4a7a" stroke="#18291f" stroke-width="2"/>
+  <path d="M28 48 L14 78 M52 48 L66 78" stroke="#18291f" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M32 80 L28 110 M48 80 L52 110" stroke="#18291f" stroke-width="4" stroke-linecap="round"/>
+  <rect x="22" y="18" width="36" height="10" rx="3" fill="#c24a38"/>
+</svg>`;
+
+const SVG_SPIELER = `
+<svg viewBox="0 0 80 120" aria-hidden="true" focusable="false">
+  <g class="pose-stehen">
+    <ellipse cx="40" cy="114" rx="20" ry="5" fill="#18291f" opacity=".22"/>
+    <circle cx="40" cy="26" r="15" fill="#f0c7a0" stroke="#18291f" stroke-width="2"/>
+    <path d="M26 22 Q40 6 54 20" fill="#6b4423"/>
+    <rect x="26" y="40" width="28" height="36" rx="8" fill="#e2b441" stroke="#18291f" stroke-width="2"/>
+    <path d="M26 48 L16 74 M54 48 L64 74" stroke="#18291f" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M32 76 L28 108 M48 76 L52 108" stroke="#3d6b48" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="34" cy="26" r="1.8" fill="#18291f"/>
+    <circle cx="46" cy="26" r="1.8" fill="#18291f"/>
+  </g>
+  <g class="pose-sitzen">
+    <ellipse cx="40" cy="114" rx="22" ry="5" fill="#18291f" opacity=".22"/>
+    <circle cx="42" cy="34" r="15" fill="#f0c7a0" stroke="#18291f" stroke-width="2"/>
+    <path d="M28 30 Q42 14 56 28" fill="#6b4423"/>
+    <rect x="24" y="48" width="32" height="28" rx="8" fill="#e2b441" stroke="#18291f" stroke-width="2"/>
+    <path d="M28 72 L18 92 M56 72 L70 86" stroke="#3d6b48" stroke-width="6" stroke-linecap="round"/>
+    <path d="M24 56 L12 70 M56 56 L68 68" stroke="#18291f" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <circle cx="36" cy="34" r="1.8" fill="#18291f"/>
+    <circle cx="48" cy="34" r="1.8" fill="#18291f"/>
+  </g>
+  <g class="pose-ducken">
+    <ellipse cx="40" cy="114" rx="24" ry="5" fill="#18291f" opacity=".22"/>
+    <circle cx="40" cy="58" r="14" fill="#f0c7a0" stroke="#18291f" stroke-width="2"/>
+    <path d="M26 54 Q40 40 54 52" fill="#6b4423"/>
+    <ellipse cx="40" cy="86" rx="22" ry="16" fill="#e2b441" stroke="#18291f" stroke-width="2"/>
+    <path d="M22 84 L14 104 M58 84 L66 104" stroke="#3d6b48" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="34" cy="58" r="1.8" fill="#18291f"/>
+    <circle cx="46" cy="58" r="1.8" fill="#18291f"/>
+  </g>
+</svg>`;
+
+/* ============================================================
+   3. ZUSTAND
+   ============================================================ */
+const S = {
+  englisch:true, audio:false, motion:true, kontrast:false, size:0, spots:true, lesbar:false,
+  modus:"einzeln", folgeIdx:0, rundeIdx:0,
+  phase:"hide", // hide | wo | done
+  gefunden:false, hidePunkte:0, woPunkte:0, befehlPunkte:0,
+  folgePunkte:0, folgeMax:0, ergebnisse:{}, letzter:{}, maxTick:0,
+  befehlGewaehlt:false
+};
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function sagen(t){ $("status").textContent = t; }
+function sprich(text){
+  if(!S.audio || !("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "de-DE"; u.rate = .9;
+    const v = window.speechSynthesis.getVoices().find(x=>/^de/i.test(x.lang));
+    if(v) u.voice = v;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function zeigeScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on", s.id===id));
+  const h = document.querySelector("#"+id+" h2");
+  if(h) h.focus();
+  window.scrollTo({top:0, behavior:S.motion?"smooth":"auto"});
+}
+function glossUpdate(){
+  document.querySelectorAll(".gloss").forEach(el=>{
+    el.hidden = !S.englisch;
+    if(el.getAttribute("lang") !== "en") el.setAttribute("lang","en");
+  });
+  const en = $("befehl-en");
+  if(en && S.englisch && en.textContent.trim()) $("befehl-text").setAttribute("aria-describedby","befehl-en");
+  else $("befehl-text").removeAttribute("aria-describedby");
+}
+function setToggle(btn,on){ btn.setAttribute("aria-pressed", on?"true":"false"); }
+
+$("s-en").addEventListener("click", ()=>{
+  S.englisch = !S.englisch; setToggle($("s-en"), S.englisch); glossUpdate();
+  sagen(S.englisch ? "Englische Hilfe ist an." : "Englische Hilfe ist aus.");
+});
+$("s-audio").addEventListener("click", ()=>{
+  S.audio = !S.audio; setToggle($("s-audio"), S.audio);
+  if(S.audio){ sprich("Vorlesen ist an."); sagen("Vorlesen ist an."); }
+  else { if("speechSynthesis" in window) window.speechSynthesis.cancel(); sagen("Vorlesen ist aus."); }
+});
+$("s-spots").addEventListener("click", ()=>{
+  S.spots = !S.spots; setToggle($("s-spots"), S.spots);
+  document.documentElement.setAttribute("data-spots", S.spots?"an":"aus");
+  sagen(S.spots ? "Ortsnamen im Bild sind sichtbar." : "Ortsnamen erscheinen beim Zeigen mit der Maus.");
+});
+$("s-lesbar").addEventListener("click", ()=>{
+  S.lesbar = !S.lesbar; setToggle($("s-lesbar"), S.lesbar);
+  document.documentElement.setAttribute("data-lesbar", S.lesbar?"an":"aus");
+  sagen(S.lesbar ? "Leseschrift ist an: Verdana und Tahoma." : "Standardschrift.");
+});
+$("s-motion").addEventListener("click", ()=>{
+  S.motion = !S.motion; setToggle($("s-motion"), S.motion);
+  document.documentElement.setAttribute("data-motion", S.motion?"an":"aus");
+  sagen(S.motion ? "Animationen sind an." : "Animationen sind aus.");
+});
+$("s-contrast").addEventListener("click", ()=>{
+  S.kontrast = !S.kontrast; setToggle($("s-contrast"), S.kontrast);
+  document.documentElement.setAttribute("data-contrast", S.kontrast?"hoch":"normal");
+  sagen(S.kontrast ? "Hoher Kontrast ist an." : "Normale Farben.");
+});
+$("s-size").addEventListener("click", ()=>{
+  S.size = (S.size+1)%3;
+  const namen=["normal","gross","sehr-gross"], labels=["A","A+","A++"];
+  const woerter=["normal","groß","sehr groß"];
+  document.documentElement.setAttribute("data-size", namen[S.size]);
+  const vis = $("s-size").querySelector("[data-size-label]");
+  if(vis) vis.textContent = "Schrift: "+labels[S.size];
+  $("s-size").setAttribute("aria-label", "Schriftgröße: "+woerter[S.size]);
+  sagen("Schriftgröße: "+woerter[S.size]+".");
+});
+if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+  S.motion = false; setToggle($("s-motion"), false);
+  document.documentElement.setAttribute("data-motion","aus");
+}
+if(window.matchMedia && window.matchMedia("(prefers-contrast: more)").matches){
+  S.kontrast = true; setToggle($("s-contrast"), true);
+  document.documentElement.setAttribute("data-contrast","hoch");
+}
+document.documentElement.setAttribute("data-spots", S.spots ? "an" : "aus");
+
+/* ============================================================
+   4. FOLGENLISTE
+   ============================================================ */
+function baueFolgenliste(){
+  const box = $("ep-liste"); box.innerHTML = "";
+  FOLGEN.forEach((f,i)=>{
+    const e = S.ergebnisse[f.nr];
+    const letzt = S.letzter[f.nr];
+    const b = document.createElement("button");
+    b.type="button"; b.className="karte"; b.lang="de";
+    let scoreHtml;
+    if(e){
+      scoreHtml = '<p class="score" lang="de">Beste: '+e.punkte+' / '+e.max+' Punkte</p>';
+      if(letzt!=null && letzt!==e.punkte){
+        scoreHtml += '<p class="score-hinweis" lang="de">Letzter Versuch: '+letzt+' / '+e.max+'</p>';
+      }
+      scoreHtml += '<p class="score-hinweis" lang="de">Nochmal spielen · dein Bester bleibt'+
+        ' <span class="en gloss" lang="en">Retry — your best score is kept</span></p>';
+    }else{
+      scoreHtml = '<p class="score" lang="de">Noch nicht gespielt <span class="en gloss" lang="en">Not played yet</span></p>';
+    }
+    b.innerHTML = '<p class="nr" lang="de">Folge '+f.nr+'</p><h3 lang="de" translate="no">'+esc(f.titel)+'</h3>'+
+      '<p class="meta" lang="de">'+esc(f.thema)+'</p>'+
+      '<p class="en gloss" lang="en">'+esc(f.introEn)+'</p>'+scoreHtml;
+    b.addEventListener("click", ()=>{ S.modus="einzeln"; starteFolge(i); });
+    box.appendChild(b);
+  });
+  $("btn-zum-ergebnis").hidden = Object.keys(S.ergebnisse).length===0;
+  glossUpdate();
+}
+
+function starteFolge(idx){
+  S.folgeIdx = idx; S.rundeIdx = 0;
+  S.folgePunkte = 0; S.folgeMax = FOLGEN[idx].max;
+  zeigeScreen("screen-play");
+  starteRunde();
+}
+
+function starteRunde(){
+  const f = FOLGEN[S.folgeIdx], r = f.runden[S.rundeIdx];
+  S.phase = r.typ==="befehl" ? "befehl" : "zaehl";
+  S.gefunden = false; S.hidePunkte = 0; S.woPunkte = 0; S.befehlPunkte = 0;
+  S.befehlGewaehlt = r.typ!=="befehl";
+
+  $("folge-label").textContent = "Folge "+f.nr+" · "+f.titel;
+  $("h-play").textContent = f.titel;
+  $("szene-intro").innerHTML = S.rundeIdx===0
+    ? '<span lang="de">'+esc(f.intro)+'</span> <span class="en gloss" lang="en">'+esc(f.introEn)+'</span>'
+    : "";
+  $("runde-label").textContent = "Runde "+(S.rundeIdx+1)+" von "+f.runden.length;
+  $("pips").innerHTML = f.runden.map((_,i)=>'<span class="pip'+(i===S.rundeIdx?' now':'')+(i<S.rundeIdx?' ok':'')+'"></span>').join("");
+
+  $("feedback").hidden = true; $("wo-box").hidden = true; $("btn-weiter").hidden = true;
+  $("stempel").hidden = true; $("max").hidden = true;
+  $("max").className = "max";
+  $("max-spruch").hidden = true; $("max-spruch").textContent = "";
+  $("spieler").hidden = true; $("spieler").className = "spieler";
+  S.maxTick++;
+  $("befehl-wahl").hidden = true; $("befehl-wahl").innerHTML = "";
+
+  baueSzene(f.szene);
+  setOrteAktiv(false);
+
+  if(r.typ==="befehl"){
+    $("wer-label").textContent = "Situation";
+    $("befehl-text").innerHTML = esc(r.lage);
+    $("befehl-en").textContent = r.lageEn || "";
+    $("befehl-wahl").hidden = false;
+    r.optionen.forEach(o=>{
+      const b = document.createElement("button");
+      b.type="button"; b.lang="de"; b.setAttribute("translate","no");
+      b.textContent = o.t;
+      b.addEventListener("click", ()=>waehleBefehl(o,b,r));
+      $("befehl-wahl").appendChild(b);
+    });
+    glossUpdate();
+    $("h-play").focus();
+    sagen("Wähle den passenden Befehl.");
+  }else{
+    zeigeZaehlen(r);
+  }
+}
+
+function waehleBefehl(o, btn, r){
+  if(S.befehlGewaehlt) return;
+  S.befehlGewaehlt = true;
+  [...$("befehl-wahl").children].forEach(b=>b.disabled = true);
+  if(o.ok){
+    btn.classList.add("richtig");
+    S.befehlPunkte = 5;
+    sagen("Richtiger Befehl. Jetzt verstecken!");
+  }else{
+    btn.classList.add("falsch");
+    S.befehlPunkte = 0;
+    const richtig = r.optionen.find(x=>x.ok);
+    sagen("Nicht dieser Befehl. Mia sagt: "+richtig.t);
+  }
+  setTimeout(()=>{
+    $("befehl-wahl").hidden = true;
+    zeigeZaehlen(r);
+  }, S.motion?800:0);
+}
+
+function zeigeZaehlen(r){
+  $("wer-label").textContent = "Mia flüstert";
+  $("befehl-text").innerHTML = r.befehl;
+  $("befehl-en").textContent = r.en || "";
+  glossUpdate();
+  const z = $("zaehl");
+  z.hidden = false;
+  const nums = ["Eins","Zwei","Drei","… zehn!"];
+  let i = 0;
+  $("zaehl-zahl").textContent = "1";
+  $("zaehl-sub").textContent = "Augen zu!";
+  sprich("Augen zu! Ich zähle!");
+  function tick(){
+    if(i>=nums.length){
+      z.hidden = true;
+      setOrteAktiv(true);
+      S.phase = "hide";
+      sprich(r.sprich);
+      sagen("Wähle ein Versteck.");
+      return;
+    }
+    $("zaehl-zahl").textContent = String(i+1);
+    $("zaehl-sub").textContent = nums[i];
+    i++;
+    setTimeout(tick, S.motion?380:0);
+  }
+  if(!S.motion){ z.hidden = true; setOrteAktiv(true); S.phase = "hide"; sprich(r.sprich); sagen("Wähle ein Versteck."); return; }
+  setTimeout(tick, 420);
+}
+
+/* ============================================================
+   5. SZENE + ORTE
+   ============================================================ */
+function baueSzene(name){
+  $("szene-wohnzimmer").hidden = name!=="wohnzimmer";
+  $("szene-garten").hidden = name!=="garten";
+  if(name==="wohnzimmer" && !$("szene-wohnzimmer").dataset.ready){
+    $("szene-wohnzimmer").innerHTML = SVG_WOHN;
+    $("szene-wohnzimmer").dataset.ready = "1";
+  }
+  if(name==="garten" && !$("szene-garten").dataset.ready){
+    $("szene-garten").innerHTML = SVG_GARTEN;
+    $("szene-garten").dataset.ready = "1";
+  }
+  /* hotspots */
+  document.querySelectorAll(".hotspot").forEach(h=>h.remove());
+  const box = $("szene-box");
+  const leiste = $("ort-leiste"); leiste.innerHTML = "";
+  const ids = Object.keys(SPOTS).filter(id=>SPOTS[id].szene===name);
+  ids.forEach((id,i)=>{
+    const s = SPOTS[id];
+    const hs = document.createElement("div");
+    hs.className="hotspot"; hs.dataset.id=id;
+    hs.setAttribute("style", s.style);
+    hs.setAttribute("aria-hidden","true");
+    hs.innerHTML = '<span class="tag" lang="de" translate="no">'+esc(s.wo)+'</span>';
+    hs.addEventListener("click", ()=>{
+      if(hs.dataset.aus==="1") return;
+      verstecke(id);
+    });
+    box.appendChild(hs);
+
+    const chip = document.createElement("button");
+    chip.type="button"; chip.className="ort-btn"; chip.dataset.id=id;
+    chip.lang = "de";
+    chip.setAttribute("translate","no");
+    chip.innerHTML = '<span aria-hidden="true">'+(i+1)+' · </span>'+
+      '<span lang="de" translate="no">'+esc(s.wo)+'</span>'+
+      ' <span class="en gloss" lang="en">'+esc(s.en)+'</span>';
+    chip.addEventListener("click", ()=>verstecke(id));
+    leiste.appendChild(chip);
+  });
+  $("max-body").innerHTML = SVG_MAX;
+  $("spieler").innerHTML = SVG_SPIELER;
+  $("spieler").hidden = true;
+  $("max-spruch").hidden = true;
+  $("szene-box").setAttribute("aria-label", name==="garten" ? "Garten: Orte zum Verstecken" : "Wohnzimmer: Orte zum Verstecken");
+  glossUpdate();
+}
+
+function setOrteAktiv(an){
+  document.querySelectorAll(".ort-btn").forEach(b=> b.disabled = !an);
+  document.querySelectorAll(".hotspot").forEach(el=>{
+    el.dataset.aus = an ? "0" : "1";
+    el.style.pointerEvents = an ? "auto" : "none";
+  });
+}
+
+function pctAus(style, name){
+  const m = String(style).match(new RegExp(name+"\\s*:\\s*([0-9.]+)%","i"));
+  return m ? Number(m[1]) : 0;
+}
+function poseVon(prep){
+  if(prep==="auf") return "sitzen";
+  if(prep==="vor" || prep==="neben") return "stehen";
+  return "ducken";
+}
+function setzeSpieler(spot, gefunden){
+  const el = $("spieler");
+  const left = pctAus(spot.style,"left");
+  const top = pctAus(spot.style,"top");
+  const w = pctAus(spot.style,"width");
+  const h = pctAus(spot.style,"height");
+  el.style.left = (left + w/2) + "%";
+  el.style.top = (top + h*0.55) + "%";
+  el.hidden = false;
+  el.className = "spieler an "+poseVon(spot.prep)+" "+(gefunden?"entdeckt":"versteckt");
+}
+function maxGehtZumOrt(spot, sicher, danach){
+  const max = $("max");
+  const spruch = $("max-spruch");
+  const tick = ++S.maxTick;
+  max.hidden = false;
+  spruch.hidden = true;
+  spruch.textContent = "";
+  max.style.setProperty("--halt", spot.halt || "42%");
+  max.className = "max suchen";
+  const ankunft = S.motion ? 1180 : 0;
+  setTimeout(()=>{
+    if(tick !== S.maxTick) return;
+    if(sicher){
+      max.className = "max vorbei";
+    }else{
+      max.className = "max stop";
+      spruch.textContent = "Da bist du!";
+      spruch.hidden = false;
+    }
+  }, ankunft);
+  const wait = S.motion ? (sicher ? 2300 : 1400) : 0;
+  setTimeout(()=>{ if(tick === S.maxTick) danach(); }, wait);
+}
+
+function verstecke(id){
+  if(S.phase !== "hide") return;
+  if(!$("zaehl").hidden) return;
+  if(!$("feedback").hidden) return;
+  const f = FOLGEN[S.folgeIdx], r = f.runden[S.rundeIdx];
+  const spot = SPOTS[id];
+  const ziel = SPOTS[r.ziel];
+  setOrteAktiv(false);
+  document.querySelectorAll("[data-id='"+id+"']").forEach(el=>{
+    el.classList.add(id===r.ziel && spot.gut ? "ziel-ok" : "ziel-bad");
+  });
+
+  let grund, titel, art, sicher;
+  if(id===r.ziel){
+    sicher = true;
+    S.hidePunkte = 10;
+    titel = "Max geht vorbei.";
+    grund = "Du bist <strong lang=\"de\" translate=\"no\">"+esc(spot.wo)+"</strong>. Das Versteck ist gut – und du hast Mias Befehl befolgt.";
+    art = "ok";
+  }else if(r.warnung && id===r.warnung){
+    sicher = false;
+    S.hidePunkte = 0;
+    titel = "Gefunden!";
+    grund = "Mia hat gesagt: <em lang=\"de\" translate=\"no\">nicht</em> <span lang=\"de\" translate=\"no\">"+esc(spot.wohin)+"</span>. <strong lang=\"de\" translate=\"no\">"+esc(spot.wo)+"</strong> ist kein gutes Versteck – man sieht dich.";
+    art = "bad";
+  }else if(!spot.gut){
+    sicher = false;
+    S.hidePunkte = 0;
+    titel = "Gefunden!";
+    grund = "Du bist <strong lang=\"de\" translate=\"no\">"+esc(spot.wo)+"</strong>. Das ist zu offen. Mia wollte: <strong lang=\"de\" translate=\"no\">"+esc(ziel.wohin)+"</strong>.";
+    art = "bad";
+  }else{
+    sicher = false;
+    S.hidePunkte = 0;
+    titel = "Gefunden!";
+    grund = "Gutes Versteck, aber der falsche Ort. Du bist <strong lang=\"de\" translate=\"no\">"+esc(spot.wo)+"</strong>. Der Befehl war: <strong lang=\"de\" translate=\"no\">"+esc(ziel.wohin)+"</strong> / <strong lang=\"de\" translate=\"no\">"+esc(ziel.wo)+"</strong>.";
+    art = "bad";
+  }
+  S.gefunden = !sicher;
+  setzeSpieler(spot, !sicher);
+
+  const st = $("stempel");
+  st.hidden = false;
+  st.textContent = sicher ? "SICHER!" : "GEFUNDEN!";
+  st.className = "stempel "+(sicher?"sicher":"gefunden");
+
+  maxGehtZumOrt(spot, sicher, ()=>zeigeHideFeedback(titel, grund, art, r, spot, ziel));
+  sagen(sicher ? "Du bist sicher." : "Max hat dich gefunden.");
+  if(S.audio) sprich(sicher ? "Du bist sicher. Max geht vorbei." : "Gefunden!");
+}
+
+function zeigeHideFeedback(titel, grund, art, r, spot, ziel){
+  const fb = $("feedback");
+  fb.hidden = false; fb.className = "feedback "+art; fb.tabIndex = -1;
+  const extra = S.gefunden
+    ? "<p lang=\"de\">Merke: Folge dem Befehl genau. Gute Orte helfen nur, wenn sie auch der richtige Ort sind.</p>"
+    : "<p lang=\"de\">Max hat dich nicht gesehen. Bleib still – und prüfe jetzt, <em lang=\"de\" translate=\"no\">wo</em> du bist.</p>";
+  fb.innerHTML = "<h3 lang=\"de\">"+titel+"</h3><p lang=\"de\">"+grund+"</p>"+
+    '<p class="en gloss" lang="en">'+(S.gefunden
+      ? "You were found. Follow the exact command; a good hide still fails if it is the wrong place."
+      : "You were not found. Now check the dative phrase for where you are.")+"</p>"+
+    extra;
+  glossUpdate();
+  fb.focus();
+  S.phase = "wo";
+  zeigeWo(r);
+}
+
+function zeigeWo(r){
+  $("wo-box").hidden = false;
+  if(S.gefunden){
+    $("wo-eyebrow").textContent = "Wo sollst du sein?";
+    $("wo-frage").textContent = "Wo sollst du sein?";
+    $("wo-en").textContent = "Where should you be? (Mia’s hiding place, not the spot where you were found.)";
+  }else{
+    $("wo-eyebrow").textContent = "Wo bist du?";
+    $("wo-frage").textContent = r.woFrage;
+    $("wo-en").textContent = r.woEn || "";
+  }
+  $("wo-fb").textContent = "";
+  const box = $("wo-opts"); box.innerHTML = "";
+  r.woOptionen.forEach(o=>{
+    const b = document.createElement("button");
+    b.type="button"; b.lang="de"; b.setAttribute("translate","no");
+    b.textContent = o.t;
+    b.addEventListener("click", ()=>pruefeWo(o,b,r));
+    box.appendChild(b);
+  });
+  glossUpdate();
+}
+
+function pruefeWo(o, btn, r){
+  if($("btn-weiter").hidden===false && $("wo-fb").dataset.done) return;
+  [...$("wo-opts").children].forEach(b=>b.disabled = true);
+  $("wo-fb").dataset.done = "1";
+  if(o.ok){
+    btn.classList.add("richtig");
+    S.woPunkte = 5;
+    $("wo-fb").innerHTML = "<strong lang=\"de\">Richtig.</strong> <span lang=\"de\" translate=\"no\">Wo?</span> nimmt den Dativ. <span class=\"en gloss\" lang=\"en\">“Where?” takes the dative.</span>";
+  }else{
+    btn.classList.add("falsch");
+    S.woPunkte = 0;
+    const richtig = r.woOptionen.find(x=>x.ok);
+    $("wo-fb").innerHTML = "<strong lang=\"de\">Nicht ganz.</strong> <span lang=\"de\">"+esc(o.warum||"")+"</span> Richtig: <em lang=\"de\" translate=\"no\">"+esc(richtig.t)+"</em>. <span class=\"en gloss\" lang=\"en\">Not quite.</span>";
+  }
+  const rundenPkt = S.hidePunkte + S.woPunkte + S.befehlPunkte;
+  S.folgePunkte += rundenPkt;
+  $("btn-weiter").hidden = false;
+  $("btn-weiter").focus();
+  sagen("Runde: "+rundenPkt+" Punkte. Weiter?");
+  glossUpdate();
+}
+
+$("btn-weiter").addEventListener("click", ()=>{
+  delete $("wo-fb").dataset.done;
+  const f = FOLGEN[S.folgeIdx];
+  if(S.rundeIdx < f.runden.length-1){
+    S.rundeIdx++;
+    starteRunde();
+  }else{
+    endeFolge();
+  }
+});
+$("btn-abbrechen").addEventListener("click", ()=>{
+  baueFolgenliste(); zeigeScreen("screen-episodes");
+});
+$("btn-sprich").addEventListener("click", ()=>{
+  const f = FOLGEN[S.folgeIdx], r = f.runden[S.rundeIdx];
+  if(!S.audio){ S.audio = true; setToggle($("s-audio"), true); }
+  sprich(r.sprich || $("befehl-text").textContent);
+});
+
+function endeFolge(){
+  const f = FOLGEN[S.folgeIdx];
+  S.letzter[f.nr] = S.folgePunkte;
+  const alt = S.ergebnisse[f.nr];
+  if(!alt || alt.punkte < S.folgePunkte){
+    S.ergebnisse[f.nr] = {punkte:S.folgePunkte, max:f.max, thema:f.thema};
+  }
+  if(S.modus==="alle" && S.folgeIdx < FOLGEN.length-1){
+    sagen("Folge "+f.nr+" geschafft. Weiter geht’s im nächsten Raum.");
+    starteFolge(S.folgeIdx+1);
+  }else{
+    zeigeErgebnis();
+  }
+}
+
+/* ============================================================
+   6. ERGEBNIS + CODE
+   ============================================================ */
+function hash32(str){
+  let h = 0x811c9dc5;
+  for(let i=0;i<str.length;i++){
+    h ^= str.charCodeAt(i);
+    h = (h + ((h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24))) >>> 0;
+  }
+  return h >>> 0;
+}
+const SALT = "kleinhausen-versteckspiel-v1";
+
+function baueCode(name){
+  const eintraege = Object.keys(S.ergebnisse).map(Number).sort((a,b)=>a-b);
+  if(!eintraege.length) return null;
+  let ges=0, max=0;
+  eintraege.forEach(nr=>{ ges += S.ergebnisse[nr].punkte; max += S.ergebnisse[nr].max; });
+  const pct = max ? Math.round(ges/max*100) : 0;
+  const norm = name.trim().toLowerCase().replace(/\s+/g," ");
+  const roh = norm+"|"+eintraege.join("")+"|"+ges+"|"+max;
+  const pruef = hash32(roh+"|"+SALT).toString(16).toUpperCase().padStart(8,"0").slice(-8);
+  return { code:"VS-"+eintraege.join("")+"-"+ges+"-"+pct+"-"+pruef, ges, max, pct, folgen:eintraege };
+}
+function codeAktualisieren(){
+  const name = $("name-in").value;
+  const el = $("code-val");
+  if(!name.trim()){ el.lang = "de"; el.textContent = "Bitte gib zuerst deinen Namen ein."; return; }
+  const c = baueCode(name);
+  if(!c){ el.lang = "de"; el.textContent = "Spiele zuerst eine Folge."; return; }
+  el.lang = "en";
+  el.textContent = c.code;
+}
+function zeigeErgebnis(){
+  const eintraege = Object.keys(S.ergebnisse).map(Number).sort((a,b)=>a-b);
+  let ges=0, max=0;
+  const body = $("sum-body"); body.innerHTML = "";
+  eintraege.forEach(nr=>{
+    const e = S.ergebnisse[nr];
+    ges += e.punkte; max += e.max;
+    const pct = Math.round(e.punkte/e.max*100);
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<th scope="row">'+nr+'</th><td>'+esc(e.thema)+'</td>'+
+      '<td class="num">'+e.punkte+' / '+e.max+'</td><td class="num">'+pct+' %</td>';
+    body.appendChild(tr);
+  });
+  const pct = max ? Math.round(ges/max*100) : 0;
+  $("sum-foot").innerHTML = '<tr><th scope="row" colspan="2">Gesamt</th>'+
+    '<td class="num"><strong>'+ges+' / '+max+'</strong></td><td class="num"><strong>'+pct+' %</strong></td></tr>';
+  let lob;
+  if(pct>=90) lob = "Ausgezeichnet. Max hat dich kaum gesehen – und der Dativ sitzt.";
+  else if(pct>=75) lob = "Sehr gut. Ein paar Präpositionen kannst du noch üben.";
+  else if(pct>=50) lob = "Gut gemacht. Spiel die Folgen noch einmal – Punkte werden verbessert, nicht addiert.";
+  else lob = "Ein guter Anfang. Lies die Warnungen mit nicht und unterscheide Wo? und Wohin?";
+  $("sum-text").innerHTML = "Du hast <strong>"+eintraege.length+" von "+FOLGEN.length+" Folgen</strong> gespielt. "+esc(lob);
+  codeAktualisieren();
+  zeigeScreen("screen-summary");
+}
+
+$("name-in").addEventListener("input", codeAktualisieren);
+$("btn-copy").addEventListener("click", async ()=>{
+  const t = $("code-val").textContent;
+  const lab = $("btn-copy-label");
+  if(!/^VS-\d+-\d+-\d+-[0-9A-F]{8}$/.test(t)){ sagen("Es gibt noch keinen Code."); return; }
+  try{
+    await navigator.clipboard.writeText(t);
+    if(lab) lab.textContent = "Code kopiert";
+    setTimeout(()=>{ if(lab) lab.textContent = "Code kopieren"; }, 2200);
+  }catch(e){
+    const rg = document.createRange(); rg.selectNodeContents($("code-val"));
+    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(rg);
+    if(lab) lab.textContent = "Markiert – bitte mit Strg+C kopieren";
+  }
+});
+$("btn-verify").addEventListener("click", ()=>{
+  const name = $("v-name").value.trim();
+  const code = $("v-code").value.trim().toUpperCase();
+  const out = $("v-out");
+  const m = /^VS-(\d+)-(\d+)-(\d+)-([0-9A-F]{8})$/.exec(code);
+  if(!name || !m){ out.textContent = "Bitte Name und einen vollständigen Code im Format VS-…-…-…-… eingeben."; return; }
+  const [, folgen, ges, pct, pruef] = m;
+  const norm = name.toLowerCase().replace(/\s+/g," ");
+  let max=0, ok=true;
+  folgen.split("").forEach(ch=>{
+    const f = FOLGEN.find(x=>x.nr===Number(ch));
+    if(!f){ ok=false; return; }
+    max += f.max;
+  });
+  if(!ok){ out.textContent = "Ungültig: unbekannte Folgennummer."; return; }
+  const soll = hash32(norm+"|"+folgen+"|"+ges+"|"+max+"|"+SALT).toString(16).toUpperCase().padStart(8,"0").slice(-8);
+  const echtPct = max ? Math.round(Number(ges)/max*100) : 0;
+  out.textContent = (soll===pruef)
+    ? "Gültig. "+name+" hat die Folgen "+folgen.split("").join(", ")+" gespielt: "+ges+" von "+max+" Punkten ("+echtPct+" %)."
+    : "Ungültig. Code und Name passen nicht zusammen, oder der Code wurde verändert.";
+});
+
+/* ============================================================
+   7. NAVIGATION + TASTATUR
+   ============================================================ */
+$("btn-folgen").addEventListener("click", ()=>{ baueFolgenliste(); zeigeScreen("screen-episodes"); });
+$("btn-zurueck-start").addEventListener("click", ()=>zeigeScreen("screen-start"));
+$("btn-nochmal").addEventListener("click", ()=>{ baueFolgenliste(); zeigeScreen("screen-episodes"); });
+$("btn-folge-nochmal").addEventListener("click", ()=>{
+  S.modus = "einzeln";
+  starteFolge(S.folgeIdx);
+});
+$("btn-zum-ergebnis").addEventListener("click", zeigeErgebnis);
+$("btn-neustart").addEventListener("click", ()=>{
+  S.ergebnisse = {}; S.letzter = {}; $("name-in").value = ""; codeAktualisieren();
+  baueFolgenliste(); zeigeScreen("screen-start");
+  sagen("Alles zurückgesetzt.");
+});
+function alleSpielen(){ S.modus="alle"; S.ergebnisse={}; starteFolge(0); }
+$("btn-alle").addEventListener("click", alleSpielen);
+$("btn-alle-2").addEventListener("click", alleSpielen);
+
+document.addEventListener("keydown", e=>{
+  if(!$("screen-play").classList.contains("on")) return;
+  const tag = (e.target.tagName||"").toLowerCase();
+  if(tag==="input" || tag==="textarea") return;
+  if(/^[1-8]$/.test(e.key) && S.phase==="hide" && $("feedback").hidden && $("zaehl").hidden){
+    const btns = [...document.querySelectorAll(".ort-btn")];
+    const b = btns[Number(e.key)-1];
+    if(b && !b.disabled){ e.preventDefault(); verstecke(b.dataset.id); }
+  }
+});
+
+glossUpdate();
+baueFolgenliste();
+if("speechSynthesis" in window){ window.speechSynthesis.onvoiceschanged = ()=>{}; }
+</script>
+</body>
+</html>

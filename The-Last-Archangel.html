@@ -1,0 +1,2454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>The Last Archangel — A 16-bit Chronicle</title>
+<style>
+:root{
+  --ink:#0a0c14;--gold:#e4c56a;--gold2:#8a6a28;--blue:#17306a;--blue2:#0c1a40;
+  --paper:#f4efe4;--hp:#48d080;--mp:#58b0f0;--danger:#d04048;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#05060a;color:#f4efe4;
+  font-family:"Lucida Console","Courier New",monospace;image-rendering:pixelated;user-select:none}
+button{font:inherit;cursor:pointer;color:inherit}
+.hidden{display:none!important}
+#frame{position:absolute;inset:0;display:grid;place-items:center}
+#viewport{position:relative;width:256px;height:224px;background:#000;overflow:hidden;
+  box-shadow:0 0 0 2px #2a2418,0 0 0 4px #e4c56a,0 0 48px #e4c56a33;image-rendering:pixelated}
+#viewport.scaled{transform-origin:center center}
+canvas{display:block;width:256px;height:224px;image-rendering:pixelated;image-rendering:crisp-edges}
+#scan{position:absolute;inset:0;pointer-events:none;z-index:40;
+  background:repeating-linear-gradient(to bottom,transparent 0 2px,rgba(0,0,0,.18) 2px 3px)}
+#fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:35;transition:opacity .28s}
+#fade.on{opacity:1}
+.screen{position:absolute;inset:0;z-index:20}
+#title{z-index:25;background:#f7f4ec;color:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px}
+#title h1{font-family:Georgia,"Palatino Linotype",serif;font-weight:400;font-size:18px;letter-spacing:.18em;line-height:1.15;margin:0 0 6px}
+#title .sub{font-size:6px;letter-spacing:.22em;text-transform:uppercase;color:#444;margin-bottom:10px}
+#title .by{font-size:8px;margin:8px 0 14px;color:#222}
+#title .books{font-size:6px;color:#555;line-height:1.6;margin-bottom:12px;letter-spacing:.06em}
+#title .tmenu{display:flex;flex-direction:column;gap:4px;width:168px}
+#title button,#menuWin button,.cmd button,.choice button,#how .back{
+  background:transparent;border:2px solid #111;padding:5px 8px;font-size:8px;letter-spacing:.08em;text-transform:uppercase}
+#title button:hover,#title button:focus,.cmd button:hover,.choice button:hover{background:#111;color:#f7f4ec}
+#title button.gold{border-color:#8a6a28;color:#6a5018}
+#how{z-index:26;background:#0c1a40;color:#f4efe4;padding:12px 14px;font-size:8px;line-height:1.55;overflow:auto}
+#how h2{font-size:10px;color:var(--gold);letter-spacing:.14em;margin-bottom:8px;text-transform:uppercase}
+#how .back{margin-top:10px;border-color:var(--gold);color:var(--gold)}
+.win{background:linear-gradient(#1c3c88,#102050);border:3px solid #e4c56a;box-shadow:inset 0 0 0 1px #6a4820,2px 2px 0 #000;color:#f8f0d8}
+#hud{position:absolute;left:4px;top:4px;z-index:8;display:flex;gap:4px;pointer-events:none}
+#hud .chip{padding:2px 4px;font-size:6px;min-width:56px}
+#hud .bar{height:3px;background:#0008;margin-top:2px}
+#hud .bar>i{display:block;height:100%;background:var(--hp)}
+#hud .mp>i{background:var(--mp)}
+#prompt{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:8;font-size:7px;
+  padding:3px 6px;pointer-events:none}
+#dialog{position:absolute;left:6px;right:6px;bottom:6px;z-index:12;min-height:58px;padding:6px 8px 8px}
+#dialog .who{color:var(--gold);font-size:7px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+#dialog .txt{font-size:8px;line-height:1.45;min-height:32px;white-space:pre-wrap}
+#dialog .next{position:absolute;right:6px;bottom:3px;font-size:7px;color:var(--gold);animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+#menuWin{position:absolute;inset:8px;z-index:14;padding:8px;display:grid;grid-template-columns:72px 1fr;gap:6px}
+#menuWin h3{font-size:8px;color:var(--gold);letter-spacing:.12em;margin-bottom:6px}
+#menuWin .tabs{display:flex;flex-direction:column;gap:3px}
+#menuWin .tabs button{text-align:left;border-color:#8aa;font-size:7px;padding:4px}
+#menuWin .tabs button.on{background:#e4c56a;color:#102050;border-color:#e4c56a}
+#menuWin .body{font-size:7px;line-height:1.5;overflow:auto}
+#battleUI{position:absolute;left:4px;right:4px;bottom:4px;z-index:12;display:grid;grid-template-columns:88px 1fr;gap:4px}
+.cmd{display:flex;flex-direction:column;padding:4px}
+.cmd button{border-color:#c8b060;font-size:7px;text-align:left;padding:3px 5px;margin:1px 0}
+.cmd button.on,.choice button.on{background:#e4c56a;color:#102050}
+.partybox{padding:4px 6px;font-size:7px}
+.partybox .row{display:grid;grid-template-columns:52px 1fr 28px;gap:4px;align-items:center;margin:2px 0}
+.partybox .row.dead{opacity:.4}
+.partybox .nm{color:var(--gold)}
+.partybox .st{color:#d07850;font-size:5px;letter-spacing:.04em}
+#blog{position:absolute;left:4px;right:4px;top:4px;z-index:12;padding:5px 7px;font-size:8px;min-height:28px;line-height:1.4}
+#touch{position:absolute;left:0;right:0;bottom:0;height:0;z-index:9;pointer-events:none}
+@media(pointer:coarse){
+  #touch{height:auto;pointer-events:auto;display:flex;justify-content:space-between;padding:8px 12px 16px;align-items:flex-end}
+  .pad{display:grid;grid-template-columns:repeat(3,42px);grid-template-rows:repeat(3,42px);gap:3px}
+  .pad b{background:#ffffff18;border:2px solid #e4c56a66;display:grid;place-items:center;font-size:12px;color:#e4c56a}
+  .ab{display:flex;gap:10px}
+  .ab b{width:52px;height:52px;border-radius:50%;border:2px solid #e4c56a;display:grid;place-items:center;font-size:11px;background:#e4c56a22;color:#e4c56a}
+}
+@media(pointer:fine){#touch{display:none}}
+#toast{position:absolute;top:36px;left:50%;transform:translateX(-50%);z-index:22;font-size:7px;padding:4px 8px;opacity:0;transition:opacity .2s}
+#toast.show{opacity:1}
+#end{z-index:28;background:#07060a;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:16px}
+#end h2{font-family:Georgia,serif;font-size:16px;letter-spacing:.16em;color:var(--gold);margin-bottom:10px}
+#end p{font-size:8px;line-height:1.6;max-width:220px;color:#d8d0b8}
+#choice{position:absolute;left:6px;right:6px;bottom:6px;z-index:13;max-height:152px;overflow:auto;padding:6px 8px 8px}
+#choice .choice{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+#choice .choice button{text-transform:none;letter-spacing:.04em;text-align:left;font-size:7px;padding:3px 5px;border-color:#c8b060}
+#card{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
+  background:#07060acc;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .28s,visibility .28s}
+#card.show{opacity:1;visibility:visible}
+#card .plate{background:#f7f4ec;color:#111;border:3px solid #8a6a28;box-shadow:0 0 0 1px #c8b070,4px 4px 0 #0008;
+  width:196px;padding:12px 10px 14px;text-align:center}
+#card .act{font-size:6px;letter-spacing:.16em;text-transform:uppercase;color:#6a5018;margin-bottom:7px}
+#card h2{font-family:Georgia,"Palatino Linotype",serif;font-size:12px;letter-spacing:.12em;font-weight:400;line-height:1.2;margin:0 0 7px}
+#card .sub{font-size:7px;color:#444;line-height:1.45;letter-spacing:.04em}
+</style>
+</head>
+<body>
+<div id="frame">
+<div id="viewport">
+  <canvas id="cv" width="256" height="224"></canvas>
+  <div id="hud" class="hidden"></div>
+  <div id="prompt" class="win hidden">Z / SPACE : TALK</div>
+  <div id="dialog" class="win hidden"><div class="who" id="dWho"></div><div class="txt" id="dTxt"></div><div class="next">▼</div></div>
+  <div id="choice" class="win hidden"><div class="who" id="cWho"></div><div class="txt" id="cTxt" style="font-size:8px;line-height:1.4;margin-bottom:4px"></div><div class="choice" id="cOpts"></div></div>
+  <div id="menuWin" class="win hidden">
+    <div>
+      <h3>Menu</h3>
+      <div class="tabs" id="menuTabs"></div>
+    </div>
+    <div class="body" id="menuBody"></div>
+  </div>
+  <div id="blog" class="win hidden"></div>
+  <div id="battleUI" class="hidden">
+    <div class="cmd win" id="cmds"></div>
+    <div class="partybox win" id="bp"></div>
+  </div>
+  <div id="toast" class="win"></div>
+  <div id="card"><div class="plate"><div class="act" id="cardAct"></div><h2 id="cardTitle"></h2><div class="sub" id="cardSub"></div></div></div>
+  <div id="title" class="screen">
+    <h1>THE LAST<br>ARCHANGEL</h1>
+    <div class="sub">The Last Archangel · Book II: The Last Kingdom · Book III: The Last Dawn</div>
+    <div class="by">by Michael D. Young</div>
+    <div class="books">A 16-bit chronicle of the Destroying Angel,<br>the cherub Big Halo, and the End of Time.</div>
+    <div class="tmenu" id="titleMenu">
+      <button class="gold" id="btnNew">New Game</button>
+      <button id="btnContinue">Continue</button>
+      <button id="btnChronicles">Chronicles</button>
+      <button id="btnHow">How to Play</button>
+    </div>
+    <div class="tmenu hidden" id="chronMenu">
+      <button class="gold" id="btnAct1">I · The Last Archangel</button>
+      <button id="btnAct2">II · The Last Kingdom</button>
+      <button id="btnAct3">III · The Last Dawn</button>
+      <button id="btnChronBack">Back</button>
+    </div>
+  </div>
+  <div id="how" class="screen hidden">
+    <h2>How to Play</h2>
+    <p>Arrow keys / WASD move. Z, Enter, or Space confirms. X or Esc opens the menu and cancels. In the menu, up and down change pages. When a list appears, up and down choose, Z confirms, X leaves.</p>
+    <p style="margin-top:8px">You are Xandir, a Watcher sentenced to serve as Destroying Angel until the End of Time. Walk the maps, speak with every soul, and fight when darkness bars the way.</p>
+    <p style="margin-top:8px">Ambrosia restores the body. Serche water restores the spirit. Manna is the coin of both Heaven and Nod.</p>
+    <p style="margin-top:8px">The tale follows the trilogy: Pompeii and the Fortuna house; Jarom and Clara against Beelzebub; Olympus, Cain, and the All-Seeing Eye.</p>
+    <p style="margin-top:8px">Isda the Whisperer waits in the Cherub Fortress. Ask her, then choose a road: Nod, the Forgotten Tower, the Vault of Avarice, London, Blacker Forest, or Nineveh.</p>
+    <p style="margin-top:8px">Only four may walk. From the Party page, Z changes who marches. Yearti will wait if the road is already full.</p>
+    <p style="margin-top:8px">Combat is a conversation with knives. Judy’s Purify clears burn and venom. Sparkslinger sets the house alight. The Tree of Death offers fruit. If you brought Druiel’s extra links, they tighten around the Prince each round.</p>
+    <button class="back" id="btnHowBack">Back</button>
+  </div>
+  <div id="end" class="screen hidden">
+    <h2>THE LAST DAWN</h2>
+    <p id="endTxt"></p>
+    <button class="back" id="btnEnd" style="margin-top:14px;border:2px solid #e4c56a;background:transparent;color:#e4c56a;padding:6px 10px;font-size:8px">TITLE</button>
+  </div>
+  <div id="fade"></div>
+  <div id="scan"></div>
+  <div id="touch">
+    <div class="pad">
+      <i></i><b data-k="up">▲</b><i></i>
+      <b data-k="left">◀</b><i></i><b data-k="right">▶</b>
+      <i></i><b data-k="down">▼</b><i></i>
+    </div>
+    <div class="ab">
+      <b data-k="cancel">X</b>
+      <b data-k="ok">Z</b>
+    </div>
+  </div>
+</div>
+</div>
+<script>
+(() => {
+"use strict";
+
+const W=256,H=224,TS=16,VW=16,VH=14;
+const cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+ctx.imageSmoothingEnabled=false;
+const $ = id => document.getElementById(id);
+const els={title:$("title"),how:$("how"),end:$("end"),hud:$("hud"),prompt:$("prompt"),
+  dialog:$("dialog"),dWho:$("dWho"),dTxt:$("dTxt"),menu:$("menuWin"),menuTabs:$("menuTabs"),
+  menuBody:$("menuBody"),blog:$("blog"),bui:$("battleUI"),cmds:$("cmds"),bp:$("bp"),
+  fade:$("fade"),toast:$("toast"),endTxt:$("endTxt"),viewport:$("viewport"),
+  choice:$("choice"),cWho:$("cWho"),cTxt:$("cTxt"),cOpts:$("cOpts"),
+  card:$("card"),cardAct:$("cardAct"),cardTitle:$("cardTitle"),cardSub:$("cardSub")};
+
+function fit(){
+  const s=Math.max(1,Math.floor(Math.min((innerWidth-24)/W,(innerHeight-24)/H)));
+  els.viewport.style.transform=`scale(${s})`;
+}
+addEventListener("resize",fit); fit();
+
+const SAVE="tla_archangel_v1";
+const keys=new Set();
+const hold={up:0,down:0,left:0,right:0};
+
+const SKILLS={
+  slash:{name:"Twin Slash",mp:0,pow:1.35,el:"phys",tgt:"enemy",desc:"Two ebony blades, thirsty for light."},
+  drink:{name:"Light-Drinker",mp:6,pow:1.1,el:"dark",tgt:"enemy",drain:true,desc:"The swords swallow radiance."},
+  vesuvius:{name:"Vesuvius",mp:12,pow:1.55,el:"fire",tgt:"enemies",desc:"A mountain's grief, remembered."},
+  hurricane:{name:"Hurricane",mp:16,pow:1.7,el:"wind",tgt:"enemies",desc:"The sky itself is sentenced."},
+  seven:{name:"Sevenfold",mp:24,pow:2.4,el:"holy",tgt:"enemy",desc:"A check upon every dark bargain."},
+  halo:{name:"Halo Shot",mp:0,pow:1.2,el:"holy",tgt:"enemy",desc:"A cherub's arrow of light."},
+  cake:{name:"Ambrosia",mp:8,pow:0,el:"heal",tgt:"ally",heal:55,desc:"Cloud-nine fare, smuggled earthward."},
+  jericho:{name:"Plan Jericho",mp:14,pow:1.5,el:"holy",tgt:"enemies",desc:"Clara named it. Jarom forgot why."},
+  crush:{name:"Crush",mp:0,pow:1.45,el:"phys",tgt:"enemy",desc:"A giant does not tap."},
+  roar:{name:"Giant's Roar",mp:10,pow:0.9,el:"wind",tgt:"enemies",desc:"The mound answers."},
+  clight:{name:"Little Light",mp:12,pow:1.6,el:"holy",tgt:"enemy",desc:"Jarom's name for her, made weapon."},
+  hymn:{name:"Guardian Hymn",mp:10,pow:0,el:"heal",tgt:"allies",heal:40,cleanse:true,desc:"Judy keeps her promise. The venom lifts."},
+  purify:{name:"Purify",mp:6,pow:0,el:"heal",tgt:"ally",heal:20,cleanse:true,desc:"Demons loathe a clean house."},
+  ice:{name:"Ice Fist",mp:0,pow:1.3,el:"ice",tgt:"enemy",desc:"Yearti's handshake."},
+  avalanche:{name:"Avalanche",mp:14,pow:1.65,el:"ice",tgt:"enemies",desc:"Two peaks over, trouble arrives."},
+  choco:{name:"Chocolate",mp:4,pow:0,el:"heal",tgt:"self",heal:70,desc:"A weakness shared with Eden."}
+};
+
+const ITEMS={
+  cake:{name:"Ambrosia Cake",heal:60,price:20,desc:"Restores 60 HP."},
+  feast:{name:"Ambrosia Feast",healAll:true,heal:80,price:90,desc:"Restores 80 HP to all."},
+  water:{name:"Serche Water",mp:40,price:25,desc:"Restores 40 MP. Named for a city that sank toward the Jaws."},
+  diamond:{name:"Death Diamond",dmg:90,price:120,desc:"Cuts a foe for 90. The Den of Thieves still trades in these."},
+  wish:{name:"Wishbone",rnd:true,price:15,desc:"Judy would rather you not ask."},
+  harp:{name:"Jubal's Strain",mpAll:35,song:true,price:0,desc:"Let the music take you away. Restores 35 MP to all and dazes the dark."},
+  flask:{name:"Antidote Flask",heal:45,mp:15,cleanse:true,price:40,desc:"Jertel's arrangement. Restores 45 HP and 15 MP, and clears burn and venom."},
+  fruit:{name:"Death Fruit",dmg:140,price:0,desc:"Green, rotting, almost finished. Especially cruel to its own tree."},
+  link:{name:"Chain Link",price:0,desc:"One of eleven. Forged to hold the Prince when Heaven cast him down."}
+};
+
+const HERODEF={
+  xandir:{name:"Xandir",role:"Destroying Angel",hp:48,mp:20,atk:14,def:8,spd:12,skills:["slash","drink","vesuvius"],
+    pal:{skin:"#e8c8a8",hair:"#e8e4d8",shirt:"#5a3228",pants:"#2a2428",acc:"#7a3a28",wing:"#a8f0e0"}},
+  jarom:{name:"Jarom",role:"Cherub · Big Halo",hp:34,mp:22,atk:11,def:7,spd:13,skills:["halo","cake","jericho"],
+    pal:{skin:"#f0d0a8",hair:"#f0e070",shirt:"#f4ead0",pants:"#c8b070",acc:"#f8e080",wing:"#fff8c8"}},
+  clara:{name:"Clara",role:"Giant · Little Light",hp:58,mp:14,atk:16,def:12,spd:8,skills:["crush","roar","clight"],
+    pal:{skin:"#e8c0a0",hair:"#b03030",shirt:"#c8a048",pants:"#6a4030",acc:"#f0d080",wing:"#ffe8a0"}},
+  judy:{name:"Judy",role:"Guardian Angel",hp:36,mp:28,atk:9,def:8,spd:11,skills:["hymn","purify","cake"],
+    pal:{skin:"#e0c0a0",hair:"#5a3a28",shirt:"#d8d0e8",pants:"#8880a0",acc:"#f8f0ff",wing:"#e8f0ff"}},
+  yearti:{name:"Yearti",role:"Giant of the Peaks",hp:64,mp:12,atk:15,def:13,spd:7,skills:["ice","avalanche","choco"],
+    pal:{skin:"#f4f0e8",hair:"#f8f8f8",shirt:"#d0d8e0",pants:"#a0b0c0",acc:"#90c8e8",wing:"#e8f4ff"}}
+};
+
+const ENEMIES={
+  ash:{name:"Ash Wraith",hp:20,atk:7,def:2,spd:6,exp:8,manna:6,el:"fire",pal:"#886868"},
+  shade:{name:"Roman Shade",hp:24,atk:8,def:3,spd:5,exp:10,manna:8,el:"dark",pal:"#687080"},
+  imp:{name:"Street Imp",hp:18,atk:9,def:1,spd:10,exp:9,manna:7,el:"dark",pal:"#684050"},
+  suit:{name:"Possessed Suit",hp:28,atk:10,def:4,spd:8,exp:12,manna:10,el:"phys",pal:"#304060"},
+  thorn:{name:"Thorn Beast",hp:26,atk:11,def:3,spd:7,exp:12,manna:9,el:"phys",pal:"#385828"},
+  wretch:{name:"Tunnel Wretch",hp:30,atk:12,def:5,spd:6,exp:14,manna:11,el:"dark",pal:"#4a4030"},
+  ach:{name:"Achillian",hp:36,atk:13,def:6,spd:9,exp:18,manna:14,el:"dark",pal:"#503050"},
+  flame:{name:"Flame Imp",hp:22,atk:14,def:2,spd:11,exp:15,manna:12,el:"fire",pal:"#c05020"},
+  pool:{name:"Pleasure Shade",hp:32,atk:12,def:4,spd:8,exp:16,manna:13,el:"dark",pal:"#703060"},
+  legion:{name:"Legion Shade",hp:40,atk:15,def:7,spd:8,exp:22,manna:16,el:"phys",pal:"#605040"},
+  horse:{name:"Pale Rider",hp:48,atk:16,def:8,spd:12,exp:28,manna:20,el:"dark",pal:"#c8c8b0"},
+  oly:{name:"Olympian Guard",hp:44,atk:17,def:9,spd:10,exp:26,manna:18,el:"holy",pal:"#c8b050"},
+  marked:{name:"Marked Giant",hp:55,atk:18,def:10,spd:6,exp:30,manna:22,el:"phys",pal:"#6a5038"},
+  snake:{name:"Shriveling Snake",hp:42,atk:19,def:6,spd:14,exp:28,manna:20,el:"dark",pal:"#387040"},
+  eye:{name:"Eye Spawn",hp:38,atk:17,def:5,spd:13,exp:26,manna:18,el:"holy",pal:"#a0d0e0"},
+  dusteater:{name:"Dusteater",hp:90,atk:16,def:8,spd:9,exp:80,manna:50,el:"dark",pal:"#8a7a50",boss:1},
+  spark:{name:"Sparkslinger",hp:110,atk:18,def:7,spd:12,exp:100,manna:60,el:"fire",pal:"#d07030",boss:1},
+  ashb:{name:"Ashbreather",hp:120,atk:19,def:9,spd:10,exp:110,manna:70,el:"fire",pal:"#905040",boss:1},
+  jennings:{name:"Puppet Jennings",hp:140,atk:20,def:10,spd:11,exp:140,manna:90,el:"dark",pal:"#4060a0",boss:1},
+  ares:{name:"Ares",hp:160,atk:22,def:12,spd:12,exp:160,manna:100,el:"phys",pal:"#a03030",boss:1},
+  ridnax:{name:"Ridnax",hp:170,atk:23,def:11,spd:13,exp:180,manna:110,el:"dark",pal:"#602848",boss:1},
+  cain:{name:"Cain · Master Mahan",hp:200,atk:24,def:14,spd:10,exp:220,manna:140,el:"dark",pal:"#403028",boss:1},
+  lucifer:{name:"Son of the Morning",hp:260,atk:26,def:14,spd:14,exp:400,manna:0,el:"holy",pal:"#f0e8c0",boss:1},
+  vesuvius:{name:"Cataclysm",hp:52,atk:12,def:5,spd:8,exp:60,manna:40,el:"fire",pal:"#c04020",boss:1},
+  ganosh:{name:"Ganosh",hp:150,atk:21,def:12,spd:8,exp:130,manna:80,el:"phys",pal:"#3a6840",boss:1},
+  infernis:{name:"Infernis",hp:130,atk:19,def:9,spd:11,exp:120,manna:75,el:"fire",pal:"#a04828",boss:1},
+  beelzebub:{name:"Beelzebub",hp:155,atk:22,def:10,spd:13,exp:150,manna:95,el:"dark",pal:"#304820",boss:1},
+  azazel:{name:"Azazel",hp:180,atk:23,def:12,spd:12,exp:170,manna:100,el:"holy",pal:"#7060a0",boss:1},
+  tree:{name:"Tree of Death",hp:190,atk:20,def:16,spd:6,exp:180,manna:90,el:"dark",pal:"#203818",boss:1},
+  war:{name:"War",hp:50,atk:18,def:8,spd:10,exp:24,manna:16,el:"phys",pal:"#a03030"},
+  famine:{name:"Famine",hp:42,atk:14,def:5,spd:8,exp:20,manna:14,el:"dark",pal:"#706040"},
+  pest:{name:"Pestilence",hp:46,atk:16,def:6,spd:12,exp:22,manna:16,el:"dark",pal:"#387048"}
+};
+
+const MAPS={};
+
+function M(id,name,enc,encRate,palette,rows,extras){
+  const tiles=rows.trim().split("\n").map(r=>r.trimEnd());
+  MAPS[id]={id,name,tiles,w:tiles[0].length,h:tiles.length,enc,encRate,palette,...extras};
+}
+
+M("heaven","Court of Light",[],0,{floor:"#d8d0c0",wall:"#c8b888",dec:"#fff8c0",bg:"#6a88c8"},`
+####################
+#..................#
+#..................#
+#....+....+....+...#
+#..................#
+#..................#
+#..................#
+#..................#
+#..................#
+#........@.........#
+#..................#
+####################
+`,{npcs:[{id:"center",x:9,y:3,spr:"pillar",name:"The Columns"},{id:"seraph0",x:14,y:7,spr:"seraph",name:"High Seraph"}],
+  warps:[]});
+
+M("pompeii","Pompeii, 79 A.D.",["ash","ash","shade"],0.038,{floor:"#c8b090",wall:"#8a6040",dec:"#d07030",bg:"#f0a060"},`
+############################
+#^^^^##^^^^................#
+#^^^####^^^....TTT.........#
+#^^######^^................#
+#^########^....====........#
+#^^######^^....====........#
+#^^^####^^^....====........#
+#^^^^##^^^^......@.........#
+#~~~~~##~~~~~..............#
+#~~~~BBBB~~~~....=======...#
+#~~~BBBBBB~~~....=======...#
+#~~BBBBBBBB~~..............#
+############################
+`,{npcs:[{id:"seraph",x:18,y:5,spr:"seraph",name:"High Seraph"},{id:"citizen",x:22,y:9,spr:"human",name:"Pompeian"}],
+  warps:[{x:24,y:10,to:"nyc",tx:22,ty:7,need:"pompeiiDone"}]});
+
+M("nyc","New York, 2012",["imp","suit","imp"],0.038,{floor:"#3a3a48",wall:"#2a2a38",dec:"#4060a0",bg:"#12121c"},`
+############################
+#BBBBBB##BBBBBB##BBBBBBBBBB#
+#B....B##B....B##B........B#
+#B....B##B....B##B........B#
+#BB==BB##BB==BB##BB======BB#
+#..........................#
+#....TTT..........TTTT.....#
+#......................@...#
+#=======..............=====#
+#BB==BB##BB==BB##BB======BB#
+#B....B##B....B##B........B#
+#B....B##B....B##B........B#
+#BBBBBB##BBBBBB##BBBBBBBBBB#
+############################
+`,{npcs:[{id:"jarom",x:14,y:6,spr:"jarom",name:"Jarom"},{id:"stranger",x:8,y:7,spr:"human",name:"Courier"}],
+  warps:[{x:1,y:5,to:"fortuna",tx:8,ty:8},{x:26,y:8,to:"forest",tx:3,ty:8}]});
+
+M("fortuna","Fortuna House",[],0,{floor:"#c8a878",wall:"#6a4030",dec:"#a05040",bg:"#2a1810"},`
+##################
+#................#
+#....HHHH........#
+#....H..H...HHH..#
+#....H..H...H.H..#
+#........=======.#
+#....=======.....#
+#................#
+#......@.........#
+#................#
+##################
+`,{npcs:[{id:"eden",x:6,y:6,spr:"eden",name:"Eden"},{id:"judy",x:12,y:5,spr:"judy",name:"Judy"},{id:"daren",x:10,y:3,spr:"daren",name:"Daren"},{id:"westover",x:3,y:7,spr:"human",name:"Michael Westover"},{id:"thief",x:14,y:7,spr:"human",name:"Den Runner"}],
+  warps:[{x:8,y:9,to:"nyc",tx:3,ty:5}]});
+
+M("forest","The Giant Wood",["thorn","thorn","wretch"],0.044,{floor:"#2a4a28",wall:"#143018",dec:"#1a3820",bg:"#0c2010"},`
+##########################
+#TTTTTTTTTTTTTTTTTTTTTTTT#
+#T....T....T....T....T..T#
+#T.TT...TT...TT....TT...T#
+#T....T....T........T...T#
+#TTTT....TTTT....TTTT...T#
+#T......................T#
+#T.....TTT......@.......T#
+#T......................T#
+#TTTT....====....TTTT...T#
+#T......................T#
+#T....CCCC..............T#
+#TTTTTTTTTTTTTTTTTTTTTTTT#
+##########################
+`,{npcs:[{id:"absalom",x:6,y:7,spr:"seraph",name:"Absalom"},{id:"yearti",x:12,y:11,spr:"yearti",name:"Yearti"}],
+  warps:[{x:2,y:8,to:"nyc",tx:25,ty:8},{x:22,y:3,to:"tunnels",tx:2,ty:17,need:"yeartiJoined"}]});
+
+M("tunnels","Tubal's Tunnels",["wretch","ach","wretch"],0.05,{floor:"#3a3428",wall:"#1c1810",dec:"#5a4030",bg:"#100c08"},`
+############################
+#..........................#
+#.##.##.####.##.####.##.##.#
+#.##.##.#..#.##.#....##.##.#
+#......##..#.##.####.......#
+#.####.....#........####.#.#
+#.#..#.###.#.#####..#....#.#
+#.#..#.#.....#...#..####.#.#
+#.####.#.#####.#.#.......#.#
+#......#.......#.#.#####.#.#
+#.##.###########.#.#...#.#.#
+#.##...........#.#.#.#.#.#.#
+#.####.#######.#.#.#.#.#.#.#
+#......#.....#.#...#.#.....#
+#.##.###.###.#.#####.#####.#
+#.##.....#...#.............#
+#.##.#####.########.#####.##
+#@.........................#
+############################
+`,{npcs:[{id:"jubal",x:14,y:1,spr:"jubal",name:"Jubal"},{id:"tubal",x:24,y:8,spr:"giant",name:"Tubal"},{id:"dusteater",x:24,y:15,spr:"boss",name:"Dusteater"}],
+  warps:[{x:1,y:17,to:"forest",tx:3,ty:8},{x:26,y:1,to:"hell",tx:2,ty:13,need:"dusteaterDown"}]});
+
+M("hell","A Cold Day in Hell",["flame","pool","ach"],0.044,{floor:"#4a2020",wall:"#2a1010",dec:"#c04020",bg:"#180808"},`
+########################
+#^^^^#..........#^^^^^^#
+#^^^^#...TTTT...#^^^^^^#
+#^^^^#..........#^^^^^^#
+#====#....++....#======#
+#....#..........#......#
+#....=======...........#
+#...........=======....#
+#....#..........#......#
+#~~~~#...~~~~...#~~~~~~#
+#~~~~#..........#~~~~~~#
+#====#..........#======#
+#......................#
+#@.....................#
+########################
+`,{npcs:[{id:"tobias",x:11,y:4,spr:"tobias",name:"Tobias"},{id:"johannes",x:18,y:7,spr:"old",name:"Johannes"},{id:"ganosh",x:11,y:3,spr:"ganosh",name:"Ganosh"},{id:"spark",x:6,y:11,spr:"boss",name:"Sparkslinger"},{id:"ashb",x:20,y:11,spr:"boss",name:"Ashbreather"}],
+  warps:[{x:1,y:13,to:"tunnels",tx:25,ty:1},{x:22,y:13,to:"fortress",tx:10,ty:11,need:"reborn"}]});
+
+M("fortress","The Cherub Fortress",[],0,{floor:"#d8d0b0",wall:"#a09060",dec:"#f0e080",bg:"#4868a0"},`
+######################
+#....................#
+#..HHHH........HHHH..#
+#..H..H...++...H..H..#
+#..HHHH........H..H..#
+#....................#
+#========....========#
+#....................#
+#....HHHHHHHHHH......#
+#....H........H......#
+#....H...@....H......#
+#....................#
+######################
+`,{npcs:[{id:"clara",x:8,y:6,spr:"clara",name:"Clara"},{id:"shop",x:16,y:5,spr:"human",name:"Manna Keeper"},{id:"judy2",x:4,y:9,spr:"judy",name:"Judy"},{id:"rest",x:16,y:9,spr:"seraph",name:"Cherub Healer"},{id:"isda",x:12,y:7,spr:"isda",name:"Isda"}],
+  warps:[{x:1,y:6,to:"rome",tx:2,ty:8,need:"claraJoined"},{x:20,y:6,to:"olympus",tx:20,ty:9,need:"jenningsDown"},{x:10,y:1,to:"cainhall",tx:9,ty:10,need:"armor3"}]});
+
+M("rome","Rome Away from Rome",["legion","horse","legion"],0.044,{floor:"#b09070",wall:"#704030",dec:"#c04020",bg:"#402010"},`
+########################
+#BBBB^^^^BBBB^^^^BBBBBB#
+#B..B^^^^B..B^^^^B....B#
+#B..======..======....B#
+#BBBB....BBBB....BBBBBB#
+#......................#
+#====....^^^^....====..#
+#........^^^^..........#
+#@.......====..........#
+#BBBB............BBBBBB#
+#B..B....HHHH....B....B#
+#B..======H..H====....B#
+#BBBB....HHHH....BBBBBB#
+########################
+`,{npcs:[{id:"jennings",x:12,y:9,spr:"jennings",name:"President Jennings"},{id:"nero",x:18,y:6,spr:"human",name:"Nero's Echo"},{id:"horsemen",x:12,y:5,spr:"boss",name:"Four Horsemen"}],
+  warps:[{x:1,y:8,to:"fortress",tx:2,ty:6}]});
+
+M("olympus","Olympus Mons, 2020",["oly","oly","horse"],0.038,{floor:"#88b868",wall:"#c8b060",dec:"#f0e090",bg:"#88c8f0"},`
+##########################
+#TTTT,,,,,,,,,,,,,,,,TTTT#
+#T,,,,,,,,,,,,,,,,,,,,,,T#
+#T,,,,HHHH,,,,,,,,HHHH,,T#
+#T,,,,H++H,,,,,,,,H++H,,T#
+#T,,,,H..H,,,,,,,,H..H,,T#
+#T,,,,,,,,,,,,,,,,,,,,,,T#
+#T,,,,,,========,,,,,,,,T#
+#T,,,,,,,,,,,,,,,,,,,,,,T#
+#T,,,,CCCC,,,,,,,,,,@,,,T#
+#T,,,,,,,,,,,,,,,,,,,,,,T#
+#T,,,,,,,,,,,,,,,,,,,,,,T#
+#TTTT,,,,,,,,,,,,,,,,TTTT#
+##########################
+`,{npcs:[{id:"ares",x:7,y:4,spr:"ares",name:"Ares"},{id:"zeus",x:19,y:4,spr:"seraph",name:"Zeus"},{id:"xandir2",x:12,y:8,spr:"xandir",name:"Xandir"},{id:"hermes",x:16,y:7,spr:"human",name:"Hermes"},{id:"armor",x:6,y:10,spr:"chest",name:"Belt of Truth"},{id:"armor2",x:19,y:9,spr:"chest",name:"Breastplate"},{id:"armor3",x:12,y:11,spr:"chest",name:"Shield of Faith"}],
+  warps:[{x:2,y:8,to:"fortress",tx:19,ty:6}]});
+
+M("cainhall","Throne of Master Mahan",["marked","ach","snake"],0.044,{floor:"#2a2018",wall:"#181410",dec:"#603018",bg:"#0c0808"},`
+####################
+#..................#
+#....##########....#
+#....#........#....#
+#....#...++...#....#
+#....#........#....#
+#....####..####....#
+#..................#
+#====..........====#
+#..................#
+#........@.........#
+#..................#
+####################
+`,{npcs:[{id:"cain",x:9,y:4,spr:"cain",name:"Cain"},{id:"ridnax",x:7,y:7,spr:"boss",name:"Ridnax"},{id:"prince",x:12,y:4,spr:"lucifer",name:"The Prince"}],
+  warps:[{x:10,y:11,to:"fortress",tx:10,ty:2},{x:1,y:8,to:"tartarus",tx:2,ty:18,need:"cainDown"}]});
+
+M("tartarus","Tartarus / The Eye",["snake","eye","marked"],0.05,{floor:"#1a1830",wall:"#0c0a18",dec:"#c8e8f0",bg:"#080814"},`
+############################
+#..........................#
+#.##.##.########.##.##.##.##
+#.##.##.#......#.##.##.##.##
+#......##.####.#...........#
+#.####....#..#.#.#########.#
+#.#..#.####..#.#.#.......#.#
+#.#..#.......#.#.#.#####.#.#
+#.####.#######.#.#.#...#.#.#
+#..............#.#.#.#.#.#.#
+#.##.###########.#.#.#.#.#.#
+#.##.............#.#.#.....#
+#.####.###########.#.#####.#
+#......#...........#.....#.#
+#.##.###.###############.#.#
+#.##.....#...............#.#
+#.##.#####.#############.#.#
+#........................#.#
+#@.......................+.#
+############################
+`,{npcs:[{id:"druiel",x:14,y:1,spr:"seraph",name:"Druiel"},{id:"lucifer",x:24,y:17,spr:"lucifer",name:"Lucifer"},{id:"esther",x:20,y:6,spr:"human",name:"Esther"},{id:"japeth",x:22,y:11,spr:"old",name:"Japeth"}],
+  warps:[{x:1,y:18,to:"cainhall",tx:2,ty:8}]});
+
+M("nod","The Land of Nod",[],0,{floor:"#c8b890",wall:"#6a5038",dec:"#f0e080",bg:"#3a2a18"},`
+##################
+#TTTT............#
+#T...............#
+#....HHHH........#
+#....H..H...++...#
+#................#
+#=======.........#
+#................#
+#....CCCC........#
+#................#
+#......@.........#
+##################
+`,{npcs:[{id:"echo",x:6,y:4,spr:"jarom",name:"A Lullaby"},{id:"cola",x:12,y:4,spr:"chest",name:"Cola Cache"}],
+  warps:[{x:16,y:10,to:"fortress",tx:10,ty:11}]});
+
+M("tower","The Forgotten Tower",["ach","marked","ach"],0.038,{floor:"#3a3428",wall:"#1c1810",dec:"#8a4030",bg:"#100c08"},`
+####################
+#..................#
+#..####......####..#
+#..#++#......#..#..#
+#..#..#......#..#..#
+#..#.##......##.#..#
+#..................#
+#========..========#
+#..................#
+#....HHHHHHHH......#
+#....H......H......#
+#....H...@..H......#
+#..................#
+####################
+`,{npcs:[{id:"infernis",x:4,y:3,spr:"boss",name:"Infernis"},{id:"mark",x:15,y:3,spr:"chest",name:"Mark of Cain"}],
+  warps:[{x:1,y:7,to:"fortress",tx:10,ty:11}]});
+
+M("vault","Vault of Avarice",["suit","wretch","ach"],0.044,{floor:"#4a3a28",wall:"#2a2018",dec:"#c8a040",bg:"#140c08"},`
+####################
+#..................#
+#.####........####.#
+#.#..#........#++#.#
+#.#..##########..#.#
+#.#..............#.#
+#.####.########..#.#
+#......#......#..#.#
+#.####.#.####.#..#.#
+#.#....#.#..#.#..#.#
+#.#.####.#..#.####.#
+#@.................#
+####################
+`,{npcs:[{id:"prisoner",x:15,y:3,spr:"old",name:"Johannes"},{id:"avarice",x:8,y:1,spr:"chest",name:"Avarice Cache"}],
+  warps:[{x:18,y:11,to:"fortress",tx:10,ty:11}]});
+
+M("london","London Falling",["imp","horse","legion"],0.044,{floor:"#3a3a48",wall:"#2a2a38",dec:"#c04040",bg:"#12121c"},`
+##########################
+#BBBBBB##BBBB##BBBBBBBBBB#
+#B....B##B..B##B........B#
+#B....B##B..B##B........B#
+#BB==BB##B==B##BB======BB#
+#........................#
+#....^^^^..........TTTT..#
+#........................#
+#=======............=====#
+#BB==BB##BB==BB##BB======#
+#B....B##B....B##B......B#
+#............@...........#
+#BBBBBB##BBBBBB##BBBBBBBB#
+##########################
+`,{npcs:[{id:"queen",x:18,y:6,spr:"queen",name:"Queen of Light"},{id:"beelzebub",x:8,y:7,spr:"boss",name:"Beelzebub"}],
+  warps:[{x:1,y:11,to:"fortress",tx:10,ty:11}]});
+
+M("blacker","Blacker Forest",["thorn","wretch","snake"],0.044,{floor:"#1a2a18",wall:"#0c180c",dec:"#244028",bg:"#081008"},`
+########################
+#TTTTTTTTTTTTTTTTTTTTTT#
+#T....................T#
+#T.TT...TT....TT...TT.T#
+#T....................T#
+#TTTT....TTTT....TTTT.T#
+#T....................T#
+#T.....TTT......@.....T#
+#T....................T#
+#TTTT....====....TTTT.T#
+#T....................T#
+#T....CCCC............T#
+#TTTTTTTTTTTTTTTTTTTTTT#
+########################
+`,{npcs:[{id:"wilhelm",x:6,y:7,spr:"old",name:"Wilhelm"},{id:"jakob",x:10,y:7,spr:"old",name:"Jakob"},{id:"azazel",x:12,y:11,spr:"boss",name:"Azazel"}],
+  warps:[{x:2,y:8,to:"fortress",tx:10,ty:11}]});
+
+M("nineveh","Nineveh Sands",["snake","marked","flame"],0.044,{floor:"#c8b070",wall:"#8a7040",dec:"#203818",bg:"#c8a060"},`
+######################
+#....................#
+#....^^^^............#
+#....................#
+#=======.............#
+#....................#
+#..........CCCC......#
+#....................#
+#....................#
+#......@.............#
+#~~~~..........~~~~..#
+######################
+`,{npcs:[{id:"smargad",x:8,y:6,spr:"giant",name:"Smargad"},{id:"tree",x:15,y:7,spr:"boss",name:"Tree of Death"}],
+  warps:[{x:1,y:9,to:"fortress",tx:10,ty:11}]});
+
+const SOLID=new Set("#TBPHC^~+");
+
+let mode="title";
+let state=null;
+let cam={x:0,y:0};
+let dialogQ=[], dialogI=0, typed=0, typeT=0;
+let menuTab=0, menuSel=0;
+let battle=null;
+let choice=null;
+let anim=0, stepCount=0, lastTime=0;
+let toastT=0;
+let cardT=0;
+let encounterLock=0;
+
+const CARDS={
+  heaven:{act:"I · The Last Archangel", title:"Court of Light", sub:"The Sentence"},
+  pompeii:{act:"I · The Last Archangel", title:"Pompeii", sub:"79 A.D."},
+  nyc:{act:"I · The Last Archangel", title:"New York", sub:"A rooftop, 2012"},
+  fortuna:{act:"I · The Last Archangel", title:"Fortuna House", sub:"Midnight is gone"},
+  forest:{act:"I · The Last Archangel", title:"The Giant Wood", sub:"Even the straightest arrows fall"},
+  tunnels:{act:"I · The Last Archangel", title:"Tubal's Tunnels", sub:"Master Mahan's roads"},
+  hell:{act:"I · The Last Archangel", title:"A Cold Day in Hell", sub:"Tea with Tobias"},
+  fortress:{act:"II · The Last Kingdom", title:"The Cherub Fortress", sub:"Confirmed, Big Halo"},
+  rome:{act:"II · The Last Kingdom", title:"Rome Away from Rome", sub:"Weeping, wailing, gnashing of teeth"},
+  olympus:{act:"II · The Last Kingdom", title:"Olympus Mons", sub:"Love and lightning, 2020"},
+  cainhall:{act:"III · The Last Dawn", title:"Throne of Master Mahan", sub:"The first act, if you will"},
+  tartarus:{act:"III · The Last Dawn", title:"Tartarus", sub:"The All-Seeing Eye"},
+  nod:{act:"III · The Last Dawn", title:"The Land of Nod", sub:"A lullaby that is not quite heavenly"},
+  tower:{act:"II · The Last Kingdom", title:"The Forgotten Tower", sub:"The Mark of Cain"},
+  vault:{act:"II · The Last Kingdom", title:"Vault of Avarice", sub:"For where your treasure is"},
+  london:{act:"III · The Last Dawn", title:"London Falling", sub:"Queen of Light"},
+  blacker:{act:"III · The Last Dawn", title:"Blacker Forest", sub:"Wilhelm and Jakob"},
+  nineveh:{act:"III · The Last Dawn", title:"Nineveh Sands", sub:"The last Tree of Death"}
+};
+
+function heroInst(id,lv){
+  const d=HERODEF[id];
+  const hp=d.hp+lv*8, mp=d.mp+lv*4;
+  return {id,name:d.name,role:d.role,lv,exp:0,next:lv*40+40,hp,maxHp:hp,mp,maxMp:mp,
+    atk:d.atk+lv*2,def:d.def+lv,spd:d.spd+lv,skills:d.skills.slice(),alive:true};
+}
+function scaleHero(h,lv){
+  const d=HERODEF[h.id];
+  h.lv=lv; h.maxHp=d.hp+lv*8; h.maxMp=d.mp+lv*4; h.hp=h.maxHp; h.mp=h.maxMp;
+  h.atk=d.atk+lv*2; h.def=d.def+lv; h.spd=d.spd+lv; h.next=lv*40+40; h.exp=0; h.alive=true;
+}
+
+function blankFlags(){
+    return {sentenced:false,pompeiiDone:false,metJarom:false,metEden:false,yeartiJoined:false,
+    dusteaterDown:false,sparkDown:false,ashbDown:false,reborn:false,claraJoined:false,judyJoined:false,
+    jenningsDown:false,horsemenDown:false,aresDown:false,armor:0,armor3:false,arm0:false,arm1:false,arm2:false,
+    cainDown:false,ridnaxDown:false,chain:false,luciferDown:false,xandirJoined:false,
+    ganoshDown:false,johannesFree:false,johannesHint:false,infernisDown:false,towerDone:false,vaultDone:false,
+    estherHelped:false,japethFree:false,wilhelmMet:false,wilhelmLink:false,azazelDown:false,queenMet:false,londonDone:false,
+    beelzebubDown:false,links:0,treeDown:false,nodVisited:false,isdaMet:false,westoverMet:false,thiefMet:false,
+    hermesMet:false,markSeen:false,colaTaken:false,avariceTaken:false};
+}
+
+function newState(act){
+  const s={
+    act:act||1, map:"heaven", x:9, y:9, facing:"up", moving:false, t:0, fromX:9, fromY:9, toX:9, toY:9,
+    manna:30, items:{cake:3,water:2,feast:0,diamond:0,wish:1,harp:0,flask:0,fruit:0,link:0},
+    party:["xandir"], heroes:{xandir:heroInst("xandir",1)}, flags:blankFlags(),
+    chests:{}, steps:0, lore:[]
+  };
+  if(act>=2){
+    s.act=2; s.map="fortress"; s.x=10; s.y=11; s.party=["jarom","clara"];
+    s.heroes={jarom:heroInst("jarom",12),clara:heroInst("clara",12),xandir:heroInst("xandir",12),judy:heroInst("judy",11)};
+    s.flags.sentenced=s.flags.pompeiiDone=s.flags.metJarom=s.flags.metEden=true;
+    s.flags.yeartiJoined=s.flags.dusteaterDown=s.flags.sparkDown=s.flags.ashbDown=s.flags.reborn=true;
+    s.flags.claraJoined=true;
+    s.manna=180; s.items={cake:6,water:4,feast:1,diamond:1,wish:1,harp:0,flask:1,fruit:0,link:0};
+    s.lore=[{t:"The Red Moon",b:"Xandir's immortality unraveled. Two gray lines marked a child's chest. Jertel kept Judy's promise."}];
+  }
+  if(act>=3){
+    s.act=3; s.map="cainhall"; s.x=9; s.y=10;
+    s.party=["xandir","jarom","clara","judy"];
+    Object.keys(s.heroes).forEach(id=>scaleHero(s.heroes[id],18));
+    s.heroes.yearti=heroInst("yearti",16);
+    s.flags.claraJoined=s.flags.judyJoined=s.flags.jenningsDown=s.flags.aresDown=true;
+    s.flags.armor=3; s.flags.armor3=true; s.flags.xandirJoined=true;
+    s.heroes.xandir.skills=["slash","drink","vesuvius","hurricane","seven"];
+    s.manna=300;
+    s.flags.johannesHint=true;
+    s.lore.push({t:"Armor of God",b:"Belt, breastplate, shield. Cain's hall would receive them."});
+  }
+  return s;
+}
+
+function lead(){return state.heroes[state.party[0]];}
+function map(){return MAPS[state.map];}
+function tile(x,y){const m=map(); if(y<0||x<0||y>=m.h||x>=m.w) return "#"; return m.tiles[y][x];}
+function npcAt(x,y){return (map().npcs||[]).find(n=>n.x===x&&n.y===y && !npcHidden(n));}
+function npcHidden(n){
+  if(!n||n.gone) return true;
+  const F=state.flags||{};
+  if(n.id==="dusteater"&&F.dusteaterDown) return true;
+  if(n.id==="spark"&&F.sparkDown && state.map!=="fortuna") return true;
+  if(n.id==="ashb"&&F.ashbDown) return true;
+  if(n.id==="jennings"&&F.jenningsDown) return true;
+  if(n.id==="horsemen"&&F.horsemenDown) return true;
+  if(n.id==="ridnax"&&F.ridnaxDown) return true;
+  if(n.id==="lucifer"&&F.luciferDown) return true;
+  if(n.id==="ganosh"&&F.ganoshDown) return true;
+  if(n.id==="infernis"&&F.infernisDown) return true;
+  if(n.id==="azazel"&&F.azazelDown) return true;
+  if(n.id==="beelzebub"&&F.beelzebubDown) return true;
+  if(n.id==="tree"&&F.treeDown) return true;
+  if(n.id==="japeth"&&F.japethFree) return true;
+  if(n.id==="prisoner"&&F.johannesFree) return true;
+  return false;
+}
+function blocked(x,y){
+  const t=tile(x,y);
+  if(SOLID.has(t) && t!=="+") return true;
+  if(t==="#") return true;
+  const n=npcAt(x,y); if(n && n.spr!=="pillar") return true;
+  return false;
+}
+
+function join(id,lv){
+  if(!state.heroes[id]) state.heroes[id]=heroInst(id,lv||lead().lv);
+  if(state.party.includes(id)) return true;
+  if(state.party.length<4){ state.party.push(id); return true; }
+  return false;
+}
+function bench(){ return Object.keys(state.heroes).filter(id=>!state.party.includes(id)); }
+function swapInto(newId, outId){
+  if(!state.heroes[newId]) return;
+  if(outId && state.party.includes(outId)){
+    state.party=state.party.filter(p=>p!==outId);
+  } else if(state.party.length>=4){
+    state.party.pop();
+  }
+  if(!state.party.includes(newId) && state.party.length<4) state.party.push(newId);
+  renderHUD();
+}
+function offerSwap(newId){
+  const name=(state.heroes[newId]||HERODEF[newId]||{name:newId}).name;
+  const opts=state.party.map(pid=>{
+    const nm=state.heroes[pid].name;
+    return {label:"Bench "+nm, fn:()=>{ swapInto(newId, pid); toast(name+" joins. "+nm+" waits."); }};
+  });
+  opts.push({label:"Leave "+name+" behind", leave:true, fn:()=>toast(name+" waits at the fortress.")});
+  openChoice(name, name+" would walk, but four already do. Who stays behind?", opts);
+}
+
+function addItem(id,n){ state.items[id]=(state.items[id]||0)+(n||1); }
+function hasItem(id){ return (state.items[id]||0)>0; }
+function addLore(title,body){
+  if(!state.lore) state.lore=[];
+  if(state.lore.some(l=>l.t===title)) return;
+  state.lore.push({t:title,b:body});
+  toast("Chronicle: "+title);
+}
+function giveLink(){
+  state.flags.links=(state.flags.links||0)+1;
+  addItem("link");
+  toast("Chain links: "+state.flags.links+"/3");
+}
+
+function toast(msg){els.toast.textContent=msg; els.toast.classList.add("show"); toastT=2.2;}
+function hideCard(){ cardT=0; if(els.card) els.card.classList.remove("show"); }
+function showCard(mapId){
+  const c=CARDS[mapId];
+  if(!c||!els.card){ toast(MAPS[mapId]?MAPS[mapId].name:mapId); return; }
+  els.cardAct.textContent=c.act;
+  els.cardTitle.textContent=c.title;
+  els.cardSub.textContent=c.sub;
+  els.card.classList.add("show");
+  cardT=1.85;
+}
+function fade(fn){
+  els.fade.classList.add("on");
+  setTimeout(()=>{fn&&fn(); setTimeout(()=>els.fade.classList.remove("on"),80);},280);
+}
+
+function sfx(kind){
+  try{
+    const ac=sfx.ac||(sfx.ac=new (window.AudioContext||window.webkitAudioContext)());
+    const o=ac.createOscillator(), g=ac.createGain();
+    const now=ac.currentTime;
+    const table={ok:[520,0.06,"square",0.04],hit:[180,0.08,"sawtooth",0.05],hurt:[120,0.12,"square",0.05],
+      win:[440,0.2,"square",0.05],step:[90,0.03,"square",0.02],heal:[660,0.1,"sine",0.04],menu:[320,0.04,"square",0.03]};
+    const [f,d,t,v]=table[kind]||table.ok;
+    o.type=t; o.frequency.setValueAtTime(f,now);
+    if(kind==="win") o.frequency.exponentialRampToValueAtTime(880,now+d);
+    g.gain.setValueAtTime(v,now); g.gain.exponentialRampToValueAtTime(0.001,now+d);
+    o.connect(g); g.connect(ac.destination); o.start(); o.stop(now+d+0.02);
+  }catch(e){}
+}
+
+function show(el,on){el.classList.toggle("hidden",!on);}
+
+function startGame(act){
+  state=newState(act);
+  $("chronMenu").classList.add("hidden"); $("titleMenu").classList.remove("hidden");
+  show(els.title,false); show(els.how,false); show(els.end,false);
+  if(act===1){
+    mode="dialog";
+    queueDialog([
+      {n:"",t:"Xandir, approach the bar."},
+      {n:"Xandir",t:"Pronounce your sentence and be done with it. Cast me out, if you must, but let us be done with it."},
+      {n:"The Columns",t:"That would be too light a punishment. You did knowingly abet the rogue angel Azazel, and along with your fellow Watchers you revealed Heaven's secrets to humankind."},
+      {n:"Xandir",t:"They were kept in bondage! In utter ignorance—"},
+      {n:"The Columns",t:"You entered into illicit relationships, which folly created the race of Giants. For this you shall be consigned to the role of Destroying Angel, which sentence shall be served until the End of Time."},
+      {n:"Xandir",t:"The End of Time? But that—"},
+      {n:"The Columns",t:"Silence."},
+      {n:"",t:"Twin shafts of light leave two slender swords. They fasten about Xandir's waist. He falls."},
+      {n:"Xandir",t:"The End of Time. We shall see about that."}
+    ],()=>{state.flags.sentenced=true; addLore("The Sentence","Xandir abetted Azazel and the Watchers. Heaven named him Destroying Angel until the End of Time."); warp("pompeii",18,7);});
+  } else {
+    mode="explore";
+    toast(act===2?"Act II — The Last Kingdom":"Act III — The Last Dawn");
+    showCard(state.map);
+  }
+  renderHUD();
+}
+
+function warp(mapId,x,y){
+  if(mode==="choice") closeChoice();
+  const same=state && state.map===mapId;
+  fade(()=>{
+    state.map=mapId; state.x=x; state.y=y; state.toX=x; state.toY=y; state.moving=false;
+    encounterLock=18;
+    mode="explore";
+    if(same) toast(MAPS[mapId].name);
+    else showCard(mapId);
+    renderHUD();
+    save();
+  });
+}
+
+function queueDialog(pages,onDone){
+  if(mode==="choice") closeChoice();
+  dialogQ=pages; dialogI=0; typed=0; typeT=0; dialogQ._done=onDone;
+  mode="dialog";
+  show(els.dialog,true); paintDialog();
+}
+function paintDialog(){
+  const p=dialogQ[dialogI];
+  if(!p) return;
+  els.dWho.textContent=p.n||" ";
+  els.dTxt.textContent=(p.t||"").slice(0,typed);
+}
+function advanceDialog(){
+  const p=dialogQ[dialogI];
+  if(!p) return;
+  if(typed<(p.t||"").length){typed=p.t.length; paintDialog(); return;}
+  dialogI++;
+  if(dialogI>=dialogQ.length){
+    show(els.dialog,false);
+    const done=dialogQ._done;
+    dialogQ=[];
+    mode="explore";
+    done&&done();
+  } else {typed=0; paintDialog();}
+}
+
+function facingTile(){
+  const d={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[state.facing];
+  return {x:state.x+d[0],y:state.y+d[1]};
+}
+
+function interact(){
+  const f=facingTile();
+  const n=npcAt(f.x,f.y)||npcAt(state.x,state.y);
+  const w=(map().warps||[]).find(w=>w.x===f.x&&w.y===f.y);
+  if(n){talk(n); return;}
+  if(w){
+    if(w.need && !state.flags[w.need]){queueDialog([{n:"",t:"The way is sealed. Another duty still waits."}]); return;}
+    warp(w.to,w.tx,w.ty); return;
+  }
+  const t=tile(f.x,f.y);
+  if(t==="+" && state.map==="heaven"){
+    talk({id:"center",name:"The Columns"});
+  }
+}
+
+function talk(n){
+  const pages=script(n.id);
+  if(pages && pages.length) queueDialog(pages, pages._done);
+}
+
+function after(pages, fn){ pages._done=fn; return pages; }
+function fight(pages, foes, onWin){ return after(pages, ()=>startBattle(foes, onWin)); }
+
+function takeArmor(piece){
+  const F=state.flags;
+  if(F["arm"+piece]) return [{n:"",t:"This piece of the Armor of God is already yours."}];
+  F["arm"+piece]=true; F.armor=(F.armor||0)+1; if(F.armor>=3) F.armor3=true;
+  state.party.forEach(id=>{const h=state.heroes[id]; h.def+=2; h.atk+=1;});
+  const names=["the Belt of Truth","the Breastplate of Righteousness","the Shield of Faith"];
+  return [{n:"",t:"The party claims "+names[piece]+". Armor assembled: "+F.armor+"/3."+(F.armor3?" Cain's hall will now receive you.":"")}];
+}
+
+function script(id){
+  const F=state.flags;
+  switch(id){
+    case "center":
+      return [{n:"The Columns",t:"The swords are already yours, Destroying Angel. Pompeii waits. Their time is up, and their fate is sealed."}];
+    case "seraph0":
+      return [{n:"High Seraph",t:"Do not stall. Complete your task."}];
+    case "seraph":
+      if(!F.pompeiiDone) return fight([
+        {n:"High Seraph",t:"It is time. Do not forget the terms of your probation, Xandir."},
+        {n:"Xandir",t:"Honestly, I'm flattered. They don't send a High Seraph on just any ordinary business. Are the gates still as pearly as ever?"},
+        {n:"High Seraph",t:"You are stalling. You have done many missions without incident. What makes this time different?"},
+        {n:"Xandir",t:"In all the millennia I've served, this has never been a problem. I don't even get to sit high and mighty on cloud nine, eating ambrosia all day like some people."},
+        {n:"High Seraph",t:"You dare question this? Their time is up. Complete your task."},
+        {n:"",t:"Xandir drives an ebony sword into the earth. The mountain answers."},
+        {n:"Xandir",t:"Forgive me."}
+      ], ["vesuvius"], ()=>{
+        F.pompeiiDone=true;
+        addLore("Pompeii","Their time was up. Xandir drove an ebony sword into the earth, and the mountain answered.");
+        queueDialog([
+          {n:"Xandir",t:"Even from the sky, he looks back once. Then 2012 takes him."},
+          {n:"",t:"A rooftop. A city that does not yet know it is doomed."}
+        ], ()=>warp("nyc",22,7));
+      });
+      return [{n:"High Seraph",t:"The city is ash. Do not linger among the dead."}];
+    case "citizen":
+      return F.pompeiiDone?[{n:"Shade",t:"We were not ready."}]:[{n:"Pompeian",t:"The mountain has been restless. The bakers still open at dawn."}];
+    case "jarom":
+      if(!F.metJarom){F.metJarom=true; join("jarom",lead().lv); addLore("Big Halo","Heaven filed the paperwork. A cherub named Jarom would babysit the Destroying Angel."); return [
+        {n:"Jarom",t:"Confirmed, Big Halo—wait. You're not Clara. You're... taller than the last Destroying Angel I was told to babysit."},
+        {n:"Xandir",t:"I don't need a cherub on my shoulder."},
+        {n:"Jarom",t:"Too late. Heaven filed the paperwork. I'm Jarom. They call me Big Halo when they're trying to be cute."},
+        {n:"",t:"Jarom joined the party."}
+      ];}
+      return [{n:"Jarom",t:"Eden Fortuna's house is west. The forest that shouldn't exist is east. I packed ambrosia cakes. Don't tell the Seraph."}];
+    case "stranger":
+      return [{n:"Courier",t:"Delivery for a Mrs. Eden Fortuna? I already tried the house. She looked like she'd expected someone else."}];
+    case "eden":
+      F.metEden=true;
+      return [{n:"Eden",t:"Daren was supposed to bring flowers. Instead I got a stranger, a cordless phone, and a husband who comes home later every night."},
+        {n:"Xandir",t:"There is a demon in your house, Mrs. Fortuna. I have met his kind before."},
+        {n:"Eden",t:"If you're another of Judy's pranks, I'm not in the mood."}];
+    case "judy":
+      if(F.westoverMet) return [{n:"Judy",t:"Westover saw the burns on Daren's hands. Jertel was already watching me then. I just didn't have the word for it."}];
+      return [{n:"Judy",t:"I told her not to move back in. Midnight's gone and there's still no Daren. If you can do something, do it. I'll keep the coffee on."}];
+    case "daren":
+      if(!F.sparkDown) return fight(
+        [{n:"Daren",t:"The voice is not mine. It never was."},{n:"Sparkslinger",t:"Well, well. The Destroying Angel, knocking like a mortal."}],
+        ["spark"], ()=>{F.sparkDown=true; queueDialog([{n:"Sparkslinger",t:"His body is too weak. If I leave, he dies."},{n:"Eden",t:"Then you will not leave. Not yet."},{n:"Sparkslinger",t:"The children were conceived as planned. There is nothing that can stop it now."}]);}
+      );
+      return [{n:"Daren",t:"He didn't take me. He found me lacking. I can still hear him in the walls."}];
+    case "absalom":
+      return [{n:"Absalom",t:"Even the straightest arrows have to fall to earth sometime. You can't fight gravity forever."},
+        {n:"Xandir",t:"Absalom. Last person I expected. Never thought I'd find a straight arrow in a mound like this."},
+        {n:"Absalom",t:"Yearti is in the cave. He still laughs too loud. The tunnels of Tubal open only if a giant vouches for you."}];
+    case "yearti":
+      if(!F.yeartiJoined){
+        F.yeartiJoined=true;
+        const joined=join("yearti",lead().lv);
+        return after([
+          {n:"Xandir",t:"Hey, Yearti, it's the twenty-first century. They've got medicines for problems like that."},
+          {n:"Yearti",t:"Sneak up? I wouldn't dream of it. Come. Tubal's roads remember the Watchers."},
+          {n:"",t:joined?"Yearti joined the party. The northern tunnels unseal.":"Yearti vouches for you. The northern tunnels unseal. Four already walk."}
+        ], ()=>{ if(!joined) offerSwap("yearti"); });
+      }
+      return [{n:"Yearti",t:"Two peaks over from Eden, in the Himalayas. They've got chocolate there. Dangerous things, five-year-olds with that much power—but that's Ridnax's lecture, not mine."}];
+    case "jubal":
+      if(!hasItem("harp")){
+        return after([
+          {n:"Jubal",t:"Good day, little cherub—and you, fallen arrow. I am Jubal, son of the great Master Mahan. I must apologize for my brother. He is prone to outbursts by nature."},
+          {n:"Jarom",t:"I slept well. I don't remember the last time."},
+          {n:"Jubal",t:"Music does that. Let the music take you away. Dusteater waits where the stone tastes of graves."}
+        ], ()=>{ addItem("harp"); addLore("Jubal's Strain","Tubal's brother plays a harp that can wake a giant or put a cherub to sleep. Master Mahan's blood is complicated."); });
+      }
+      return [{n:"Jubal",t:"Keep the harp. If Tubal raises his ax, a chord is still faster than a lecture."}];
+    case "tubal":
+      return [{n:"Tubal",t:"These roads were cut when the world was younger. Keep your swords sheathed unless the dust itself stands up."}];
+    case "dusteater":
+      if(!F.dusteaterDown) return fight(
+        [{n:"Dusteater",t:"Subtlety has grown weak as of late. So has mercy."}],
+        ["dusteater"], ()=>{F.dusteaterDown=true; queueDialog([{n:"Dusteater",t:"Ashbreather... I told them she was no more."},{n:"",t:"The way down to Tobias unseals."}]);}
+      );
+      return [{n:"",t:"Only dust remains."}];
+    case "tobias":
+      return [{n:"Tobias",t:"Tea? The cups are clean. The company is not. Johannes knows the mazes. The demons in the pools know your names."},
+        {n:"Xandir",t:"I didn't go to Elysian University."},
+        {n:"Tobias",t:"Then drink slowly."}];
+    case "johannes":
+      if(!F.johannesHint){ F.johannesHint=true; addLore("Johannes","An old man in Hell who has been waiting. The Vault of Avarice still holds him—or will."); }
+      return [{n:"Johannes",t:"Yes. My name is Johannes. I have been waiting for you for some time. We should not talk here."},
+        {n:"Johannes",t:"Sparkslinger first. Ashbreather after. Then you will not be immortal anymore."},
+        {n:"Johannes",t:"When you can walk as a mortal, find me in the Vault of Avarice. Ask Isda. Whisperers do not even have to whisper."}];
+    case "spark":
+      if(!F.sparkDown) return fight(
+        [{n:"Sparkslinger",t:"Nothing much to report but that I was successful."}],
+        ["spark"], ()=>{F.sparkDown=true; queueDialog([{n:"Sparkslinger",t:"I don't want this body. I can't leave yet."}]);}
+      );
+      return [{n:"Sparkslinger",t:"Go on. She is waiting in the ash."}];
+    case "ashb":
+      if(!F.ashbDown) return fight(
+        [{n:"Ashbreather",t:"Do you not think he of all people can deceive?"}],
+        ["ashb"], ()=>{
+          F.ashbDown=true; F.reborn=true;
+          queueDialog([
+            {n:"Ashbreather",t:"Dusteater told them I was no more. He is a master liar, second only to the Prince himself."},
+            {n:"",t:"Xandir's immortality unravels. Swords, wings, and sentence fold into a single mark: two gray lines, an X upon a child's chest."},
+            {n:"Jertel",t:"I am called Jertel. Looking after Judy's best interests, I arranged what Xandir intended."},
+            {n:"Judy",t:"Who knows. Maybe they'll let me be your guardian angel someday."},
+            {n:"Angel",t:"The child must be raised away from prying eyes. It is the sign of the End. The moon is red."},
+            {n:"Jarom",t:"Just Clara then. My little light."},
+            {n:"",t:"Years thin like mist. The Cherub Fortress remembers its own."}
+          ],()=>{
+            F.reborn=true;
+            addLore("The Red Moon","Immortality folded into an X on a child's chest. Jertel kept Judy's watch. Clara would be raised as Little Light.");
+            state.act=2;
+            if(!state.heroes.jarom) join("jarom",10);
+            if(!state.heroes.clara) join("clara",10);
+            state.party=["jarom","clara"];
+            scaleHero(state.heroes.jarom,10); scaleHero(state.heroes.clara,10);
+            if(state.heroes.xandir){scaleHero(state.heroes.xandir,10); state.heroes.xandir.skills=["slash","drink","vesuvius","hurricane"];}
+            state.party.forEach(id=>{const h=state.heroes[id]; h.hp=h.maxHp; h.mp=h.maxMp; h.alive=true;});
+            warp("fortress",10,10);
+          });
+        }
+      );
+      return [{n:"",t:"Ash, and a red moon somewhere above."}];
+    case "clara":
+      if(!F.claraJoined){F.claraJoined=true; join("clara",lead().lv); addLore("Little Light","Plan Jericho. Colas. A cherub who promised no one else could hear them."); return [
+        {n:"Clara",t:"Confirmed, Big Halo. Beelzebub is not in this chariot. He must be flying toward you. I was thinking attack plan Jericho. You copy?"},
+        {n:"Jarom",t:"Clara, I promise no one else can hear us. You don't have to use the ridiculous code speak. I never should have let you watch those mortal movies."},
+        {n:"Clara",t:"Don't worry. We'll swat the Lord of the Flies and head back to the Fortress. I drank through all the colas."},
+        {n:"",t:"Clara joined the party. Rome's gate opens west."}
+      ];}
+      return [{n:"Clara",t:"An extinguisher doesn't fear the fire. Jennings first. Then Olympus. Then whatever Cain calls a throne. I drank through all the colas."}];
+    case "shop":
+      return shopTalk();
+    case "isda":
+      return isdaTalk();
+    case "judy2":
+      if(!F.judyJoined){
+        F.judyJoined=true;
+        const joined=join("judy",lead().lv);
+        return after([
+          {n:"Judy",t:"You remember when I told Eden I'd be her guardian angel? After I finished my last assignment, they agreed."},
+          {n:"Eden",t:"Just out of curiosity, what was your last assignment?"},
+          {n:"Judy",t:"A police officer, a hobo, and the creative application of a wishbone. Don't ask. I'm coming with you."},
+          {n:"",t:joined?"Judy joined the party.":"Judy is ready. Four already walk."}
+        ], ()=>{ if(!joined) offerSwap("judy"); });
+      }
+      return [{n:"Judy",t:"Jennings was elected president, and things are looking bleak. Jertel still looks after my best interests. Try to keep Eden's boy in one piece."}];
+    case "jennings":
+      if(!F.jenningsDown) return fight(
+        [{n:"Jennings",t:"I didn't order any room service. Perhaps you couldn't read the do-not-disturb sign."},{n:"Clara",t:"President Jennings. Or should I say Puppet President Jennings?"},{n:"Jennings",t:"Leave, or suffer."}],
+        ["jennings"], ()=>{F.jenningsDown=true; queueDialog([{n:"",t:"A bright mark burns on his forehead. The flies scatter. Olympus unseals to the east."}]);}
+      );
+      return [{n:"",t:"The mark fades. The puppet hangs slack."}];
+    case "nero":
+      return [{n:"Nero's Echo",t:"Fiddling is underrated. Bring marshmallows next time."}];
+    case "horsemen":
+      if(!F.horsemenDown) return fight(
+        [{n:"War",t:"Weeping, wailing, gnashing of teeth."},{n:"Famine",t:"Four horses."},{n:"Pestilence",t:"One road."},{n:"Death",t:"I will wait. I always do."}],
+        ["war","famine","pest"], ()=>{F.horsemenDown=true; addLore("Four Horsemen","War, Famine, and Pestilence rode for Jennings. Death waited, as Death does."); queueDialog([{n:"Death",t:"Hoofprints are a kind of scripture. Jennings no longer has their escort."}]);}
+      );
+      return [{n:"",t:"Hoofprints, and nothing else."}];
+    case "ares":
+      if(!F.aresDown) return fight(
+        [{n:"Ares",t:"The Anger of Ares is not a metaphor. Put up your swords."}],
+        ["ares"], ()=>{F.aresDown=true; queueDialog([{n:"Ares",t:"Anger is a kind of worship. You may pass."}]);}
+      );
+      return [{n:"Ares",t:"Game, set, match. Don't trip on the grass. It grows back."}];
+    case "zeus":
+      return [{n:"Zeus",t:"Love and lightning. The fields here never stay mown. Your Destroying Angel has been reduced to destroying grass. Fetch him."}];
+    case "xandir2":
+      if(!F.xandirJoined){
+        F.xandirJoined=true;
+        if(state.heroes.xandir) state.heroes.xandir.skills=["slash","drink","vesuvius","hurricane"];
+        const joined=join("xandir",lead().lv);
+        return after([
+          {n:"Xandir",t:"All these years as a destroying angel, and I've been reduced to destroying grass."},
+          {n:"Jarom",t:"If you're trying to sneak up on him, Yearti, you're doing a miserable job. Wait—you're us."},
+          {n:"Xandir",t:"The End of Time is late. I'm coming anyway."},
+          {n:"",t:joined?"Xandir joined the party.":"Xandir is ready. Four already walk."}
+        ], ()=>{ if(!joined) offerSwap("xandir"); });
+      }
+      return [{n:"Xandir",t:"Cain first. Then the Prince who wants a vessel."}];
+    case "armor": return takeArmor(0);
+    case "armor2": return takeArmor(1);
+    case "armor3": return takeArmor(2);
+    case "rest":
+      state.party.forEach(id=>{const h=state.heroes[id]; h.hp=h.maxHp; h.mp=h.maxMp; h.alive=true;});
+      return [{n:"Cherub Healer",t:"Ambrosia, a cot, and no paperwork. The fortress looks after its own."}];
+    case "cain":
+      if(!F.cainDown) return fight(
+        [{n:"Cain",t:"If you're crawling back to salvage an alliance, you can save your strength."}],
+        ["cain"], ()=>{F.cainDown=true; queueDialog([{n:"The Prince",t:"If I am to stage my conquest of earth, I need a vessel. You have proven the only one vile enough."},{n:"",t:"The mark on Cain's forehead contends with the Prince's light. Tartarus yawns west."}]);}
+      );
+      return [{n:"Cain",t:"Sevenfold revenge has a check. He was part of that bargain too."}];
+    case "ridnax":
+      if(!F.ridnaxDown) return fight(
+        [{n:"Ridnax",t:"Dangerous things happen when you give a child that much power."}],
+        ["ridnax"], ()=>{F.ridnaxDown=true; addLore("Ridnax","Dangerous things happen when you give a five-year-old that much power. Cain's only regret was leaving the brother alive."); queueDialog([{n:"The Prince",t:"I wouldn't shed a tear for Ridnax. He set the stage nicely. The first act, if you will."},{n:"Cain",t:"My only regret is that I left his brother alive."}]);}
+      );
+      return [{n:"",t:"The first act is over."}];
+    case "prince":
+      return [{n:"The Prince",t:"I am the Son of the Morning. Worship me."},{n:"Cain",t:"..."},{n:"The Prince",t:"You can let me in of your own accord, or I can kick down the door."}];
+    case "druiel":
+        if(!F.chain){F.chain=true; state.items.diamond=(state.items.diamond||0)+1;
+        const joined=join("yearti",lead().lv);
+        state.heroes.xandir && (state.heroes.xandir.skills=["slash","drink","vesuvius","hurricane","seven"]);
+        addLore("Druiel's Chain","Forged to hold the Prince of Darkness as he was cast from the Heavens. Eleven links, if you count as Watchers count.");
+        return after([{n:"Druiel",t:"A chain? Is there an anchor to go with it?"},
+          {n:"Druiel",t:"This is no ordinary chain. It was forged to hold the Prince of Darkness as he was cast from the Heavens. Eleven links, if you count as Watchers count."},
+          {n:"Xandir",t:"Then we take it to the Eye."},
+          {n:"",t:joined?"The Binding Chain is yours. Sevenfold is remembered. Yearti finds you in the dark.":"The Binding Chain is yours. Sevenfold is remembered. Yearti is near, but four is a crowd."}],
+          ()=>{ if(!joined && state.heroes.yearti) offerSwap("yearti"); });}
+      return [{n:"Druiel",t:"Shut the Eye. Do not look too long into it."}];
+    case "lucifer":
+      if(!F.luciferDown){
+        if(!F.chain) return [{n:"Lucifer",t:"I am an angel of light, Clara. You are also a being of light. Though my light now exceeds yours, I imagine that makes us the same."},{n:"Clara",t:"I'm not the brightest star in the sky. But I know a chain when I need one."},{n:"",t:"Find Druiel in the north of Tartarus."}];
+        const links=F.links||0;
+        const begin=()=>startBattle(["lucifer"], ()=>{F.luciferDown=true; ending();});
+        const pages=[{n:"Lucifer",t:"Cain, son of Adam, worship me! I am the Son of the Morning!"},{n:"Xandir",t:"The End of Time is a sentence. It is not yours to collect."}];
+        if(links>=3) return fight(pages, ["lucifer"], ()=>{F.luciferDown=true; ending();});
+        return after(pages.concat([
+          {n:"Clara",t:"The chain looks thin. Druiel said eleven links, if you count as Watchers count."}
+        ]), ()=>openChoice("Clara", "You carry "+links+"/3 extra links. Gather the rest, or face him as you are.", [
+          {label:"Fight him now", fn:begin},
+          {label:"Gather the links first", leave:true, fn:()=>queueDialog([
+            {n:"Clara",t:"I'm not the brightest star in the sky. But I know a chain when I need one."},
+            {n:"",t:"Isda still knows the roads. Ganosh, Infernis, and Wilhelm keep what Druiel lost."}
+          ])}
+        ]));
+      }
+      return [{n:"",t:"The Eye is shut."}];
+    case "westover":
+      if(!F.westoverMet){
+        F.westoverMet=true;
+        addItem("flask");
+        addLore("Westover","Michael Westover locked the blinds and named the burns on Daren's arms. Judy already knew a snake when she saw one.");
+        return [
+          {n:"Westover",t:"The nameplate still says Michael Westover. Daren would leave the room to take his calls. He never told me he spoke another language."},
+          {n:"Westover",t:"Surely you noticed the burn marks? Hands, arms, even the lab coat singed."},
+          {n:"Judy",t:"Jertel was already watching. This flask is his arrangement, not mine."},
+          {n:"",t:"Received an Antidote Flask."}
+        ];
+      }
+      return [{n:"Westover",t:"Most of the stuff downstairs would be fatal if he'd been infected. I'm as much in the dark as you are."}];
+    case "thief":
+      if(!F.thiefMet){
+        F.thiefMet=true;
+        addLore("Den of Thieves","Hell sorts its suburbs by crime. After the Lower Court comes the Den, then the Bed of Iniquity, then the Dome of Death.");
+      }
+      if(hasItem("diamond") && !F.vaultDone){
+        return [{n:"Den Runner",t:"A Death Diamond. The Den still honors those. Johannes isn't in Hell's tea room forever—the Vault of Avarice sits above Serche's bowels. Ask the Whisperer."}];
+      }
+      return [{n:"Den Runner",t:"Buy a Death Diamond if you want the Den to talk. Petty criminals live in the Lower Court. We live further in."}];
+    case "ganosh":
+      if(!F.ganoshDown) return fight([
+        {n:"Xandir",t:"Well, well, well. Ganosh, I really did not think I'd ever see you again."},
+        {n:"Ganosh",t:"You'll be pleased to know I hold no ill will. One eye ruby, one obsidian—observant as ever."},
+        {n:"Ganosh",t:"It wasn't originally called Atlantis. The original name was Serche, and since I'm an old timer, I prefer to use it."},
+        {n:"Xandir",t:"For your information, I didn't exactly go to Elysian University."},
+        {n:"Ganosh",t:"In my book, Xandir, anger is a virtue. Follow me, and I will erase all of your doubts."}
+      ], ["ganosh"], ()=>{
+        F.ganoshDown=true; giveLink();
+        addLore("Serche","A city so corrupt it sank toward the Jaws of Hell—the opposite of Hennoch. Ganosh still prefers the old name to Atlantis.");
+        queueDialog([{n:"Ganosh",t:"The fruit will cause violent illness, but not its desired death. That attempt was lost."},{n:"",t:"A chain link remains in his green tunic."}]);
+      });
+      return [{n:"",t:"Auburn hair on the stone. The pool still sparkles like a lie."}];
+    case "hermes":
+      if(!F.hermesMet){
+        F.hermesMet=true;
+        addLore("Hermes","The messenger still trots Olympus. No winged sandals. He remembers Azazel, and a Watcher who became an Archangel of the same name.");
+        return [
+          {n:"Xandir",t:"I don't believe it. You're Hermes!"},
+          {n:"Judy",t:"If you're Hermes, where are those fancy sandals?"},
+          {n:"Hermes",t:"Perhaps not so well-informed as you imagined. Zeus, Hera, and I are only twelve self-styled gods. Have you heard of Azazel and his Watchers?"},
+          {n:"Hermes",t:"You mean the Archangel of the same name? The one who was cast out with Azazel? That would explain much."}
+        ];
+      }
+      return [{n:"Hermes",t:"Mars is a desolate rock. I laugh myself tired at anyone who calls this Olympus and means the other one."}];
+    case "echo":
+      F.nodVisited=true;
+      addLore("Nod","Clara grew too large for the cave. Jarom hummed a lullaby that was not quite heavenly.");
+      return [{n:"A Lullaby",t:"In Nod, Jarom hums a lullaby that is not quite heavenly. Clara is already too large for the cave."},
+        {n:"Clara",t:"Little Light reporting. Colas first. Destiny second."},
+        {n:"Jarom",t:"Clara, I promise no one else can hear us. You don't have to use the ridiculous code speak."}];
+    case "cola":
+      if(F.colaTaken) return [{n:"",t:"Sticky rings where the bottles were."}];
+      F.colaTaken=true; addItem("cake"); addItem("water");
+      return [{n:"",t:"Clara drank through all the colas. Two consolation cakes remain, and a flask of Serche water nobody should name out loud."}];
+    case "infernis":
+      if(!F.infernisDown) return fight([
+        {n:"Infernis",t:"Infernis. Though I am confused, oh giant, how you found this tower."},
+        {n:"Clara",t:"You were great once. Talk."},
+        {n:"Infernis",t:"Ridnax seeks to erase all memory of the Mark. We will enter Serche by taking the ferry through the Styx—I remember now how I tricked you last time."}
+      ], ["infernis"], ()=>{
+        F.infernisDown=true; F.towerDone=true; giveLink();
+        addLore("Infernis","A lesser demon who remembered the ferry. Ridnax wanted the Mark of Cain forgotten.");
+        queueDialog([{n:"Infernis",t:"The collar still burns. Take the link. Leave me the circle."}]);
+      });
+      return [{n:"",t:"A scorch mark in the shape of a cringe."}];
+    case "mark":
+      if(F.markSeen) return [{n:"",t:"The symbols of the Mark of Cain are already burned into memory."}];
+      F.markSeen=true; F.towerDone=true;
+      addLore("Mark of Cain","Once bestowed, the Mark opens doors the righteous were never meant to knock on.");
+      return [{n:"",t:"Symbols curl like green script. Now that you bear the Mark of Cain—or remember its shape—the Tower will not bar you again."}];
+    case "prisoner":
+      if(F.johannesFree) return [{n:"",t:"The cell is open. Johannes is no longer a guest of Avarice."}];
+      F.johannesFree=true; F.vaultDone=true; F.johannesHint=true;
+      addItem("feast"); addItem("diamond");
+      addLore("Vault of Avarice","They breached the Vault to free Johannes. Serche had already fallen; the old man had not.");
+      return [{n:"Johannes",t:"Serche has fallen, but I do not see—ah. You came the Whisperer's way."},
+        {n:"Johannes",t:"The king of Serche was obsessed with finding and using what should not be used. Take what Avarice can spare."},
+        {n:"",t:"Johannes walks free. An Ambrosia Feast and a Death Diamond change pockets."}];
+    case "avarice":
+      if(F.avariceTaken) return [{n:"",t:"The chest is a mouth that has already spoken."}];
+      F.avariceTaken=true; addItem("diamond"); state.manna+=80;
+      return [{n:"",t:"Coin and a Death Diamond, still cold from Serche."}];
+    case "queen":
+      F.queenMet=true; F.londonDone=true;
+      addLore("Queen of Light","London falling, and a queen who would not dim. She named Beelzebub without flinching.");
+      return [{n:"Queen of Light",t:"London is falling, and I will not dim for flies."},
+        {n:"Queen of Light",t:"Jennings was only a puppet. The Lord of the Flies kept a true shape for cities that still had palaces."},
+        {n:"Clara",t:"Then we swat him properly."}];
+    case "beelzebub":
+      if(!F.beelzebubDown) return fight(
+        [{n:"Beelzebub",t:"Confirmed, Big Halo? No. This chariot is mine."},{n:"Clara",t:"I was thinking attack plan Jericho."},{n:"Jarom",t:"You don't have to use the ridiculous code speak."}],
+        ["beelzebub"], ()=>{
+          F.beelzebubDown=true; F.londonDone=true; giveLink();
+          addLore("Lord of the Flies","Beelzebub's true form outlived the puppet president. Jericho, for once, was the right name.");
+          queueDialog([{n:"",t:"The flies scatter over the Thames. A chain link remains in the ash."}]);
+        }
+      );
+      return [{n:"",t:"A bright mark, and no president left to wear it."}];
+    case "wilhelm":
+      F.wilhelmMet=true;
+      if(F.azazelDown && !F.wilhelmLink){
+        F.wilhelmLink=true;
+        giveLink();
+        addLore("The Grimm Watchers","Wilhelm and Jakob met a lost mother in the woods. She named her sons after them. The boys shared the stories with the world.");
+        return [{n:"Wilhelm",t:"This Chain once held the Prince of Darkness. Take a link. We have our own gold."},
+          {n:"Wilhelm",t:"No one has much time for stories anymore. That's a shame. They really are a treasure."}];
+      }
+      return [{n:"Wilhelm",t:"I am Jakob's brother. Yes, those Grimm names. We met their pregnant mother in the woods and saved her when she was lost."},
+        {n:"Wilhelm",t:"How long has it been since you've seen Azazel? He keeps to the cave. Blue gem or crimson—the forest remembers both."}];
+    case "jakob":
+      F.wilhelmMet=true;
+      addLore("The Grimm Watchers","Wilhelm and Jakob met a lost mother in the woods. She named her sons after them. The boys shared the stories with the world.");
+      return [{n:"Jakob",t:"I am Jakob and this is Wilhelm. Both voices older than the faces. Like claws on dry bark."},
+        {n:"Jakob",t:"I hate to disappoint, but I've already got a chain. Yours once held the Prince. His still hunts Watchers."}];
+    case "azazel":
+      if(!F.azazelDown) return fight(
+        [{n:"Azazel",t:"You did knowingly abet me, Xandir. Heaven called it a sentence. I called it a beginning."},
+         {n:"The Columns",t:"Along with your fellow Watchers you revealed Heaven's secrets to humankind."},
+         {n:"Azazel",t:"And the Giants were born. You still carry the swords they gave you for that crime."}],
+        ["azazel"], ()=>{
+          F.azazelDown=true;
+          addLore("Azazel","The rogue angel Heaven named in Xandir's sentence still walked Blacker Forest, where Watchers tell stories that became Grimm.");
+          queueDialog([{n:"Azazel",t:"Tell Wilhelm the hunt is over. He never believed in endings."}]);
+        }
+      );
+      return [{n:"",t:"The cave smells of old stories."}];
+    case "smargad":
+      addLore("Smargad","Cain would provide fruit of the Tree of Death. Demons and possessed world leaders were invited to the tasting.");
+      return [{n:"Smargad",t:"I'm not sure, great one. All I know is this: Cain promised the fruit, and the leaders of the world would come possessed, or not at all."},
+        {n:"Clara",t:"The Tree still stands."},
+        {n:"Smargad",t:"It would be foolish to taste it. I can help you with that. I know I can."}];
+    case "tree":
+      if(!F.treeDown) return fight(
+        [{n:"",t:"Black bark. Leafless branches like an arthritic hand. A scant number of green, rotting fruits."},
+         {n:"Ganosh",t:"Everything has its opposite. Even this tree."}],
+        ["tree"], ()=>{
+          F.treeDown=true; addItem("fruit",2);
+          addLore("Tree of Death","A grotesque parody of Eden's tree. Its fruit was meant to strip immortality from angels. It was never quite finished.");
+          queueDialog([{n:"",t:"Two Death Fruits, still warm with almost-purpose."}]);
+        }
+      );
+      return [{n:"",t:"The counterfeit tree is timber."}];
+    case "esther":
+      F.estherHelped=true;
+      addLore("Esther","Japeth is held on the third floor below the main floor, in a cell marked forty-two. Esther lives in the fourth district, barracks 15.");
+      return [{n:"Esther",t:"His name is Japeth, and mine is Esther. Cell forty-two. I bribed a guard to learn that much."},
+        {n:"Clara",t:"We'll do our best, Esther. But we need to go if we don't want to be late for our shift."},
+        {n:"Esther",t:"Thank you. You are Heaven-sent. If you can, please let me know. Fourth district, barracks 15."}];
+    case "japeth":
+      if(!F.estherHelped) return [{n:"Japeth",t:"..."},{n:"",t:"A prisoner too afraid to speak. Someone on the main floor is still asking after him."}];
+      if(!F.japethFree){
+        F.japethFree=true; addItem("flask"); state.manna+=40;
+        return [{n:"Clara",t:"Is your name Japeth?"},
+          {n:"Japeth",t:"Esther sent you. Then I am not forgotten."},
+          {n:"",t:"Japeth walks as far as Tartarus allows. An Antidote Flask changes hands."}];
+      }
+      return [{n:"Japeth",t:"Tell Esther I heard her. That is enough for a man in cell forty-two."}];
+  }
+  return [{n:"",t:"..."}];
+}
+
+function shopWares(){
+  return [{id:"cake",price:20},{id:"water",price:25},{id:"flask",price:40},{id:"feast",price:90},{id:"diamond",price:120}];
+}
+function openShop(){
+  const opts=shopWares().map(w=>{
+    const it=ITEMS[w.id];
+    return {label:it.name+" — "+w.price, fn:()=>buyWare(w)};
+  });
+  opts.push({label:"Leave", leave:true, fn:()=>{}});
+  openChoice("Manna Keeper", "Manna only. No credit in Heaven or Nod. You have "+state.manna+".", opts);
+}
+function buyWare(w){
+  if(state.manna<w.price){
+    queueDialog([{n:"Manna Keeper",t:ITEMS[w.id].name+" costs "+w.price+". You have only "+state.manna+" manna."}], ()=>openShop());
+    return;
+  }
+  state.manna-=w.price;
+  addItem(w.id);
+  toast("Bought "+ITEMS[w.id].name+".");
+  sfx("ok");
+  openShop();
+}
+function shopTalk(){
+  return after([{n:"Manna Keeper",t:"Manna only. No credit in Heaven or Nod. What will you take?"}], ()=>openShop());
+}
+
+function isdaDests(){
+  const f=state.flags, d=[];
+  if(f.reborn) d.push({name:"Land of Nod",to:"nod",tx:4,ty:10});
+  if(f.claraJoined) d.push({name:"Forgotten Tower",to:"tower",tx:5,ty:12});
+  if(f.johannesHint||f.infernisDown||f.thiefMet) d.push({name:"Vault of Avarice",to:"vault",tx:3,ty:10});
+  if(f.jenningsDown) d.push({name:"London Falling",to:"london",tx:5,ty:11});
+  if(f.xandirJoined||state.act>=3) d.push({name:"Blacker Forest",to:"blacker",tx:4,ty:8});
+  if(f.londonDone||f.queenMet||f.ganoshDown) d.push({name:"Nineveh Sands",to:"nineveh",tx:6,ty:10});
+  return d;
+}
+function openIsdaRoads(){
+  const dests=isdaDests();
+  const opts=dests.map(w=>({
+    label:w.name,
+    fn:()=>{
+      if(w.to===state.map) toast("You are already here.");
+      else warp(w.to,w.tx,w.ty);
+    }
+  }));
+  opts.push({label:"Stay", leave:true, fn:()=>{}});
+  openChoice("Isda", dests.length?"Which road shall I whisper?":"No road will open yet. Walk the duty you have.", opts);
+}
+function isdaTalk(){
+  const F=state.flags;
+  if(!F.isdaMet){
+    F.isdaMet=true;
+    addLore("The Whisperer","I'm Isda. And I am here because of you. Whisperers don't even have to whisper.");
+    return after([
+      {n:"Isda",t:"I'm Isda. And I am here because of you."},
+      {n:"Xandir",t:"Wait a minute. What's your name? Why didn't I see you before?"},
+      {n:"Isda",t:"I do not usually get the big picture. I'm a Whisperer. Tell me the road, and I will open it."}
+    ], ()=>openIsdaRoads());
+  }
+  return after([{n:"Isda",t:"Then whisper me something. I know a few roads the Seraphs would rather stay shut."}], ()=>openIsdaRoads());
+}
+
+function openChoice(who, prompt, opts){
+  if(!opts || !opts.length) return;
+  choice={who:who||" ", prompt:prompt||"", opts, sel:0};
+  mode="choice";
+  show(els.dialog,false);
+  show(els.menu,false);
+  show(els.choice,true);
+  paintChoice();
+  sfx("menu");
+}
+function paintChoice(){
+  if(!choice) return;
+  els.cWho.textContent=choice.who||" ";
+  els.cTxt.textContent=choice.prompt||"";
+  els.cOpts.innerHTML=choice.opts.map((o,i)=>`<button class="${i===choice.sel?"on":""}">${o.label}</button>`).join("");
+}
+function closeChoice(){
+  show(els.choice,false);
+  choice=null;
+  if(mode==="choice") mode="explore";
+}
+function choiceInput(which){
+  if(!choice) return;
+  const n=choice.opts.length;
+  if(which==="up"){ choice.sel=(choice.sel+n-1)%n; paintChoice(); sfx("menu"); return; }
+  if(which==="down"){ choice.sel=(choice.sel+1)%n; paintChoice(); sfx("menu"); return; }
+  if(which==="cancel"){
+    const leave=choice.opts.find(o=>o.leave)||choice.opts[n-1];
+    closeChoice();
+    leave&&leave.fn&&leave.fn();
+    return;
+  }
+  if(which==="ok"){
+    const o=choice.opts[choice.sel];
+    closeChoice();
+    o&&o.fn&&o.fn();
+  }
+}
+
+function openFormation(){
+  const waiting=bench();
+  if(!waiting.length){ toast("No one waits behind."); return; }
+  const opts=state.party.map(pid=>{
+    const nm=state.heroes[pid].name;
+    return {label:"Replace "+nm, fn:()=>{
+      openChoice("Marching order", "Who takes "+nm+"'s place?", waiting.map(bid=>({
+        label:state.heroes[bid].name,
+        fn:()=>{ swapInto(bid, pid); toast(state.heroes[bid].name+" walks. "+nm+" waits."); }
+      })).concat([{label:"Cancel", leave:true, fn:()=>{}}]));
+    }};
+  });
+  opts.push({label:"Keep this four", leave:true, fn:()=>{}});
+  openChoice("Marching order", "Only four may walk. Who sits out?", opts);
+}
+
+function ending(){
+  if(mode==="choice") closeChoice();
+  hideCard();
+  mode="end";
+  show(els.bui,false); show(els.blog,false); show(els.dialog,false);
+  els.endTxt.innerHTML="The Eye closes. The chain holds. Somewhere in the Himalayas, Eden opens a curtain on snow, and Judy asks if guardian angels are allowed to ski.<br><br>In Nod, Jarom hums a lullaby that is not quite heavenly. Clara is already too large for the cave.<br><br>Xandir looks at his hands—mortal, marked, still his—and does not sheathe the swords.<br><br>The End of Time is not yet written.";
+  show(els.end,true);
+  sfx("win");
+  try{localStorage.removeItem(SAVE);}catch(e){}
+  $("btnContinue").disabled=true;
+}
+
+function tryMove(dx,dy){
+  if(mode!=="explore"||state.moving) return;
+  if(dx<0) state.facing="left"; else if(dx>0) state.facing="right";
+  else if(dy<0) state.facing="up"; else state.facing="down";
+  const nx=state.x+dx, ny=state.y+dy;
+  const w=(map().warps||[]).find(w=>w.x===nx&&w.y===ny);
+  if(w){
+    if(w.need && !state.flags[w.need]) {toast("Sealed."); return;}
+    warp(w.to,w.tx,w.ty); return;
+  }
+  if(blocked(nx,ny)) return;
+  state.moving=true; state.t=0; state.fromX=state.x; state.fromY=state.y; state.toX=nx; state.toY=ny;
+}
+
+function onStep(){
+  state.x=state.toX; state.y=state.toY; state.moving=false; state.steps++;
+  sfx("step");
+  encounterLock--;
+  const m=map();
+  if(m.encRate && encounterLock<=0 && m.enc.length && Math.random()<m.encRate && !window.TLA?.noEnc){
+    encounterLock=16;
+    const group=[]; const n=1+Math.floor(Math.random()*Math.min(3,m.enc.length));
+    for(let i=0;i<n;i++) group.push(m.enc[Math.floor(Math.random()*m.enc.length)]);
+    startBattle(group);
+  }
+}
+
+function stOf(u){ if(!u.st) u.st={}; return u.st; }
+function inflict(u,kind,n){ const s=stOf(u); s[kind]=Math.max(s[kind]||0,n); }
+function cleanse(u){ if(!u) return; u.st={}; }
+function statusLabel(u){
+  const s=u&&u.st||{}; const t=[];
+  if(s.burn) t.push("BRN"); if(s.poison) t.push("PSN"); if(s.song) t.push("SNG");
+  if(s.sleep) t.push("SLP"); if(s.mute) t.push("MUT"); if(s.mark) t.push("MRK");
+  return t.join(" ");
+}
+function tickStatus(u){
+  const s=stOf(u); const notes=[];
+  if(s.burn){ const d=Math.max(3,Math.min(10,Math.round(u.maxHp*0.055))); u.hp=Math.max(0,u.hp-d); s.burn--; notes.push("burn "+d); if(!s.burn) delete s.burn; }
+  if(s.poison){ const d=Math.max(2,Math.min(8,Math.round(u.maxHp*0.04))); u.hp=Math.max(0,u.hp-d); s.poison--; notes.push("venom "+d); if(!s.poison) delete s.poison; }
+  if(s.song){ s.song--; if(!s.song) delete s.song; }
+  if(s.mute){ s.mute--; if(!s.mute) delete s.mute; }
+  if(s.mark){ s.mark--; if(!s.mark) delete s.mark; }
+  if(u.hp<=0) u.alive=false;
+  return notes;
+}
+function hurt(atk,def,pow,el){
+  const defStat=def.defending?def.def*2:def.def;
+  let d=dmgCalc(atk.atk,defStat,pow,el||atk.el,def.el);
+  if(def.st&&def.st.mark) d=Math.round(d*1.4);
+  def.hp=Math.max(0,def.hp-d);
+  if(def.hp<=0) def.alive=false;
+  def.defending=false;
+  if(def.st&&def.st.sleep) delete def.st.sleep;
+  return d;
+}
+
+function cloneEnemy(id){
+  const e=ENEMIES[id]; if(!e) return null;
+  const lv=lead()?lead().lv:1;
+  const sc=e.boss?1+(Math.max(0,lv-8)*0.03):1+(lv-1)*0.07;
+  const hp=Math.round(e.hp*sc);
+  return {sid:id,name:e.name,hp,maxHp:hp,atk:Math.round(e.atk*sc),def:Math.round(e.def*sc),spd:e.spd,
+    exp:Math.round(e.exp*sc),manna:Math.round(e.manna*sc),el:e.el,pal:e.pal,boss:!!e.boss,alive:true,st:{}};
+}
+
+function startBattle(ids,onWin){
+  if(mode==="choice") closeChoice();
+  hideCard();
+  if(mode==="battle" && battle && !battle.over) return;
+  show(els.dialog,false); show(els.menu,false); show(els.prompt,false);
+  state.party.forEach(id=>{const h=state.heroes[id]; if(h.hp<=0) h.hp=Math.max(1,Math.floor(h.maxHp*0.3)); h.alive=h.hp>0; h.defending=false; h.st={};});
+  const foes=ids.map(cloneEnemy).filter(Boolean);
+  if(!foes.length){ toast("Nothing answers."); return; }
+  const links=state.flags.links||0;
+  if(foes.some(e=>e.sid==="lucifer") && links>=3){
+    toast("Druiel's chain tightens!");
+    foes.forEach(e=>{
+      if(e.sid==="lucifer"){ e.def=Math.max(4,e.def-8); e.maxHp=Math.max(80,e.maxHp-80); e.hp=e.maxHp; }
+    });
+  }
+  battle={enemies:foes, heroes:state.party.map(id=>state.heroes[id]),
+    queue:[], sel:0, menu:"main", target:0, log:"A presence bars the way!", onWin:onWin||null, flash:0,
+    chain:links, tighten:0};
+  buildQueue();
+  mode="battle";
+  show(els.bui,true); show(els.blog,true); show(els.hud,false);
+  paintBattle();
+  nextTurn();
+}
+
+function buildQueue(){
+  const units=[];
+  battle.heroes.forEach((h,i)=>{if(h.hp>0) units.push({side:"h",i,spd:h.spd+Math.random()*3});});
+  battle.enemies.forEach((e,i)=>{if(e.hp>0) units.push({side:"e",i,spd:e.spd+Math.random()*3});});
+  units.sort((a,b)=>b.spd-a.spd);
+  battle.queue=units;
+}
+
+function alive(side){return (side==="h"?battle.heroes:battle.enemies).filter(u=>u.hp>0);}
+
+function checkEnd(){
+  if(!alive("e").length){ winBattle(); return true; }
+  if(!alive("h").length){ loseBattle(); return true; }
+  return false;
+}
+
+function nextTurn(){
+  if(!battle || mode!=="battle" || battle.over) return;
+  if(checkEnd()) return;
+  if(!battle.queue.length) buildQueue();
+  let t=battle.queue.shift();
+  let guard=0;
+  while(t && ((t.side==="h"&&battle.heroes[t.i].hp<=0)||(t.side==="e"&&battle.enemies[t.i].hp<=0)) && guard++<24){
+    if(!battle.queue.length) buildQueue();
+    t=battle.queue.shift();
+  }
+  if(!t){ if(!checkEnd()){ buildQueue(); t=battle.queue.shift(); } else return; }
+  if(!t) return;
+  battle.cur=t;
+  const u=t.side==="h"?battle.heroes[t.i]:battle.enemies[t.i];
+  const notes=tickStatus(u);
+  if(notes.length) battle.log=u.name+" suffers "+notes.join(", ")+".";
+  if(u.hp<=0){ if(notes.length) paintBattle(); setTimeout(nextTurn, notes.length?420:40); return; }
+  if(u.st&&u.st.sleep){
+    if(Math.random()<0.3){ delete u.st.sleep; battle.log=u.name+" stirs."; paintBattle(); }
+    else {
+      u.st.sleep--; if(!u.st.sleep) delete u.st.sleep;
+      battle.log=u.name+" sleeps."; paintBattle(); setTimeout(nextTurn, 420); return;
+    }
+  }
+  if(t.side==="e" && u.st&&u.st.song){
+    battle.log=u.name+" sways to Jubal's strain.";
+    paintBattle(); setTimeout(nextTurn, 450); return;
+  }
+  if(t.side==="h"){ battle.menu="main"; battle.sel=0; paintBattle(); }
+  else setTimeout(()=>{ if(battle&&mode==="battle"&&!battle.over) enemyAct(t); }, 420);
+}
+
+function pickHero(){ const hs=alive("h"); return hs[Math.floor(Math.random()*hs.length)]; }
+
+function finishEnemy(msg){
+  if(!battle||battle.over) return;
+  battle.log=msg; sfx("hurt"); battle.flash=8; paintBattle();
+  setTimeout(nextTurn, 520);
+}
+
+function enemyAct(t){
+  if(!battle||mode!=="battle"||battle.over) return;
+  const e=battle.enemies[t.i]; if(!e||e.hp<=0){ nextTurn(); return; }
+  if(!alive("h").length) return;
+  if(e.sid==="tree"){
+    battle.menu="tree"; battle.sel=0;
+    battle.log="The Tree of Death offers its fruit. Green. Rotting. Almost finished.";
+    paintBattle(); return;
+  }
+  const tgt=pickHero(); if(!tgt) return;
+  const sid=e.sid;
+  if(sid==="vesuvius"){
+    const hits=alive("h").map(h=>{ inflict(h,"burn",2); return hurt(e,h,0.68,"fire"); });
+    finishEnemy("The mountain's grief falls on everyone. "+hits[0]+" and a light burn.");
+    return;
+  }
+  if(sid==="spark"){
+    alive("h").forEach(h=>{ inflict(h,"burn",3); hurt(e,h,0.52,"fire"); });
+    finishEnemy("Sparkslinger sets the house alight.");
+    return;
+  }
+  if(sid==="ashb"){
+    alive("h").forEach(h=>{ h.mp=Math.max(0,h.mp-6); });
+    inflict(tgt,"burn",2);
+    const d=hurt(e,tgt,1.0,"fire");
+    finishEnemy("Ashbreather fills the lungs. "+tgt.name+" takes "+d+".");
+    return;
+  }
+  if(sid==="dusteater"){
+    if(Math.random()<0.55){ inflict(tgt,"sleep",2); const d=hurt(e,tgt,0.55,"dark"); finishEnemy("Dusteater breathes dust. "+tgt.name+" sways. "+d+"."); }
+    else { const d=hurt(e,tgt,1.15,"dark"); finishEnemy("Dusteater strikes "+tgt.name+" for "+d+"."); }
+    return;
+  }
+  if(sid==="jennings"||sid==="beelzebub"){
+    inflict(tgt,"poison",3);
+    const d=hurt(e,tgt,1.05,"dark");
+    finishEnemy((sid==="beelzebub"?"Beelzebub":"Puppet Jennings")+" sends the flies. "+tgt.name+" takes "+d+" and venom.");
+    return;
+  }
+  if(sid==="ares"){
+    e.atk=Math.min(40,e.atk+2);
+    const d=hurt(e,tgt,1.15,"phys");
+    finishEnemy("Ares grows hungrier. "+tgt.name+" takes "+d+".");
+    return;
+  }
+  if(sid==="cain"){
+    inflict(tgt,"mark",3);
+    const d=hurt(e,tgt,1.12,"dark");
+    finishEnemy("Cain writes the first murder on "+tgt.name+". "+d+".");
+    return;
+  }
+  if(sid==="ridnax"){
+    const pow=0.4+Math.random()*1.45;
+    const d=hurt(e,tgt,pow,"dark");
+    finishEnemy("Ridnax's blow comes crooked. "+tgt.name+" takes "+d+".");
+    return;
+  }
+  if(sid==="ganosh"){
+    const rage=e.hp<e.maxHp*0.5;
+    const d=hurt(e,tgt,rage?1.55:1.08,"phys");
+    finishEnemy(rage?("Ganosh: anger is a virtue. "+d+"."):(e.name+" strikes "+tgt.name+" for "+d+"."));
+    return;
+  }
+  if(sid==="infernis"){
+    if(Math.random()<0.4){ finishEnemy("The collar of Cain yanks Infernis still."); return; }
+    inflict(tgt,"mute",2);
+    const d=hurt(e,tgt,1.05,"fire");
+    finishEnemy("Infernis burns "+tgt.name+" for "+d+". The collar bites him too.");
+    return;
+  }
+  if(sid==="azazel"){
+    inflict(tgt,"mute",3);
+    const d=hurt(e,tgt,1.12,"holy");
+    finishEnemy("Azazel takes the tongue. "+tgt.name+" takes "+d+".");
+    return;
+  }
+  if(sid==="lucifer"){
+    if((battle.chain||0)>=3){
+      battle.tighten=(battle.tighten||0)+1;
+      e.atk=Math.max(12,e.atk-1);
+      e.def=Math.max(4,e.def-1);
+      e.hp=Math.max(1,e.hp-Math.round(e.maxHp*0.04));
+      if(e.hp<=0){ e.alive=false; finishEnemy("The gold chain finishes what Heaven began."); return; }
+      const d=hurt(e,tgt,0.9,"holy");
+      finishEnemy("The chain tightens. Light still cuts "+tgt.name+" for "+d+".");
+      return;
+    }
+    const d=hurt(e,tgt,1.05,"holy");
+    finishEnemy("The Son of the Morning strikes "+tgt.name+" for "+d+".");
+    return;
+  }
+  const d=hurt(e,tgt,1,e.el);
+  finishEnemy(e.name+" strikes "+tgt.name+" for "+d+"!");
+}
+
+function dmgCalc(atk,def,pow,el,tgtEl){
+  let m=pow*(0.88+Math.random()*0.24);
+  if(tgtEl && ((el==="fire"&&tgtEl==="ice")||(el==="holy"&&tgtEl==="dark")||(el==="ice"&&tgtEl==="fire"))) m*=1.35;
+  return Math.max(1,Math.round((atk*m)-(def*0.45)));
+}
+
+function heroCommand(which){
+  if(mode!=="battle"||!battle||battle.over) return;
+  if(battle.menu==="tree"){
+    if(which==="up"||which==="down"||which==="left"||which==="right") battle.sel=1-battle.sel;
+    if(which==="cancel"){ battle.sel=1; which="ok"; }
+    if(which==="ok"){
+      const tree=battle.enemies.find(e=>e.sid==="tree"&&e.hp>0);
+      const eater=alive("h").slice().sort((a,b)=>b.hp-a.hp)[0];
+      if(!tree||!eater){ battle.menu="main"; nextTurn(); return; }
+      if(battle.sel===0){
+        const bite=Math.max(8,Math.round(eater.maxHp*0.22));
+        eater.hp=Math.max(0,eater.hp-bite);
+        if(eater.hp<=0) eater.alive=false;
+        inflict(eater,"poison",3);
+        tree.hp=Math.max(0,tree.hp-(70+Math.floor(Math.random()*25)));
+        if(tree.hp<=0) tree.alive=false;
+        battle.log=eater.name+" tastes the fruit. It was never quite finished. The tree still screams.";
+      } else {
+        const d=hurt(tree,eater,1.25,"dark");
+        battle.log="The branches close like an arthritic hand. "+eater.name+" takes "+d+".";
+      }
+      battle.menu="main"; sfx("hurt"); battle.flash=8; paintBattle();
+      setTimeout(nextTurn, 520);
+    }
+    paintBattle(); return;
+  }
+  if(!battle.cur||battle.cur.side!=="h") return;
+  const h=battle.heroes[battle.cur.i];
+  if(battle.menu==="main"){
+    if(which==="ok"){
+      const opts=["Fight","Skill","Item","Defend"];
+      const c=opts[battle.sel];
+      if(c==="Fight"){battle.menu="target"; battle.skill=null; battle.item=null; battle.target=firstLive("e");}
+      if(c==="Skill"){
+        if(h.st&&h.st.mute){ battle.log=h.name+" cannot shape a word."; sfx("hurt"); }
+        else { battle.menu="skill"; battle.sel=0; }
+      }
+      if(c==="Item"){battle.menu="item"; battle.sel=0;}
+      if(c==="Defend"){h.defending=true; battle.log=h.name+" stands ready."; sfx("ok"); setTimeout(nextTurn,350);}
+    }
+    if(which==="up") battle.sel=(battle.sel+3)%4;
+    if(which==="down") battle.sel=(battle.sel+1)%4;
+  } else if(battle.menu==="skill"){
+    const sk=h.skills;
+    if(which==="up") battle.sel=(battle.sel+sk.length-1)%sk.length;
+    if(which==="down") battle.sel=(battle.sel+1)%sk.length;
+    if(which==="cancel"){battle.menu="main"; battle.sel=1;}
+    if(which==="ok"){
+      const sid=sk[battle.sel], S=SKILLS[sid];
+      if(h.mp<S.mp){battle.log="Not enough spirit."; sfx("hurt"); paintBattle(); return;}
+      if(h.st&&h.st.mute){battle.log=h.name+" cannot shape a word."; sfx("hurt"); paintBattle(); return;}
+      battle.skill=sid;
+      if(S.tgt==="enemy"||S.tgt==="enemies"){battle.menu="target"; battle.target=firstLive("e");}
+      else if(S.tgt==="ally"){battle.menu="targetH"; battle.target=0;}
+      else {resolveHero(); return;}
+    }
+  } else if(battle.menu==="item"){
+    const list=itemList();
+    if(!list.length){battle.log="No items."; battle.menu="main"; paintBattle(); return;}
+    if(which==="up") battle.sel=(battle.sel+list.length-1)%list.length;
+    if(which==="down") battle.sel=(battle.sel+1)%list.length;
+    if(which==="cancel"){battle.menu="main"; battle.sel=2;}
+    if(which==="ok"){
+      battle.item=list[battle.sel].id;
+      const it=ITEMS[battle.item];
+      if(it.dmg){battle.menu="target"; battle.target=firstLive("e");}
+      else if(it.healAll||it.rnd||it.mpAll){ resolveHero(); return; }
+      else {battle.menu="targetH"; battle.target=0;}
+    }
+  } else if(battle.menu==="target"){
+    const es=battle.enemies;
+    if(which==="left"||which==="up") battle.target=prevLive("e",battle.target);
+    if(which==="right"||which==="down") battle.target=nextLive("e",battle.target);
+    if(which==="cancel"){battle.menu="main"; battle.sel=0;}
+    if(which==="ok") resolveHero();
+  } else if(battle.menu==="targetH"){
+    if(which==="up") battle.target=(battle.target+battle.heroes.length-1)%battle.heroes.length;
+    if(which==="down") battle.target=(battle.target+1)%battle.heroes.length;
+    if(which==="cancel"){battle.menu=battle.skill?"skill":"item";}
+    if(which==="ok") resolveHero();
+  }
+  paintBattle();
+}
+
+function firstLive(side){const a=side==="e"?battle.enemies:battle.heroes; return a.findIndex(u=>u.hp>0);}
+function nextLive(side,i){const a=side==="e"?battle.enemies:battle.heroes; for(let k=1;k<=a.length;k++){const j=(i+k)%a.length; if(a[j].hp>0) return j;} return i;}
+function prevLive(side,i){const a=side==="e"?battle.enemies:battle.heroes; for(let k=1;k<=a.length;k++){const j=(i-k+a.length)%a.length; if(a[j].hp>0) return j;} return i;}
+function itemList(){return Object.keys(state.items).filter(k=>state.items[k]>0).map(id=>({id,...ITEMS[id],n:state.items[id]}));}
+
+function resolveHero(){
+  if(!battle||battle.over||!battle.cur) return;
+  const h=battle.heroes[battle.cur.i];
+  h.defending=false;
+  if(battle.item){
+    const it=ITEMS[battle.item]; const tgt=battle.heroes[battle.target]||h;
+    if(it.heal){tgt.hp=Math.min(tgt.maxHp,tgt.hp+it.heal); battle.log=tgt.name+" eats "+it.name+".";}
+    if(it.healAll){battle.heroes.forEach(x=>{if(x.hp>0)x.hp=Math.min(x.maxHp,x.hp+it.heal);}); battle.log="The feast is shared.";}
+    if(it.mp){tgt.mp=Math.min(tgt.maxMp,tgt.mp+it.mp); battle.log=tgt.name+" drinks Serche.";}
+    if(it.mpAll){battle.heroes.forEach(x=>{if(x.hp>0)x.mp=Math.min(x.maxMp,x.mp+it.mpAll);}); battle.log="Let the music take you away.";}
+    if(it.cleanse){
+      if(it.healAll||it.mpAll) battle.heroes.forEach(cleanse); else cleanse(tgt);
+      battle.log=(tgt.name||h.name)+" is clean of burn and venom.";
+    }
+    if(it.song){ alive("e").forEach(e=>inflict(e,"song",2)); battle.log="Let the music take you away. The dark forgets its purpose."; }
+    if(it.dmg){
+      const e=battle.enemies[battle.target]||alive("e")[0];
+      if(e){
+        let d=it.dmg;
+        if(battle.item==="fruit"&&e.sid==="tree") d=Math.round(d*1.75);
+        e.hp=Math.max(0,e.hp-d);
+        if(e.hp<=0) e.alive=false;
+        battle.log=(battle.item==="fruit"&&e.sid==="tree")?"The unfinished fruit turns on its tree. "+d+".":("The diamond bites "+e.name+"!");
+      }
+    }
+    if(it.rnd){const k=Math.random(); if(k<.5){h.hp=Math.min(h.maxHp,h.hp+40); battle.log="The wishbone blesses.";} else {alive("e").forEach(e=>e.hp=Math.max(0,e.hp-25)); battle.log="The wishbone... interprets Judy."}}
+    state.items[battle.item]--; sfx(it.dmg?"hit":"heal");
+  } else if(battle.skill){
+    const S=SKILLS[battle.skill]; h.mp-=S.mp;
+    if(S.heal){
+      const apply=u=>{if(u.hp>0) u.hp=Math.min(u.maxHp,u.hp+S.heal);};
+      if(S.tgt==="allies") battle.heroes.forEach(apply); else if(S.tgt==="self") apply(h); else apply(battle.heroes[battle.target]||h);
+      if(S.cleanse){
+        if(S.tgt==="allies") battle.heroes.forEach(cleanse);
+        else if(S.tgt==="self") cleanse(h);
+        else cleanse(battle.heroes[battle.target]||h);
+      }
+      battle.log=h.name+" uses "+S.name+(S.cleanse?" The house is clean.":".");
+      sfx("heal");
+    } else {
+      const tgts=S.tgt==="enemies"?alive("e"):[battle.enemies[battle.target]].filter(e=>e&&e.hp>0);
+      let last=0;
+      tgts.forEach(e=>{
+        if(!e) return;
+        const d=hurt(h,e,S.pow,S.el);
+        last=d;
+        if(S.drain) h.hp=Math.min(h.maxHp,h.hp+Math.round(d*0.35));
+      });
+      battle.log=h.name+" "+S.name+"! "+last+" damage.";
+      sfx("hit");
+    }
+  } else {
+    const e=battle.enemies[battle.target];
+    if(!e||e.hp<=0){ battle.target=firstLive("e"); if(battle.target<0){ nextTurn(); return; } }
+    const foe=battle.enemies[battle.target];
+    const d=hurt(h,foe,1,"phys");
+    battle.log=h.name+" attacks! "+d+" damage.";
+    sfx("hit");
+  }
+  battle.skill=null; battle.item=null; battle.menu="main"; battle.flash=6;
+  paintBattle();
+  setTimeout(nextTurn, 480);
+}
+
+function winBattle(){
+  if(!battle || battle.over) return;
+  battle.over=true;
+  battle.heroes.forEach(h=>{h.st={}; h.defending=false;});
+  const exp=battle.enemies.reduce((a,e)=>a+e.exp,0);
+  const man=battle.enemies.reduce((a,e)=>a+e.manna,0);
+  state.manna+=man;
+  const names=[];
+  battle.heroes.forEach(h=>{
+    if(h.hp>0){h.exp+=exp; while(h.exp>=h.next){h.exp-=h.next; h.lv++; h.next=h.lv*40+40; h.maxHp+=8; h.maxMp+=3; h.hp=h.maxHp; h.mp=h.maxMp; h.atk+=2; h.def+=1; h.spd+=1; names.push(h.name+" reaches level "+h.lv+"!");}}
+  });
+  const onWin=battle.onWin;
+  battle.log="Victory. +"+exp+" exp, +"+man+" manna. "+names.join(" ");
+  sfx("win"); paintBattle();
+  setTimeout(()=>{
+    show(els.bui,false); show(els.blog,false); show(els.hud,true);
+    mode="explore"; battle=null; renderHUD();
+    if(onWin) onWin(); else if(names.length) toast(names[0]);
+  }, 900);
+}
+
+function loseBattle(){
+  if(!battle || battle.over) return;
+  battle.over=true;
+  battle.heroes.forEach(h=>{h.st={}; h.defending=false;});
+  battle.log="The party falls...";
+  paintBattle();
+  setTimeout(()=>{
+    show(els.bui,false); show(els.blog,false);
+    queueDialog([{n:"",t:"Darkness. Then a familiar column of light. Heaven is not finished with you."}],()=>{
+      state.party.forEach(id=>{const h=state.heroes[id]; h.hp=Math.max(1,Math.floor(h.maxHp*0.6)); h.mp=Math.floor(h.maxMp*0.5); h.alive=true;});
+      warp(state.map,state.x,state.y);
+    });
+    battle=null;
+  }, 800);
+}
+
+function paintBattle(){
+  els.blog.textContent=battle.log||"";
+  const h=battle.cur&&battle.cur.side==="h"?battle.heroes[battle.cur.i]:null;
+  let cmds="";
+  if(battle.menu==="main"&&h){
+    ["Fight","Skill","Item","Defend"].forEach((c,i)=>{cmds+=`<button class="${i===battle.sel?"on":""}">${c}</button>`;});
+  } else if(battle.menu==="skill"&&h){
+    h.skills.forEach((sid,i)=>{const S=SKILLS[sid]; cmds+=`<button class="${i===battle.sel?"on":""}">${S.name} ${S.mp?S.mp+"mp":""}</button>`;});
+  } else if(battle.menu==="item"){
+    itemList().forEach((it,i)=>{cmds+=`<button class="${i===battle.sel?"on":""}">${it.name} x${it.n}</button>`;});
+    if(!itemList().length) cmds="<button class='on'>None</button>";
+  } else if(battle.menu==="tree"){
+    ["Taste the fruit","Refuse"].forEach((c,i)=>{cmds+=`<button class="${i===battle.sel?"on":""}">${c}</button>`;});
+  } else {
+    cmds="<button class='on'>Choose</button>";
+  }
+  els.cmds.innerHTML=cmds;
+  els.bp.innerHTML=battle.heroes.map((h,i)=>{
+    const tag=statusLabel(h);
+    return `<div class="row ${h.hp<=0?"dead":""}"><span class="nm">${h.name}${tag?`<span class="st"> ${tag}</span>`:""}</span><span>${h.hp}/${h.maxHp}</span><span>MP ${h.mp}</span></div>`;
+  }).join("");
+}
+
+function openMenu(){
+  if(mode!=="explore") return;
+  mode="menu"; menuTab=0; menuSel=0; show(els.menu,true); paintMenu(); sfx("menu");
+}
+function closeMenu(){show(els.menu,false); if(mode==="menu") mode="explore";}
+function paintMenu(){
+  const tabs=["Party","Items","Quest","Lore","Save","Close"];
+  els.menuTabs.innerHTML=tabs.map((t,i)=>`<button class="${i===menuTab?"on":""}">${t}</button>`).join("");
+  let b="";
+  if(menuTab===0){
+    b=state.party.map(id=>{
+      const h=state.heroes[id];
+      return `<div><b style="color:#e4c56a">${h.name}</b> Lv${h.lv}  ${h.role}<br>HP ${h.hp}/${h.maxHp}  MP ${h.mp}/${h.maxMp}<br>ATK ${h.atk} DEF ${h.def} SPD ${h.spd}</div><br>`;
+    }).join("");
+    const waiting=bench();
+    if(waiting.length){
+      b+="<b style='color:#e4c56a'>WAITING</b><br>"+waiting.map(id=>state.heroes[id].name+" — "+state.heroes[id].role).join("<br>");
+      b+="<br><br><span style='color:#e4c56a'>Z : change who walks</span>";
+    }
+  } else if(menuTab===1){
+    const list=itemList();
+    b=list.map((it,i)=>(i===menuSel?"▶ ":"  ")+it.name+" x"+it.n+"<br><span style='color:#aaa'>"+it.desc+"</span>").join("<br><br>")||"Empty pockets.";
+    b+=`<br><br>Manna: ${state.manna}<br><span style="color:#e4c56a">← → choose · Z uses</span>`;
+  } else if(menuTab===2){
+    b=questLog();
+  } else if(menuTab===3){
+    const L=state.lore||[];
+    if(!L.length) b="No chronicles found yet. Speak with everyone. Isda keeps roads the Seraphs would rather stay shut.";
+    else {
+      if(menuSel>=L.length) menuSel=0;
+      const e=L[menuSel];
+      b="<b style='color:#e4c56a'>CHRONICLE "+(menuSel+1)+"/"+L.length+"</b><br>"+e.t+"<br><br>"+e.b+"<br><br><span style='color:#aaa'>← → page</span>";
+    }
+  } else if(menuTab===4){
+    b="Z : Save the chronicle.<br>Progress is kept in this browser.";
+  } else b="Z : Return to the field.";
+  els.menuBody.innerHTML=b;
+}
+
+function questLog(){
+  const F=state.flags;
+  const q=[];
+  if(!F.pompeiiDone) q.push("The High Seraph waits on the ridge of Pompeii.");
+  else if(!F.metJarom) q.push("A cherub is supposed to find you in New York.");
+  else if(!F.yeartiJoined) q.push("Seek Absalom and Yearti in the Giant Wood.");
+  else if(!F.dusteaterDown) q.push("Dusteater hunts in Tubal's Tunnels.");
+  else if(!F.ashbDown) q.push("Tea with Tobias. Then Sparkslinger and Ashbreather.");
+  else if(!F.claraJoined) q.push("Clara is waiting in the Cherub Fortress.");
+  else if(!F.jenningsDown) q.push("Swat the Lord of the Flies in Rome.");
+  else if(!F.xandirJoined) q.push("Xandir is destroying grass on Olympus Mons.");
+  else if(F.armor<3) q.push("Assemble the Armor of God ("+F.armor+"/3).");
+  else if(!F.cainDown) q.push("Master Mahan holds court in Nod.");
+  else if(!F.chain) q.push("Druiel keeps a chain in Tartarus.");
+  else if(!F.luciferDown) q.push("Shut the All-Seeing Eye."+(F.links>=3?" Druiel's extra links will tighten it.":""));
+  else q.push("The End of Time is not yet written.");
+  let b="<b style='color:#e4c56a'>CURRENT DUTY</b><br>"+q[0]+"<br><br>Act "+state.act+" — "+map().name;
+  const s=[];
+  if(F.reborn && !F.isdaMet) s.push("Isda the Whisperer waits in the Fortress. Ask her which road to take.");
+  if(F.sparkDown && !F.westoverMet) s.push("Fortuna: Westover still has an office and a locked door.");
+  if(F.sparkDown && !F.thiefMet) s.push("Fortuna: a Den runner wants Death Diamonds.");
+  if(F.ashbDown && !F.ganoshDown) s.push("Hell: Ganosh (ruby eye, obsidian eye) still prefers the name Serche.");
+  if(F.johannesHint && !F.johannesFree) s.push("Free Johannes from the Vault of Avarice.");
+  if(F.claraJoined && !F.infernisDown) s.push("The Forgotten Tower still holds Infernis.");
+  if(F.jenningsDown && !F.beelzebubDown) s.push("London is falling. Seek the Queen of Light.");
+  if((F.xandirJoined||state.act>=3) && !F.azazelDown) s.push("Blacker Forest: Wilhelm and Jakob hunt Azazel.");
+  if(F.estherHelped && !F.japethFree) s.push("Tartarus cell 42: Japeth still waits.");
+  if(F.cainDown && !F.estherHelped) s.push("A woman on Tartarus's upper floor is asking after a prisoner.");
+  if((F.links||0)<3 && (F.reborn||state.act>=2)) s.push("Collect chain links ("+(F.links||0)+"/3). They weaken the Prince.");
+  if((F.londonDone||F.ganoshDown) && !F.treeDown) s.push("Nineveh: Smargad's Tree of Death still stands.");
+  if(s.length){
+    b+="<br><br><b style='color:#e4c56a'>SIDE PATHS</b><br>"+s.map(x=>"• "+x).join("<br>");
+  }
+  if(state.lore&&state.lore.length){
+    b+="<br><br><b style='color:#e4c56a'>CHRONICLES</b><br>"+state.lore.map(l=>"• "+l.t).join("<br>");
+  }
+  return b;
+}
+function menuInput(which){
+  const list=itemList();
+  const lore=state.lore||[];
+  if(menuTab===1 && list.length && (which==="left"||which==="right")){
+    if(which==="left") menuSel=(menuSel+list.length-1)%list.length;
+    else menuSel=(menuSel+1)%list.length;
+    paintMenu(); sfx("menu"); return;
+  }
+  if(menuTab===3 && lore.length && (which==="left"||which==="right")){
+    if(which==="left") menuSel=(menuSel+lore.length-1)%lore.length;
+    else menuSel=(menuSel+1)%lore.length;
+    paintMenu(); sfx("menu"); return;
+  }
+  if(menuTab===1 && which==="ok" && list.length){ useFieldItem(list[menuSel].id); paintMenu(); return; }
+  if(which==="up"){menuTab=(menuTab+5)%6; menuSel=0; paintMenu(); sfx("menu");}
+  if(which==="down"){menuTab=(menuTab+1)%6; menuSel=0; paintMenu(); sfx("menu");}
+  if(which==="cancel") closeMenu();
+  if(which==="ok"){
+    if(menuTab===0){
+      if(!bench().length){ toast("No one waits behind."); return; }
+      closeMenu(); openFormation(); return;
+    }
+    if(menuTab===4){save(); toast("Chronicle saved."); sfx("ok");}
+    if(menuTab===5) closeMenu();
+  }
+}
+
+function useFieldItem(id){
+  const it=ITEMS[id]; if(!it||!state.items[id]) return;
+  const wounded=state.party.map(i=>state.heroes[i]).sort((a,b)=>a.hp/a.maxHp-b.hp/b.maxHp)[0];
+  if(it.heal){wounded.hp=Math.min(wounded.maxHp,wounded.hp+it.heal); toast(wounded.name+" recovers.");}
+  else if(it.healAll){state.party.forEach(i=>{const h=state.heroes[i]; h.hp=Math.min(h.maxHp,h.hp+it.heal);}); toast("The feast is shared.");}
+  else if(it.mpAll){state.party.forEach(i=>{const h=state.heroes[i]; h.mp=Math.min(h.maxMp,h.mp+it.mpAll);}); toast("Let the music take you away.");}
+  else if(it.mp){wounded.mp=Math.min(wounded.maxMp,wounded.mp+it.mp); toast(wounded.name+" drinks.");}
+  else {toast(id==="link"?"The links are not for the living to spend.":"Save that for battle."); return;}
+  if(it.mp && it.heal){wounded.mp=Math.min(wounded.maxMp,wounded.mp+it.mp);}
+  if(it.cleanse){ cleanse(wounded); toast(wounded.name+" is clean of burn and venom."); }
+  state.items[id]--; sfx("heal"); renderHUD();
+}
+
+function save(){try{localStorage.setItem(SAVE,JSON.stringify(state)); $("btnContinue").disabled=false;}catch(e){toast("Cannot save.");}}
+function load(){try{const r=localStorage.getItem(SAVE); if(!r) return false; state=JSON.parse(r); state.flags=Object.assign(blankFlags(),state.flags||{}); state.moving=false; state.t=0; if(!state.lore) state.lore=[]; if(!state.items) state.items={}; return true;}catch(e){return false;}}
+
+function renderHUD(){
+  if(!state||mode==="title") {show(els.hud,false); return;}
+  if(mode==="battle") return;
+  show(els.hud,true);
+  els.hud.innerHTML=state.party.slice(0,4).map(id=>{
+    const h=state.heroes[id];
+    const pw=Math.max(0,Math.round(100*h.hp/h.maxHp));
+    const mw=Math.max(0,Math.round(100*h.mp/h.maxMp));
+    return `<div class="chip win"><div>${h.name} ${h.hp}</div><div class="bar"><i style="width:${pw}%"></i></div><div class="bar mp"><i style="width:${mw}%"></i></div></div>`;
+  }).join("");
+}
+
+function px(x,y){return {x:x*TS-cam.x, y:y*TS-cam.y};}
+
+function r(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+
+function drawFoe(sid, x, y, big){
+  ctx.save();
+  ctx.translate(Math.round(x), Math.round(y));
+  if(big) ctx.scale(1.45,1.45);
+  const flicker=anim%30<15;
+  switch(sid){
+    case "lucifer":
+      r(1,6,3,8,flicker?"#fff8c8":"#e8d898"); r(12,6,3,8,flicker?"#fff8c8":"#e8d898");
+      r(4,2,8,16,"#f4ead0"); r(5,0,6,4,"#fff8e0"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(7,8,2,6,"#e4c56a"); r(5,18,6,2,"#d8c890");
+      break;
+    case "ganosh":
+      r(2,3,12,14,"#3a6840"); r(4,0,8,5,"#a05028"); r(3,4,10,5,"#e0b080");
+      r(5,6,2,2,"#c01818"); r(9,6,2,2,"#101018"); r(5,16,3,4,"#2a4030"); r(9,16,3,4,"#2a4030");
+      break;
+    case "spark":
+      r(4,2,8,12,flicker?"#e07030":"#c05018"); r(5,0,6,4,"#e8c8a0");
+      r(6,3,2,2,"#202020"); r(9,3,2,2,"#202020"); r(3,6,2,6,"#f0a040"); r(11,6,2,6,"#f0a040");
+      r(5,14,3,6,"#3a2820"); r(9,14,3,6,"#3a2820");
+      break;
+    case "ashb":
+      r(3,4,10,12,"#6a4038"); r(5,1,6,5,"#c8a090"); r(4,0,8,3,"#4a3030");
+      r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020"); r(7,8,3,5,flicker?"#c04020":"#802010");
+      r(5,16,3,4,"#3a2020"); r(9,16,3,4,"#3a2020");
+      break;
+    case "vesuvius":
+      r(2,10,12,8,"#6a4030"); r(4,6,8,6,"#8a5040"); r(6,2,4,6,"#5a3028");
+      r(7,0,2,4,flicker?"#f07020":"#c04018"); r(5,1,2,3,"#e06020"); r(9,1,2,3,"#e06020");
+      break;
+    case "dusteater":
+      r(1,8,14,10,"#8a7a50"); r(3,4,10,8,"#6a5a40"); r(5,2,6,4,"#5a4a38");
+      r(6,6,2,2,"#201808"); r(9,6,2,2,"#201808"); r(4,14,3,4,"#4a4030"); r(9,14,3,4,"#4a4030");
+      break;
+    case "jennings":
+      r(4,2,8,6,"#e0c0a0"); r(5,0,6,3,"#2a2a38"); r(3,7,10,8,"#304878");
+      r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020"); r(7,8,2,2,flicker?"#48d080":"#d04048");
+      r(5,15,3,5,"#203050"); r(9,15,3,5,"#203050"); r(2,8,2,2,"#385828"); r(12,10,2,2,"#385828");
+      break;
+    case "ares":
+      r(3,1,10,5,"#a03030"); r(5,4,6,4,"#e0b090"); r(2,8,12,8,"#802828");
+      r(6,6,2,2,"#202020"); r(9,6,2,2,"#202020"); r(14,2,2,14,"#c8b060"); r(13,1,4,3,"#e4c56a");
+      r(4,16,3,4,"#501818"); r(9,16,3,4,"#501818");
+      break;
+    case "cain":
+      r(3,3,10,14,"#403028"); r(5,0,6,5,"#c8a070"); r(4,1,8,3,"#2a2018");
+      r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020"); r(7,6,2,3,"#c04040");
+      r(4,16,3,4,"#2a2018"); r(9,16,3,4,"#2a2018");
+      break;
+    case "ridnax":
+      r(5,6,6,10,"#602848"); r(6,3,4,5,"#e0b0a0"); r(5,2,6,3,"#401828");
+      r(6,5,2,2,"#202020"); r(9,5,2,2,"#202020"); r(7,8,2,4,"#a04060");
+      r(5,16,3,4,"#301020"); r(8,16,3,4,"#301020");
+      break;
+    case "infernis":
+      r(4,8,8,10,"#a04828"); r(5,5,6,5,"#c07050"); r(6,2,4,4,"#8a3820");
+      r(6,6,2,2,"#202020"); r(9,6,2,2,"#202020"); r(5,10,6,2,"#e4c56a");
+      r(3,12,3,6,"#6a3020"); r(10,12,3,6,"#6a3020");
+      break;
+    case "beelzebub":
+      r(4,4,8,12,"#304820"); r(5,1,6,5,"#4a6830"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(2,3,3,3,flicker?"#203010":"#385828"); r(11,6,3,3,"#203010"); r(1,10,3,2,"#385828"); r(13,12,2,2,"#203010");
+      r(5,16,3,4,"#203018"); r(9,16,3,4,"#203018");
+      break;
+    case "azazel":
+      r(1,5,3,8,"#a090c0"); r(12,5,3,8,"#a090c0"); r(4,3,8,14,"#7060a0");
+      r(5,0,6,4,"#e8d0b0"); r(6,3,2,2,"#202020"); r(9,3,2,2,"#202020");
+      r(5,16,3,4,"#403860"); r(9,16,3,4,"#403860");
+      break;
+    case "tree":
+      r(7,10,2,10,"#2a2010"); r(2,2,12,10,"#203818"); r(4,0,8,4,"#142410");
+      r(1,6,3,3,"#387040"); r(12,8,3,3,"#387040"); r(6,4,2,2,flicker?"#58a040":"#306028");
+      break;
+    case "war":
+      r(3,2,10,6,"#a03030"); r(4,6,8,8,"#802020"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(13,4,2,12,"#c8b060"); r(4,14,3,6,"#501818"); r(9,14,3,6,"#501818");
+      break;
+    case "famine":
+      r(5,2,6,5,"#e0d0b0"); r(4,7,8,8,"#706040"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(6,10,4,2,"#c8b090"); r(5,15,3,5,"#504830"); r(9,15,3,5,"#504830");
+      break;
+    case "pest":
+      r(4,2,8,6,"#90b070"); r(3,7,10,8,"#387048"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(2,8,2,2,"#58a040"); r(12,10,2,2,"#58a040"); r(5,15,3,5,"#284030"); r(9,15,3,5,"#284030");
+      break;
+    case "jubal":
+      r(3,3,10,12,"#6a5038"); r(4,0,8,5,"#c8a070"); r(6,3,2,2,"#202020"); r(9,3,2,2,"#202020");
+      r(11,6,5,8,"#c8a040"); r(12,5,3,2,"#e4c56a"); r(4,15,3,5,"#403020"); r(8,15,3,5,"#403020");
+      break;
+    case "isda":
+      r(1,6,3,7,"#e8f0ff"); r(12,6,3,7,"#e8f0ff"); r(4,3,8,12,"#d8d0e8");
+      r(5,0,6,4,"#e0c0a0"); r(5,1,6,2,"#f8f0ff"); r(6,3,2,2,"#202020"); r(9,3,2,2,"#202020");
+      r(5,15,3,5,"#8880a0"); r(9,15,3,5,"#8880a0");
+      break;
+    case "queen":
+      r(3,2,10,4,"#e4c56a"); r(5,4,6,4,"#e0c0a0"); r(3,8,10,8,"#f8f0d8");
+      r(6,6,2,2,"#202020"); r(9,6,2,2,"#202020"); r(7,0,2,3,"#fff8c0");
+      r(5,16,3,4,"#c8b060"); r(9,16,3,4,"#c8b060");
+      break;
+    case "eye":
+      r(2,6,12,8,"#a0d0e0"); r(4,4,8,12,"#c8e8f0"); r(6,8,4,4,flicker?"#d04048":"#202020"); r(7,9,2,2,"#fff");
+      break;
+    case "snake":
+      r(2,12,12,4,"#387040"); r(8,6,6,8,"#387040"); r(10,3,4,5,"#4a8848"); r(11,4,2,2,"#202020");
+      break;
+    case "suit":
+      r(4,2,8,5,"#e0c0a0"); r(3,6,10,9,"#304060"); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(5,15,3,5,"#203040"); r(9,15,3,5,"#203040"); r(11,8,3,4,"#2a2418");
+      break;
+    default:{
+      const pal=(ENEMIES[sid]&&ENEMIES[sid].pal)||"#886868";
+      r(4,2,8,14,pal); r(5,0,6,4,pal); r(6,4,2,2,"#202020"); r(9,4,2,2,"#202020");
+      r(5,16,3,4,pal); r(8,16,3,4,pal);
+    }
+  }
+  ctx.restore();
+}
+
+const UNIQUE_FOE=new Set(["lucifer","ganosh","spark","ashb","vesuvius","dusteater","jennings","ares","cain","ridnax",
+  "infernis","beelzebub","azazel","tree","war","famine","pest","jubal","isda","queen","eye","snake","suit","prince","horsemen","ashb"]);
+
+function foeIdFor(n){
+  if(n.id==="prince"||n.spr==="lucifer") return "lucifer";
+  if(n.id==="horsemen") return "war";
+  if(n.id==="ashb") return "ashb";
+  if(UNIQUE_FOE.has(n.id)) return n.id;
+  if(UNIQUE_FOE.has(n.spr)) return n.spr;
+  return null;
+}
+
+function drawTile(t,sx,sy){
+  const pal=map().palette;
+  const mid=state.map;
+  ctx.fillStyle=pal.floor;
+  if(t===",") ctx.fillStyle="#3a6a38";
+  if(t==="=") ctx.fillStyle="#8a7a58";
+  if(t===".") ctx.fillStyle=pal.floor;
+  if(t==="^") ctx.fillStyle=anim%40<20?"#c04018":"#e06020";
+  if(t==="~") ctx.fillStyle=anim%50<25?"#2050a0":"#3070c0";
+  if(t==="#") ctx.fillStyle=pal.wall;
+  if(t==="T") ctx.fillStyle="#1a3a18";
+  if(t==="B") ctx.fillStyle=mid==="pompeii"?"#8a5040":"#3a3048";
+  if(t==="H") ctx.fillStyle="#6a4030";
+  if(t==="C") ctx.fillStyle="#4a3820";
+  if(t==="P") ctx.fillStyle=pal.wall;
+  if(t==="+") ctx.fillStyle=pal.dec;
+  ctx.fillRect(sx,sy,TS,TS);
+  if(t==="." && (mid==="nineveh"||mid==="hell")){
+    ctx.fillStyle=mid==="hell"?"#2a101088":"#d8c08055";
+    ctx.fillRect(sx+3,sy+5,2,2); ctx.fillRect(sx+10,sy+11,2,2);
+  }
+  if(t==="T"){
+    ctx.fillStyle=mid==="blacker"?"#1a4020":"#2a6a28";
+    ctx.fillRect(sx+2,sy,12,10); ctx.fillRect(sx+4,sy-2,8,6);
+    ctx.fillStyle="#5a3820"; ctx.fillRect(sx+7,sy+9,2,7);
+  }
+  if(t==="B"){
+    ctx.fillStyle=mid==="nyc"?(anim%80<40?"#e4c56a":"#8898c0"):"#8898c0";
+    ctx.fillRect(sx+4,sy+4,3,3); ctx.fillRect(sx+9,sy+4,3,3);
+    if(mid==="london"||mid==="nyc"){ ctx.fillStyle="#8898c0"; ctx.fillRect(sx+4,sy+9,3,3); ctx.fillRect(sx+9,sy+9,3,3); }
+    if(mid==="pompeii"){ ctx.fillStyle="#c07040"; ctx.fillRect(sx,sy,TS,3); }
+  }
+  if(t==="H"){ctx.fillStyle="#c07040"; ctx.fillRect(sx,sy,TS,3);}
+  if(t==="+"){
+    if(mid==="tartarus"){
+      ctx.fillStyle="#c8e8f0"; ctx.fillRect(sx+3,sy+3,10,10);
+      ctx.fillStyle=anim%40<20?"#d04048":"#202040"; ctx.fillRect(sx+6,sy+6,4,4);
+      ctx.fillStyle="#fff"; ctx.fillRect(sx+7,sy+7,2,2);
+    } else {
+      ctx.fillStyle="#fff8c8"; ctx.fillRect(sx+6,sy+2,4,12);
+      ctx.globalAlpha=.45; ctx.fillRect(sx+4,sy-6,8,8); ctx.globalAlpha=1;
+    }
+  }
+  if(t==="#"){ctx.fillStyle="#0003"; ctx.fillRect(sx,sy+TS-3,TS,3);}
+  if(t==="C"){ctx.fillStyle="#2a2010"; ctx.fillRect(sx+4,sy+2,8,12);}
+  if(t==="@"){ctx.fillStyle="#c8b060"; ctx.fillRect(sx+6,sy+6,4,4);}
+  if(t==="^"){ ctx.fillStyle="#f8e08088"; ctx.fillRect(sx+6,sy+2,4,6); }
+}
+
+function drawActor(ax,ay,who,dir,frame){
+  const pal=(HERODEF[who]&&HERODEF[who].pal)||{skin:"#e0c0a0",hair:"#302010",shirt:"#406080",pants:"#303040",acc:"#c0a040",wing:"#d0e0ff"};
+  const x=Math.round(ax), y=Math.round(ay);
+  ctx.fillStyle="#0005"; ctx.fillRect(x+3,y+14,10,3);
+  if(who==="xandir"||who==="judy"||who==="jarom"){
+    ctx.globalAlpha=.7; ctx.fillStyle=pal.wing;
+    ctx.fillRect(x+1,y+6,3,6); ctx.fillRect(x+12,y+6,3,6); ctx.globalAlpha=1;
+  }
+  if(who==="jarom"){ctx.fillStyle=pal.acc; ctx.fillRect(x+4,y-2,8,3); ctx.fillRect(x+3,y,2,2); ctx.fillRect(x+11,y,2,2);}
+  ctx.fillStyle=pal.pants; ctx.fillRect(x+4,y+11,3,5); ctx.fillRect(x+9,y+11,3,5);
+  if(frame) ctx.fillRect(x+(dir==="left"?3:4),y+11,3,5);
+  ctx.fillStyle=pal.shirt; ctx.fillRect(x+3,y+7,10,5);
+  ctx.fillStyle=pal.skin; ctx.fillRect(x+5,y+2,6,5);
+  ctx.fillStyle=pal.hair;
+  ctx.fillRect(x+4,y,8,3);
+  if(who==="clara"){ctx.fillRect(x+2,y-1,12,5); ctx.fillStyle=pal.shirt; ctx.fillRect(x+1,y+6,14,8);}
+  if(who==="yearti"){ctx.fillStyle="#f4f4f4"; ctx.fillRect(x+2,y+1,12,12); ctx.fillStyle="#202020"; ctx.fillRect(x+5,y+4,2,2); ctx.fillRect(x+9,y+4,2,2);}
+  if(dir==="left"){ctx.fillStyle="#202020"; ctx.fillRect(x+5,y+4,2,2);}
+  else if(dir==="right"){ctx.fillStyle="#202020"; ctx.fillRect(x+9,y+4,2,2);}
+  else {ctx.fillStyle="#202020"; ctx.fillRect(x+6,y+4,2,2); ctx.fillRect(x+9,y+4,2,2);}
+  if(who==="xandir"){
+    ctx.fillStyle="#1a1a1a"; ctx.fillRect(x+(dir==="left"?1:12),y+8,3,1); ctx.fillRect(x+(dir==="left"?1:12),y+10,3,1);
+    if(state&&state.flags&&state.flags.reborn){
+      ctx.fillStyle="#6a6a78";
+      ctx.fillRect(x+5,y+8,2,2); ctx.fillRect(x+9,y+8,2,2); ctx.fillRect(x+7,y+10,2,2); ctx.fillRect(x+5,y+12,2,2); ctx.fillRect(x+9,y+12,2,2);
+    }
+  }
+}
+
+function npcPal(spr){
+  if(HERODEF[spr]) return spr;
+  const map={seraph:"judy",pillar:"xandir",human:"jarom",eden:"clara",daren:"xandir",giant:"yearti",
+    tobias:"judy",old:"jarom",boss:"xandir",jennings:"jarom",ares:"xandir",cain:"yearti",lucifer:"judy",chest:"jarom"};
+  return map[spr]||"jarom";
+}
+
+function drawWorld(){
+  const m=map();
+  const pxp=state.moving?state.fromX+(state.toX-state.fromX)*state.t:state.x;
+  const pyp=state.moving?state.fromY+(state.toY-state.fromY)*state.t:state.y;
+  cam.x=Math.max(0,Math.min(m.w*TS-W, pxp*TS+8-W/2));
+  cam.y=Math.max(0,Math.min(m.h*TS-H, pyp*TS+8-H/2));
+  ctx.fillStyle=m.palette.bg; ctx.fillRect(0,0,W,H);
+  const x0=Math.floor(cam.x/TS), y0=Math.floor(cam.y/TS);
+  for(let y=y0;y<=y0+VH+1;y++){
+    for(let x=x0;x<=x0+VW+1;x++){
+      if(y<0||x<0||y>=m.h||x>=m.w) continue;
+      drawTile(m.tiles[y][x], x*TS-cam.x, y*TS-cam.y);
+    }
+  }
+  const sprs=[];
+  (m.npcs||[]).forEach(n=>{
+    if(npcHidden(n)) return;
+    sprs.push({y:n.y, draw:()=>{
+      const p=px(n.x,n.y);
+      if(n.spr==="pillar"||n.spr==="chest"){
+        ctx.fillStyle=n.spr==="chest"?"#8a6030":"#fff8c0";
+        ctx.fillRect(p.x+4,p.y+4,8,10);
+        if(n.spr==="pillar"){ctx.globalAlpha=.35; ctx.fillStyle="#ffffc0"; ctx.fillRect(p.x+2,p.y-10,12,14); ctx.globalAlpha=1;}
+        if(n.spr==="chest"){ ctx.fillStyle="#e4c56a"; ctx.fillRect(p.x+6,p.y+6,4,2); }
+      } else {
+        const fid=foeIdFor(n);
+        if(fid) drawFoe(fid, p.x, p.y, false);
+        else drawActor(p.x,p.y,npcPal(n.spr),"down",0);
+      }
+    }});
+  });
+  sprs.push({y:pyp, draw:()=>{
+    const p={x:pxp*TS-cam.x,y:pyp*TS-cam.y};
+    drawActor(p.x,p.y,state.party[0],state.facing, (state.moving&&anim%12<6)?1:0);
+  }});
+  sprs.sort((a,b)=>a.y-b.y).forEach(s=>s.draw());
+  ctx.fillStyle="#0008"; ctx.fillRect(4,3,118,12);
+  ctx.fillStyle="#e4c56a"; ctx.font="8px monospace"; ctx.fillText(m.name,8,12);
+}
+
+function battleBg(){
+  const id=state.map;
+  if(id==="pompeii"||id==="hell"){ ctx.fillStyle="#180808"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#4a1810"; ctx.fillRect(0,110,W,114); r(40,20,8,40,anim%40<20?"#c04018":"#802010"); r(200,10,6,50,"#c04018"); }
+  else if(id==="olympus"){ ctx.fillStyle="#88c8f0"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#3a6a38"; ctx.fillRect(0,110,W,114); r(20,80,40,30,"#c8b060"); r(190,70,36,40,"#c8b060"); }
+  else if(id==="tartarus"||id==="cainhall"){ ctx.fillStyle="#080814"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#1a1830"; ctx.fillRect(0,110,W,114); r(108,18,40,40,"#c8e8f044"); r(120,30,16,16,anim%40<20?"#d04048":"#202040"); }
+  else if(id==="rome"||id==="london"){ ctx.fillStyle="#201018"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#402010"; ctx.fillRect(0,110,W,114); r(10,40,30,70,"#3a3048"); r(210,50,28,60,"#3a3048"); }
+  else if(id==="nineveh"){ ctx.fillStyle="#c8a060"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#b89050"; ctx.fillRect(0,110,W,114); }
+  else if(id==="forest"||id==="blacker"){ ctx.fillStyle="#0c180c"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#1a2a18"; ctx.fillRect(0,110,W,114); r(16,20,12,90,"#143018"); r(220,30,14,80,"#143018"); }
+  else { ctx.fillStyle="#100818"; ctx.fillRect(0,0,W,H); ctx.fillStyle="#2a1040"; ctx.fillRect(0,120,W,104); }
+  ctx.fillStyle="#e4c56a"; ctx.fillRect(0,118,W,2);
+}
+
+function drawBattleScene(){
+  battleBg();
+  const n=battle.enemies.filter(e=>e.hp>0).length;
+  battle.enemies.forEach((e,i)=>{
+    if(e.hp<=0) return;
+    const big=!!e.boss && n<=2;
+    const x=big?148:150+i*28, y=big?32:48+(i%2)*18;
+    if(battle.menu==="target"&&battle.target===i && anim%20<12){ctx.strokeStyle="#e4c56a"; ctx.strokeRect(x-3,y-3,big?26:22,big?34:26);}
+    drawFoe(e.sid, x, y, big);
+    if(e.sid==="lucifer" && (battle.chain||0)>=3){
+      ctx.strokeStyle="#e4c56a"; ctx.lineWidth=2;
+      ctx.strokeRect(x+1,y+7,big?20:14,big?18:12);
+      ctx.strokeRect(x+4,y+11,big?14:8,big?10:6);
+      ctx.fillStyle="#e4c56a"; ctx.fillRect(x+6,y+5,4,3);
+    }
+    ctx.fillStyle="#f8f0d8"; ctx.font="6px monospace"; ctx.fillText(e.name.slice(0,12),x-4,y-4);
+    const tag=statusLabel(e);
+    if(tag){ ctx.fillStyle="#d07850"; ctx.fillText(tag,x-4,y-10); }
+    ctx.fillStyle="#000"; ctx.fillRect(x,y+(big?30:22),16,2);
+    ctx.fillStyle="#d04048"; ctx.fillRect(x,y+(big?30:22),Math.max(1,16*e.hp/e.maxHp),2);
+  });
+  battle.heroes.forEach((h,i)=>{
+    const x=24, y=40+i*22;
+    drawActor(x,y,h.id,"right",0);
+    if(h.hp<=0){ctx.fillStyle="#0008"; ctx.fillRect(x,y,16,16);}
+    if(battle.cur&&battle.cur.side==="h"&&battle.cur.i===i && anim%16<8){
+      ctx.fillStyle="#e4c56a"; ctx.fillRect(x-6,y+6,4,4);
+    }
+  });
+  if(battle.flash>0){ctx.fillStyle="rgba(255,255,255,.15)"; ctx.fillRect(0,0,W,H); battle.flash--;}
+}
+
+function loop(t){
+  const dt=Math.min(0.05,(t-(lastTime||t))/1000); lastTime=t; anim++;
+  if(toastT>0){toastT-=dt; if(toastT<=0) els.toast.classList.remove("show");}
+  if(cardT>0){cardT-=dt; if(cardT<=0) hideCard();}
+  if(mode==="explore"){
+    if(state.moving){
+      state.t+=dt*6.5;
+      if(state.t>=1) onStep();
+    } else {
+      if(keys.has("ArrowUp")||keys.has("w")||hold.up) tryMove(0,-1);
+      else if(keys.has("ArrowDown")||keys.has("s")||hold.down) tryMove(0,1);
+      else if(keys.has("ArrowLeft")||keys.has("a")||hold.left) tryMove(-1,0);
+      else if(keys.has("ArrowRight")||keys.has("d")||hold.right) tryMove(1,0);
+    }
+    const f=facingTile();
+    const can=npcAt(f.x,f.y)||(map().warps||[]).find(w=>w.x===f.x&&w.y===f.y);
+    show(els.prompt, !!can);
+    drawWorld();
+    renderHUD();
+  } else if(mode==="dialog"){
+    drawWorld();
+    typeT+=dt;
+    const p=dialogQ[dialogI];
+    if(p && typed<(p.t||"").length && typeT>0.018){typed++; typeT=0; paintDialog();}
+  } else if(mode==="choice"){
+    drawWorld();
+  } else if(mode==="battle"){
+    drawBattleScene();
+  } else if(mode==="menu"){
+    drawWorld();
+  } else if(mode==="title"){
+    ctx.fillStyle="#f7f4ec"; ctx.fillRect(0,0,W,H);
+  }
+  requestAnimationFrame(loop);
+}
+
+function press(which){
+  if(mode==="title") return;
+  if(mode==="dialog"){ if(which==="ok") {sfx("ok"); advanceDialog();} return; }
+  if(mode==="choice"){ choiceInput(which); return; }
+  if(mode==="menu"){ menuInput(which); return; }
+  if(mode==="battle"){ heroCommand(which); return; }
+  if(mode==="explore"){
+    if(which==="ok") interact();
+    if(which==="cancel") openMenu();
+    if(which==="up") tryMove(0,-1);
+    if(which==="down") tryMove(0,1);
+    if(which==="left") tryMove(-1,0);
+    if(which==="right") tryMove(1,0);
+  }
+  if(mode==="end" && which==="ok"){show(els.end,false); show(els.title,true); $("chronMenu").classList.add("hidden"); $("titleMenu").classList.remove("hidden"); mode="title";}
+}
+
+addEventListener("keydown",e=>{
+  keys.add(e.key);
+  const k=e.key;
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," ","Enter"].includes(k)) e.preventDefault();
+  if(k==="ArrowUp"||k==="w") press("up");
+  if(k==="ArrowDown"||k==="s") press("down");
+  if(k==="ArrowLeft"||k==="a") press("left");
+  if(k==="ArrowRight"||k==="d") press("right");
+  if(k==="z"||k==="Z"||k==="Enter"||k===" ") press("ok");
+  if(k==="x"||k==="X"||k==="Escape"||k==="Shift") press("cancel");
+});
+addEventListener("keyup",e=>keys.delete(e.key));
+
+document.querySelectorAll("#touch b").forEach(b=>{
+  const k=b.dataset.k;
+  const down=ev=>{ev.preventDefault(); if(k==="ok"||k==="cancel") press(k); else hold[k]=1;};
+  const up=ev=>{ev.preventDefault(); if(hold[k]) hold[k]=0;};
+  b.addEventListener("pointerdown",down); b.addEventListener("pointerup",up); b.addEventListener("pointerleave",up);
+});
+
+$("btnNew").onclick=()=>startGame(1);
+$("btnContinue").onclick=()=>{if(load()){show(els.title,false); mode="explore"; toast("Chronicle restored."); renderHUD();} else toast("No save.");};
+$("btnHow").onclick=()=>{show(els.how,true);};
+$("btnHowBack").onclick=()=>{show(els.how,false);};
+$("btnEnd").onclick=()=>{show(els.end,false); show(els.title,true); $("chronMenu").classList.add("hidden"); $("titleMenu").classList.remove("hidden"); mode="title";};
+$("btnChronicles").onclick=()=>{ $("titleMenu").classList.add("hidden"); $("chronMenu").classList.remove("hidden"); };
+$("btnChronBack").onclick=()=>{ $("chronMenu").classList.add("hidden"); $("titleMenu").classList.remove("hidden"); };
+$("btnAct1").onclick=()=>startGame(1);
+$("btnAct2").onclick=()=>startGame(2);
+$("btnAct3").onclick=()=>startGame(3);
+
+$("btnContinue").disabled=!localStorage.getItem(SAVE);
+els.dialog.addEventListener("click",()=>{ if(mode==="dialog") press("ok"); });
+els.cOpts.addEventListener("click",e=>{
+  if(mode!=="choice"||!choice) return;
+  const btns=[...els.cOpts.querySelectorAll("button")];
+  const i=btns.indexOf(e.target.closest("button"));
+  if(i>=0){ choice.sel=i; choiceInput("ok"); }
+});
+els.cmds.addEventListener("click",e=>{
+  if(mode!=="battle") return;
+  const btns=[...els.cmds.querySelectorAll("button")];
+  const i=btns.indexOf(e.target.closest("button"));
+  if(i>=0){ battle.sel=i; heroCommand("ok"); }
+});
+els.menuTabs.addEventListener("click",e=>{
+  if(mode!=="menu") return;
+  const btns=[...els.menuTabs.querySelectorAll("button")];
+  const i=btns.indexOf(e.target.closest("button"));
+  if(i>=0){ menuTab=i; menuSel=0; paintMenu(); }
+});
+
+window.TLA={
+  noEnc:false,
+  maps:MAPS,
+  isdaDests,
+  snap(){
+    return {mode, map:state&&state.map, x:state&&state.x, y:state&&state.y, party:state&&state.party.slice(),
+      flags:state&&Object.assign({},state.flags), manna:state&&state.manna,
+      hp:state&&state.party.map(id=>({id,hp:state.heroes[id].hp,lv:state.heroes[id].lv})),
+      dialog:mode==="dialog"&&dialogQ[dialogI]?{n:dialogQ[dialogI].n,t:dialogQ[dialogI].t,i:dialogI,len:dialogQ.length}:null,
+      battle:battle&&{log:battle.log,over:!!battle.over,menu:battle.menu,ehp:battle.enemies.map(e=>e.hp),hhp:battle.heroes.map(h=>h.hp),
+        st:battle.heroes.map(h=>statusLabel(h)),est:battle.enemies.map(e=>statusLabel(e)),chain:battle.chain||0,tighten:battle.tighten||0},
+      lore:state&&(state.lore||[]).map(l=>l.t),
+      choice:mode==="choice"&&choice?{who:choice.who,prompt:choice.prompt,sel:choice.sel,opts:choice.opts.map(o=>o.label)}:null,
+      card:cardT>0&&state?state.map:null};
+  },
+  warp, startGame,
+  flag(k,v){ if(state) state.flags[k]=v; },
+  kill(){ if(battle && !battle.over){ battle.menu="main"; battle.enemies.forEach(e=>e.hp=0); nextTurn(); } },
+  talk(id){ const pages=script(id); if(pages&&pages.length) queueDialog(pages, pages._done); },
+  pick(i){ if(mode==="choice"&&choice){ choice.sel=Math.max(0,Math.min(choice.opts.length-1,i|0)); choiceInput("ok"); } },
+  leave(){ if(mode==="choice") choiceInput("cancel"); },
+  mash(){ if(mode==="dialog"){ typed=9999; advanceDialog(); } else if(mode==="choice") this.leave(); else if(mode==="battle") this.kill(); },
+  fight(ids,onWin){ startBattle(ids,onWin); },
+  atk(n){ if(state) state.party.forEach(id=>{ state.heroes[id].atk=n; }); }
+};
+
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

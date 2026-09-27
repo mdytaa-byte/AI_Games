@@ -211,7 +211,7 @@
         {
           type: "read",
           title: "Fahrplan, Haltestelle Markt",
-          html: "<p>Linie 3 · Markt → Bahnhof → Sportplatz</p><p>:15 :35 :55 (nicht sonntags nach 20 Uhr)</p><p>Ticket: Stadtzone 1, 1,80 €. Fahrrad: nein. Hund: ja, wenn müde.",
+          html: "<p>Linie 3 · Markt → Bahnhof → Sportplatz</p><p>:15 :35 :55 (nicht sonntags nach 20 Uhr)</p><p>Ticket: Stadtzone 1, 1,80 €. Fahrrad: nein. Hund: ja, wenn müde.</p>",
           questions: [{
             de: "Fährt die Bahn Sonntag um 21 Uhr?",
             options: [

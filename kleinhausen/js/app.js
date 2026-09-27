@@ -133,7 +133,14 @@
     return (KH.mod("e01") && KH.state.episodes.e16.status === "done") ? "April · Jubiläum" : currentSeason();
   }
 
+  KH.leaveEpisode = function () {
+    KH.currentEpisode = null;
+    KH.voiceSpine = false;
+    if (KH.stopSpeak) KH.stopSpeak();
+  };
+
   KH.view.hub = function () {
+    KH.leaveEpisode();
     if ((KH.state.player.gfx || "high") !== "low" && KH.Town) {
       KH.view.townHub();
       return;
@@ -486,6 +493,7 @@
   }
 
   KH.view.pass = function () {
+    KH.leaveEpisode();
     const stamps = Object.keys(KH.STAMPS).map(function (id) {
       const got = KH.state.stamps.indexOf(id) >= 0;
       return '<div class="stamp' + (got ? " got" : "") + '">' + (got ? KH.esc(KH.STAMPS[id]) : "·") + "</div>";
@@ -522,6 +530,7 @@
   };
 
   KH.view.journal = function () {
+    KH.leaveEpisode();
     const recs = (KH.state.recordings || []).slice().reverse();
     const recHtml = recs.length
       ? recs.map(function (r) {
@@ -574,6 +583,7 @@
   };
 
   KH.view.discover = function () {
+    KH.leaveEpisode();
     const doneEps = Object.values(KH.state.episodes).filter(function (e) { return e.status === "done"; }).length;
     const preview = KH.state.flags.demo ? 16 : doneEps;
     const cards = KH.SIDEQUESTS.map(function (q) {
@@ -614,6 +624,7 @@
   };
 
   KH.view.settings = function () {
+    KH.leaveEpisode();
     const p = KH.state.player;
     KH.shell(
       "<h1>Zugang &amp; Darstellung</h1>" +
@@ -663,6 +674,7 @@
   };
 
   KH.view.teacher = function () {
+    KH.leaveEpisode();
     const rows = KH.MODULES.map(function (m) {
       const e = KH.state.episodes[m.id];
       const spoken = KH.hasSpoken ? KH.hasSpoken(m.id) : false;

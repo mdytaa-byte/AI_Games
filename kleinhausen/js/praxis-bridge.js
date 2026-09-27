@@ -11,6 +11,8 @@
   const font = params.get("font") || "default";
   const motion = params.get("motion") || "full";
   const id = (location.pathname.split("/").pop() || "praxis").replace(/\.html$/, "");
+  const praxis = params.get("praxis") || id;
+  const ep = params.get("ep") || "";
   const OUTBOX = "kleinhausen.praxis.outbox";
 
   const root = document.documentElement;
@@ -49,7 +51,14 @@
   document.body.appendChild(bar);
 
   function send(event, extra) {
-    const payload = Object.assign({ type: "kh-praxis", event: event, id: id, weather: weather }, extra || {});
+    const payload = Object.assign({
+      type: "kh-praxis",
+      event: event,
+      id: id,
+      praxis: praxis,
+      ep: ep,
+      weather: weather
+    }, extra || {});
     try {
       if (window.parent && window.parent !== window) window.parent.postMessage(payload, "*");
     } catch (e) { /* ignore */ }

@@ -743,7 +743,7 @@
         interpretive: {
           type: "read",
           title: "Zettel von der Zentrale",
-          html: "<p>Tour 2: Paket für Herr Tadesse, Gärtnerei, Parkweg. Nicht vor 15 Uhr (Mittagspause).</p><p>Tour 3: Brief für Frau Haller, Rosenweg 7, zweite Etage, keine Aufschrift „Werbung“.</p><p>Wenn niemand da ist: Zettel in den Briefkasten, Paket zurück.",
+          html: "<p>Tour 2: Paket für Herr Tadesse, Gärtnerei, Parkweg. Nicht vor 15 Uhr (Mittagspause).</p><p>Tour 3: Brief für Frau Haller, Rosenweg 7, zweite Etage, keine Aufschrift „Werbung“.</p><p>Wenn niemand da ist: Zettel in den Briefkasten, Paket zurück.</p>",
           questions: [
             {
               de: "Wann darfst du nicht bei Herrn Tadesse klingeln?",

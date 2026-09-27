@@ -1,0 +1,9 @@
+output/**
+!output/.gitkeep
+manuscripts/**
+!manuscripts/README.md
+!manuscripts/_incoming/
+!manuscripts/_incoming/.gitkeep
+__pycache__/
+*.pyc
+.pytest_cache/

@@ -1,0 +1,159 @@
+/* Reflowable ebook stylesheet — no fixed page sizes, columns, or pixel layouts. */
+
+@namespace epub "http://www.idpf.org/2007/ops";
+
+html,
+body {
+  font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", serif;
+  font-size: 1em;
+  line-height: 1.45;
+  margin: 0;
+  padding: 0;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  adobe-hyphenate: auto;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: Georgia, "Palatino Linotype", Palatino, serif;
+  font-weight: normal;
+  text-align: center;
+  text-indent: 0;
+  page-break-after: avoid;
+  -webkit-column-break-after: avoid;
+  margin: 1.4em 0 0.8em;
+  line-height: 1.25;
+}
+
+h1 {
+  font-size: 1.6em;
+  page-break-before: always;
+  margin-top: 2.5em;
+  margin-bottom: 1.4em;
+}
+
+h1.chapter-title {
+  margin-top: 25%;
+  letter-spacing: 0.04em;
+}
+
+h2 {
+  font-size: 1.25em;
+  page-break-before: auto;
+}
+
+p {
+  margin: 0;
+  text-indent: 1.3em;
+  widows: 2;
+  orphans: 2;
+}
+
+p.first,
+p.no-indent,
+h1 + p,
+h2 + p,
+h3 + p,
+.chapter-title + p,
+.subtitle + p {
+  text-indent: 0;
+}
+
+p.scene-break {
+  text-align: center;
+  text-indent: 0;
+  margin: 1.1em 0;
+  letter-spacing: 0.35em;
+}
+
+em,
+i {
+  font-style: italic;
+}
+
+strong,
+b {
+  font-weight: bold;
+}
+
+blockquote {
+  margin: 1em 1.6em;
+  font-style: italic;
+  text-align: left;
+}
+
+blockquote p {
+  text-indent: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+ul,
+ol {
+  margin: 0.8em 0 0.8em 1.4em;
+  text-align: left;
+}
+
+li {
+  margin: 0.2em 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em auto;
+  page-break-inside: avoid;
+}
+
+.titlepage {
+  text-align: center;
+  margin-top: 30%;
+  page-break-after: always;
+}
+
+.titlepage .title {
+  font-size: 1.8em;
+  margin: 0 0 0.6em;
+  text-indent: 0;
+}
+
+.titlepage .subtitle {
+  font-size: 1.1em;
+  font-style: italic;
+  margin: 0 0 2em;
+  text-indent: 0;
+}
+
+.titlepage .author {
+  font-size: 1.15em;
+  margin-top: 2em;
+  text-indent: 0;
+}
+
+.copyright {
+  margin-top: 35%;
+  font-size: 0.9em;
+  text-align: left;
+}
+
+.copyright p {
+  text-indent: 0;
+  margin: 0 0 0.8em;
+}
+
+nav#toc ol {
+  list-style-type: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+nav#toc a {
+  text-decoration: none;
+}

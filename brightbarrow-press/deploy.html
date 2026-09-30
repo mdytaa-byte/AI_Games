@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Put Brightbarrow Press on WordPress</title>
+  <style>
+    body{margin:0;background:#f6f1e4;color:#2b3344;font:1.05rem/1.65 Georgia,serif}
+    main{width:min(760px,calc(100% - 2rem));margin:2rem auto 3rem}
+    h1,h2{font-family:Georgia,serif}
+    code,pre{font-family:ui-monospace,monospace;background:#efe8d6;padding:.15rem .35rem;border-radius:4px}
+    pre{padding:1rem;overflow:auto}
+    ol{padding-left:1.2rem}
+    a{color:#5a6b38}
+  </style>
+</head>
+<body>
+<main>
+  <p><a href="./index.html">Preview the landing page</a></p>
+  <h1>Put Brightbarrow Press on WordPress</h1>
+  <p>This is a simple imprint homepage: logo, a short manifesto, and a mailing list. Your live author site is WordPress.com, so Method A is the fastest path. Use Method B if you later move to self-hosted WordPress or a WordPress.com Business plan that allows plugins.</p>
+
+  <h2>Method A — WordPress.com (recommended)</h2>
+  <p>Create a new WordPress.com site for the imprint, or paste this as a new homepage on an existing site.</p>
+  <ol>
+    <li>In WP Admin, go to <strong>Pages → Add New</strong>. Title it <em>Home</em> or <em>Brightbarrow Press</em>.</li>
+    <li>Add a <strong>Custom HTML</strong> block and paste the entire contents of <code>wordpress/custom-html-with-styles.html</code>.</li>
+    <li>If WordPress strips the <code>&lt;style&gt;</code> tag, paste <code>wordpress/splash-markup.html</code> into the Custom HTML block instead, then paste <code>wordpress/additional.css</code> into <strong>Appearance → Customize → Additional CSS</strong>.</li>
+    <li>In the page sidebar, choose a full-width or blank template if your theme offers one. Hide the page title if there is a title toggle.</li>
+    <li>Publish the page.</li>
+    <li>Go to <strong>Settings → Reading</strong>. Set “Your homepage displays” to <strong>A static page</strong> and choose the page you just created.</li>
+    <li>If you created a new WordPress.com site for the imprint, open the Custom HTML and replace the hidden <code>blog_id</code> value with that site’s ID so the mailing list belongs to Brightbarrow, not the author site. Until then, the form uses the existing reader list at authormichaelyoung.com.</li>
+  </ol>
+
+  <h2>Method B — Plugin + shortcode (self-hosted or WP.com Business)</h2>
+  <ol>
+    <li>Upload <code>wordpress-plugin/brightbarrow-press.zip</code> in WP Admin under <strong>Plugins → Add New → Upload Plugin</strong>. Activate it.</li>
+    <li>Create a page whose only content is <code>[brightbarrow_press]</code>.</li>
+    <li>Set that page as the homepage under <strong>Settings → Reading</strong>.</li>
+  </ol>
+
+  <h2>Logo</h2>
+  <p>The page includes a web recreation of the Brightbarrow mark so it stays sharp on any screen. If you would rather use the original file you designed, upload it to the WordPress Media Library and swap the inline SVG in the hero for an <code>&lt;img&gt;</code> tag pointing at that file.</p>
+</main>
+</body>
+</html>

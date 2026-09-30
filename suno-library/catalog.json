@@ -1,0 +1,35 @@
+{
+  "default_collection": "Inbox",
+  "drive_parent_name": "Music for 2026",
+  "drive_library_name": "Suno Library",
+  "drive_library_id": "1R2SnqVQsnY4hAz4Q1FCGXFbP72uL2UQg",
+  "drive_parent_id": "19tlII3MrbdqoGNZDHIem6bVUiH3pSPJE",
+  "drive_collection_ids": {
+    "Inbox": "1XP6sYHHCqkMb1DpzDO__HNHEX8JMyIFp",
+    "Church": "1l_6drHFXObeY3SViMwuNRPSR67vKTl6p",
+    "Games": "1YPUwJoAiwtLd_Fq5L_LoPXgCx0YTEVWe",
+    "Books": "1EvoVZXx4z03hWh1-mCN_nZUayULQF_R9"
+  },
+  "collections": [
+    {
+      "name": "Inbox",
+      "description": "New downloads until they are filed.",
+      "urls": []
+    },
+    {
+      "name": "Church",
+      "description": "Hymns, sacred songs, and choir pieces.",
+      "urls": []
+    },
+    {
+      "name": "Games",
+      "description": "Music for HTML games and 16-bit projects.",
+      "urls": []
+    },
+    {
+      "name": "Books",
+      "description": "Splash pages, novels, and Brightbarrow Press.",
+      "urls": []
+    }
+  ]
+}

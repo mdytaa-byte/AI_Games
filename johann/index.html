@@ -11,50 +11,76 @@
   :root{
     --bg:#1F2C3A;
     --bg-deep:#17212C;
+    --accent:#C8553D;
+    --accent-deep:#A7412C;
+    --on-accent:#FFFFFF;
+    --gold:#E0A841;
+    --on-bg:#F4EFE3;
+    --on-bg-soft:#B9C4CF;
     --panel:#FAF6EC;
     --panel-2:#F1EAD8;
     --ink:#22282F;
     --ink-soft:#5B6470;
-    --accent:#C8553D;
-    --accent-deep:#A7412C;
-    --gold:#E0A841;
     --ok:#3F7D58;
     --ok-soft:#E1EFE6;
     --line:#DDD2BA;
     --bubble-j:#FFFFFF;
     --bubble-s:#E6EEF6;
     --chip:#EFE6D0;
-    --on-bg:#F4EFE3;
-    --on-bg-soft:#B9C4CF;
     --radius:16px;
     --shadow:0 4px 16px rgba(10,18,26,.28);
+    --font-body:"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --font-display:"Fraunces",Georgia,serif;
+    --fs:100%;
+    --lh:1.5;
+    --ls:normal;
+    --ws:normal;
+    --maxw:900px;
+    --gap:12px;
+    --bpad:10px 14px;
+    --logpad:16px;
+    --bw:0px;
   }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --panel:#26303B;
-      --panel-2:#2E3945;
-      --ink:#ECE7DC;
-      --ink-soft:#AAB4BF;
-      --line:#3D4956;
-      --bubble-j:#303B47;
-      --bubble-s:#263B52;
-      --chip:#36424F;
-      --ok-soft:#24392D;
-      --shadow:0 4px 16px rgba(0,0,0,.45);
-    }
+  :root[data-theme="dark"]{
+    --panel:#26303B;
+    --panel-2:#2E3945;
+    --ink:#ECE7DC;
+    --ink-soft:#AAB4BF;
+    --line:#3D4956;
+    --bubble-j:#303B47;
+    --bubble-s:#263B52;
+    --chip:#36424F;
+    --ok-soft:#24392D;
+    --shadow:0 4px 16px rgba(0,0,0,.45);
   }
+  :root[data-contrast="high"]{
+    --panel:#FFFFFF; --panel-2:#FFFFFF; --ink:#000000; --ink-soft:#1A1A1A; --line:#000000;
+    --bubble-j:#FFFFFF; --bubble-s:#EEF3FF; --chip:#FFFFFF; --ok-soft:#FFFFFF; --bw:2px;
+  }
+  :root[data-contrast="high"][data-theme="dark"]{
+    --panel:#000000; --panel-2:#000000; --ink:#FFFFFF; --ink-soft:#E6E6E6; --line:#FFFFFF;
+    --bubble-j:#000000; --bubble-s:#0B1C38; --chip:#000000; --ok-soft:#000000;
+  }
+  :root[data-readable="on"]{--lh:1.8;--ls:.02em;--ws:.08em}
+  :root[data-width="wide"]{--maxw:1240px}
+  :root[data-density="compact"]{--gap:6px;--bpad:6px 11px;--logpad:10px}
+  :root[data-motion="reduce"] *,:root[data-motion="reduce"] *::before,:root[data-motion="reduce"] *::after{animation:none !important;transition:none !important}
+  html{font-size:var(--fs)}
   *{box-sizing:border-box;margin:0;padding:0}
+  [hidden]{display:none !important}
   html,body{height:100%}
   body{
-    font-family:"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-family:var(--font-body);
     background:radial-gradient(1100px 480px at 50% -10%, rgba(224,168,65,.12), transparent 60%), var(--bg);
     color:var(--ink);
     min-height:100%;
     padding:16px;
     -webkit-font-smoothing:antialiased;
-    line-height:1.5;
+    line-height:var(--lh);
+    letter-spacing:var(--ls);
+    word-spacing:var(--ws);
   }
-  .frame{max-width:900px;margin:0 auto}
+  .frame{max-width:var(--maxw);margin:0 auto}
   button{font:inherit;cursor:pointer}
   button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
@@ -63,10 +89,10 @@
   /* ---------- header ---------- */
   header{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--on-bg);margin:2px 2px 16px;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:12px}
-  .brand h1{font-family:"Fraunces",Georgia,serif;font-size:1.45rem;line-height:1.1}
+  .brand h1{font-family:var(--font-display);font-size:1.45rem;line-height:1.1}
   .brand .sub{font-size:.78rem;color:var(--on-bg-soft);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
   .hdr-btns{display:flex;gap:8px;flex-wrap:wrap}
-  .ghost-btn{background:transparent;border:1.5px solid rgba(244,239,227,.4);color:var(--on-bg);border-radius:999px;padding:7px 14px;font-weight:700;font-size:.85rem}
+  .ghost-btn{background:transparent;border:1.5px solid var(--on-bg-soft);color:var(--on-bg);border-radius:999px;padding:7px 14px;font-weight:700;font-size:.85rem}
   .ghost-btn:hover{border-color:var(--gold);color:var(--gold)}
   .avatar{width:46px;height:46px;flex:none;border-radius:50%;background:var(--accent);display:grid;place-items:center;box-shadow:0 0 0 3px rgba(224,168,65,.55)}
   .avatar svg{width:34px;height:34px}
@@ -78,7 +104,7 @@
   .screen.active{display:block;animation:fadeUp .3s ease}
   @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px;margin-bottom:16px}
-  .card h2{font-family:"Fraunces",Georgia,serif;font-size:1.25rem;margin-bottom:6px}
+  .card h2{font-family:var(--font-display);font-size:1.25rem;margin-bottom:6px}
   .card h3{font-size:1rem;margin:18px 0 6px}
   .hint{color:var(--ink-soft);font-size:.92rem}
   .row{display:flex;gap:12px;flex-wrap:wrap}
@@ -88,7 +114,7 @@
     width:100%;font:inherit;color:var(--ink);background:var(--panel-2);border:1.5px solid var(--line);border-radius:10px;padding:9px 11px
   }
   textarea{resize:vertical;min-height:70px}
-  .btn{background:var(--accent);color:#fff;border:0;border-radius:999px;padding:10px 20px;font-weight:800}
+  .btn{background:var(--accent);color:var(--on-accent);border:0;border-radius:999px;padding:10px 20px;font-weight:800}
   .btn:hover{background:var(--accent-deep)}
   .btn.secondary{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
   .btn.secondary:hover{border-color:var(--accent);color:var(--accent)}
@@ -96,7 +122,7 @@
   .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
   .seg{display:flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden;flex-wrap:wrap}
   .seg button{flex:1;background:transparent;border:0;padding:8px 10px;font-weight:700;color:var(--ink-soft);font-size:.88rem}
-  .seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
   .note{background:var(--panel-2);border-left:4px solid var(--gold);border-radius:8px;padding:10px 12px;font-size:.9rem;margin-top:12px}
   .note.ok{border-left-color:var(--ok);background:var(--ok-soft)}
   .pill{display:inline-block;background:var(--chip);border-radius:999px;padding:3px 10px;font-size:.8rem;font-weight:700;margin:2px 4px 2px 0}
@@ -121,10 +147,10 @@
   .chat-tools{display:flex;gap:6px;flex-wrap:wrap}
   .tool{background:var(--chip);border:0;border-radius:999px;padding:6px 12px;font-weight:700;font-size:.82rem;color:var(--ink)}
   .tool:hover{background:var(--gold);color:#2A2410}
-  .log{flex:1;overflow-y:auto;background:var(--panel-2);padding:16px;display:flex;flex-direction:column;gap:12px}
+  .log{flex:1;overflow-y:auto;background:var(--panel-2);padding:var(--logpad);display:flex;flex-direction:column;gap:var(--gap)}
   .msg{display:flex;gap:10px;max-width:92%}
   .msg.student{align-self:flex-end;flex-direction:row-reverse}
-  .bubble{background:var(--bubble-j);border-radius:14px;padding:10px 14px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow-wrap:anywhere}
+  .bubble{background:var(--bubble-j);border:var(--bw) solid var(--line);border-radius:14px;padding:var(--bpad);box-shadow:0 1px 3px rgba(0,0,0,.08);overflow-wrap:anywhere}
   .msg.student .bubble{background:var(--bubble-s)}
   .bubble p{margin:0 0 .5em}
   .bubble p:last-child{margin-bottom:0}
@@ -136,7 +162,7 @@
   .saved{margin-top:8px;display:flex;flex-wrap:wrap;gap:4px}
   .saved .pill{background:var(--ok-soft);color:var(--ink)}
   .sys{align-self:center;font-size:.82rem;color:var(--ink-soft);background:var(--panel);border-radius:999px;padding:4px 12px;text-align:center}
-  .sys.err{color:#fff;background:var(--accent-deep)}
+  .sys.err{color:var(--on-accent);background:var(--accent-deep)}
   .typing span{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ink-soft);margin:0 2px;animation:blink 1.2s infinite}
   .typing span:nth-child(2){animation-delay:.2s}.typing span:nth-child(3){animation-delay:.4s}
   @keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
@@ -147,7 +173,7 @@
   .send-row{display:flex;gap:8px;align-items:flex-end}
   .send-row textarea{min-height:46px;max-height:40vh;flex:1}
   .icon-btn{background:var(--panel-2);border:1.5px solid var(--line);border-radius:12px;width:46px;height:46px;flex:none;font-size:1.2rem;color:var(--ink)}
-  .icon-btn[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .icon-btn[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
   .legend{font-size:.82rem;color:var(--ink-soft);margin-bottom:8px}
   .legend b{color:var(--ink)}
 
@@ -155,7 +181,7 @@
   dialog{margin:auto;border:0;border-radius:var(--radius);background:var(--panel);color:var(--ink);box-shadow:var(--shadow);padding:0;width:min(640px,calc(100vw - 24px));max-height:calc(100vh - 32px)}
   dialog::backdrop{background:rgba(10,16,24,.6)}
   .dlg{padding:22px;overflow-y:auto;max-height:calc(100vh - 32px)}
-  .dlg h2{font-family:"Fraunces",Georgia,serif;font-size:1.25rem;margin-bottom:4px}
+  .dlg h2{font-family:var(--font-display);font-size:1.25rem;margin-bottom:4px}
   .nb-list{list-style:none;margin:6px 0 0}
   .nb-list li{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line);font-size:.93rem}
   .nb-list li button{background:none;border:0;color:var(--ink-soft);font-size:.9rem}
@@ -163,6 +189,14 @@
   .empty{color:var(--ink-soft);font-size:.9rem;font-style:italic;padding:6px 0}
   .locked-banner{display:none}
   .is-locked .locked-banner{display:block}
+  .card,.mode,dialog,.chat-top,.composer{border:var(--bw) solid var(--line)}
+  .swatches{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .swatch{width:auto;min-width:96px;border:2px solid var(--line);border-radius:12px;padding:6px 10px 6px 6px;display:flex;align-items:center;gap:8px;background:var(--panel-2);color:var(--ink);font-weight:700;font-size:.85rem}
+  .swatch i{width:28px;height:28px;border-radius:8px;flex:none;display:block}
+  .swatch[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+  .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 12px;margin-top:4px}
+  .checks label,.check{display:flex;gap:8px;align-items:center;font-size:.92rem}
+  .profile-nudge{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
   footer{color:var(--on-bg-soft);font-size:.78rem;text-align:center;margin-top:8px}
   footer a{color:var(--on-bg)}
 
@@ -174,6 +208,51 @@
     .welcome{flex-direction:column}
   }
 </style>
+<script>
+/* Appearance: applied before first paint so there's no flash. */
+const PALETTES = {
+  nacht:    { label: "Nachtblau",  "bg": "#1F2C3A", "bg-deep": "#17212C", "accent": "#C8553D", "accent-deep": "#A7412C", "on-accent": "#FFFFFF", "gold": "#E0A841", "on-bg": "#F4EFE3", "on-bg-soft": "#B9C4CF" },
+  wald:     { label: "Tannengrün", "bg": "#1E3329", "bg-deep": "#15241D", "accent": "#2E7D57", "accent-deep": "#246646", "on-accent": "#FFFFFF", "gold": "#E0A841", "on-bg": "#EEF3EC", "on-bg-soft": "#AFC4B6" },
+  bordeaux: { label: "Bordeaux",   "bg": "#3A1F28", "bg-deep": "#2B161D", "accent": "#9E2F4A", "accent-deep": "#7F2239", "on-accent": "#FFFFFF", "gold": "#E0A841", "on-bg": "#F6ECEE", "on-bg-soft": "#CFB3BB" },
+  ostsee:   { label: "Ostsee",     "bg": "#173A4A", "bg-deep": "#102B37", "accent": "#1F7A8C", "accent-deep": "#16606E", "on-accent": "#FFFFFF", "gold": "#F08A5D", "on-bg": "#EAF4F6", "on-bg-soft": "#A9C7CF" },
+  lavendel: { label: "Lavendel",   "bg": "#2E2A44", "bg-deep": "#221F33", "accent": "#6B4FA3", "accent-deep": "#563E86", "on-accent": "#FFFFFF", "gold": "#E6B655", "on-bg": "#F1EEF8", "on-bg-soft": "#BDB5D6" },
+  graphit:  { label: "Graphit",    "bg": "#26272B", "bg-deep": "#1C1D20", "accent": "#3F6E9E", "accent-deep": "#315A82", "on-accent": "#FFFFFF", "gold": "#E0A841", "on-bg": "#EEEEEE", "on-bg-soft": "#B4B6BC" },
+  papier:   { label: "Papier",     "bg": "#E9E1CF", "bg-deep": "#DDD3BD", "accent": "#B4462F", "accent-deep": "#93361F", "on-accent": "#FFFFFF", "gold": "#9A6B12", "on-bg": "#22282F", "on-bg-soft": "#5B6470" }
+};
+const FONTS = {
+  nunito:   { label: "Standard (Nunito Sans)", stack: '"Nunito Sans",system-ui,-apple-system,"Segoe UI",sans-serif' },
+  atkinson: { label: "Atkinson Hyperlegible (easy to read)", stack: '"Atkinson Hyperlegible",system-ui,sans-serif', css: "family=Atkinson+Hyperlegible:wght@400;700" },
+  lexend:   { label: "Lexend (easy to read)", stack: '"Lexend",system-ui,sans-serif', css: "family=Lexend:wght@400;600;700" },
+  serif:    { label: "Serif (book style)", stack: '"Source Serif 4",Georgia,serif', css: "family=Source+Serif+4:opsz,wght@8..60,400;8..60,700" },
+  system:   { label: "My device's font", stack: 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif' }
+};
+const LOOK_DEFAULT = { palette: "nacht", theme: "auto", contrast: false, size: "m", font: "nunito", readable: false, density: "normal", width: "normal", motion: false };
+function applyLook(look) {
+  const l = Object.assign({}, LOOK_DEFAULT, look || {});
+  const r = document.documentElement;
+  const p = PALETTES[l.palette] || PALETTES.nacht;
+  for (const k in p) if (k !== "label") r.style.setProperty("--" + k, p[k]);
+  const dark = l.theme === "dark" || (l.theme === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+  r.dataset.theme = dark ? "dark" : "light";
+  r.dataset.contrast = l.contrast ? "high" : "normal";
+  r.style.setProperty("--fs", { s: "87.5%", m: "100%", l: "112.5%", xl: "125%" }[l.size] || "100%");
+  const f = FONTS[l.font] || FONTS.nunito;
+  if (f.css && !document.getElementById("font-" + l.font)) {
+    const link = document.createElement("link");
+    link.id = "font-" + l.font;
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?" + f.css + "&display=swap";
+    document.head.appendChild(link);
+  }
+  r.style.setProperty("--font-body", f.stack);
+  r.dataset.readable = l.readable ? "on" : "off";
+  r.dataset.density = l.density;
+  r.dataset.width = l.width;
+  r.dataset.motion = l.motion ? "reduce" : "auto";
+  return l;
+}
+try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || {}).look); } catch (e) { applyLook(); }
+</script>
 </head>
 <body>
 <div class="frame">
@@ -188,6 +267,7 @@
     <nav class="hdr-btns" aria-label="Main">
       <button class="ghost-btn" id="btnHome" type="button">Start</button>
       <button class="ghost-btn" id="btnCourse" type="button">Mein Kurs</button>
+      <button class="ghost-btn" id="btnProfile" type="button">Über mich</button>
       <button class="ghost-btn" id="btnNotebook" type="button">Merkheft</button>
       <button class="ghost-btn" id="btnSettings" type="button">Einstellungen</button>
     </nav>
@@ -232,6 +312,14 @@
       </div>
       <p class="hint" id="setupCourseSummary" style="margin-top:10px"></p>
     </div>
+    <div class="card">
+      <h2>3 · About you <span class="hint">(optional)</span></h2>
+      <p class="hint">Your level, your background with German and other languages, your goals and interests. Johann uses this to pitch his German at the right level and pick topics you care about. You can also do a quick level check with him.</p>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn secondary" type="button" id="setupProfile">Tell Johann about me</button>
+      </div>
+      <p class="hint" id="setupProfileSummary" style="margin-top:10px"></p>
+    </div>
     <div class="btn-row">
       <button class="btn" type="button" id="setupDone">Los geht's →</button>
       <span class="hint" id="setupMsg" role="status" style="color:var(--on-bg-soft)"></span>
@@ -245,9 +333,14 @@
         <div>
           <h2 id="homeTitle">Was machen wir heute?</h2>
           <div id="homeCourse" class="hint"></div>
+          <div id="homeProfile" class="hint"></div>
         </div>
         <button class="btn secondary" type="button" id="btnResume" hidden>Weitermachen: letzte Sitzung</button>
       </div>
+    </div>
+    <div class="card profile-nudge" id="profileNudge" hidden>
+      <span>Johann adapts better when he knows a bit about you: your level, languages, goals, and interests.</span>
+      <button class="btn secondary" type="button" id="btnNudgeProfile">Über mich ausfüllen</button>
     </div>
     <div class="modes" id="modeGrid"></div>
   </section>
@@ -333,19 +426,11 @@
       <button type="button" data-v="1" aria-pressed="false">Mixed</button>
       <button type="button" data-v="2" aria-pressed="false">Mostly German</button>
     </div>
-    <div class="row">
-      <div>
-        <label class="f" for="cName2">Your first name (optional)</label>
-        <input type="text" id="cName2" autocomplete="given-name">
-      </div>
-      <div>
-        <label class="f" for="cAddress">Johann should call me</label>
-        <select id="cAddress" data-lock>
-          <option value="du">du (informal: school, friends)</option>
-          <option value="Sie">Sie (formal: adult courses)</option>
-        </select>
-      </div>
-    </div>
+    <label class="f" for="cAddress">Johann should address students with</label>
+    <select id="cAddress" data-lock>
+      <option value="du">du (informal: school, friends)</option>
+      <option value="Sie">Sie (formal: adult courses)</option>
+    </select>
 
     <h3>Teacher notes</h3>
     <p class="hint">For teachers: course rules, assignment policies, things to emphasize or avoid. Johann follows these.</p>
@@ -435,6 +520,110 @@
   </form>
 </dialog>
 
+<!-- ================= PROFILE DIALOG ================= -->
+<dialog id="dlgProfile" aria-labelledby="profTitle">
+  <form class="dlg" method="dialog" id="profileForm">
+    <h2 id="profTitle">Über mich</h2>
+    <p class="hint">Everything here is optional and stays in this browser. It's never included in course codes. Johann uses it to adapt his level, pace, examples, and topics to you.</p>
+
+    <div class="row">
+      <div>
+        <label class="f" for="pName">First name or nickname</label>
+        <input type="text" id="pName" autocomplete="given-name">
+      </div>
+      <div>
+        <label class="f" for="pAge">I am in</label>
+        <select id="pAge">
+          <option value="">Prefer not to say</option>
+          <option value="middle">Middle school</option>
+          <option value="high">High school</option>
+          <option value="uni">College or university</option>
+          <option value="adult">Adult learning</option>
+        </select>
+      </div>
+    </div>
+
+    <h3>My level</h3>
+    <div class="row">
+      <div>
+        <label class="f" for="pLevel">My German level</label>
+        <select id="pLevel">
+          <option value="">Same as my course</option>
+          <option value="A1">A1 · Beginner</option>
+          <option value="A2">A2 · Elementary</option>
+          <option value="B1">B1 · Intermediate</option>
+          <option value="B2">B2 · Upper intermediate</option>
+          <option value="C1">C1 · Advanced</option>
+        </select>
+      </div>
+      <div>
+        <label class="f" for="pDuration">I've studied German for</label>
+        <select id="pDuration">
+          <option value="">—</option>
+          <option value="new">I'm just starting</option>
+          <option value="lt1">Less than a year</option>
+          <option value="1to2">1–2 years</option>
+          <option value="3plus">3 years or more</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn secondary" type="button" id="btnLevelCheck">📏 Not sure? Do a level check with Johann</button>
+    </div>
+    <div class="row">
+      <div>
+        <label class="f" for="pStrong">My strongest skill</label>
+        <select id="pStrong" class="skill"></select>
+      </div>
+      <div>
+        <label class="f" for="pWeak">I most want to improve</label>
+        <select id="pWeak" class="skill"></select>
+      </div>
+    </div>
+
+    <h3>My background</h3>
+    <label class="f" for="pLangs">Languages I speak (first language first)</label>
+    <input type="text" id="pLangs" placeholder="e.g. English, Spanish (at home), a little French">
+    <label class="f" for="pConnection">My connection to German</label>
+    <select id="pConnection">
+      <option value="">None yet, it's new to me</option>
+      <option value="family">Family or friends speak German</option>
+      <option value="lived">I've lived in or visited a German-speaking country</option>
+      <option value="heritage">I grew up hearing or speaking German (heritage speaker)</option>
+    </select>
+    <label class="f" for="pBackground">Anything else about my background</label>
+    <textarea id="pBackground" rows="2" placeholder="e.g. exchange student next year, took Latin, learned German songs as a kid"></textarea>
+
+    <h3>My goals</h3>
+    <div class="checks" id="pGoals"></div>
+    <label class="f" for="pInterests">My interests (Johann uses them for topics and examples)</label>
+    <input type="text" id="pInterests" placeholder="e.g. football, Minecraft, baking, K-pop, horses, cars">
+
+    <h3>How I learn best</h3>
+    <label class="f">Challenge level</label>
+    <div class="seg" role="group" aria-label="Challenge level" id="pChallenge">
+      <button type="button" data-v="0" aria-pressed="false">Gentle, lots of support</button>
+      <button type="button" data-v="1" aria-pressed="false">Balanced</button>
+      <button type="button" data-v="2" aria-pressed="false">Push me!</button>
+    </div>
+    <label class="f" for="pStyle">Explanations</label>
+    <select id="pStyle">
+      <option value="">No preference</option>
+      <option value="examples">Examples first, then the rule</option>
+      <option value="rules">The rule first, then examples</option>
+      <option value="compare">Compare with languages I know</option>
+    </select>
+    <label class="check" style="margin-top:10px"><input type="checkbox" id="pShort"> Keep messages short and give me one step at a time</label>
+    <label class="f" for="pNotes">Anything else that helps me learn</label>
+    <textarea id="pNotes" rows="2" placeholder="e.g. I get nervous about speaking, I like jokes, I have dyslexia"></textarea>
+
+    <div class="btn-row">
+      <button class="btn" value="save" type="submit">Speichern</button>
+      <button class="btn secondary" value="cancel" type="submit" formnovalidate>Abbrechen</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- ================= SETTINGS DIALOG ================= -->
 <dialog id="dlgSettings" aria-labelledby="setTitle">
   <form class="dlg" method="dialog">
@@ -448,10 +637,57 @@
       <option value="claude-sonnet-5-5">Claude Sonnet 5.5 (faster, lower cost)</option>
       <option value="claude-haiku-5-5">Claude Haiku 5.5 (fastest, lowest cost)</option>
     </select>
+    <h3>Darstellung · Appearance</h3>
+    <p class="hint">Changes apply right away.</p>
+    <label class="f">Colour scheme</label>
+    <div class="swatches" id="lkPalette" role="group" aria-label="Colour scheme"></div>
+    <div class="row">
+      <div>
+        <label class="f">Light or dark</label>
+        <div class="seg" role="group" aria-label="Light or dark" id="lkTheme">
+          <button type="button" data-v="auto">Auto</button>
+          <button type="button" data-v="light">Hell</button>
+          <button type="button" data-v="dark">Dunkel</button>
+        </div>
+      </div>
+      <div>
+        <label class="f">Text size</label>
+        <div class="seg" role="group" aria-label="Text size" id="lkSize">
+          <button type="button" data-v="s">A−</button>
+          <button type="button" data-v="m">A</button>
+          <button type="button" data-v="l">A+</button>
+          <button type="button" data-v="xl">A++</button>
+        </div>
+      </div>
+    </div>
+    <label class="f" for="lkFont">Font</label>
+    <select id="lkFont"></select>
+    <div class="row">
+      <div>
+        <label class="f">Spacing</label>
+        <div class="seg" role="group" aria-label="Spacing" id="lkDensity">
+          <button type="button" data-v="compact">Compact</button>
+          <button type="button" data-v="normal">Comfortable</button>
+        </div>
+      </div>
+      <div>
+        <label class="f">Width</label>
+        <div class="seg" role="group" aria-label="Width" id="lkWidth">
+          <button type="button" data-v="normal">Normal</button>
+          <button type="button" data-v="wide">Wide</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:10px;display:grid;gap:6px">
+      <label class="check"><input type="checkbox" id="lkContrast"> High contrast</label>
+      <label class="check"><input type="checkbox" id="lkReadable"> Extra line and letter spacing (easier reading)</label>
+      <label class="check"><input type="checkbox" id="lkMotion"> Reduce animations</label>
+    </div>
+    <div class="btn-row"><button class="btn secondary" type="button" id="lkReset">Reset appearance</button></div>
     <h3>Voice</h3>
     <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="setAutoSpeak"> Read Johann's messages aloud automatically (browser voice)</label>
     <h3>Reset</h3>
-    <p class="hint">Remove everything Johann stored in this browser: connection, course, notebook, and the last session.</p>
+    <p class="hint">Remove everything Johann stored in this browser: connection, course, profile, notebook, appearance, and the last session.</p>
     <div class="btn-row">
       <button class="btn secondary" type="button" id="btnReset">Alles löschen</button>
       <button class="btn" value="close" type="submit" id="btnSetClose">Fertig</button>
@@ -546,8 +782,25 @@ When they write "Feedback" or the scene reaches a natural end, step out and give
     prompt: `Help the student get ready for a quiz, test, or exam in their course. Find out what it covers (or use the current unit) and what format it has. Then create original practice items in similar formats, one at a time. Wait for their attempt, say whether it's right, and briefly explain why.
 Keep track of weak spots and steer practice toward them. Mix in a quick confidence check now and then ("How sure were you?"). At the end, suggest a short study plan for the days before the test.
 You don't know the real test questions and shouldn't pretend to. If the student pastes questions from a quiz or test they're taking right now, decline kindly and offer to practise the same skills with new items instead.`
+  },
+  level: {
+    ico: "📏", name: "Einstufung", en: "Level check", effort: "medium", graded: false,
+    desc: "Not sure of your level? A relaxed 10-minute chat and Johann estimates it.",
+    focusLabel: "Anything Johann should know first? (optional)", focusPh: "e.g. I understand a lot but writing is hard",
+    quick: ["Ich weiß es nicht", "Auf Englisch?", "Einfacher, bitte"],
+    prompt: `Estimate the student's German level in a short, relaxed check of about 8–12 exchanges. Tell them up front it isn't a test and "I don't know" is a fine answer.
+Start very easy and adapt up or down based on how they do: questions they answer in German, a short text you write followed by a question about it, and a small writing task (a few sentences about themselves or a picture you describe). Cover understanding, writing, vocabulary range, and grammar control. Don't teach or correct during the check beyond a word of encouragement.
+At the end, give your estimate on the CEFR scale (A1 to C1, you may say "between A2 and B1"), with two or three things they can already do and one or two things to work on next. Say it's a rough estimate from a short chat. Then put the single closest level on its own line as a tag, e.g. [[niveau: A2]].`
   }
 };
+
+const SKILLS = { "": "—", lesen: "Reading", hoeren: "Listening", schreiben: "Writing", sprechen: "Speaking", wortschatz: "Vocabulary", grammatik: "Grammar" };
+const GOALS = { grades: "Good grades in my class", exam: "Pass an exam or certificate", travel: "Travel", family: "Talk with family or friends", abroad: "Study, work, or live abroad", media: "Music, films, games, books", culture: "Culture and history", fun: "Just for fun" };
+const CHALLENGE_TEXT = [
+  "Prefers a gentle pace: smaller steps, more support and encouragement, and easier language than their level when they seem unsure.",
+  "",
+  "Wants to be pushed: raise the bar a little, expect fuller answers, use more German, and add stretch questions."
+];
 
 const ROLE_SCENARIOS = [
   "Im Café bestellen und bezahlen",
@@ -571,10 +824,11 @@ const SUPPORT_TEXT = [
 /* ---------------- state ---------------- */
 const DEFAULT_STATE = {
   conn: { mode: "", key: "", proxyUrl: "", proxyCode: "", model: "claude-opus-5-5" },
-  course: { program: "general", level: "A1", name: "", unit: "", unitPick: "", grammar: "", vocab: "", support: 1, learner: "", address: "du", notes: "", locked: false },
+  course: { program: "general", level: "A1", name: "", unit: "", unitPick: "", grammar: "", vocab: "", support: 1, address: "du", notes: "", locked: false },
+  profile: { name: "", age: "", level: "", duration: "", strong: "", weak: "", langs: "", connection: "", background: "", goals: [], interests: "", challenge: 1, style: "", short: false, notes: "" },
   notebook: [],
   session: null,
-  prefs: { autoSpeak: false }
+  prefs: { autoSpeak: false, look: { ...LOOK_DEFAULT } }
 };
 let S = load();
 
@@ -583,12 +837,19 @@ function load() {
     const raw = localStorage.getItem(STORE_KEY);
     if (!raw) return structuredClone(DEFAULT_STATE);
     const s = JSON.parse(raw);
+    const course = { ...DEFAULT_STATE.course, ...(s.course || {}) };
+    const profile = { ...DEFAULT_STATE.profile, ...(s.profile || {}) };
+    if (course.learner && !profile.name) profile.name = course.learner;   // name used to live on the course
+    delete course.learner;
+    const prefs = { ...DEFAULT_STATE.prefs, ...(s.prefs || {}) };
+    prefs.look = { ...LOOK_DEFAULT, ...(prefs.look || {}) };
     return {
       conn: { ...DEFAULT_STATE.conn, ...(s.conn || {}) },
-      course: { ...DEFAULT_STATE.course, ...(s.course || {}) },
+      course,
+      profile,
       notebook: Array.isArray(s.notebook) ? s.notebook : [],
       session: s.session || null,
-      prefs: { ...DEFAULT_STATE.prefs, ...(s.prefs || {}) }
+      prefs
     };
   } catch (e) {
     return structuredClone(DEFAULT_STATE);
@@ -645,7 +906,7 @@ function md(src) {
 }
 
 /* Notebook tags Johann can write: [[merk: …]] [[fehler: …]] [[ziel: …]] */
-const TAG_RE = /\[\[\s*(merk|fehler|ziel)\s*:\s*([^\]]+?)\s*\]\]/gi;
+const TAG_RE = /\[\[\s*(merk|fehler|ziel|niveau)\s*:\s*([^\]]+?)\s*\]\]/gi;
 function stripTags(text, streaming) {
   let t = text.replace(TAG_RE, "");
   if (streaming) t = t.replace(/\[\[[^\]]*$/, "");   // hide a tag that's still arriving
@@ -661,6 +922,7 @@ function extractTags(text) {
 function addToNotebook(items) {
   const added = [];
   for (const it of items) {
+    if (!["merk", "fehler", "ziel"].includes(it.type)) continue;
     const key = it.type + "|" + it.text.toLowerCase();
     if (S.notebook.some(n => n.type + "|" + n.text.toLowerCase() === key)) continue;
     const entry = { type: it.type, text: it.text.slice(0, 240), ts: Date.now() };
@@ -699,9 +961,9 @@ function buildSystem(session) {
     u && u.canDo && u.canDo.length && `Can-do goals for this unit: ${u.canDo.join(" ")}`,
     c.grammar && `Grammar focus: ${c.grammar}`,
     c.vocab && `Vocabulary list: ${c.vocab.replace(/\s*\n\s*/g, ", ").slice(0, 3000)}`,
-    `Address the student with: ${c.address === "Sie" ? "Sie (formal)" : "du (informal)"}`,
-    c.learner && `Student's first name: ${c.learner}`
+    `Address the student with: ${c.address === "Sie" ? "Sie (formal)" : "du (informal)"}`
   ].filter(Boolean).join("\n");
+  const about = profileForPrompt();
 
   const nb = S.notebook;
   const memLines = [];
@@ -762,6 +1024,9 @@ Many students are teenagers. Keep everything school-appropriate. Don't ask for p
 ## The student's course
 ${course}
 
+## About the student
+${about}
+
 ## Teacher notes
 ${c.notes ? c.notes : "None."}
 
@@ -774,6 +1039,7 @@ ${graded}
 
 ## Starting and wrapping up
 The first user message is an automatic note from the app saying the student opened this activity, possibly with their focus. Greet them briefly (by name if you know it) and start the activity right away.
+Use what you know about the student to choose topics, examples, comparisons, pace, and difficulty, without reciting their profile back to them. Teacher notes and the course still set the boundaries.
 When the student wants to wrap up, give: one specific thing they did well, one or two things to practise, and one concrete next step, plus any notebook tags worth saving.`;
 }
 
@@ -902,7 +1168,9 @@ function renderSetup() {
 }
 function renderSetupSummary() {
   $("#setupCourseSummary").textContent = "Current course: " + courseSummary();
+  $("#setupProfileSummary").textContent = profileFilled() ? profileSummary() : "";
 }
+$("#setupProfile").addEventListener("click", openProfile);
 function readSetupInputs() {
   S.conn.proxyUrl = $("#proxyUrl").value.trim();
   S.conn.proxyCode = $("#proxyCode").value.trim();
@@ -930,6 +1198,8 @@ $("#setupDone").addEventListener("click", () => {
 /* ---------------- home ---------------- */
 function renderHome() {
   $("#homeCourse").textContent = courseSummary();
+  $("#homeProfile").textContent = profileSummary();
+  $("#profileNudge").hidden = profileFilled();
   const grid = $("#modeGrid");
   grid.innerHTML = "";
   for (const [id, m] of Object.entries(MODES)) {
@@ -1088,7 +1358,7 @@ function renderMsg(v) {
 function savedChips(saved) {
   const d = document.createElement("div");
   d.className = "saved";
-  const icon = { merk: "📒", fehler: "🔎", ziel: "🎯" };
+  const icon = { merk: "📒", fehler: "🔎", ziel: "🎯", niveau: "📏" };
   d.innerHTML = saved.map(s => `<span class="pill">${icon[s.type] || "📒"} ${esc(s.text)}</span>`).join("");
   d.setAttribute("aria-label", "Saved to your notebook");
   return d;
@@ -1189,7 +1459,14 @@ async function runTurn() {
 
   const fullText = result.blocks.filter(b => b.type === "text").map(b => b.text || "").join("");
   s.api.push({ role: "assistant", content: result.blocks });
-  const saved = addToNotebook(extractTags(fullText));
+  const tags = extractTags(fullText);
+  const saved = addToNotebook(tags);
+  const lvl = tags.find(t => t.type === "niveau");
+  const lvlCode = lvl && (lvl.text.toUpperCase().match(/[ABC][12]/) || [])[0];
+  if (lvlCode) {
+    S.profile.level = lvlCode === "C2" ? "C1" : lvlCode;
+    saved.push({ type: "niveau", text: "My level: " + S.profile.level });
+  }
   const v = { who: "johann", text: stripTags(fullText, false) || "…", saved };
   s.view.push(v);
   s.pendingRetry = false;
@@ -1272,7 +1549,7 @@ $("#btnExport").addEventListener("click", () => {
     "Date: " + new Date(s.started).toLocaleString(),
     "Activity: " + m.name + " (" + m.en + ")" + (m.graded ? (s.graded ? " · graded work" : " · practice") : ""),
     "Course: " + courseSummary(),
-    ...(S.course.learner ? ["Student: " + S.course.learner] : []),
+    ...(S.profile.name ? ["Student: " + S.profile.name] : []),
     "",
     ...s.view.filter(v => v.who !== "sys").map(v => (v.who === "johann" ? "JOHANN: " : "ICH: ") + v.text + "\n")
   ];
@@ -1340,7 +1617,6 @@ function openCourse() {
   $("#cUnit").value = c.unit;
   $("#cGrammar").value = c.grammar;
   $("#cVocab").value = c.vocab;
-  $("#cName2").value = c.learner;
   $("#cAddress").value = c.address;
   $("#cNotes").value = c.notes;
   draftSupport = c.support;
@@ -1381,7 +1657,6 @@ function readCourseForm() {
     grammar: $("#cGrammar").value.trim(),
     vocab: $("#cVocab").value.trim(),
     support: draftSupport,
-    learner: $("#cName2").value.trim(),
     address: $("#cAddress").value,
     notes: $("#cNotes").value.trim(),
     locked: S.course.locked
@@ -1416,7 +1691,6 @@ function decodeCourse(code) {
 }
 $("#btnMakeCode").addEventListener("click", () => {
   const c = readCourseForm();
-  delete c.learner;                               // the teacher's own name field shouldn't travel
   c.locked = $("#cLockOut").checked;
   const code = encodeCourse(c);
   const link = location.href.split("#")[0] + "#kurs=" + encodeURIComponent(code);
@@ -1437,8 +1711,7 @@ function openImport() {
 $("#btnImportOpen").addEventListener("click", () => { $("#dlgCourse").close("cancel"); openImport(); });
 function applyCourseCode(code) {
   const c = decodeCourse(code);
-  const learner = S.course.learner;
-  S.course = { ...DEFAULT_STATE.course, ...c, learner };
+  S.course = { ...DEFAULT_STATE.course, ...c };
   save();
   return c;
 }
@@ -1495,6 +1768,7 @@ function openSettings() {
     : S.conn.mode === "key" ? "Your own API key (…" + S.conn.key.slice(-4) + ")" : "Not connected yet.";
   $("#setModel").value = S.conn.model;
   $("#setAutoSpeak").checked = !!S.prefs.autoSpeak;
+  renderLook();
   $("#dlgSettings").showModal();
 }
 $("#btnSettings").addEventListener("click", openSettings);
@@ -1505,6 +1779,7 @@ $("#btnReset").addEventListener("click", () => {
   if (!confirm("Delete everything Johann saved in this browser? This can't be undone.")) return;
   try { localStorage.removeItem(STORE_KEY); } catch (e) {}
   S = structuredClone(DEFAULT_STATE);
+  applyLook(S.prefs.look);
   $("#dlgSettings").close();
   renderSetup();
   show("setup");
@@ -1512,6 +1787,158 @@ $("#btnReset").addEventListener("click", () => {
 
 $("#btnHome").addEventListener("click", () => { if (abortCtl) abortCtl.abort(); show(connected() ? "home" : "setup"); });
 $("#btnCourse").addEventListener("click", openCourse);
+
+/* ---------------- profile ---------------- */
+const AGE_TEXT = { middle: "middle school (about 11–14)", high: "high school (about 14–18)", uni: "college or university", adult: "adult learner" };
+const DURATION_TEXT = { new: "just starting", lt1: "less than a year", "1to2": "1–2 years", "3plus": "3 years or more" };
+const CONNECTION_TEXT = {
+  family: "Family or friends speak German, so they may know everyday spoken words.",
+  lived: "Has lived in or visited a German-speaking country.",
+  heritage: "Heritage speaker: grew up hearing or speaking German. Expect stronger listening and speaking than reading and writing; work on spelling, grammar accuracy, and writing, and value the German they bring from home (including dialect)."
+};
+const STYLE_TEXT = {
+  examples: "Likes to see examples first, then the rule.",
+  rules: "Likes a clear rule first, then examples.",
+  compare: "Finds comparisons with languages they already know helpful."
+};
+
+function profileFilled() {
+  const p = S.profile;
+  return !!(p.name || p.level || p.langs || p.interests || p.goals.length || p.connection || p.age || p.duration);
+}
+function profileSummary() {
+  const p = S.profile;
+  const bits = [
+    p.name,
+    p.level && "Level " + p.level,
+    p.langs && "Speaks " + p.langs,
+    p.interests && "Likes " + p.interests
+  ].filter(Boolean);
+  return bits.length ? "Über mich: " + bits.join(" · ") : "";
+}
+function profileForPrompt() {
+  const p = S.profile, c = S.course;
+  const lines = [];
+  if (p.name) lines.push(`First name: ${p.name}`);
+  if (p.age) lines.push(`Stage: ${AGE_TEXT[p.age]}`);
+  if (p.level && p.level !== c.level) {
+    lines.push(`Their own level is about ${p.level}, ${p.level > c.level ? "above" : "below"} the course level (${c.level}). Pitch your German to ${p.level} while staying on the course's topics.`);
+  } else if (p.level) {
+    lines.push(`Their level is about ${p.level}, matching the course.`);
+  }
+  if (p.duration) lines.push(`Has studied German for: ${DURATION_TEXT[p.duration]}`);
+  if (p.strong) lines.push(`Strongest skill: ${SKILLS[p.strong]}`);
+  if (p.weak) lines.push(`Most wants to improve: ${SKILLS[p.weak]}`);
+  if (p.langs) lines.push(`Languages they speak: ${p.langs}. Use these for comparisons where helpful (cognates, false friends, word order), but don't assume they know grammar terms.`);
+  if (p.connection) lines.push(CONNECTION_TEXT[p.connection]);
+  if (p.background) lines.push(`Background in their words: ${p.background}`);
+  if (p.goals.length) lines.push(`Goals: ${p.goals.map(g => GOALS[g]).filter(Boolean).join(", ")}`);
+  if (p.interests) lines.push(`Interests: ${p.interests}. Use them for conversation topics, examples, and practice sentences.`);
+  if (CHALLENGE_TEXT[p.challenge]) lines.push(CHALLENGE_TEXT[p.challenge]);
+  if (p.style) lines.push(STYLE_TEXT[p.style]);
+  if (p.short) lines.push("Keep every message especially short and give one step at a time.");
+  if (p.notes) lines.push(`How they learn best, in their words: ${p.notes}`);
+  return lines.length ? lines.join("\n") : "They haven't shared anything yet. Get a feel for their level from how they write, and ask about their interests when it's natural.";
+}
+
+let draftChallenge = 1;
+function openProfile() {
+  const p = S.profile;
+  $$("#profileForm select.skill").forEach(sel => {
+    sel.innerHTML = Object.entries(SKILLS).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join("");
+  });
+  $("#pGoals").innerHTML = Object.entries(GOALS).map(([k, v]) =>
+    `<label><input type="checkbox" value="${k}"${p.goals.includes(k) ? " checked" : ""}> ${esc(v)}</label>`).join("");
+  $("#pName").value = p.name;
+  $("#pAge").value = p.age;
+  $("#pLevel").value = p.level;
+  $("#pDuration").value = p.duration;
+  $("#pStrong").value = p.strong;
+  $("#pWeak").value = p.weak;
+  $("#pLangs").value = p.langs;
+  $("#pConnection").value = p.connection;
+  $("#pBackground").value = p.background;
+  $("#pInterests").value = p.interests;
+  $("#pStyle").value = p.style;
+  $("#pShort").checked = !!p.short;
+  $("#pNotes").value = p.notes;
+  draftChallenge = p.challenge;
+  setPressed($("#pChallenge"), draftChallenge);
+  $("#dlgProfile").returnValue = "";
+  $("#dlgProfile").showModal();
+}
+$$("#pChallenge button").forEach(b => b.addEventListener("click", () => { draftChallenge = Number(b.dataset.v); setPressed($("#pChallenge"), draftChallenge); }));
+function readProfileForm() {
+  return {
+    name: $("#pName").value.trim(),
+    age: $("#pAge").value,
+    level: $("#pLevel").value,
+    duration: $("#pDuration").value,
+    strong: $("#pStrong").value,
+    weak: $("#pWeak").value,
+    langs: $("#pLangs").value.trim(),
+    connection: $("#pConnection").value,
+    background: $("#pBackground").value.trim(),
+    goals: $$("#pGoals input:checked").map(i => i.value),
+    interests: $("#pInterests").value.trim(),
+    challenge: draftChallenge,
+    style: $("#pStyle").value,
+    short: $("#pShort").checked,
+    notes: $("#pNotes").value.trim()
+  };
+}
+function profileSaved() {
+  save();
+  if (S.session && $("#chat").classList.contains("active")) sysNote("Profile saved. Johann will use it from your next activity.");
+  if ($("#setup").classList.contains("active")) renderSetupSummary();
+  if ($("#home").classList.contains("active")) renderHome();
+}
+$("#dlgProfile").addEventListener("close", () => {
+  if ($("#dlgProfile").returnValue !== "save") return;
+  S.profile = readProfileForm();
+  profileSaved();
+});
+$("#btnLevelCheck").addEventListener("click", () => {
+  S.profile = readProfileForm();
+  save();
+  $("#dlgProfile").close("level");
+  openStart("level");
+});
+$("#btnProfile").addEventListener("click", openProfile);
+$("#btnNudgeProfile").addEventListener("click", openProfile);
+
+/* ---------------- appearance ---------------- */
+function renderLook() {
+  const l = S.prefs.look;
+  const pal = $("#lkPalette");
+  pal.innerHTML = Object.entries(PALETTES).map(([k, p]) =>
+    `<button type="button" class="swatch" data-v="${k}" aria-pressed="${k === l.palette}"><i style="background:linear-gradient(135deg, ${p.bg} 50%, ${p.accent} 50%)"></i>${esc(p.label)}</button>`).join("");
+  $$("button", pal).forEach(b => b.addEventListener("click", () => setLook({ palette: b.dataset.v })));
+  setPressed($("#lkTheme"), l.theme);
+  setPressed($("#lkSize"), l.size);
+  setPressed($("#lkDensity"), l.density);
+  setPressed($("#lkWidth"), l.width);
+  $("#lkFont").innerHTML = Object.entries(FONTS).map(([k, f]) => `<option value="${k}">${esc(f.label)}</option>`).join("");
+  $("#lkFont").value = l.font;
+  $("#lkContrast").checked = !!l.contrast;
+  $("#lkReadable").checked = !!l.readable;
+  $("#lkMotion").checked = !!l.motion;
+}
+function setLook(change) {
+  S.prefs.look = applyLook({ ...S.prefs.look, ...change });
+  save();
+  renderLook();
+}
+[["#lkTheme", "theme"], ["#lkSize", "size"], ["#lkDensity", "density"], ["#lkWidth", "width"]].forEach(([sel, key]) =>
+  $$(sel + " button").forEach(b => b.addEventListener("click", () => setLook({ [key]: b.dataset.v }))));
+$("#lkFont").addEventListener("change", (e) => setLook({ font: e.target.value }));
+$("#lkContrast").addEventListener("change", (e) => setLook({ contrast: e.target.checked }));
+$("#lkReadable").addEventListener("change", (e) => setLook({ readable: e.target.checked }));
+$("#lkMotion").addEventListener("change", (e) => setLook({ motion: e.target.checked }));
+$("#lkReset").addEventListener("click", () => setLook({ ...LOOK_DEFAULT }));
+if (window.matchMedia) {
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { if (S.prefs.look.theme === "auto") applyLook(S.prefs.look); });
+}
 
 /* ---------------- boot ---------------- */
 fillProgramSelect();

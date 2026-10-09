@@ -14,8 +14,23 @@ The whole app is a single file, [`index.html`](index.html). Open it in a browser
 | 🗂️ **Wortschatz** (Vocabulary) | Quizzes the course vocabulary list and the student's notebook, one item at a time, and brings missed words back later. |
 | 🎭 **Rollenspiel** (Role-play) | Plays a café server, ticket agent, doctor, and so on, then gives feedback when the student types "Feedback". |
 | 🎯 **Prüfungstraining** (Test prep) | Writes fresh practice items in the test's format and steers practice toward weak spots. |
+| 📏 **Einstufung** (Level check) | A relaxed chat of about 10 exchanges that adapts up or down, then estimates the student's CEFR level and saves it to their profile. |
 
-Other features:
+### Über mich: Johann adapts to each student
+
+In **Über mich**, students can describe themselves (every field is optional):
+- **Level:** their own CEFR level, if it's different from the course's (for example, a heritage speaker in German 1), how long they've studied German, their strongest skill, and what they most want to improve. Not sure of their level? The level check works it out.
+- **Background:** the languages they speak, so Johann can point out cognates and false friends, and their connection to German: family, time abroad, or growing up with it as a heritage speaker.
+- **Goals and interests:** grades, exams, travel, family, media, and so on. Johann uses their interests for conversation topics and example sentences.
+- **How they learn best:** a challenge level (gentle, balanced, or "push me"), examples first or rules first, a "short messages, one step at a time" option, and free-text notes.
+
+The profile stays in the student's browser and is never included in course codes. Teacher notes and the course still set the boundaries.
+
+### Appearance
+
+In **Einstellungen → Darstellung**: seven colour schemes, light, dark or automatic, high contrast, four text sizes, easy-to-read fonts (Atkinson Hyperlegible, Lexend), extra line and letter spacing, compact or comfortable spacing, a wide layout, and reduced motion. Changes apply right away and are remembered.
+
+### Other features
 - **Merkheft (notebook).** Johann saves useful words, recurring mistake patterns, and goals. He remembers them in later sessions, and students can practise their notebook words.
 - **Tipp button** for a small hint, plus quick buttons like "Einfacher, bitte" and "Auf Englisch?".
 - **Umlaut keys**, **read-aloud** (browser voice), and **speech input** (in browsers that support it, such as Chrome and Edge).

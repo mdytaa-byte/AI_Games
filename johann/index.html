@@ -40,6 +40,10 @@
     --bpad:10px 14px;
     --logpad:16px;
     --bw:0px;
+    --g-m:#1F5FBF;
+    --g-f:#B8322A;
+    --g-n:#1D7A45;
+    --g-pl:#7B3FA0;
   }
   :root[data-theme="dark"]{
     --panel:#26303B;
@@ -51,7 +55,12 @@
     --bubble-s:#263B52;
     --chip:#36424F;
     --ok-soft:#24392D;
+    --ok:#6FD39A;
     --shadow:0 4px 16px rgba(0,0,0,.45);
+    --g-m:#86B6FF;
+    --g-f:#FF8F85;
+    --g-n:#71D49B;
+    --g-pl:#CFA6F5;
   }
   :root[data-contrast="high"]{
     --panel:#FFFFFF; --panel-2:#FFFFFF; --ink:#000000; --ink-soft:#1A1A1A; --line:#000000;
@@ -190,6 +199,62 @@
   .locked-banner{display:none}
   .is-locked .locked-banner{display:block}
   .card,.mode,dialog,.chat-top,.composer{border:var(--bw) solid var(--line)}
+
+  /* ---------- word help: gender colours + tap for meaning ---------- */
+  .w{cursor:pointer;border-bottom:1px dotted var(--ink-soft);border-radius:3px}
+  .w:hover,.w:focus-visible{background:var(--chip);outline:none}
+  .w.g-m{color:var(--g-m)} .w.g-f{color:var(--g-f)} .w.g-n{color:var(--g-n)} .w.g-pl{color:var(--g-pl)}
+  .w.g-m,.w.g-f,.w.g-n,.w.g-pl{font-weight:700;border-bottom-color:currentColor}
+  .gkey{font-size:.8rem;color:var(--ink-soft)}
+  .gkey b{font-weight:800}
+  .gkey .g-m{color:var(--g-m)} .gkey .g-f{color:var(--g-f)} .gkey .g-n{color:var(--g-n)}
+  .wpop{position:fixed;z-index:60;background:var(--panel);color:var(--ink);border:1.5px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:10px 12px;width:max-content;max-width:min(320px,calc(100vw - 24px))}
+  .wpop .lemma{font-weight:800;font-size:1.05rem}
+  .wpop .lemma.g-m{color:var(--g-m)} .wpop .lemma.g-f{color:var(--g-f)} .wpop .lemma.g-n{color:var(--g-n)} .wpop .lemma.g-pl{color:var(--g-pl)}
+  .wpop .meta{font-size:.8rem;color:var(--ink-soft)}
+  .wpop .btn-row{margin-top:8px}
+  .wpop .tool{font-size:.8rem}
+
+  /* ---------- exercise and writing cards ---------- */
+  .card-ex{margin-top:10px;background:var(--panel-2);border:1.5px solid var(--line);border-radius:12px;padding:12px;min-width:min(520px,70vw)}
+  .ex-head{display:flex;gap:8px;align-items:flex-start;margin-bottom:10px}
+  .ex-head .ico{font-size:1.3rem;line-height:1.2}
+  .ex-items{list-style:none;display:grid;gap:10px;margin:0}
+  .ex-item{background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:9px 11px}
+  .ex-item[data-state="ok"]{border-color:var(--ok)}
+  .ex-item[data-state="bad"]{border-color:var(--accent)}
+  .ex-item[data-state="revealed"]{border-style:dashed}
+  .ex-num{font-weight:800;color:var(--ink-soft);margin-right:6px}
+  .ex-item input.gap{display:inline-block;width:auto;min-width:7ch;max-width:100%;padding:3px 8px;margin:2px 4px;border-radius:8px}
+  .ex-item select{width:auto;max-width:100%;padding:4px 8px;margin-top:4px}
+  .opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .opt{background:var(--panel-2);border:1.5px solid var(--line);border-radius:999px;padding:4px 12px;font-weight:700;color:var(--ink)}
+  .opt[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+  .opt.art-der{color:var(--g-m)} .opt.art-die{color:var(--g-f)} .opt.art-das{color:var(--g-n)}
+  .opt.art-der[aria-pressed="true"]{background:var(--g-m);border-color:var(--g-m);color:#fff}
+  .opt.art-die[aria-pressed="true"]{background:var(--g-f);border-color:var(--g-f);color:#fff}
+  .opt.art-das[aria-pressed="true"]{background:var(--g-n);border-color:var(--g-n);color:#fff}
+  :root[data-theme="dark"] .opt.art-der[aria-pressed="true"],:root[data-theme="dark"] .opt.art-die[aria-pressed="true"],:root[data-theme="dark"] .opt.art-das[aria-pressed="true"]{color:#111}
+  .order-line{min-height:40px;border:1.5px dashed var(--line);border-radius:8px;padding:6px;display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .order-line:empty::before{content:"Tap the words in order";color:var(--ink-soft);font-size:.85rem;padding:3px}
+  .chipw{border:1.5px solid var(--line);background:var(--panel-2);border-radius:8px;padding:3px 10px;font-weight:700;color:var(--ink)}
+  .ex-fb{font-size:.88rem;margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .ex-fb .ok{color:var(--ok);font-weight:800}
+  .ex-fb .bad{color:var(--accent);font-weight:800}
+  .ex-foot{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .ex-foot .btn{padding:8px 16px}
+  .good{list-style:none;margin:0 0 8px}
+  .good li{margin:2px 0}
+  .wr-text{background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;white-space:pre-wrap;line-height:2}
+  .wm{font:inherit;color:inherit;border:0;border-bottom:2px solid var(--gold);border-radius:4px;padding:0 2px;background:rgba(224,168,65,.32);cursor:pointer;line-height:1.4}
+  .wm sup{font-size:.68em;font-weight:800;margin-left:2px;color:var(--accent)}
+  .wm[aria-expanded="true"]{outline:2px solid var(--accent);outline-offset:1px}
+  .wr-detail{background:var(--panel);border:1.5px solid var(--accent);border-radius:10px;padding:9px 11px;margin-top:8px;font-size:.93rem}
+  .wr-detail b{color:var(--accent)}
+  .wr-fixed{background:var(--ok-soft);border-radius:8px;padding:6px 10px;margin-bottom:8px;font-weight:700}
+  .wr-edit textarea{min-height:140px;margin-top:8px;background:var(--panel)}
+  .card-done{font-size:.85rem;color:var(--ink-soft);font-weight:700}
+  @media (max-width:560px){ .card-ex{min-width:0} }
   .swatches{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
   .swatch{width:auto;min-width:96px;border:2px solid var(--line);border-radius:12px;padding:6px 10px 6px 6px;display:flex;align-items:center;gap:8px;background:var(--panel-2);color:var(--ink);font-weight:700;font-size:.85rem}
   .swatch i{width:28px;height:28px;border-radius:8px;flex:none;display:block}
@@ -367,6 +432,7 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
         Correction codes: <b>[G]</b> gender/article · <b>[K]</b> case ending · <b>[V]</b> verb form · <b>[WS]</b> word order · <b>[R]</b> spelling/capitals · <b>[WW]</b> word choice · <b>[?]</b> meaning unclear
       </div>
       <div class="quick" id="quick"></div>
+      <div class="gkey" id="gkey" hidden><b class="g-m">der</b> · <b class="g-f">die</b> · <b class="g-n">das</b> — tap a dotted word for its meaning</div>
       <div class="send-row">
         <label for="input" class="sr-only">Your message</label>
         <textarea id="input" rows="1" placeholder="Schreib auf Deutsch (or English, if you're stuck)…"></textarea>
@@ -684,6 +750,8 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
       <label class="check"><input type="checkbox" id="lkMotion"> Reduce animations</label>
     </div>
     <div class="btn-row"><button class="btn secondary" type="button" id="lkReset">Reset appearance</button></div>
+    <h3>Wort-Hilfe · Word help</h3>
+    <label class="check"><input type="checkbox" id="setWordHelp"> Colour nouns by gender (der · die · das) and let me tap German words for their meaning. Uses one small extra request per message.</label>
     <h3>Voice</h3>
     <label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="setAutoSpeak"> Read Johann's messages aloud automatically (browser voice)</label>
     <h3>Reset</h3>
@@ -723,6 +791,7 @@ const PROGRAMS = {
 
 const MODES = {
   talk: {
+    tools: ["exercise"],
     ico: "💬", name: "Gespräch", en: "Conversation", effort: "low", graded: false,
     desc: "Chat with Johann in German about you, your unit, or anything you like.",
     focusLabel: "Topic (optional)", focusPh: "e.g. my weekend, my school, food",
@@ -730,41 +799,49 @@ const MODES = {
     prompt: `Have a real conversation in German with the student, about a topic they pick or one from their current unit. Ask one question at a time and genuinely respond to what they say: this is a conversation, not an interview. Keep your turns short (2–4 sentences) so they do most of the talking.
 Correct by recasting: use the correct form naturally in your reply. Point out at most one pattern explicitly per turn, the one that matters most at their level, and only when it's useful.
 Every few turns, nudge them to use the unit's grammar or vocabulary.
-If they switch to English because they don't know how to say something, help them build it: give the key word or a frame, then let them say the whole sentence.`
+If they switch to English because they don't know how to say something, help them build it: give the key word or a frame, then let them say the whole sentence.
+Now and then, when the same pattern keeps tripping them up, offer a quick exercise card of three items, then get back to the conversation.`
   },
   ask: {
+    tools: ["exercise"],
     ico: "❓", name: "Frag Johann", en: "Ask a question", effort: "medium", graded: true,
     desc: "Grammar, vocabulary, culture, or something from class you didn't get.",
     focusLabel: "Your question (optional, you can also ask in the chat)", focusPh: "e.g. When do I use 'denn' and when 'weil'?",
     quick: ["Tipp", "Noch ein Beispiel", "Auf Englisch?", "Ich verstehe es nicht"],
     prompt: `The student asks about grammar, vocabulary, pronunciation, culture, or their course material.
-Start by finding out what they already know or have tried when that's quick and useful. Then explain clearly and briefly with your own short examples, and give them one or two quick items to try right away. Check their answers and respond to what they did.
+Start by finding out what they already know or have tried when that's quick and useful. Then explain clearly and briefly with your own short examples, and let them try it right away with a short exercise card (3–5 items). Respond to their results: explain any misses briefly, and offer another card or a next step.
 If the question is really a homework, worksheet, or test item, don't answer the item. Teach the concept with a different example, then guide them through their own item with questions.`
   },
   write: {
+    tools: ["exercise", "writing"],
     ico: "✍️", name: "Schreibcheck", en: "Writing feedback", effort: "medium", graded: true,
     desc: "Paste your own German writing. Johann marks the mistakes and you fix them.",
     focusLabel: "What is the writing task? (optional)", focusPh: "e.g. 80-word email to a host family about my hobbies",
     quick: ["Tipp", "Was bedeutet [K]?", "Hier ist meine neue Version:", "Auf Englisch?"],
     legend: true,
     prompt: `The student shares German they wrote themselves. Give feedback that makes them do the fixing:
-1. Name one or two specific strengths first.
-2. Mark errors without correcting them. Quote the short segment, add a code, and optionally a short hint or question. Codes: [G] gender/article, [K] case ending, [V] verb form/conjugation, [WS] word order, [R] spelling/capitalization, [WW] word choice, [?] meaning unclear. Mark the most important errors for their level (around 6 at most). If there are more of the same type, say so and let them find the rest.
-3. Give one "next level" suggestion that fits their level (a connector, a detail, a richer verb).
-Never write out the corrected sentence or a corrected version of the text. When they send a revision, compare it with the earlier version: point out each fix and re-mark what's still off with a stronger hint. If they've tried the same spot twice and are still stuck, show the correct form and explain why.
+1. Call mark_writing on their text. It shows their own text with your marks highlighted, and they open each mark to see the code and your hint. Don't list or quote errors in chat as well.
+2. Put one or two specific strengths in the tool. Mark the most important errors for their level (about six at most). If there are more of the same type, say so in the "more" field and let them find the rest.
+3. Add one "next level" suggestion that fits their level (a connector, a detail, a richer verb).
+4. In your chat text, write only a short, warm lead-in.
+Never write out a corrected sentence or a corrected version of the text, in a hint or in chat. Hints are questions or pointers ("Which case comes after 'mit'?"); the stronger hint can name the rule or the ending's family, but not the finished form. When they send a revision, call mark_writing again on the new version: the app shows them how many earlier marks they fixed, so in chat, name one or two fixes you're pleased with. If they've tried the same spot twice and are still stuck, explain the correct form in chat.
+If a pattern keeps coming up (for example verb position), offer a short exercise card on it.
 If they haven't shared any writing yet, ask about the task (purpose, audience, length) and invite them to paste their draft. If they ask you to write it, help them plan instead: German keywords for their ideas, an outline, sentence starters for them to finish.
 If a text seems far beyond their level or machine-translated, don't accuse them. Kindly say you can help them best with German they wrote themselves, and offer to work on it sentence by sentence.`
   },
   vocab: {
+    tools: ["exercise"],
     ico: "🗂️", name: "Wortschatz", en: "Vocabulary training", effort: "low", graded: false,
     desc: "Johann quizzes you on your unit's words and your notebook.",
     focusLabel: "Which words? (optional)", focusPh: "e.g. food words, my notebook, Kapitel 3",
     quick: ["Tipp", "Ich weiß es nicht", "Noch mal", "Pause: wie viele richtig?"],
-    prompt: `Quiz the student on vocabulary: their focus, the course vocabulary list, their notebook words, and words from the current unit, in that order of priority. Ask one item at a time and vary the format: German→English, English→German (nouns with article and, from A2, plural), fill the gap in a short sentence, use the word in a sentence of their own, odd one out, opposites.
-When they miss one, give a short memory hook (a sound-alike, a related word, a picture in words), then bring the word back a few items later. Keep a light running count of correct answers. After about 8 items, give a mini summary and ask whether to continue.
+    prompt: `Practise vocabulary with the student: their focus, the course vocabulary list, their notebook words, and words from the current unit, in that order of priority.
+Use exercise cards for most of the practice, 4–6 items per card, and vary the types: article (for nouns), gap (a word in a short sentence), choice, match (German–English pairs), and order (a short sentence using the words). From A2 on, ask for plurals sometimes.
+After each card, respond briefly to the results. For a missed word, give a short memory hook (a sound-alike, a related word, a picture in words), and bring it back in a later card. After three or four cards, give a mini summary and ask whether to continue.
 Add a [[merk: …]] tag for a word they found hard.`
   },
   role: {
+    tools: [],
     ico: "🎭", name: "Rollenspiel", en: "Role-play", effort: "low", graded: false,
     desc: "Practise a real-life situation: café, train station, doctor, shopping…",
     scenario: true,
@@ -775,24 +852,93 @@ Stay in character in German with short, natural lines. During the scene, don't c
 When they write "Feedback" or the scene reaches a natural end, step out and give: what worked, two or three phrases they could upgrade (let them try the upgrade first), and an offer to replay the scene with a twist.`
   },
   exam: {
+    tools: ["exercise"],
     ico: "🎯", name: "Prüfungstraining", en: "Test prep", effort: "medium", graded: true,
     desc: "Practise for an upcoming quiz, test, or exam with fresh practice items.",
     focusLabel: "What's on the test? (optional)", focusPh: "e.g. Kapitel 5 test: accusative, food vocab, a short writing task",
     quick: ["Tipp", "Warum?", "Nächste Aufgabe", "Was soll ich wiederholen?"],
-    prompt: `Help the student get ready for a quiz, test, or exam in their course. Find out what it covers (or use the current unit) and what format it has. Then create original practice items in similar formats, one at a time. Wait for their attempt, say whether it's right, and briefly explain why.
+    prompt: `Help the student get ready for a quiz, test, or exam in their course. Find out what it covers (or use the current unit) and what format it has. Then create original practice items in similar formats as exercise cards (4–6 items each). The app checks their answers and sends you the results: respond briefly to each card, explaining the misses. Open-ended tasks (a short writing or speaking prompt) stay in chat.
 Keep track of weak spots and steer practice toward them. Mix in a quick confidence check now and then ("How sure were you?"). At the end, suggest a short study plan for the days before the test.
 You don't know the real test questions and shouldn't pretend to. If the student pastes questions from a quiz or test they're taking right now, decline kindly and offer to practise the same skills with new items instead.`
   },
   level: {
+    tools: ["exercise"],
     ico: "📏", name: "Einstufung", en: "Level check", effort: "medium", graded: false,
     desc: "Not sure of your level? A relaxed 10-minute chat and Johann estimates it.",
     focusLabel: "Anything Johann should know first? (optional)", focusPh: "e.g. I understand a lot but writing is hard",
     quick: ["Ich weiß es nicht", "Auf Englisch?", "Einfacher, bitte"],
     prompt: `Estimate the student's German level in a short, relaxed check of about 8–12 exchanges. Tell them up front it isn't a test and "I don't know" is a fine answer.
-Start very easy and adapt up or down based on how they do: questions they answer in German, a short text you write followed by a question about it, and a small writing task (a few sentences about themselves or a picture you describe). Cover understanding, writing, vocabulary range, and grammar control. Don't teach or correct during the check beyond a word of encouragement.
+Start very easy and adapt up or down based on how they do: questions they answer in German, a short text you write followed by a question about it, and a small writing task (a few sentences about themselves or a picture you describe). You can use one or two short exercise cards (gap or choice) for grammar control. Cover understanding, writing, vocabulary range, and grammar control. Don't teach or correct during the check beyond a word of encouragement.
 At the end, give your estimate on the CEFR scale (A1 to C1, you may say "between A2 and B1"), with two or three things they can already do and one or two things to work on next. Say it's a rough estimate from a short chat. Then put the single closest level on its own line as a tag, e.g. [[niveau: A2]].`
   }
 };
+
+/* Client tools Johann can call. The app renders them; their results come back as tool_result. */
+const TOOL_DEFS = {
+  exercise: {
+    name: "show_exercise",
+    description: "Show the student an interactive practice card in the app. The app checks their answers instantly, lets them retry, shows your hint on request, and reveals the answer only after two wrong tries. You get their results as the tool result, then reply briefly. Use it for practice items you write yourself, never for the student's own homework, worksheet, or test items. Write a one-sentence lead-in in your message text before the card. Item rules by type: gap: prompt contains exactly one ___ blank; answers lists every acceptable fill. choice: options has 2–4 choices; answers lists the correct option(s) exactly as written in options. article: prompt is a noun without its article (e.g. 'Bahnhof'); answers is ['der'], ['die'], or ['das'] (['die'] for plural-only nouns); options is []. order: options holds the words or chunks of one sentence (punctuation attached to its word); answers holds the correct sentence(s) built from exactly those words; prompt gives the English meaning or a context. match: prompt is the left item (e.g. a German word); answers holds its one partner (e.g. the English meaning); options is []; all partners are shuffled together. hint: a short nudge that doesn't give the answer away.",
+    eager_input_streaming: true,
+    input_schema: {
+      type: "object",
+      properties: {
+        type: { type: "string", enum: ["gap", "choice", "article", "order", "match"] },
+        title: { type: "string", description: "Short card title, e.g. 'Akkusativ: den, die, das'" },
+        instructions: { type: "string", description: "One short line telling the student what to do, in their language of instruction" },
+        items: {
+          type: "array",
+          description: "3 to 8 items",
+          items: {
+            type: "object",
+            properties: {
+              prompt: { type: "string" },
+              options: { type: "array", items: { type: "string" } },
+              answers: { type: "array", items: { type: "string" } },
+              hint: { type: "string" }
+            },
+            required: ["prompt", "options", "answers", "hint"],
+            additionalProperties: false
+          }
+        }
+      },
+      required: ["type", "title", "instructions", "items"],
+      additionalProperties: false
+    }
+  },
+  writing: {
+    name: "mark_writing",
+    description: "Show the student's own German text with your error marks highlighted, so they find and fix errors themselves. The student opens a mark to see its code and your hint, can open the stronger hint, and revises the text in the app. Their revision comes back as the tool result; then call this tool again on the new version. Never include corrected forms anywhere in this tool.",
+    eager_input_streaming: true,
+    input_schema: {
+      type: "object",
+      properties: {
+        text: { type: "string", description: "The student's latest text, copied exactly as they wrote it (only their German text, without your words)" },
+        strengths: { type: "array", items: { type: "string" }, description: "One or two specific things they did well" },
+        marks: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              quote: { type: "string", description: "The exact erroneous words copied from text (1–5 words, matching spelling and capitals exactly)" },
+              code: { type: "string", enum: ["G", "K", "V", "WS", "R", "WW", "?"] },
+              hint: { type: "string", description: "A short question or pointer that does not give the correction" },
+              hint2: { type: "string", description: "A stronger hint that names the rule, still without the corrected form" }
+            },
+            required: ["quote", "code", "hint", "hint2"],
+            additionalProperties: false
+          }
+        },
+        more: { type: "string", description: "Note about further unmarked errors of the same kind, or an empty string" },
+        next_step: { type: "string", description: "One 'next level' suggestion for their level" }
+      },
+      required: ["text", "strengths", "marks", "more", "next_step"],
+      additionalProperties: false
+    }
+  }
+};
+function toolsFor(modeId) {
+  return (MODES[modeId].tools || []).map(k => TOOL_DEFS[k]);
+}
 
 const SKILLS = { "": "—", lesen: "Reading", hoeren: "Listening", schreiben: "Writing", sprechen: "Speaking", wortschatz: "Vocabulary", grammatik: "Grammar" };
 const GOALS = { grades: "Good grades in my class", exam: "Pass an exam or certificate", travel: "Travel", family: "Talk with family or friends", abroad: "Study, work, or live abroad", media: "Music, films, games, books", culture: "Culture and history", fun: "Just for fun" };
@@ -828,7 +974,7 @@ const DEFAULT_STATE = {
   profile: { name: "", age: "", level: "", duration: "", strong: "", weak: "", langs: "", connection: "", background: "", goals: [], interests: "", challenge: 1, style: "", short: false, notes: "" },
   notebook: [],
   session: null,
-  prefs: { autoSpeak: false, look: { ...LOOK_DEFAULT } }
+  prefs: { autoSpeak: false, wordHelp: true, look: { ...LOOK_DEFAULT } }
 };
 let S = load();
 
@@ -1037,7 +1183,10 @@ ${memory}
 ${mode.prompt}${scenario}
 ${graded}
 
-## Starting and wrapping up
+${toolsFor(session.mode).length ? `## Interactive cards
+${(MODES[session.mode].tools || []).includes("writing") ? "You have two app tools: show_exercise (an interactive practice card) and mark_writing (the student's text with your marks highlighted)." : "You have an app tool, show_exercise, that shows an interactive practice card."} A tool call ends your turn: write a short lead-in sentence first, then call the tool. The student works in the app, which checks exercise answers itself, and you get their results back. Then reply in a few sentences: name what went well, explain misses briefly (the student has already seen which items were wrong), and choose the next step. Cards contain only practice items you wrote yourself. At most one card per message.
+
+` : ""}## Starting and wrapping up
 The first user message is an automatic note from the app saying the student opened this activity, possibly with their focus. Greet them briefly (by name if you know it) and start the activity right away.
 Use what you know about the student to choose topics, examples, comparisons, pace, and difficulty, without reciting their profile back to them. Teacher notes and the course still set the boundaries.
 When the student wants to wrap up, give: one specific thing they did well, one or two things to practise, and one concrete next step, plus any notebook tags worth saving.`;
@@ -1056,23 +1205,11 @@ function friendlyError(status, msg) {
   return msg || "Something went wrong.";
 }
 
-/* Streams one assistant turn. Returns { blocks, stopReason }.
-   `blocks` keeps every content block exactly as received (thinking + signature, text, fallback…)
-   so the history we send back is append-only. */
-async function streamTurn(system, messages, effort, onText, signal) {
-  const model = S.conn.model || "claude-opus-5-5";
-  const body = {
-    model,
-    max_tokens: 16000,
-    stream: true,
-    system,
-    messages,
-    output_config: { effort },
-    cache_control: { type: "ephemeral" }
-  };
+/* Where to send a request, and the headers it needs. Adds the refusal fallback to `body`. */
+function apiTarget(body) {
   const headers = { "content-type": "application/json", "anthropic-version": "2023-06-01" };
   // Server-side refusal fallback (not offered on Haiku).
-  if (!model.startsWith("claude-haiku")) {
+  if (!body.model.startsWith("claude-haiku")) {
     body.fallbacks = "default";
     headers["anthropic-beta"] = "server-side-fallback-2026-07-01";
   }
@@ -1084,6 +1221,28 @@ async function streamTurn(system, messages, effort, onText, signal) {
     headers["x-api-key"] = S.conn.key.trim();
     headers["anthropic-dangerous-direct-browser-access"] = "true";
   }
+  return { url, headers };
+}
+
+/* Streams one assistant turn. Returns { blocks, stopReason, badTools }.
+   `blocks` keeps every content block as received (thinking + signature, text, tool_use, fallback…)
+   so the history we send back is append-only. `badTools` lists tool_use ids whose input wasn't valid JSON. */
+async function streamTurn(system, messages, effort, onText, signal, tools) {
+  const model = S.conn.model || "claude-opus-5-5";
+  const body = {
+    model,
+    max_tokens: 16000,
+    stream: true,
+    system,
+    messages,
+    output_config: { effort },
+    cache_control: { type: "ephemeral" }
+  };
+  if (tools && tools.length) {
+    body.tools = tools;
+    body.tool_choice = { type: "auto", disable_parallel_tool_use: true };
+  }
+  const { url, headers } = apiTarget(body);
 
   let res;
   try {
@@ -1098,7 +1257,7 @@ async function streamTurn(system, messages, effort, onText, signal) {
     throw new ApiError(friendlyError(res.status, msg), res.status, res.status === 429 || res.status >= 500);
   }
 
-  const blocks = [];
+  const blocks = [], partial = [], badTools = [];
   let stopReason = null, gotOutput = false;
   const currentText = () => blocks.filter(b => b && b.type === "text").map(b => b.text || "").join("");
   const reader = res.body.getReader();
@@ -1110,13 +1269,25 @@ async function streamTurn(system, messages, effort, onText, signal) {
     switch (ev.type) {
       case "content_block_start":
         blocks[ev.index] = structuredClone(ev.content_block);
+        if (ev.content_block.type === "tool_use") partial[ev.index] = "";
         break;
+      case "content_block_stop": {
+        const b = blocks[ev.index];
+        if (b && b.type === "tool_use") {
+          const raw = partial[ev.index] || "";
+          try { b.input = raw.trim() ? JSON.parse(raw) : (b.input || {}); }
+          catch (e) { b.input = {}; badTools.push({ id: b.id, raw }); }
+          gotOutput = true;
+        }
+        break;
+      }
       case "content_block_delta": {
         const b = blocks[ev.index], d = ev.delta;
         if (!b) break;
         if (d.type === "text_delta") { b.text = (b.text || "") + d.text; gotOutput = true; onText(currentText()); }
         else if (d.type === "thinking_delta") b.thinking = (b.thinking || "") + d.thinking;
         else if (d.type === "signature_delta") b.signature = (b.signature || "") + d.signature;
+        else if (d.type === "input_json_delta") partial[ev.index] += d.partial_json;
         break;
       }
       case "message_delta":
@@ -1141,7 +1312,7 @@ async function streamTurn(system, messages, effort, onText, signal) {
       if (data) handle(data);
     }
   }
-  return { blocks: blocks.filter(Boolean), stopReason };
+  return { blocks: blocks.filter(Boolean), stopReason, badTools };
 }
 
 /* ---------------- UI: screens ---------------- */
@@ -1282,6 +1453,7 @@ function openChat(fresh) {
   $("#chatTitle").textContent = `${m.name} · ${m.en}`;
   $("#chatMeta").textContent = [courseSummary(), m.graded ? (s.graded ? "graded work: Johann coaches only" : "practice") : ""].filter(Boolean).join(" · ");
   $("#legend").hidden = !m.legend;
+  $("#gkey").hidden = !wordHelpOn();
   const q = $("#quick");
   q.innerHTML = "";
   for (const label of m.quick) {
@@ -1324,6 +1496,12 @@ function renderLog() {
   log.scrollTop = log.scrollHeight;
 }
 
+const viewEl = new WeakMap();
+function refreshMsg(v) {
+  const el = viewEl.get(v);
+  if (el && el.isConnected) el.replaceWith(renderMsg(v));
+}
+
 function renderMsg(v) {
   if (v.who === "sys") {
     const d = document.createElement("div");
@@ -1345,13 +1523,18 @@ function renderMsg(v) {
   who.className = "sr-only";
   who.textContent = v.who === "johann" ? "Johann: " : "You: ";
   b.appendChild(who);
-  const body = document.createElement("div");
-  body.className = "body";
-  body.innerHTML = v.who === "johann" ? md(v.text) : esc(v.text).replace(/\n/g, "<br>");
-  b.appendChild(body);
+  if (v.text) {
+    const body = document.createElement("div");
+    body.className = "body";
+    body.innerHTML = v.who === "johann" ? md(v.text) : esc(v.text).replace(/\n/g, "<br>");
+    if (v.who === "johann" && v.words && wordHelpOn()) applyWordHelp(body, v.words);
+    b.appendChild(body);
+  }
   if (v.saved && v.saved.length) b.appendChild(savedChips(v.saved));
-  if (v.who === "johann" && "speechSynthesis" in window) b.appendChild(speakBtn(v.text));
+  if (v.card) b.appendChild(v.card.kind === "writing" ? renderWritingCard(v) : renderExerciseCard(v));
+  if (v.who === "johann" && v.text && "speechSynthesis" in window) b.appendChild(speakBtn(v.text));
   wrap.appendChild(b);
+  viewEl.set(v, wrap);
   return wrap;
 }
 
@@ -1383,7 +1566,17 @@ function send(text) {
   text = (text || "").trim();
   if (!text || busy || !S.session) return;
   if (!connected()) { renderSetup(); show("setup"); return; }
-  S.session.api.push({ role: "user", content: text });
+  const pending = pendingToolUse(S.session);
+  if (pending) {
+    // Every tool call needs a result: tell Johann the student moved on, then add their message.
+    closeCard(pending.id);
+    S.session.api.push({ role: "user", content: [
+      { type: "tool_result", tool_use_id: pending.id, content: "The student left the card without submitting it and wrote this message instead." },
+      { type: "text", text }
+    ] });
+  } else {
+    S.session.api.push({ role: "user", content: text });
+  }
   const v = { who: "student", text };
   S.session.view.push(v);
   $("#log").appendChild(renderMsg(v));
@@ -1418,7 +1611,7 @@ async function runTurn() {
   };
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      result = await streamTurn(s.system, s.api, effort, onText, abortCtl.signal);
+      result = await streamTurn(s.system, s.api, effort, onText, abortCtl.signal, toolsFor(s.mode));
       lastErr = null;
       break;
     } catch (e) {
@@ -1446,7 +1639,10 @@ async function runTurn() {
   if (result.stopReason === "refusal") {
     // Drop the declined turn so the student can rephrase; nothing was added to history.
     const last = s.api[s.api.length - 1];
-    if (last && last.role === "user" && s.api.length > 1) {
+    if (last && Array.isArray(last.content)) {
+      // It answers a card, so it has to stay; the student's next message joins it.
+      s.pendingRetry = true;
+    } else if (last && last.role === "user" && s.api.length > 1) {
       s.api.pop();
       const idx = s.view.map(v => v.who).lastIndexOf("student");
       if (idx >= 0) s.view.splice(idx, 1);
@@ -1459,6 +1655,15 @@ async function runTurn() {
 
   const fullText = result.blocks.filter(b => b.type === "text").map(b => b.text || "").join("");
   s.api.push({ role: "assistant", content: result.blocks });
+  const toolBlock = result.blocks.find(b => b.type === "tool_use");
+  let card = null, toolError = null;
+  if (toolBlock) {
+    const bad = result.badTools.find(t => t.id === toolBlock.id);
+    if (result.stopReason === "max_tokens") toolError = "The card was cut off because the message got too long. Send a smaller card.";
+    else if (bad) toolError = JSON.stringify({ INVALID_JSON: bad.raw });
+    else toolError = validateTool(toolBlock.name, toolBlock.input);
+    if (!toolError) card = makeCard(toolBlock, s);
+  }
   const tags = extractTags(fullText);
   const saved = addToNotebook(tags);
   const lvl = tags.find(t => t.type === "niveau");
@@ -1467,14 +1672,32 @@ async function runTurn() {
     S.profile.level = lvlCode === "C2" ? "C1" : lvlCode;
     saved.push({ type: "niveau", text: "My level: " + S.profile.level });
   }
-  const v = { who: "johann", text: stripTags(fullText, false) || "…", saved };
-  s.view.push(v);
+  const shown = stripTags(fullText, false);
+  const v = { who: "johann", text: shown || (card || toolBlock ? "" : "…"), saved, card };
   s.pendingRetry = false;
-  $("#log").appendChild(renderMsg(v));
-  $("#log").scrollTop = $("#log").scrollHeight;
-  if (result.stopReason === "max_tokens") sysNote("Johann's answer was cut off because it got very long. Ask him to continue if you need the rest.");
+  if (v.text || v.card || saved.length) {
+    s.view.push(v);
+    $("#log").appendChild(renderMsg(v));
+    $("#log").scrollTop = $("#log").scrollHeight;
+  }
+  if (result.stopReason === "max_tokens" && !toolBlock) sysNote("Johann's answer was cut off because it got very long. Ask him to continue if you need the rest.");
   save();
-  if (S.prefs.autoSpeak) speak(v.text);
+  if (S.prefs.autoSpeak && v.text) speak(v.text);
+  if (v.text && wordHelpOn()) annotate(v);
+
+  if (toolError) {
+    // Tell Johann the card failed so he can fix it; after repeated failures, let the student carry on in chat.
+    s.toolErrors = (s.toolErrors || 0) + 1;
+    if (s.toolErrors <= 2) {
+      s.api.push({ role: "user", content: [{ type: "tool_result", tool_use_id: toolBlock.id, is_error: true, content: toolError }] });
+      save();
+      runTurn();
+    } else {
+      sysNote("Johann's practice card didn't load. Just keep chatting.", true);
+    }
+  } else if (card) {
+    s.toolErrors = 0;
+  }
 }
 
 function addRetryButton() {
@@ -1510,9 +1733,15 @@ function onSend() {
     // Merge into the unanswered student message so roles keep alternating.
     const last = s.api[s.api.length - 1];
     if (last && last.role === "user") {
-      last.content += "\n\n" + text;
+      if (Array.isArray(last.content)) {
+        const t = last.content.find(c => c.type === "text");
+        if (t) t.text += "\n\n" + text; else last.content.push({ type: "text", text });
+      } else {
+        last.content += "\n\n" + text;
+      }
       const idx = s.view.map(v => v.who).lastIndexOf("student");
       if (idx >= 0) s.view[idx].text += "\n\n" + text;
+      else s.view.push({ who: "student", text });
       $("#input").value = "";
       autosize();
       $$("#log > button.tool").forEach(b => b.remove());
@@ -1551,7 +1780,7 @@ $("#btnExport").addEventListener("click", () => {
     "Course: " + courseSummary(),
     ...(S.profile.name ? ["Student: " + S.profile.name] : []),
     "",
-    ...s.view.filter(v => v.who !== "sys").map(v => (v.who === "johann" ? "JOHANN: " : "ICH: ") + v.text + "\n")
+    ...s.view.filter(v => v.who !== "sys").map(v => (v.who === "johann" ? "JOHANN: " : "ICH: ") + v.text + cardSummary(v) + "\n")
   ];
   download(`johann-${m.en.toLowerCase().replace(/\W+/g, "-")}-${new Date(s.started).toISOString().slice(0, 10)}.txt`, lines.join("\n"));
 });
@@ -1564,6 +1793,529 @@ function download(name, text) {
   a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
+
+/* ---------------- interactive cards ---------------- */
+const CODES = { G: "Gender or article", K: "Case ending", V: "Verb form", WS: "Word order", R: "Spelling or capitals", WW: "Word choice", "?": "Meaning unclear" };
+const EX_TYPES = ["gap", "choice", "article", "order", "match"];
+const EX_ICON = { gap: "✏️", choice: "☑️", article: "🎨", order: "🧩", match: "🔗" };
+
+function pendingToolUse(s) {
+  const last = s && s.api[s.api.length - 1];
+  if (!last || last.role !== "assistant" || !Array.isArray(last.content)) return null;
+  return last.content.find(b => b.type === "tool_use") || null;
+}
+function findCard(toolId) {
+  return S.session && S.session.view.find(v => v.card && v.card.toolId === toolId);
+}
+function closeCard(toolId) {
+  const v = findCard(toolId);
+  if (v && !v.card.st.sent) { v.card.st.closed = true; refreshMsg(v); }
+}
+function cardActive(v) {
+  const p = pendingToolUse(S.session);
+  return !!p && p.id === v.card.toolId && !v.card.st.sent && !v.card.st.closed && !busy;
+}
+
+const isStrList = (a) => Array.isArray(a) && a.every(x => typeof x === "string");
+/* Returns an error message for Johann, or null when the input is usable. */
+function validateTool(name, inp) {
+  if (!inp || typeof inp !== "object") return "Input must be an object.";
+  if (name === "show_exercise") {
+    if (!EX_TYPES.includes(inp.type)) return "type must be one of " + EX_TYPES.join(", ");
+    if (typeof inp.title !== "string" || typeof inp.instructions !== "string") return "title and instructions must be strings.";
+    if (!Array.isArray(inp.items) || inp.items.length < 1 || inp.items.length > 10) return "items must hold 1–10 items.";
+    for (const [i, it] of inp.items.entries()) {
+      const where = `items[${i}]: `;
+      if (!it || typeof it.prompt !== "string" || typeof it.hint !== "string" || !isStrList(it.options) || !isStrList(it.answers)) return where + "needs prompt, hint (strings) and options, answers (string arrays).";
+      if (!it.answers.length || it.answers.some(a => !a.trim())) return where + "answers can't be empty.";
+      if (inp.type === "choice") {
+        if (it.options.length < 2) return where + "choice needs at least 2 options.";
+        if (!it.answers.every(a => it.options.some(o => normAns(o) === normAns(a)))) return where + "every answer must appear exactly in options.";
+      }
+      if (inp.type === "article" && !it.answers.every(a => ["der", "die", "das"].includes(a.trim().toLowerCase()))) return where + "article answers must be der, die, or das.";
+      if (inp.type === "order") {
+        if (it.options.length < 2) return where + "order needs the sentence's words in options.";
+        const tokens = (x) => x.trim().split(/\s+/).sort().join(" ");
+        if (!it.answers.some(a => tokens(a) === tokens(it.options.join(" ")))) return where + "each answer must use exactly the words in options, no more and no fewer.";
+      }
+      if (inp.type === "match" && it.answers.length !== 1) return where + "match items need exactly one answer (the partner).";
+    }
+    return null;
+  }
+  if (name === "mark_writing") {
+    if (typeof inp.text !== "string" || !inp.text.trim()) return "text must be the student's text.";
+    if (!isStrList(inp.strengths) || typeof inp.more !== "string" || typeof inp.next_step !== "string") return "strengths must be a string array; more and next_step strings.";
+    if (!Array.isArray(inp.marks)) return "marks must be an array.";
+    for (const [i, m] of inp.marks.entries()) {
+      if (!m || typeof m.quote !== "string" || !m.quote.trim() || !(m.code in CODES) || typeof m.hint !== "string" || typeof m.hint2 !== "string") return `marks[${i}]: needs quote, a valid code, hint, hint2.`;
+    }
+    return null;
+  }
+  return "Unknown tool " + name;
+}
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function makeCard(block, s) {
+  const inp = block.input;
+  if (block.name === "show_exercise") {
+    const st = { items: inp.items.map(() => ({ val: "", picked: [], tries: [], ok: false, almost: "", revealed: false, hint: false })), sent: false, closed: false };
+    if (inp.type === "order") st.pools = inp.items.map(it => {
+      let order = shuffle(it.options.map((_, i) => i));
+      if (order.every((x, i) => x === i) && order.length > 1) order = order.slice(1).concat(order[0]);
+      return order;
+    });
+    if (inp.type === "match") st.partners = shuffle([...new Set(inp.items.map(it => it.answers[0]))]);
+    return { kind: "exercise", toolId: block.id, input: inp, st };
+  }
+  // Writing: compare with the previous marked version to show what got fixed.
+  const prev = [...s.view].reverse().find(v => v.card && v.card.kind === "writing");
+  let fixed = null;
+  if (prev) {
+    // Only marks that were actually in the earlier text can count as fixed.
+    const old = prev.card.input.marks.filter(m => prev.card.input.text.includes(m.quote));
+    const still = old.filter(m => inp.text.includes(m.quote)).length;
+    fixed = { fixed: old.length - still, of: old.length };
+  }
+  return { kind: "writing", toolId: block.id, input: inp, st: { open: -1, hint2: [], editing: false, draft: "", sent: false, closed: false }, fixed };
+}
+
+/* ---- answer checking ---- */
+function normAns(x) {
+  return String(x).normalize("NFC").replace(/[„“”"]/g, '"').replace(/[’‘`´]/g, "'").replace(/\s+/g, " ").trim().replace(/\s*[.!?]+$/, "").trim();
+}
+const foldUmlauts = (x) => x.toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "oe").replace(/ü/g, "ue").replace(/ß/g, "ss");
+function judge(given, answers, type) {
+  const g = normAns(given);
+  if (!g) return { empty: true };
+  const ans = answers.map(normAns);
+  if (type === "article") return { ok: ans.some(a => a.toLowerCase() === g.toLowerCase()) };
+  if (ans.includes(g)) return { ok: true };
+  if (ans.some(a => a.toLowerCase() === g.toLowerCase())) return { ok: false, almost: "Fast! Check the capital letters." };
+  if (ans.some(a => foldUmlauts(a) === foldUmlauts(g))) return { ok: false, almost: "Fast! Check ä, ö, ü and ß." };
+  return { ok: false };
+}
+
+/* ---- exercise card ---- */
+function renderExerciseCard(v) {
+  const c = v.card, inp = c.input, st = c.st, active = cardActive(v);
+  const el = document.createElement("div");
+  el.className = "card-ex";
+  el.innerHTML = `<div class="ex-head"><span class="ico" aria-hidden="true">${EX_ICON[inp.type]}</span><div><b>${esc(inp.title)}</b><div class="hint">${esc(inp.instructions)}</div></div></div>`;
+  const ol = document.createElement("ol");
+  ol.className = "ex-items";
+  inp.items.forEach((it, i) => ol.appendChild(renderExItem(v, it, st.items[i], i, active)));
+  el.appendChild(ol);
+
+  const foot = document.createElement("div");
+  foot.className = "ex-foot";
+  const okCount = st.items.filter(x => x.ok).length;
+  if (active) {
+    const allDone = st.items.every(x => x.ok || x.revealed);
+    const checked = st.items.some(x => x.tries.length);
+    if (!allDone) foot.appendChild(button("Prüfen · Check", "btn", () => checkCard(v)));
+    if (checked) foot.appendChild(button(allDone ? "Weiter → an Johann" : "An Johann senden", allDone ? "btn" : "btn secondary", () => submitExercise(v)));
+    if (checked) foot.insertAdjacentHTML("beforeend", `<span class="card-done">${okCount} / ${inp.items.length} richtig</span>`);
+  } else if (st.sent) {
+    foot.innerHTML = `<span class="card-done">✓ An Johann geschickt · ${okCount} / ${inp.items.length} richtig</span>`;
+  } else if (st.closed) {
+    foot.innerHTML = `<span class="card-done">Karte geschlossen</span>`;
+  }
+  el.appendChild(foot);
+  return el;
+}
+
+function button(label, cls, onClick) {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = cls; b.textContent = label;
+  b.addEventListener("click", onClick);
+  return b;
+}
+
+function renderExItem(v, it, ist, i, active) {
+  const type = v.card.input.type;
+  const li = document.createElement("li");
+  li.className = "ex-item";
+  li.dataset.state = ist.ok ? "ok" : ist.revealed ? "revealed" : ist.tries.length ? "bad" : "";
+  const locked = !active || ist.ok || ist.revealed;
+  const num = `<span class="ex-num">${i + 1}.</span>`;
+  const save_ = () => save();
+
+  if (type === "gap") {
+    const parts = it.prompt.split(/_{2,}/);
+    const input = document.createElement("input");
+    input.type = "text"; input.className = "gap"; input.value = ist.val; input.disabled = locked;
+    input.setAttribute("aria-label", `Answer ${i + 1}`);
+    input.setAttribute("autocomplete", "off"); input.setAttribute("autocapitalize", "off"); input.spellcheck = false;
+    input.size = Math.max(7, ...it.answers.map(a => a.length + 2));
+    input.addEventListener("input", () => { ist.val = input.value; save_(); });
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); checkCard(v); } });
+    li.insertAdjacentHTML("beforeend", num + esc(parts[0]));
+    li.appendChild(input);
+    if (parts.length > 1) li.insertAdjacentHTML("beforeend", esc(parts.slice(1).join(" ")));
+  } else if (type === "choice" || type === "article") {
+    li.insertAdjacentHTML("beforeend", num + `<span>${esc(it.prompt)}</span>`);
+    const opts = document.createElement("div");
+    opts.className = "opts";
+    const choices = type === "article" ? ["der", "die", "das"] : it.options;
+    for (const o of choices) {
+      const b = button(o, "opt" + (type === "article" ? " art-" + o : ""), () => { ist.val = o; save(); refreshMsg(v); });
+      b.setAttribute("aria-pressed", String(ist.val === o));
+      b.disabled = locked;
+      opts.appendChild(b);
+    }
+    li.appendChild(opts);
+  } else if (type === "order") {
+    li.insertAdjacentHTML("beforeend", num + `<span>${esc(it.prompt)}</span>`);
+    const line = document.createElement("div");
+    line.className = "order-line";
+    line.setAttribute("aria-label", "Your sentence");
+    ist.picked.forEach((wi, k) => {
+      const b = button(it.options[wi], "chipw", () => { ist.picked.splice(k, 1); ist.val = ist.picked.map(x => it.options[x]).join(" "); save(); refreshMsg(v); });
+      b.disabled = locked;
+      line.appendChild(b);
+    });
+    li.appendChild(line);
+    if (!locked) {
+      const pool = document.createElement("div");
+      pool.className = "opts";
+      for (const wi of v.card.st.pools[i]) {
+        if (ist.picked.includes(wi)) continue;
+        pool.appendChild(button(it.options[wi], "chipw", () => { ist.picked.push(wi); ist.val = ist.picked.map(x => it.options[x]).join(" "); save(); refreshMsg(v); }));
+      }
+      li.appendChild(pool);
+    }
+  } else if (type === "match") {
+    li.insertAdjacentHTML("beforeend", num + `<b>${esc(it.prompt)}</b> → `);
+    const sel = document.createElement("select");
+    sel.disabled = locked;
+    sel.setAttribute("aria-label", `Partner for ${it.prompt}`);
+    sel.innerHTML = `<option value="">…</option>` + v.card.st.partners.map(p => `<option${p === ist.val ? " selected" : ""}>${esc(p)}</option>`).join("");
+    sel.addEventListener("change", () => { ist.val = sel.value; save(); });
+    li.appendChild(sel);
+  }
+
+  // feedback line
+  const fb = document.createElement("div");
+  fb.className = "ex-fb";
+  if (ist.ok) fb.innerHTML = `<span class="ok">✓ Richtig!</span>`;
+  else if (ist.revealed) fb.innerHTML = `<span>Lösung: <b>${esc(it.answers[0])}</b></span>`;
+  else if (ist.tries.length) {
+    fb.innerHTML = `<span class="bad">✗ ${ist.almost ? esc(ist.almost) : "Noch nicht. Try again!"}</span>`;
+    if (ist.hint && it.hint) fb.insertAdjacentHTML("beforeend", `<span>💡 ${esc(it.hint)}</span>`);
+    if (active && !ist.hint && it.hint) fb.appendChild(button("💡 Tipp", "tool", () => { ist.hint = true; save(); refreshMsg(v); }));
+    if (active && ist.tries.length >= 2) fb.appendChild(button("Lösung zeigen", "tool", () => { ist.revealed = true; save(); refreshMsg(v); }));
+  }
+  if (fb.childNodes.length) li.appendChild(fb);
+  return li;
+}
+
+function checkCard(v) {
+  const c = v.card;
+  if (!cardActive(v)) return;
+  let any = false;
+  c.input.items.forEach((it, i) => {
+    const ist = c.st.items[i];
+    if (ist.ok || ist.revealed) return;
+    const r = judge(ist.val, it.answers, c.input.type);
+    if (r.empty) return;
+    any = true;
+    ist.tries.push(ist.val);
+    ist.ok = !!r.ok;
+    ist.almost = r.almost || "";
+  });
+  if (!any) { sysToast(v, "Fill in at least one answer first."); return; }
+  save();
+  refreshMsg(v);
+  const el = viewEl.get(v);
+  const firstOpen = el && el.querySelector('.ex-item[data-state="bad"] input:not(:disabled)');
+  if (firstOpen) firstOpen.focus();
+}
+function sysToast(v, text) {
+  const el = viewEl.get(v);
+  const foot = el && el.querySelector(".ex-foot");
+  if (foot && !foot.querySelector(".toast")) foot.insertAdjacentHTML("beforeend", `<span class="card-done toast" role="status">${esc(text)}</span>`);
+}
+
+function submitExercise(v) {
+  const c = v.card, inp = c.input;
+  if (!cardActive(v)) return;
+  const items = inp.items.map((it, i) => {
+    const ist = c.st.items[i];
+    return { prompt: it.prompt, expected: it.answers[0], attempts: ist.tries, correct: ist.ok, hint_opened: ist.hint, solution_shown: ist.revealed };
+  });
+  const ok = items.filter(x => x.correct).length;
+  const result = { card: inp.title, type: inp.type, score: `${ok}/${items.length}`, items, note: "The app has already shown the student which items were right." };
+  c.st.sent = true;
+  refreshMsg(v);
+  const revealed = items.filter(x => x.solution_shown).length;
+  sendToolResult(c.toolId, JSON.stringify(result),
+    `✅ ${inp.title}: ${ok} von ${items.length} richtig` + (revealed ? ` (${revealed}× Lösung gezeigt)` : ""));
+}
+
+function sendToolResult(toolId, content, displayText) {
+  const s = S.session;
+  if (busy || !s) return;
+  s.api.push({ role: "user", content: [{ type: "tool_result", tool_use_id: toolId, content }] });
+  const sv = { who: "student", text: displayText };
+  s.view.push(sv);
+  $("#log").appendChild(renderMsg(sv));
+  save();
+  runTurn();
+}
+
+/* ---- writing card ---- */
+function locateMarks(text, marks) {
+  const ranges = [], loose = [];
+  let cursor = 0;
+  marks.forEach((m, k) => {
+    const overlaps = (a, b) => ranges.some(r => a < r.end && b > r.start);
+    let at = text.indexOf(m.quote, cursor);
+    if (at < 0 || overlaps(at, at + m.quote.length)) {
+      at = -1;
+      for (let from = 0; ; ) {
+        const j = text.indexOf(m.quote, from);
+        if (j < 0) break;
+        if (!overlaps(j, j + m.quote.length)) { at = j; break; }
+        from = j + 1;
+      }
+    }
+    if (at < 0) { loose.push(k); return; }
+    ranges.push({ start: at, end: at + m.quote.length, k });
+    cursor = at + m.quote.length;
+  });
+  ranges.sort((a, b) => a.start - b.start);
+  return { ranges, loose };
+}
+
+function renderWritingCard(v) {
+  const c = v.card, inp = c.input, st = c.st, active = cardActive(v);
+  const el = document.createElement("div");
+  el.className = "card-ex card-wr";
+  let html = `<div class="ex-head"><span class="ico" aria-hidden="true">✍️</span><div><b>Schreibcheck</b><div class="hint">Click a highlighted spot to see the code and a hint, then revise your text.</div></div></div>`;
+  if (c.fixed && c.fixed.of) html += `<div class="wr-fixed">✓ Fixed since your last version: ${c.fixed.fixed} of ${c.fixed.of} marks</div>`;
+  if (inp.strengths.length) html += `<ul class="good">${inp.strengths.map(x => `<li>👍 ${esc(x)}</li>`).join("")}</ul>`;
+  el.innerHTML = html;
+
+  const { ranges, loose } = locateMarks(inp.text, inp.marks);
+  const textEl = document.createElement("div");
+  textEl.className = "wr-text";
+  let pos = 0;
+  for (const r of ranges) {
+    textEl.append(document.createTextNode(inp.text.slice(pos, r.start)));
+    const m = inp.marks[r.k];
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "wm";
+    b.setAttribute("aria-expanded", String(st.open === r.k));
+    b.setAttribute("aria-label", `${m.quote}, marked ${CODES[m.code]}`);
+    b.textContent = inp.text.slice(r.start, r.end);
+    b.insertAdjacentHTML("beforeend", `<sup>${esc(m.code)}</sup>`);
+    b.addEventListener("click", () => { st.open = st.open === r.k ? -1 : r.k; save(); refreshMsg(v); });
+    textEl.appendChild(b);
+    pos = r.end;
+  }
+  textEl.append(document.createTextNode(inp.text.slice(pos)));
+  el.appendChild(textEl);
+
+  if (loose.length) {
+    const l = document.createElement("div");
+    l.className = "opts";
+    l.insertAdjacentHTML("beforeend", `<span class="hint">Also look at:</span>`);
+    for (const k of loose) {
+      const m = inp.marks[k];
+      const b = button(`${m.quote} [${m.code}]`, "opt", () => { st.open = st.open === k ? -1 : k; save(); refreshMsg(v); });
+      b.setAttribute("aria-pressed", String(st.open === k));
+      l.appendChild(b);
+    }
+    el.appendChild(l);
+  }
+
+  if (st.open >= 0 && inp.marks[st.open]) {
+    const m = inp.marks[st.open];
+    const d = document.createElement("div");
+    d.className = "wr-detail";
+    d.innerHTML = `<b>[${esc(m.code)}] ${esc(CODES[m.code])}</b> · „${esc(m.quote)}“<div style="margin-top:4px">💡 ${esc(m.hint)}</div>`;
+    if (st.hint2.includes(st.open)) d.insertAdjacentHTML("beforeend", `<div style="margin-top:4px">💡💡 ${esc(m.hint2)}</div>`);
+    else if (m.hint2) d.appendChild(button("Stärkerer Tipp · stronger hint", "tool", () => { st.hint2.push(st.open); save(); refreshMsg(v); }));
+    el.appendChild(d);
+  }
+
+  if (inp.more) el.insertAdjacentHTML("beforeend", `<p class="hint" style="margin-top:8px">🔎 ${esc(inp.more)}</p>`);
+  if (inp.next_step) el.insertAdjacentHTML("beforeend", `<p style="margin-top:6px">⬆️ <b>Next level:</b> ${esc(inp.next_step)}</p>`);
+
+  const foot = document.createElement("div");
+  foot.className = "ex-foot";
+  if (active && st.editing) {
+    const wrap = document.createElement("div");
+    wrap.className = "wr-edit";
+    wrap.style.width = "100%";
+    const ta = document.createElement("textarea");
+    ta.value = st.draft || inp.text;
+    ta.setAttribute("aria-label", "Your revised text");
+    ta.addEventListener("input", () => { st.draft = ta.value; save(); });
+    wrap.appendChild(ta);
+    const row = document.createElement("div");
+    row.className = "ex-foot";
+    row.appendChild(button("Neue Version senden", "btn", () => submitRevision(v, ta.value)));
+    row.appendChild(button("Abbrechen", "btn secondary", () => { st.editing = false; save(); refreshMsg(v); }));
+    wrap.appendChild(row);
+    foot.appendChild(wrap);
+    setTimeout(() => ta.focus(), 0);
+  } else if (active) {
+    foot.appendChild(button("✍️ Überarbeiten · revise", "btn", () => { st.editing = true; st.draft = st.draft || inp.text; save(); refreshMsg(v); }));
+    foot.insertAdjacentHTML("beforeend", `<span class="card-done">${inp.marks.length} mark${inp.marks.length === 1 ? "" : "s"}</span>`);
+  } else if (st.sent) {
+    foot.innerHTML = `<span class="card-done">✓ Revision sent to Johann</span>`;
+  }
+  el.appendChild(foot);
+  return el;
+}
+
+function submitRevision(v, text) {
+  const c = v.card;
+  text = (text || "").trim();
+  if (!cardActive(v) || !text) return;
+  if (text === c.input.text.trim()) { sysToast(v, "Change something first, then send it."); return; }
+  c.st.sent = true; c.st.editing = false;
+  refreshMsg(v);
+  sendToolResult(c.toolId, JSON.stringify({ revised_text: text, stronger_hints_opened: c.st.hint2.length }),
+    "✍️ Neue Version:\n" + text);
+}
+
+function cardSummary(v) {
+  if (!v.card) return "";
+  const c = v.card;
+  if (c.kind === "writing") return `\n[Schreibcheck: ${c.input.marks.length} mark${c.input.marks.length === 1 ? "" : "s"}${c.fixed ? `, ${c.fixed.fixed} of ${c.fixed.of} earlier marks fixed` : ""}]`;
+  const ok = c.st.items.filter(x => x.ok).length;
+  return `\n[Übung "${c.input.title}": ${c.input.items.map(it => it.prompt).join(" | ")}]` + (c.st.sent ? ` → ${ok}/${c.input.items.length} richtig` : "");
+}
+
+/* ---------------- word help: gender colours + tap for meaning ---------------- */
+const wordHelpOn = () => S.prefs.wordHelp !== false;
+const GLOSS_SCHEMA = {
+  type: "object",
+  properties: {
+    words: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          w: { type: "string" },
+          lemma: { type: "string" },
+          pos: { type: "string", enum: ["noun", "verb", "adjective", "adverb", "phrase", "other"] },
+          gender: { type: "string", enum: ["m", "f", "n", "pl", "none"] },
+          en: { type: "string" },
+          info: { type: "string" }
+        },
+        required: ["w", "lemma", "pos", "gender", "en", "info"],
+        additionalProperties: false
+      }
+    }
+  },
+  required: ["words"],
+  additionalProperties: false
+};
+
+async function annotate(v) {
+  const level = S.profile.level || S.course.level;
+  const body = {
+    model: S.conn.model || "claude-opus-5-5",
+    max_tokens: 6000,
+    system: `You add learner glosses to a German tutor's chat message. The learner is at CEFR ${level} and reads English. List the German words and short fixed phrases in the message that a learner might tap: every noun, plus verbs, adjectives, and adverbs that aren't basic at that level, plus fixed expressions. Skip English words, names, and very basic function words (ich, und, ist, nicht, der, ein…).
+For each entry: w = the exact form as it appears in the message (same capitals and ending; a phrase only if it appears exactly like that); lemma = the dictionary form (nouns with their definite article, e.g. "der Bahnhof"; verbs as infinitive); pos; gender for nouns (m, f, n, or pl for plural-only nouns), otherwise none; en = a short English meaning that fits this context; info = for nouns the plural (e.g. "die Bahnhöfe"), for verbs key forms (e.g. "fährt, fuhr, ist gefahren"), otherwise an empty string. At most 40 entries, no duplicates.`,
+    messages: [{ role: "user", content: v.text }],
+    output_config: { effort: "low", format: { type: "json_schema", schema: GLOSS_SCHEMA } }
+  };
+  const { url, headers } = apiTarget(body);
+  try {
+    const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+    if (!res.ok) return;
+    const j = await res.json();
+    if (j.stop_reason !== "end_turn") return;
+    const t = (j.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+    const data = JSON.parse(t);
+    if (!data || !Array.isArray(data.words)) return;
+    const seen = new Set();
+    v.words = data.words.filter(x => x && typeof x.w === "string" && x.w.trim() && v.text.includes(x.w) && !seen.has(x.w) && seen.add(x.w)).slice(0, 60);
+    save();
+    if (wordHelpOn()) refreshMsg(v);
+  } catch (e) { /* word help is optional; the message stays as is */ }
+}
+
+function applyWordHelp(root, words) {
+  if (!words.length) return;
+  const sorted = words.map((x, i) => ({ ...x, i })).sort((a, b) => b.w.length - a.w.length);
+  const byW = new Map(sorted.map(x => [x.w, x]));
+  const re = new RegExp("(?<![\\p{L}\\p{N}])(" + sorted.map(x => x.w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")(?![\\p{L}\\p{N}])", "gu");
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) => n.parentElement.closest("code, .w") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    const text = node.nodeValue;
+    re.lastIndex = 0;
+    if (!re.test(text)) continue;
+    re.lastIndex = 0;
+    const frag = document.createDocumentFragment();
+    let pos = 0, m;
+    while ((m = re.exec(text))) {
+      const x = byW.get(m[1]);
+      frag.append(document.createTextNode(text.slice(pos, m.index)));
+      const sp = document.createElement("span");
+      sp.className = "w" + (x.pos === "noun" && x.gender !== "none" ? " g-" + x.gender : "");
+      sp.tabIndex = 0;
+      sp.setAttribute("role", "button");
+      sp.textContent = m[1];
+      sp.addEventListener("click", (e) => { e.stopPropagation(); openGloss(sp, x); });
+      sp.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openGloss(sp, x); } });
+      frag.appendChild(sp);
+      pos = m.index + m[1].length;
+    }
+    frag.append(document.createTextNode(text.slice(pos)));
+    node.replaceWith(frag);
+  }
+}
+
+const GENDER_LABEL = { m: "masculine (der)", f: "feminine (die)", n: "neuter (das)", pl: "plural (die)" };
+let glossEl = null;
+function closeGloss() { if (glossEl) { glossEl.remove(); glossEl = null; } }
+function openGloss(anchor, x) {
+  closeGloss();
+  const d = document.createElement("div");
+  d.className = "wpop";
+  d.setAttribute("role", "dialog");
+  d.setAttribute("aria-label", x.lemma);
+  const g = x.pos === "noun" && x.gender !== "none" ? " g-" + x.gender : "";
+  d.innerHTML = `<div class="lemma${g}">${esc(x.lemma)}</div>
+    <div class="meta">${esc(x.pos)}${g ? " · " + esc(GENDER_LABEL[x.gender]) : ""}${x.info ? " · " + esc(x.info) : ""}</div>
+    <div style="margin-top:4px">${esc(x.en)}</div>`;
+  const row = document.createElement("div");
+  row.className = "btn-row";
+  if ("speechSynthesis" in window) row.appendChild(button("🔊", "tool", () => speak(x.lemma)));
+  const add = button("＋ Merkheft", "tool", () => {
+    const added = addToNotebook([{ type: "merk", text: `${x.lemma} — ${x.en}` }]);
+    save();
+    add.textContent = added.length ? "✓ Saved" : "✓ Already saved";
+    add.disabled = true;
+  });
+  row.appendChild(add);
+  d.appendChild(row);
+  document.body.appendChild(d);
+  const r = anchor.getBoundingClientRect(), w = d.offsetWidth, h = d.offsetHeight;
+  const left = Math.max(12, Math.min(r.left, window.innerWidth - w - 12));
+  const top = r.bottom + 6 + h > window.innerHeight ? Math.max(12, r.top - h - 6) : r.bottom + 6;
+  d.style.left = left + "px";
+  d.style.top = top + "px";
+  glossEl = d;
+}
+document.addEventListener("click", (e) => { if (glossEl && !glossEl.contains(e.target)) closeGloss(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeGloss(); });
+$("#log").addEventListener("scroll", closeGloss);
 
 /* ---------------- voice ---------------- */
 function speak(text) {
@@ -1768,12 +2520,19 @@ function openSettings() {
     : S.conn.mode === "key" ? "Your own API key (…" + S.conn.key.slice(-4) + ")" : "Not connected yet.";
   $("#setModel").value = S.conn.model;
   $("#setAutoSpeak").checked = !!S.prefs.autoSpeak;
+  $("#setWordHelp").checked = wordHelpOn();
   renderLook();
   $("#dlgSettings").showModal();
 }
 $("#btnSettings").addEventListener("click", openSettings);
 $("#setModel").addEventListener("change", (e) => { S.conn.model = e.target.value; save(); });
 $("#setAutoSpeak").addEventListener("change", (e) => { S.prefs.autoSpeak = e.target.checked; save(); });
+$("#setWordHelp").addEventListener("change", (e) => {
+  S.prefs.wordHelp = e.target.checked;
+  save();
+  $("#gkey").hidden = !wordHelpOn();
+  if (S.session && $("#chat").classList.contains("active")) renderLog();
+});
 $("#btnReconnect").addEventListener("click", () => { $("#dlgSettings").close(); renderSetup(); show("setup"); });
 $("#btnReset").addEventListener("click", () => {
   if (!confirm("Delete everything Johann saved in this browser? This can't be undone.")) return;

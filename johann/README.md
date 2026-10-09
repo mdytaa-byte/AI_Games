@@ -9,12 +9,27 @@ The whole app is a single file, [`index.html`](index.html). Open it in a browser
 | Activity | What Johann does |
 |---|---|
 | 💬 **Gespräch** (Conversation) | Chats in German at the student's level, corrects by recasting, and points out at most one pattern per turn. |
-| ❓ **Frag Johann** (Ask a question) | Explains grammar, vocabulary, and culture with his *own* examples, then has the student try. |
-| ✍️ **Schreibcheck** (Writing feedback) | Marks errors with codes like **[G] [K] [V] [WS] [R] [WW] [?]** without fixing them. The student revises, and Johann compares the versions. |
-| 🗂️ **Wortschatz** (Vocabulary) | Quizzes the course vocabulary list and the student's notebook, one item at a time, and brings missed words back later. |
+| ❓ **Frag Johann** (Ask a question) | Explains grammar, vocabulary, and culture with his *own* examples, then gives a short exercise card to try it. |
+| ✍️ **Schreibcheck** (Writing feedback) | Shows the student's own text with errors highlighted and coded (**[G] [K] [V] [WS] [R] [WW] [?]**), without fixing them. The student revises in place, and the app shows how many marks they fixed. |
+| 🗂️ **Wortschatz** (Vocabulary) | Drills the course vocabulary and the student's notebook with exercise cards, and brings missed words back later. |
 | 🎭 **Rollenspiel** (Role-play) | Plays a café server, ticket agent, doctor, and so on, then gives feedback when the student types "Feedback". |
-| 🎯 **Prüfungstraining** (Test prep) | Writes fresh practice items in the test's format and steers practice toward weak spots. |
+| 🎯 **Prüfungstraining** (Test prep) | Writes fresh practice cards in the test's format and steers practice toward weak spots. |
 | 📏 **Einstufung** (Level check) | A relaxed chat of about 10 exchanges that adapts up or down, then estimates the student's CEFR level and saves it to their profile. |
+
+### More than a chat window
+
+**Exercise cards.** When Johann sets practice, it appears as an interactive card instead of a chat message. There are five kinds:
+- 🎨 **der/die/das**, with colour-coded buttons
+- ✏️ **fill in the gap**
+- ☑️ **multiple choice**
+- 🧩 **word order**: tap the words to build the sentence
+- 🔗 **matching** pairs
+
+The app checks answers instantly and gives a gentle nudge for near misses ("Check the capital letters", "Check ä, ö, ü and ß"). Students can ask for a hint, and after two wrong tries they can choose to see the answer. When they're done, the results go to Johann, who responds to what they actually got wrong. Cards only ever contain practice items Johann wrote, never the student's own homework.
+
+**Writing marked up on the student's own text.** In Schreibcheck, the student's text appears with errors highlighted and coded. Clicking a highlight shows a hint, and the student can open a stronger hint. Neither one gives the answer. They revise right in the card, and when they send the new version the app shows "Fixed since your last version: 3 of 5". Johann then marks the new version.
+
+**Word help.** In Johann's messages, nouns are coloured by gender (**der** blue, **die** red, **das** green), so genders sink in without effort. Dotted words can be tapped to see the dictionary form, the plural or key verb forms, and the meaning, with buttons to hear the word and save it to the Merkheft. This uses one small extra request per message and can be switched off in **Einstellungen → Wort-Hilfe**.
 
 ### Über mich: Johann adapts to each student
 
@@ -34,7 +49,7 @@ In **Einstellungen → Darstellung**: seven colour schemes, light, dark or autom
 - **Merkheft (notebook).** Johann saves useful words, recurring mistake patterns, and goals. He remembers them in later sessions, and students can practise their notebook words.
 - **Tipp button** for a small hint, plus quick buttons like "Einfacher, bitte" and "Auf Englisch?".
 - **Umlaut keys**, **read-aloud** (browser voice), and **speech input** (in browsers that support it, such as Chrome and Edge).
-- **Transcript download**, so students can show their teacher how they used Johann.
+- **Transcript download**, so students can show their teacher how they used Johann. It includes card scores and how many writing marks they fixed.
 - **English support levels**: Mostly English, Mixed, or Mostly German.
 
 ## How Johann protects learning
@@ -80,7 +95,7 @@ You host a small proxy that holds **your** API key, and students only get the li
    - `ALLOWED_ORIGIN` (optional): where Johann is hosted, e.g. `https://yourname.github.io`
 3. Give students the Worker URL (e.g. `https://johann.yourname.workers.dev`) and the class code. They choose **School link** on the setup screen.
 
-The proxy only allows the three Claude models Johann uses, caps response length, and strips tool use. Anyone with the link and class code can still send it chat requests, so change the class code each term and set a monthly spend limit in the Anthropic Console.
+The proxy only allows the three Claude models Johann uses, caps response length, and only passes through Johann's own two app tools (exercise cards and writing marks), with no web search or other server tools. Anyone with the link and class code can still send it chat requests, so change the class code each term and set a monthly spend limit in the Anthropic Console.
 
 ### Model and cost
 Johann uses **Claude Opus 5.5** by default because it gives the best teaching quality. You can switch to Sonnet 5.5 or Haiku 5.5 in **Einstellungen** for lower cost and faster replies. Johann keeps his instructions identical within a session so prompt caching can lower the cost of long sessions.

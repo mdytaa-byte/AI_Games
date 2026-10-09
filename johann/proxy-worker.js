@@ -10,6 +10,7 @@
 
 const MODELS = ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"];
 const MAX_TOKENS = 16000;
+const TOOLS = ["show_exercise", "mark_writing"];   // Johann's own app tools
 
 export default {
   async fetch(request, env) {
@@ -41,7 +42,11 @@ export default {
     // Keep the key from being used for anything bigger than a tutoring chat.
     if (!MODELS.includes(body.model)) body.model = MODELS[0];
     body.max_tokens = Math.min(Number(body.max_tokens) || 4000, MAX_TOKENS);
-    delete body.tools;
+    // Only Johann's own client tools; no server tools (web search, code execution, …).
+    if (Array.isArray(body.tools)) {
+      body.tools = body.tools.filter(t => t && !t.type && TOOLS.includes(t.name));
+      if (!body.tools.length) { delete body.tools; delete body.tool_choice; }
+    }
     delete body.mcp_servers;
     delete body.container;
 

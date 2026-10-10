@@ -106,6 +106,41 @@ Update the code whenever you move to a new unit. Students can also change the cu
 
 The lock is a convenience, not a security feature. A student who clears their browser storage can edit anything.
 
+## "Ask Johann" buttons in your course
+
+Students can open Johann from inside their course activities. He opens in a side panel, already set to the course, and knows which task the student came from. He uses that to help with the language without doing the task.
+
+### Kleinhausen (built in)
+Every Kleinhausen screen now has a floating **🎓 Frag Johann** button, and each episode has one in its header. Johann opens on that episode's grammar, vocabulary, and can-do goals, with the current scene as context. The practice games have a button in their course bar too.
+
+- **Exam mode (Prüfungsmodus) and the IPA:** the buttons disappear.
+- **Proof tasks (scenes titled "Nachweis"):** Johann opens in coach-only mode, as for graded work.
+- **SCORM:** the package (`tools/pack-scorm.sh`) now includes Johann, so the buttons also work in Canvas.
+
+### Any other course (for example Glockenspiel)
+In Johann, open **Mein Kurs → Teacher tools**, set the course, then use **"Ask Johann" button for your course pages**. Pick which activity it opens (questions, writing check, vocabulary, …), whether the task is graded, and a short description Johann will see (e.g. "Lektion 3, Übung 4b"). You get four versions:
+- **Link:** works anywhere, including Canvas announcements and assignments. Opens in a new tab.
+- **Button:** an HTML button for Canvas pages and websites.
+- **Embedded panel:** an iframe, which Canvas allows.
+- **Script tag:** the floating panel, for websites you control. Canvas removes scripts.
+
+On your own website, the script also turns any element into a task-specific button:
+
+```html
+<script src="https://YOUR-SITE/johann/ask-johann.js"
+        data-course="Glockenspiel" data-level="A1" data-unit="Lektion 3: Familie"></script>
+
+<button data-ask-johann data-mode="write" data-context="Lektion 3, Übung 4b" data-graded="1">Frag Johann</button>
+```
+
+All the options are listed at the top of [`ask-johann.js`](ask-johann.js).
+
+### School settings for every button: `config.js`
+Fill in [`config.js`](config.js) once and every student is connected through your school link automatically:
+- `proxyUrl`: your school link
+- `classCode`: optional, and visible to anyone who opens the file
+- `buttons: false`: switches off all Ask Johann buttons, for example during an exam week
+
 ## Connecting Johann to Claude
 
 Johann needs access to the Anthropic API. There are two options.

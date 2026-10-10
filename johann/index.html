@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Johann — dein Deutschlehrer</title>
 <meta name="description" content="Johann is an AI German tutor that coaches students through any German course without doing their work for them.">
+<script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -306,6 +307,16 @@
   .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 12px;margin-top:4px}
   .checks label,.check{display:flex;gap:8px;align-items:center;font-size:.92rem}
   .profile-nudge{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+  /* opened inside an "Ask Johann" panel */
+  :root[data-embed="1"] body{padding:8px}
+  :root[data-embed="1"] header{margin:0 0 6px}
+  :root[data-embed="1"] header .brand,:root[data-embed="1"] footer{display:none}
+  :root[data-embed="1"] .hdr-btns{flex-wrap:nowrap;overflow-x:auto;width:100%;padding-bottom:2px}
+  :root[data-embed="1"] .ghost-btn{padding:3px 9px;font-size:.75rem;white-space:nowrap}
+  :root[data-embed="1"] #chat.active{height:calc(100vh - 52px);min-height:380px}
+  :root[data-embed="1"] .legend{display:none}
+  :root[data-embed="1"] .card-ex{min-width:0}
+  .from{font-size:.8rem;color:var(--ink-soft);margin-top:2px}
   footer{color:var(--on-bg-soft);font-size:.78rem;text-align:center;margin-top:8px}
   footer a{color:var(--on-bg)}
 
@@ -605,6 +616,32 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
       </div>
       <textarea id="codeOut" rows="3" readonly hidden style="margin-top:8px;font-size:.8rem"></textarea>
       <p class="hint" id="codeMsg" role="status"></p>
+      <h3>"Ask Johann" button for your course pages</h3>
+      <p class="hint">Put a button or link on any course page (Canvas, Glockenspiel, a website). It opens Johann already set to this course, in the activity you choose, and tells him which task the student came from.</p>
+      <div class="row">
+        <div>
+          <label class="f" for="ajMode">Opens</label>
+          <select id="ajMode"></select>
+        </div>
+        <div>
+          <label class="f" for="ajGraded">Task is</label>
+          <select id="ajGraded"><option value="0">practice</option><option value="1">graded (Johann coaches only)</option><option value="">let the student say</option></select>
+        </div>
+      </div>
+      <label class="f" for="ajContext">Which task or page? (Johann sees this)</label>
+      <input type="text" id="ajContext" placeholder="e.g. Glockenspiel Lektion 3, Übung 4b: Familie beschreiben">
+      <div class="btn-row"><button class="btn secondary" type="button" id="btnMakeAsk">Create button code</button></div>
+      <div id="ajOut" hidden>
+        <label class="f" for="ajLink">Link (works anywhere, opens in a new tab)</label>
+        <textarea id="ajLink" rows="2" readonly style="font-size:.78rem"></textarea>
+        <label class="f" for="ajButton">Button (HTML for Canvas pages and websites)</label>
+        <textarea id="ajButton" rows="3" readonly style="font-size:.78rem"></textarea>
+        <label class="f" for="ajFrame">Embedded panel (iframe; Canvas allows these)</label>
+        <textarea id="ajFrame" rows="3" readonly style="font-size:.78rem"></textarea>
+        <label class="f" for="ajScript">Floating button for your own website (script tag)</label>
+        <textarea id="ajScript" rows="3" readonly style="font-size:.78rem"></textarea>
+        <p class="hint" id="ajMsg"></p>
+      </div>
     </details>
 
     <div class="btn-row">
@@ -1345,7 +1382,10 @@ ${course}
 ## About the student
 ${about}
 
-## Can-do goals
+${session.context ? `## Where the student is right now
+They opened you with an "Ask Johann" button from: ${session.context}. Start from there: ask what they're stuck on in that task, and tie your examples to it. Help them understand the German so they can do the task themselves; don't do the task for them or give away its answers.
+
+` : ""}## Can-do goals
 ${canDoForPrompt()}
 
 ## Teacher notes
@@ -1540,7 +1580,8 @@ $("#setupDone").addEventListener("click", () => {
   if (S.conn.mode === "key" && !S.conn.key) { $("#setupMsg").textContent = "Please paste your API key."; return; }
   if (!S.conn.mode) { $("#setupMsg").textContent = "Choose how to connect Johann first."; return; }
   save();
-  show("home");
+  if (pendingLaunch) { const l = pendingLaunch; pendingLaunch = null; runLaunch(l); }
+  else show("home");
 });
 
 /* ---------------- home ---------------- */
@@ -1566,16 +1607,18 @@ $("#btnResume").addEventListener("click", () => openChat());
 
 /* ---------------- start dialog ---------------- */
 let startMode = null, startGraded = "no";
-function openStart(modeId, presetFocus) {
+let startLaunch = null;
+function openStart(modeId, presetFocus, launch) {
   if (!connected()) { renderSetup(); show("setup"); return; }
-  if (S.session && S.session.api.length > 2 && !confirm("Start a new activity? Your current session will be closed. (Download the transcript first if you want to keep it.)")) return;
+  startLaunch = launch || null;
+  if (!launch && S.session && S.session.api.length > 2 && !confirm("Start a new activity? Your current session will be closed. (Download the transcript first if you want to keep it.)")) return;
   startMode = modeId;
   const m = MODES[modeId];
   $("#startTitle").textContent = `${m.ico} ${m.name} · ${m.en}`;
   $("#startDesc").textContent = m.desc;
   $("#startGradedWrap").hidden = !m.graded;
-  startGraded = "no";
-  setPressed($("#startGraded"), "no");
+  startGraded = launch && launch.graded ? "yes" : "no";
+  setPressed($("#startGraded"), startGraded);
   $("#startScenarioWrap").hidden = !m.scenario;
   if (m.scenario) {
     const sel = $("#startScenario");
@@ -1607,15 +1650,15 @@ $("#btnStartGo").addEventListener("click", () => {
   }
   const focus = $("#startFocus").value.trim();
   $("#dlgStart").close();
-  startSession(startMode, { graded: m.graded && startGraded === "yes", scenario, focus });
+  startSession(startMode, { graded: m.graded && startGraded === "yes", scenario, focus, context: startLaunch ? startLaunch.context : "" });
 });
 
 function startSession(modeId, opts) {
   const m = MODES[modeId];
   stopVoice();
-  S.session = { mode: modeId, graded: !!opts.graded, scenario: opts.scenario || "", focus: opts.focus || "", started: Date.now(), lastAt: Date.now(), help: {}, system: "", api: [], view: [] };
+  S.session = { mode: modeId, graded: !!opts.graded, scenario: opts.scenario || "", focus: opts.focus || "", context: opts.context || "", started: Date.now(), lastAt: Date.now(), help: {}, system: "", api: [], view: [] };
   S.session.system = buildSystem(S.session);
-  const opener = `[App note: the student opened "${m.name}". ${opts.focus ? "They wrote: " + opts.focus : "They didn't name a focus."}]`;
+  const opener = `[App note: the student opened "${m.name}"${opts.context ? ` from ${opts.context}` : ""}. ${opts.focus ? "They wrote: " + opts.focus : "They didn't name a focus."}]`;
   S.session.api.push({ role: "user", content: opener });
   save();
   openChat(true);
@@ -1630,7 +1673,7 @@ function openChat(fresh) {
   if (!s) return show("home");
   const m = MODES[s.mode];
   $("#chatTitle").textContent = `${m.name} · ${m.en}`;
-  $("#chatMeta").textContent = [courseSummary(), m.graded ? (s.graded ? "graded work: Johann coaches only" : "practice") : ""].filter(Boolean).join(" · ");
+  $("#chatMeta").textContent = [s.context ? "from " + s.context : courseSummary(), m.graded ? (s.graded ? "graded work: Johann coaches only" : "practice") : ""].filter(Boolean).join(" · ");
   $("#legend").hidden = !m.legend;
   $("#gkey").hidden = !wordHelpOn();
   setupVoiceBar(m);
@@ -3233,6 +3276,8 @@ function openCourse() {
   $("#codeOut").hidden = true;
   $("#codeMsg").textContent = "";
   $("#cLockOut").checked = false;
+  fillAskModes();
+  $("#ajOut").hidden = true;
   $("#dlgCourse").returnValue = "";
   $("#courseForm").classList.toggle("is-locked", !!c.locked);
   $$("[data-lock]").forEach(el => el.disabled = !!c.locked);
@@ -3310,6 +3355,32 @@ $("#btnMakeCode").addEventListener("click", () => {
   const copy = navigator.clipboard ? navigator.clipboard.writeText(code) : Promise.reject();
   copy.then(() => $("#codeMsg").textContent = "Course code copied. Share it with your class (an LMS announcement works well).",
             () => $("#codeMsg").textContent = "Copy the code above and share it with your class.");
+});
+
+/* "Ask Johann" buttons for course pages */
+function fillAskModes() {
+  $("#ajMode").innerHTML = Object.entries(MODES).map(([k, m]) => `<option value="${k}"${k === "ask" ? " selected" : ""}>${esc(m.name)} · ${esc(m.en)}</option>`).join("");
+}
+$("#btnMakeAsk").addEventListener("click", () => {
+  const c = readCourseForm();
+  c.locked = $("#cLockOut").checked;
+  const code = encodeCourse(c);
+  const page = location.href.split(/[?#]/)[0];
+  const dir = page.replace(/[^/]*$/, "");
+  const q = new URLSearchParams({ kurs: code, mode: $("#ajMode").value });
+  const ctx = $("#ajContext").value.trim();
+  if (ctx) q.set("context", ctx);
+  if ($("#ajGraded").value) q.set("graded", $("#ajGraded").value);
+  const link = page + "?" + q.toString();
+  const attr = (x) => x.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+  $("#ajLink").value = link;
+  $("#ajButton").value = `<a href="${attr(link)}" target="_blank" rel="noopener" style="display:inline-block;background:#C8553D;color:#fff;padding:8px 16px;border-radius:999px;font-weight:bold;text-decoration:none">🎓 Frag Johann · Ask Johann</a>`;
+  q.set("embed", "1");
+  $("#ajFrame").value = `<iframe src="${attr(page + "?" + q.toString())}" title="Johann, German tutor" style="width:100%;height:640px;border:1px solid #ddd;border-radius:12px" allow="microphone; autoplay; clipboard-write"></iframe>`;
+  const data = [`data-kurs="${attr(code)}"`, `data-mode="${attr($("#ajMode").value)}"`, ctx && `data-context="${attr(ctx)}"`, $("#ajGraded").value && `data-graded="${$("#ajGraded").value}"`].filter(Boolean).join(" ");
+  $("#ajScript").value = `<script src="${attr(dir)}ask-johann.js" ${data}></` + `script>`;
+  $("#ajOut").hidden = false;
+  $("#ajMsg").textContent = location.protocol === "file:" ? "⚠️ You opened Johann from a file on this computer, so these links only work here. Open Johann from its web address (e.g. GitHub Pages) and create the code there." : "Copy the one that fits your page. Canvas removes script tags, so use the button or the iframe there.";
 });
 
 function openImport() {
@@ -3559,7 +3630,67 @@ if (window.matchMedia) {
 /* ---------------- boot ---------------- */
 fillProgramSelect();
 renderAvatars();
+/* ---------------- launching from other pages ("Ask Johann") ---------------- */
+let pendingLaunch = null;
+/* Reads ?mode=…&context=…&preset=kleinhausen&ep=5 (and course fields) from the URL. */
+function readLaunch() {
+  const q = new URLSearchParams(location.search);
+  if (![...q.keys()].length) return null;
+  const l = {};
+  for (const k of ["kurs", "preset", "ep", "mode", "context", "focus", "program", "level", "course", "unit", "grammar", "vocab", "cando", "proxy", "code"]) {
+    const v = q.get(k);
+    if (v != null && v.trim()) l[k] = v.trim().slice(0, k === "vocab" || k === "cando" ? 3000 : 400);
+  }
+  if (q.has("graded")) l.graded = /^(1|true|yes|ja)$/i.test(q.get("graded"));
+  l.embed = q.get("embed") === "1";
+  if (l.mode && !MODES[l.mode]) delete l.mode;
+  return l;
+}
+function applyLaunch(l) {
+  if (l.embed) document.documentElement.dataset.embed = "1";
+  // A school link handed over by the page only fills an empty connection.
+  if (!S.conn.mode && l.proxy && /^https:\/\//i.test(l.proxy)) {
+    S.conn.mode = "proxy"; S.conn.proxyUrl = l.proxy; S.conn.proxyCode = l.code || "";
+  }
+  if (l.kurs) { try { S.course = { ...DEFAULT_STATE.course, ...decodeCourse(l.kurs) }; } catch (e) { /* ignore */ } }
+  const c = S.course, locked = c.locked;
+  if (l.preset === "kleinhausen" && !locked) {
+    if (c.program !== "kleinhausen") { c.program = "kleinhausen"; c.name = "Willkommen in Kleinhausen · Deutsch 1"; c.level = "A1"; }
+  }
+  if (!locked) {
+    if (l.program && PROGRAMS[l.program]) c.program = l.program;
+    if (l.level && /^(A1|A2|B1|B2|C1)$/.test(l.level)) c.level = l.level;
+    if (l.course) c.name = l.course;
+    if (l.cando) c.cando = l.cando;
+  }
+  const u = c.program === "kleinhausen" && l.ep && KLEINHAUSEN_UNITS.find(x => String(x.n) === String(l.ep));
+  if (u) {
+    c.unitPick = String(u.n); c.unit = `Episode ${u.n}: ${u.title}`; c.grammar = u.grammar; c.vocab = u.vocab.join(", ");
+  }
+  if (l.unit) c.unit = l.unit;
+  if (l.grammar) c.grammar = l.grammar;
+  if (l.vocab) c.vocab = l.vocab;
+  save();
+}
+function runLaunch(l) {
+  const m = l && MODES[l.mode];
+  if (!m) { show("home"); return; }
+  const s = S.session;
+  // Same button again within a few hours: carry on with that conversation.
+  if (s && s.mode === l.mode && (s.context || "") === (l.context || "") && s.api.length && Date.now() - (s.lastAt || 0) < 3 * 3600e3) { openChat(); return; }
+  if (m.scenario || (m.graded && l.graded == null)) { show("home"); openStart(l.mode, l.focus, l); return; }
+  startSession(l.mode, { graded: !!l.graded, focus: l.focus || "", context: l.context || "" });
+}
+
 (function boot() {
+  // Optional school settings from config.js fill an empty connection.
+  const cfg = window.JOHANN_CONFIG || {};
+  if (!S.conn.mode && cfg.proxyUrl && /^https:\/\//i.test(cfg.proxyUrl)) {
+    S.conn.mode = "proxy"; S.conn.proxyUrl = cfg.proxyUrl; S.conn.proxyCode = cfg.classCode || "";
+    save();
+  }
+  const launch = readLaunch();
+  if (launch) applyLaunch(launch);
   const m = location.hash.match(/kurs=([^&]+)/);
   if (m) {
     try {
@@ -3568,7 +3699,8 @@ renderAvatars();
     } catch (e) { /* ignore a malformed link */ }
     history.replaceState(null, "", location.pathname + location.search);
   }
-  if (!connected()) { renderSetup(); show("setup"); }
+  if (!connected()) { pendingLaunch = launch && launch.mode ? launch : null; renderSetup(); show("setup"); }
+  else if (launch && launch.mode) runLaunch(launch);
   else show("home");
 })();
 </script>

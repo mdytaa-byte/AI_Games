@@ -8,6 +8,9 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 cp -R "$SRC/css" "$SRC/js" "$SRC/praxis" "$SRC/audio" "$SRC/index.html" "$TMP/"
 cp "$SRC/canvas/imsmanifest.xml" "$TMP/imsmanifest.xml"
+# Johann, the AI tutor behind the "Frag Johann" buttons (loaded from johann/ inside the package)
+mkdir -p "$TMP/johann"
+cp "$ROOT/johann/index.html" "$ROOT/johann/ask-johann.js" "$ROOT/johann/config.js" "$TMP/johann/"
 # optional teacher docs
 cp "$SRC/CANVAS.md" "$TMP/CANVAS.md" 2>/dev/null || true
 cd "$TMP"

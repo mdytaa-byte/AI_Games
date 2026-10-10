@@ -45,8 +45,31 @@
   const label = { rain: "Regen", sun: "Sonne", cold: "Kalt", overcast: "Bewölkt" }[weather] || weather;
   bar.innerHTML = "<span>Kleinhausen · " + label + (name ? " · " + name : "") + "</span>" +
     '<span id="kh-course-note">Mission zu Ende spielen — dann zählt sie im Heft.</span>' +
+    (params.get("johann") === "1" ? '<button type="button" id="kh-course-johann">🎓 Frag Johann</button>' : "") +
     '<button type="button" id="kh-course-back" disabled>Noch nicht fertig</button>';
   document.body.appendChild(bar);
+
+  /* Frag Johann: the course page opens the tutor panel; opened on its own, load the widget here. */
+  const askBtn = document.getElementById("kh-course-johann");
+  if (askBtn) askBtn.addEventListener("click", function () {
+    const ep = params.get("ep");
+    const ctx = 'Kleinhausen practice game "' + (document.title || id) + '"' + (ep ? " in Episode " + ep : "");
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ type: "kh-johann", context: ctx }, "*");
+      return;
+    }
+    const opts = { preset: "kleinhausen", ep: ep || "", mode: "ask", context: ctx, graded: "0" };
+    if (window.AskJohann) { window.AskJohann.open(opts); return; }
+    (function load(srcs) {
+      if (!srcs.length) return;
+      const s = document.createElement("script");
+      s.src = srcs[0];
+      s.dataset.floating = "off";
+      s.onload = function () { window.AskJohann.open(opts); };
+      s.onerror = function () { s.remove(); load(srcs.slice(1)); };
+      document.body.appendChild(s);
+    })(["../../johann/ask-johann.js", "../johann/ask-johann.js"]);
+  });
 
   function send(event, extra) {
     const payload = Object.assign({ type: "kh-praxis", event: event, id: id, weather: weather }, extra || {});

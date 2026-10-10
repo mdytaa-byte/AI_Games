@@ -51,6 +51,7 @@
     function btn(id, label) {
       return '<button class="chip" type="button" data-go="' + id + '"' + (opts.here === id ? ' aria-current="page"' : "") + ">" + label + "</button>";
     }
+    if (KH.johannSync) KH.johannSync({ scene: opts.scene || null });
   };
 
   KH.view = {};
@@ -412,12 +413,15 @@
       '<div class="ep-head"><div><p class="kicker">Episode ' + mod.n + " von 16 · " + KH.esc(mod.season) + "</p>" +
       "<h1>" + KH.esc(mod.titleLong) + "</h1>" +
       "<p>Can-Do: " + mod.canDo.map(function (c) { return c.de; }).join(" · ") + "</p>" + voiceChip + "</div>" +
-      '<button class="btn ghost" type="button" id="tohub">Zur Stadt</button></div>' +
+      '<div class="ep-actions"><button class="btn ghost" type="button" id="askj" hidden>🎓 Frag Johann</button>' +
+      '<button class="btn ghost" type="button" id="tohub">Zur Stadt</button></div></div>' +
       '<div class="progress-track" aria-label="Fortschritt"><span style="width:' + pct + '%"></span></div>' +
       '<div id="scene-root"></div>',
-      { here: "hub" }
+      { here: "hub", scene: scenes[index] }
     );
     document.getElementById("tohub").addEventListener("click", KH.view.hub);
+    document.getElementById("askj").addEventListener("click", function () { if (KH.askJohann) KH.askJohann(); });
+    if (KH.johannSync) KH.johannSync({ scene: scenes[index] });
     const root = document.getElementById("scene-root");
     const scene = KH.resolveScene ? KH.resolveScene(scenes[index]) : scenes[index];
     KH.mountScene(root, scene, function (res) {
@@ -701,7 +705,9 @@
       "<li>Café Federkiel, Bäckerei Sonnenkorn, Kaufhaus Fröhlich; Frau + Herr Vogel verwandt.</li>" +
       "<li>Konflikt: Nordpark vs. Festplatz — Kompromiss, kein Bösewicht-Sieg. Die Stadt merkt sich Haller, Otto, Amira, Aylin.</li>" +
       "<li>Praxis schreibt ins Heft und öffnet Straßen. High-Modus ist dieselbe 3D-Stadt.</li>" +
-      "<li>Sprechen: 15 s + Nachfrage. Hören: Cast-Clips, nicht Browser-TTS.</li></ul>",
+      "<li>Sprechen: 15 s + Nachfrage. Hören: Cast-Clips, nicht Browser-TTS.</li></ul>" +
+      "<h2>Frag Johann (KI-Tutor)</h2>" +
+      "<p>Überall im Kurs öffnet „Frag Johann“ den Tutor aus <code>../johann/</code> mit Episode und Szene. Johann erklärt, gibt Tipps und übt mit — er löst keine Aufgaben. Im <strong>Prüfungsmodus</strong> und während der <strong>IPA</strong> ist der Button weg; bei „Nachweis“-Szenen coacht Johann nur. Schul-Link und An/Aus: <code>johann/config.js</code> (siehe <code>johann/README.md</code>).</p>",
       { here: "teacher" }
     );
     document.getElementById("unlock").addEventListener("click", function () {

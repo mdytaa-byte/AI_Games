@@ -23,6 +23,13 @@ The playable hub is `kleinhausen/index.html`.
 ### C. Pages / Files (no SCORM)
 Upload the `kleinhausen` folder to **Files**, then embed `index.html` in a Page. Some campus CDNs strip JS — if the map is blank, use A or B.
 
+## Frag Johann (AI tutor)
+Every screen has a **🎓 Frag Johann** button that opens Johann, the AI German tutor in `../johann/`, set to the current episode and scene. Johann explains, hints, and practises; he doesn't solve tasks.
+- **Prüfungsmodus and the IPA:** the buttons are hidden.
+- **"Nachweis" scenes:** Johann coaches only.
+- **SCORM:** the package includes Johann.
+- **Settings:** set the school link or switch the buttons off in `johann/config.js`. Johann needs an Anthropic API key or a school link; see `johann/README.md`.
+
 ## Scoring
 | Layer | What | Canvas use |
 |---|---|---|

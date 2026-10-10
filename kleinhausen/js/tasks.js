@@ -604,7 +604,9 @@
       contrast: p.contrast ? "hoch" : "normal",
       size: p.size || "m",
       font: p.font || "default",
-      motion: p.motion || "full"
+      motion: p.motion || "full",
+      ep: (KH.mod(KH.currentEpisode) || {}).n || "",
+      johann: KH.johannAllowed && KH.johannAllowed() ? "1" : "0"
     });
     const src = scene.src + (scene.src.indexOf("?") >= 0 ? "&" : "?") + q.toString();
     frame.src = src;

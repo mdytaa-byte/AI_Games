@@ -455,6 +455,13 @@ html[data-gfx="low"] .map-board { background: #fff; border-radius: 4px; }
   align-items: end;
   margin-bottom: 14px;
 }
+.ep-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ep-actions [hidden] { display: none; }
+#askj[hidden] { display: none; }
 .progress-track {
   height: 8px;
   background: var(--line);

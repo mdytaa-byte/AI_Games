@@ -33,12 +33,23 @@ Upload the `kleinhausen` folder to **Files**, then embed `index.html` in a Page.
 | Speak codes | `SPR-E01-NAME-####` in Heft / stamp screen | Paste next to the audio file |
 | Capstone | Episode 16 speech / script | Human scored with the Novice High rubric below |
 | Minutes | Time-on-task in the hub (Lehrerzimmer + JSON) | Attendance / effort note — not a grade |
+| Wortschatz | Daily story-tied word review (**Wörter** tab) | Practice; roster shows words secure / total and days practiced — not a grade |
 | Roster | Import student `Heft → JSON` in **Lehrerzimmer** | Static class list: episodes, IPA, oral, minutes, town flags |
 | Town flags | Haller / Otto / Amira / Aylin remembered | Not graded; they change later lines and the compromise’s texture |
 
 **Novice High (human overlay):** student uses practiced sentences, handles a simple unexpected follow-up, is understandable to a sympathetic listener/reader, still makes gender/case errors.
 
 Students **cannot** finish the year on clicks alone. Dialogue and speak scenes will not advance until a recording (or typed accommodation) is in. Prüfungsmodus is only for silent proctoring.
+
+## Wortschatz (vocabulary review)
+The **Wörter** tab is a short daily review, built for about five minutes. The badge shows how many cards are due.
+
+- **Where words come from:** an episode stamp adds that episode’s `vocab` list. Clicking things in rooms and at places (“Schau dich um”) adds those nouns too.
+- **Every card is a line from the story:** who said it, which episode, and the German sentence with its English.
+- **Two modes:** new or shaky words (box 0–1) show the word in its line and ask for the meaning (four choices, keys 1–4). Words from box 2 on show the line with a gap; the student types the German **with the article**. ae/oe/ue/ss count as ä/ö/ü/ß. A right noun with the wrong article is marked “fast” and comes back tomorrow without dropping back.
+- **Scheduling (Leitner):** right → up one box (back in 1, 2, 4, 8, 16 days). Wrong → box 1, one retry in the same session, back tomorrow. Box 4+ counts as *sicher*.
+- **Where it’s stored:** the deck lives in the browser save and in **Heft → JSON**. It is not sent through SCORM `suspend_data`, which is too small. Lehrerzimmer shows *Wörter sicher* per student after JSON import.
+- **Editing words:** `js/wortschatz-data.js`. Each episode word is `[de, en, line, line in English, who]`. `tools/lint-content.js` fails if an episode `vocab` word has no entry, or if its line does not contain the word.
 
 ## Accessibility
 Students open **Zugang** (header): contrast, type size, Verdana, reduced motion, TTS, captions/transcripts, English gloss, low-fi graphics. High-graphics mode walks the same first-person Kleinhausen as Foto-Schnitzeljagd and Lieferdienst (shared save + weather). Low-fi is a text list — no WebGL. Praxis games opened from an episode receive that weather and can write completion back to the course.

@@ -575,6 +575,9 @@
         (h.en ? '<span class="en">' + h.en + "</span>" : "");
       KH.speak(h.label + ". " + (h.de || ""));
       KH.live(h.label);
+      if (KH.collectWord && KH.collectWord(h.label, h.de, h.en, scene.title)) {
+        info.innerHTML += '<span class="ws-got">+ Wortschatz: ' + KH.esc(h.label) + "</span>";
+      }
       if (Object.keys(found).length >= spots.length && !room.dataset.done) {
         room.dataset.done = "1";
         box.appendChild(continueBtn("Ich kenne mein Zimmer", function () {

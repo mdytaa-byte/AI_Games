@@ -1203,6 +1203,54 @@ html[data-contrast="hoch"] .listen-deck { border-width: 4px; }
 }
 .rubric-table .tick { width: 3em; text-align: center; font-size: 1.2rem; }
 .rubric-score { font-weight: 700; }
+/* Wortschatz */
+.ws-badge {
+  display: inline-block;
+  min-width: 1.5em;
+  padding: 0 .4em;
+  margin-left: .25em;
+  border-radius: 999px;
+  background: var(--post);
+  color: var(--navy-deep);
+  font-weight: 700;
+  font-size: .8em;
+  text-align: center;
+}
+.ws-got { display: block; margin-top: 6px; font-size: .85rem; font-weight: 600; color: var(--moss); }
+.ws-card { max-width: 46em; }
+.ws-who { margin: 0 0 6px; font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.ws-line { font-family: var(--display); font-size: 1.25rem; line-height: 1.45; margin: 8px 0; }
+.ws-word { font-family: var(--display); font-size: 2rem; font-weight: 700; color: var(--navy); margin: 10px 0; }
+.ws-mark { background: var(--post); color: var(--navy-deep); padding: 0 .15em; border-radius: 3px; }
+.ws-blank { display: inline-block; min-width: 4em; border-bottom: 2px solid var(--navy); color: transparent; }
+.ws-opts .choice { text-align: left; }
+.ws-opts .kbd { margin-right: .3em; }
+.ws-card h2 { margin-top: 18px; }
+.ws-ask { margin: 16px 0 8px; }
+.ws-form input { width: 100%; font-size: 1.2rem; padding: .45em .6em; border: 2px solid var(--line); border-radius: 8px; background: var(--cream); color: var(--ink); }
+.ws-form input:focus { outline: 3px solid var(--focus); outline-offset: 2px; }
+.ws-form .row-btns, #ws-out .row-btns { margin-top: 12px; }
+.ws-start { margin: 16px 0 24px; }
+.ws-group { margin-top: 10px; }
+.ws-group summary { cursor: pointer; font-weight: 700; }
+.ws-group ul { list-style: none; margin: 10px 0 0; padding: 0; }
+.ws-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+.ws-en, .ws-hint { margin-left: .3em; font-style: italic; color: var(--ink-soft); }
+.ws-ctx { margin: 2px 0 0; font-size: .9rem; color: var(--ink-soft); }
+.ws-ctx .ws-who { display: inline; text-transform: none; letter-spacing: 0; font-weight: 600; }
+.ws-box { display: inline-flex; gap: 3px; flex-shrink: 0; padding-top: 6px; }
+.ws-box i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--navy); }
+.ws-box i.on { background: var(--moss); border-color: var(--moss); }
+html[data-contrast="hoch"] .ws-mark { background: #000; color: #fff; }
+html[data-contrast="hoch"] .ws-box i.on { background: #000; border-color: #000; }
+
 .print-only { display: none; }
 
 @media print {

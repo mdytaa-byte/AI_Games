@@ -53,6 +53,8 @@
       <file href="js/vendor/three.r128.js"/>
       <file href="js/praxis-bridge.js"/>
       <file href="js/app.js"/>
+      <file href="js/wortschatz-data.js"/>
+      <file href="js/wortschatz.js"/>
       <file href="praxis/foto-schnitzeljagd.html"/>
       <file href="praxis/kleiderschrank.html"/>
       <file href="praxis/lieferdienst.html"/>

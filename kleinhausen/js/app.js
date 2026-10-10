@@ -17,6 +17,7 @@
     }
     KH.applyPrefs();
     if (KH.startClock) KH.startClock();
+    if (KH.syncWords) KH.syncWords();
     if (!KH.state.onboarding) KH.view.splash();
     else KH.view.hub();
   };
@@ -37,6 +38,7 @@
       btn("hub", "Stadt") +
       btn("pass", "Pass") +
       btn("journal", "Heft") +
+      btn("words", "Wörter" + wordsDueLabel()) +
       btn("discover", "Entdecken") +
       btn("settings", "Zugang") +
       "</nav></header>" +
@@ -48,6 +50,10 @@
         if (KH.view[go]) KH.view[go]();
       });
     });
+    function wordsDueLabel() {
+      const n = KH.wordsDue ? KH.wordsDue().length : 0;
+      return n ? ' <span class="ws-badge" aria-label="' + n + ' fällig">' + n + "</span>" : "";
+    }
     function btn(id, label) {
       return '<button class="chip" type="button" data-go="' + id + '"' + (opts.here === id ? ' aria-current="page"' : "") + ">" + label + "</button>";
     }
@@ -321,6 +327,10 @@
         KH.speak(h.label + ". " + (h.de || ""));
         KH.live(h.label);
         if (h.discover) KH.discover(h.discover);
+        const meta = KH.PLACES[KH.currentPlace];
+        if (KH.collectWord && KH.collectWord(h.label, h.de, h.en, meta && meta.name) && out) {
+          out.innerHTML += '<span class="ws-got">+ Wortschatz: ' + KH.esc(h.label) + "</span>";
+        }
       });
     });
   }
@@ -466,12 +476,14 @@
     ep.summative.code = KH.makeCode(mod.id);
     if (KH.makeSpeakCode) ep.summative.speakCode = KH.makeSpeakCode(mod.id);
     KH.completeEpisode(mod.id, ep.summative);
+    const newWords = KH.addEpisodeWords ? KH.addEpisodeWords(mod.id) : 0;
     KH.shell(
       '<p class="kicker">Stempel</p><h1>' + KH.esc(KH.STAMPS[mod.id] || mod.title) + "</h1>" +
       "<p>Episode " + mod.n + " ist im Pass. Einwohnerstatus: <strong>" + KH.esc(KH.residentRank().de) + "</strong>.</p>" +
       '<p>Lehrer-Code:</p><div class="code-box">' + KH.esc(ep.summative.code) + "</div>" +
       (ep.summative.speakCode ? '<p>Sprechen-Code:</p><div class="code-box">' + KH.esc(ep.summative.speakCode) + "</div>" : "") +
       '<p class="en">Share this code in Canvas if your teacher asked for it. Score estimate: ' + score + "%. Upload your recording to „Sprechen — Partner hört zu“.</p>" +
+      (newWords ? '<p class="voice-chip">' + newWords + ' neue Wörter aus dieser Episode liegen im <button type="button" class="chip" data-go="words">Wortschatz</button></p>' : "") +
       '<div class="row-btns"><button class="btn post" data-go="hub" type="button">Zurück in die Stadt</button>' +
       (mod.n < 16 ? '<button class="btn" id="next" type="button">Nächste Episode</button>' : '<button class="btn" data-go="pass" type="button">Pass ansehen</button>') +
       "</div>"
@@ -676,15 +688,17 @@
     const roster = (KH.rosterLoad ? KH.rosterLoad() : []).map(function (r) {
       return "<tr><td>" + KH.esc(r.vorname) + "</td><td>" + r.done + "/16</td><td>" +
         (r.ipa != null ? r.ipa : "—") + "</td><td>" + r.spoken + "</td><td>" + r.minutes +
+        "</td><td>" + (r.words ? r.words.known + "/" + r.words.total + " · " + r.words.days + " T" : "—") +
         "</td><td>" + KH.esc((r.flags || []).slice(0, 4).join(", ") || "—") + "</td></tr>";
-    }).join("") || "<tr><td colspan=\"6\">Noch leer. Schüler exportieren Heft → JSON; du lädst die Dateien hier.</td></tr>";
+    }).join("") || "<tr><td colspan=\"7\">Noch leer. Schüler exportieren Heft → JSON; du lädst die Dateien hier.</td></tr>";
     const me = KH.summarizeStudent ? KH.summarizeStudent() : {};
     KH.shell(
       "<h1>Lehrerzimmer</h1>" +
       "<p>Zielniveau: ACTFL <strong>Novice High</strong>. Jede Episode endet mit einer Mini-IPA. Der Stempel ist summativ. Minuten, Codes und die Stadt-Flags (Haller / Otto / Amira / Aylin) überleben im JSON — ohne LTI-Server.</p>" +
       "<p><strong>Sprechen ist nicht optional.</strong> Spine-Dialoge brauchen Aufnahme plus Nachfrage. Partnerhören: Canvas „Sprechen — Partner hört zu“.</p>" +
       "<p>Dieser Browser: <strong>" + KH.esc(me.vorname || "Gast") + "</strong> · " +
-      (me.minutes || 0) + " min · " + (me.done || 0) + "/16 Episoden · mündlich " + (me.spoken || 0) + ".</p>" +
+      (me.minutes || 0) + " min · " + (me.done || 0) + "/16 Episoden · mündlich " + (me.spoken || 0) +
+      (me.words ? " · Wörter sicher " + me.words.known + "/" + me.words.total + " (" + me.words.days + " Tage geübt)" : "") + ".</p>" +
       '<p><button class="btn" type="button" id="unlock">Alle Episoden öffnen (Demo)</button> ' +
       '<button class="btn ghost" type="button" id="exp2">Dieser Stand JSON</button> ' +
       '<button class="btn ghost" type="button" id="print-rubric">IPA-Rubrik drucken</button></p>' +
@@ -693,7 +707,7 @@
       "<p>Kein Roster-Server. Du importierst die JSON-Exporte aus dem Heft. Canvas bleibt: 16 Code-Aufgaben + Sprechen-Upload + optional SCORM-Gesamtwert.</p>" +
       '<p><label class="btn ghost">JSON importieren <input type="file" id="roster-in" accept="application/json" multiple hidden></label> ' +
       '<button class="btn ghost" type="button" id="roster-clear">Liste leeren</button></p>' +
-      '<div class="card" style="overflow:auto"><table><thead><tr><th>Name</th><th>Fertig</th><th>IPA</th><th>Mündlich</th><th>Min</th><th>Stadt merkt</th></tr></thead><tbody>' + roster + "</tbody></table></div>" +
+      '<div class="card" style="overflow:auto"><table><thead><tr><th>Name</th><th>Fertig</th><th>IPA</th><th>Mündlich</th><th>Min</th><th>Wörter sicher</th><th>Stadt merkt</th></tr></thead><tbody>' + roster + "</tbody></table></div>" +
       '<section class="print-only" id="rubric-print">' + (KH.rubricHtml ? KH.rubricHtml() : "") + "</section>" +
       "<h2>Annahmen dieses Builds</h2><ul>" +
       "<li>US-Schuljahr / College German 1, ca. 16 Sitzungen plus Hauspraxis.</li>" +

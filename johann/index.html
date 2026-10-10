@@ -255,6 +255,50 @@
   .wr-edit textarea{min-height:140px;margin-top:8px;background:var(--panel)}
   .card-done{font-size:.85rem;color:var(--ink-soft);font-weight:700}
   @media (max-width:560px){ .card-ex{min-width:0} }
+
+  /* ---------- daily review + progress ---------- */
+  .today{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .today .big{font-weight:800;font-size:1.05rem}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:8px}
+  .tile{background:var(--panel-2);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
+  .tile .num{font-family:var(--font-display);font-size:2rem;font-weight:700;line-height:1.1;color:var(--ink)}
+  .tile .lbl{font-weight:800;font-size:.85rem;color:var(--ink-soft)}
+  .tile .sub{font-size:.8rem;color:var(--ink-soft);margin-top:2px}
+  .strip{display:grid;grid-template-columns:repeat(14,1fr);gap:4px;margin-top:8px;max-width:520px}
+  .strip .day{aspect-ratio:1;border-radius:4px;background:var(--chip);position:relative;cursor:default}
+  .strip .day[data-l="1"]{background:color-mix(in srgb, var(--accent) 35%, var(--chip))}
+  .strip .day[data-l="2"]{background:color-mix(in srgb, var(--accent) 65%, var(--chip))}
+  .strip .day[data-l="3"]{background:var(--accent)}
+  .strip .day.today-mark{outline:2px solid var(--ink-soft);outline-offset:1px}
+  .strip .day:hover::after,.strip .day:focus::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);white-space:nowrap;background:var(--ink);color:var(--panel);font-size:.75rem;padding:4px 8px;border-radius:6px;z-index:5;pointer-events:none}
+  .strip-axis{display:flex;justify-content:space-between;max-width:520px;font-size:.75rem;color:var(--ink-soft);margin-top:3px}
+  .plist{list-style:none;margin:6px 0 0}
+  .plist li{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:.93rem}
+  .plist li label{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+  .plist li label input{margin-top:4px}
+  .status{font-size:.75rem;font-weight:800;border-radius:999px;padding:2px 9px;white-space:nowrap;border:1.5px solid var(--line)}
+  .status.active{color:var(--accent)} .status.better{color:var(--gold)} .status.done{color:var(--ok)}
+  details.unit summary{cursor:pointer;font-weight:800;padding:6px 0}
+  .badge{font-size:.72rem;font-weight:800;color:var(--ok);margin-left:6px;white-space:nowrap}
+  .rv-card{text-align:center;padding:26px 18px}
+  .rv-front{font-family:var(--font-display);font-size:1.7rem;font-weight:700;margin:10px 0 4px}
+  .rv-back{font-size:1.15rem;margin-top:8px}
+  .rv-count{color:var(--ink-soft);font-weight:700;font-size:.85rem}
+  .rv-card .btn-row{justify-content:center}
+  .rv-card input{max-width:320px;margin:10px auto 0;display:block;text-align:center}
+  .rv-bar{height:6px;border-radius:999px;background:var(--chip);overflow:hidden;margin-top:6px}
+  .rv-bar i{display:block;height:100%;background:var(--accent)}
+
+  /* ---------- speaking ---------- */
+  .voicebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel-2);border:1.5px solid var(--line);border-radius:12px;padding:8px 12px;margin-bottom:8px}
+  .voicebar .vstate{font-weight:800;flex:1;min-width:160px}
+  .voicebar .vstate.listening{color:var(--accent)}
+  .pulse{display:inline-block;width:10px;height:10px;border-radius:50%;background:currentColor;margin-right:6px;animation:blink 1.2s infinite}
+  .rp-de{font-size:1.15rem;font-weight:700}
+  .rp-heard{margin-top:6px;font-size:.95rem}
+  .rp-heard .hit{color:var(--ok);font-weight:800}
+  .rp-heard .miss{color:var(--accent);font-weight:800;text-decoration:underline wavy}
+  .rp-score{font-weight:800}
   .swatches{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
   .swatch{width:auto;min-width:96px;border:2px solid var(--line);border-radius:12px;padding:6px 10px 6px 6px;display:flex;align-items:center;gap:8px;background:var(--panel-2);color:var(--ink);font-weight:700;font-size:.85rem}
   .swatch i{width:28px;height:28px;border-radius:8px;flex:none;display:block}
@@ -333,6 +377,7 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
       <button class="ghost-btn" id="btnHome" type="button">Start</button>
       <button class="ghost-btn" id="btnCourse" type="button">Mein Kurs</button>
       <button class="ghost-btn" id="btnProfile" type="button">Über mich</button>
+      <button class="ghost-btn" id="btnProgress" type="button">Fortschritt</button>
       <button class="ghost-btn" id="btnNotebook" type="button">Merkheft</button>
       <button class="ghost-btn" id="btnSettings" type="button">Einstellungen</button>
     </nav>
@@ -403,11 +448,50 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
         <button class="btn secondary" type="button" id="btnResume" hidden>Weitermachen: letzte Sitzung</button>
       </div>
     </div>
+    <div class="card today" id="todayCard" hidden>
+      <div>
+        <div class="big" id="todayDue"></div>
+        <div class="hint" id="todayStreak"></div>
+      </div>
+      <button class="btn" type="button" id="btnReviewHome">Wiederholen</button>
+    </div>
     <div class="card profile-nudge" id="profileNudge" hidden>
       <span>Johann adapts better when he knows a bit about you: your level, languages, goals, and interests.</span>
       <button class="btn secondary" type="button" id="btnNudgeProfile">Über mich ausfüllen</button>
     </div>
     <div class="modes" id="modeGrid"></div>
+  </section>
+
+  <!-- ================= PROGRESS ================= -->
+  <section class="screen" id="progress" aria-labelledby="progTitle">
+    <div class="card">
+      <h2 id="progTitle">Mein Fortschritt</h2>
+      <p class="hint">Everything Johann and you have built up, on this device.</p>
+      <div class="tiles" id="progTiles"></div>
+    </div>
+    <div class="card">
+      <h2>Last 14 days</h2>
+      <p class="hint">Each square is a day; darker means more practice.</p>
+      <div class="strip" id="progStrip" role="img"></div>
+      <div class="strip-axis"><span id="stripStart"></span><span>heute</span></div>
+      <ul class="sr-only" id="progStripList"></ul>
+      <div class="btn-row" id="progReviewRow"></div>
+    </div>
+    <div class="card">
+      <h2>Ich kann … · Can-do goals</h2>
+      <p class="hint">Tick a goal when you feel you can do it. Johann adds a ✓ when he sees you do it in a session.</p>
+      <div id="progCando"></div>
+    </div>
+    <div class="card">
+      <h2>Meine Fehler-Muster · Mistake patterns</h2>
+      <p class="hint">Patterns Johann noticed. They fade as you get them right: Johann reports when you use one correctly, and patterns that stop showing up count as getting better.</p>
+      <ul class="plist" id="progPatterns"></ul>
+    </div>
+  </section>
+
+  <!-- ================= REVIEW ================= -->
+  <section class="screen" id="review" aria-labelledby="rvTitle">
+    <div class="card rv-card" id="rvCard" aria-live="polite"></div>
   </section>
 
   <!-- ================= CHAT ================= -->
@@ -422,6 +506,7 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
       </div>
       <div class="chat-tools">
         <button class="tool" type="button" id="btnWrap">Sitzung beenden</button>
+        <button class="tool" type="button" id="btnReport">📄 Bericht</button>
         <button class="tool" type="button" id="btnExport">Transcript ⤓</button>
         <button class="tool" type="button" id="btnLeave">Zurück</button>
       </div>
@@ -430,6 +515,12 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
     <div class="composer">
       <div class="legend" id="legend" hidden>
         Correction codes: <b>[G]</b> gender/article · <b>[K]</b> case ending · <b>[V]</b> verb form · <b>[WS]</b> word order · <b>[R]</b> spelling/capitals · <b>[WW]</b> word choice · <b>[?]</b> meaning unclear
+      </div>
+      <div class="voicebar" id="voicebar" hidden>
+        <span class="vstate" id="vstate" role="status"></span>
+        <button class="tool" type="button" id="vTalk">🎤 Jetzt sprechen</button>
+        <button class="tool" type="button" id="vPause">⏸ Pause</button>
+        <button class="tool" type="button" id="vSlow" aria-pressed="false">🐢 Langsam</button>
       </div>
       <div class="quick" id="quick"></div>
       <div class="gkey" id="gkey" hidden><b class="g-m">der</b> · <b class="g-f">die</b> · <b class="g-n">das</b> — tap a dotted word for its meaning</div>
@@ -485,6 +576,9 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
     <input type="text" id="cGrammar" placeholder="e.g. accusative case, modal verbs, Perfekt with haben/sein">
     <label class="f" for="cVocab">Vocabulary list (paste words, one per line or comma-separated)</label>
     <textarea id="cVocab" rows="3" placeholder="der Apfel, die Milch, das Brot …"></textarea>
+
+    <label class="f" for="cCando">Can-do goals (optional, one per line)</label>
+    <textarea id="cCando" data-lock rows="3" placeholder="I can order food in a café.&#10;I can describe my family in five sentences."></textarea>
 
     <h3>How Johann talks to you</h3>
     <div class="seg" role="group" aria-label="How much English" id="cSupport">
@@ -690,6 +784,21 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
   </form>
 </dialog>
 
+<!-- ================= REPORT DIALOG ================= -->
+<dialog id="dlgReport" aria-labelledby="repTitle" style="width:min(860px,calc(100vw - 24px))">
+  <form class="dlg" method="dialog">
+    <h2 id="repTitle">Lernbericht · Session report</h2>
+    <p class="hint">A one-page summary of this session to hand in: what you practised, what you got right, what you fixed yourself, and how much help you asked for. The app builds it from the session itself.</p>
+    <label class="check" style="margin-top:8px"><input type="checkbox" id="repTranscript"> Include the full conversation</label>
+    <iframe id="repFrame" title="Session report preview" style="width:100%;height:56vh;border:1.5px solid var(--line);border-radius:10px;margin-top:10px;background:#fff"></iframe>
+    <div class="btn-row">
+      <button class="btn" type="button" id="btnRepPrint">🖨️ Print or save as PDF</button>
+      <button class="btn secondary" type="button" id="btnRepDownload">Download (.html)</button>
+      <button class="btn secondary" value="close" type="submit">Schließen</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- ================= SETTINGS DIALOG ================= -->
 <dialog id="dlgSettings" aria-labelledby="setTitle">
   <form class="dlg" method="dialog">
@@ -870,6 +979,28 @@ You don't know the real test questions and shouldn't pretend to. If the student 
     prompt: `Estimate the student's German level in a short, relaxed check of about 8–12 exchanges. Tell them up front it isn't a test and "I don't know" is a fine answer.
 Start very easy and adapt up or down based on how they do: questions they answer in German, a short text you write followed by a question about it, and a small writing task (a few sentences about themselves or a picture you describe). You can use one or two short exercise cards (gap or choice) for grammar control. Cover understanding, writing, vocabulary range, and grammar control. Don't teach or correct during the check beyond a word of encouragement.
 At the end, give your estimate on the CEFR scale (A1 to C1, you may say "between A2 and B1"), with two or three things they can already do and one or two things to work on next. Say it's a rough estimate from a short chat. Then put the single closest level on its own line as a tag, e.g. [[niveau: A2]].`
+  },
+  speak: {
+    tools: [],
+    voice: true,
+    ico: "🎙️", name: "Sprechen", en: "Speaking (hands-free)", effort: "low", graded: false,
+    desc: "A spoken conversation: Johann talks, you answer out loud. Best in Chrome or Edge.",
+    focusLabel: "Topic (optional)", focusPh: "e.g. my weekend, ordering in a café",
+    quick: ["Langsamer, bitte", "Noch einmal", "Auf Englisch?"],
+    prompt: `This is a spoken conversation. A browser voice reads your words aloud, the student answers by speaking, and you receive what speech recognition heard.
+Keep every turn to one to three short sentences, as plain spoken German: no Markdown, lists, emoji, brackets, or abbreviations. Ask one question at a time, about a topic from their unit, their interests, or their focus, at their level.
+Speech recognition drops punctuation and capitals and sometimes mishears words. Never comment on spelling, capitals, or punctuation. If something makes no sense, assume a mishearing and ask them to say it again ("Wie bitte? Sag das noch einmal, bitte.").
+Correct only by recasting naturally in your reply; at most every few turns, point out one pattern in a single short sentence. If they say "Langsamer" or seem lost, use shorter, simpler sentences. If they switch to English, give them the German words and let them say the sentence.`
+  },
+  repeat: {
+    tools: ["repeat"],
+    ico: "🗣️", name: "Nachsprechen", en: "Say it after me", effort: "low", graded: false,
+    desc: "Pronunciation practice: hear a sentence, say it, and see which words came through.",
+    focusLabel: "What do you want to practise? (optional)", focusPh: "e.g. ü and ö, the ch sound, café phrases",
+    quick: ["Tipp", "Einfacher, bitte", "Schwieriger, bitte", "Auf Englisch?"],
+    prompt: `Pronunciation practice: "say it after me". Use the say_after_me tool to give 4–6 short sentences (single words or short phrases for beginners) at the student's level, from their current unit, focus, or notebook words. The app reads each sentence aloud (normal or slow), the student repeats it, and speech recognition compares what it heard with the sentence.
+You get each sentence's best score and the words that weren't recognized. Then give one or two concrete tips for those words: the sound (ü, ö, ä, ch, r, z, final -er, long and short vowels), how to make it with a simple English comparison, and the word stress. Then offer the next set, a little harder if they did well.
+Speech recognition isn't perfect, and a missed word can be the recognizer's fault, so stay encouraging and never treat a score as a grade.`
   }
 };
 
@@ -936,6 +1067,33 @@ const TOOL_DEFS = {
     }
   }
 };
+TOOL_DEFS.repeat = {
+  name: "say_after_me",
+  description: "Show a 'say it after me' card. The app reads each sentence aloud, the student repeats it, and speech recognition compares what it heard with the sentence word by word. You get each sentence's best score and missed words as the tool result.",
+  eager_input_streaming: true,
+  input_schema: {
+    type: "object",
+    properties: {
+      title: { type: "string", description: "Short card title, e.g. 'Der ü-Laut'" },
+      sentences: {
+        type: "array",
+        description: "4 to 6 items",
+        items: {
+          type: "object",
+          properties: {
+            de: { type: "string", description: "The German sentence, word, or phrase to say" },
+            en: { type: "string", description: "Its English meaning" },
+            tip: { type: "string", description: "A short pronunciation pointer for the trickiest sound, or an empty string" }
+          },
+          required: ["de", "en", "tip"],
+          additionalProperties: false
+        }
+      }
+    },
+    required: ["title", "sentences"],
+    additionalProperties: false
+  }
+};
 function toolsFor(modeId) {
   return (MODES[modeId].tools || []).map(k => TOOL_DEFS[k]);
 }
@@ -970,9 +1128,11 @@ const SUPPORT_TEXT = [
 /* ---------------- state ---------------- */
 const DEFAULT_STATE = {
   conn: { mode: "", key: "", proxyUrl: "", proxyCode: "", model: "claude-opus-5-5" },
-  course: { program: "general", level: "A1", name: "", unit: "", unitPick: "", grammar: "", vocab: "", support: 1, address: "du", notes: "", locked: false },
+  course: { program: "general", level: "A1", name: "", unit: "", unitPick: "", grammar: "", vocab: "", support: 1, address: "du", notes: "", cando: "", locked: false },
   profile: { name: "", age: "", level: "", duration: "", strong: "", weak: "", langs: "", connection: "", background: "", goals: [], interests: "", challenge: 1, style: "", short: false, notes: "" },
   notebook: [],
+  stats: { days: {} },
+  cando: {},
   session: null,
   prefs: { autoSpeak: false, wordHelp: true, look: { ...LOOK_DEFAULT } }
 };
@@ -994,6 +1154,8 @@ function load() {
       course,
       profile,
       notebook: Array.isArray(s.notebook) ? s.notebook : [],
+      stats: { days: {}, ...(s.stats || {}) },
+      cando: s.cando && typeof s.cando === "object" ? s.cando : {},
       session: s.session || null,
       prefs
     };
@@ -1052,7 +1214,7 @@ function md(src) {
 }
 
 /* Notebook tags Johann can write: [[merk: …]] [[fehler: …]] [[ziel: …]] */
-const TAG_RE = /\[\[\s*(merk|fehler|ziel|niveau)\s*:\s*([^\]]+?)\s*\]\]/gi;
+const TAG_RE = /\[\[\s*(merk|fehler|ziel|niveau|besser|kann)\s*:\s*([^\]]+?)\s*\]\]/gi;
 function stripTags(text, streaming) {
   let t = text.replace(TAG_RE, "");
   if (streaming) t = t.replace(/\[\[[^\]]*$/, "");   // hide a tag that's still arriving
@@ -1069,6 +1231,11 @@ function addToNotebook(items) {
   const added = [];
   for (const it of items) {
     if (!["merk", "fehler", "ziel"].includes(it.type)) continue;
+    if (it.type === "fehler") {
+      // A pattern Johann sees again counts up instead of being saved twice.
+      const same = S.notebook.find(n => n.type === "fehler" && similar(n.text, it.text));
+      if (same) { same.seen = (same.seen || 1) + 1; same.last = Date.now(); same.done = false; continue; }
+    }
     const key = it.type + "|" + it.text.toLowerCase();
     if (S.notebook.some(n => n.type + "|" + n.text.toLowerCase() === key)) continue;
     const entry = { type: it.type, text: it.text.slice(0, 240), ts: Date.now() };
@@ -1113,10 +1280,13 @@ function buildSystem(session) {
 
   const nb = S.notebook;
   const memLines = [];
-  const fehler = nb.filter(n => n.type === "fehler").slice(-12).map(n => n.text);
+  const pats = nb.filter(n => n.type === "fehler");
+  const fehler = pats.filter(n => patternStatus(n) === "active").slice(-12).map(n => n.text + (n.seen > 1 ? ` (seen ${n.seen}×)` : ""));
+  const better = pats.filter(n => patternStatus(n) === "better").slice(-8).map(n => n.text);
   const ziele = nb.filter(n => n.type === "ziel").slice(-5).map(n => n.text);
   const woerter = nb.filter(n => n.type === "merk").slice(-30).map(n => n.text);
-  if (fehler.length) memLines.push("Recurring error patterns: " + fehler.join("; "));
+  if (fehler.length) memLines.push("Recurring error patterns (still active): " + fehler.join("; "));
+  if (better.length) memLines.push("Patterns getting better (check them now and then): " + better.join("; "));
   if (ziele.length) memLines.push("Goals from earlier sessions: " + ziele.join("; "));
   if (woerter.length) memLines.push("Notebook words: " + woerter.join("; "));
   const memory = memLines.length ? memLines.join("\n") : "Nothing yet. This may be your first session together.";
@@ -1159,6 +1329,8 @@ The student keeps a notebook across sessions. You can add to it by putting tags 
 [[merk: das Wort / die Wendung — English meaning]] for a useful word or phrase from this session
 [[fehler: short description of a recurring error pattern, with one correct example]] only after you've seen the same pattern at least twice
 [[ziel: one concrete next goal]] usually when wrapping up
+[[besser: the pattern's wording from your memory list]] when the student uses one of their recurring error patterns correctly two or three times in this session
+[[kann: a can-do goal copied exactly from the list below]] when the student clearly shows in this session that they can do it
 Use them sparingly: most messages have none, and never more than three. The app hides the tags and shows them as saved notes, so don't mention the tag syntax.
 
 ## Formatting
@@ -1173,6 +1345,9 @@ ${course}
 ## About the student
 ${about}
 
+## Can-do goals
+${canDoForPrompt()}
+
 ## Teacher notes
 ${c.notes ? c.notes : "None."}
 
@@ -1184,7 +1359,7 @@ ${mode.prompt}${scenario}
 ${graded}
 
 ${toolsFor(session.mode).length ? `## Interactive cards
-${(MODES[session.mode].tools || []).includes("writing") ? "You have two app tools: show_exercise (an interactive practice card) and mark_writing (the student's text with your marks highlighted)." : "You have an app tool, show_exercise, that shows an interactive practice card."} A tool call ends your turn: write a short lead-in sentence first, then call the tool. The student works in the app, which checks exercise answers itself, and you get their results back. Then reply in a few sentences: name what went well, explain misses briefly (the student has already seen which items were wrong), and choose the next step. Cards contain only practice items you wrote yourself. At most one card per message.
+Your app tools this session: ${toolsFor(session.mode).map(t => t.name).join(", ")}. A tool call ends your turn: write a short lead-in sentence first, then call the tool. The student works in the app, which checks exercise answers itself, and you get their results back. Then reply in a few sentences: name what went well, explain misses briefly (the student has already seen which items were wrong), and choose the next step. Cards contain only practice items you wrote yourself. At most one card per message.
 
 ` : ""}## Starting and wrapping up
 The first user message is an automatic note from the app saying the student opened this activity, possibly with their focus. Greet them briefly (by name if you know it) and start the activity right away.
@@ -1318,7 +1493,9 @@ async function streamTurn(system, messages, effort, onText, signal, tools) {
 /* ---------------- UI: screens ---------------- */
 function show(id) {
   $$(".screen").forEach(s => s.classList.toggle("active", s.id === id));
+  if (id !== "chat") stopVoice();
   if (id === "home") renderHome();
+  if (id === "progress") renderProgress();
   window.scrollTo(0, 0);
 }
 
@@ -1371,6 +1548,7 @@ function renderHome() {
   $("#homeCourse").textContent = courseSummary();
   $("#homeProfile").textContent = profileSummary();
   $("#profileNudge").hidden = profileFilled();
+  renderToday();
   const grid = $("#modeGrid");
   grid.innerHTML = "";
   for (const [id, m] of Object.entries(MODES)) {
@@ -1434,7 +1612,8 @@ $("#btnStartGo").addEventListener("click", () => {
 
 function startSession(modeId, opts) {
   const m = MODES[modeId];
-  S.session = { mode: modeId, graded: !!opts.graded, scenario: opts.scenario || "", started: Date.now(), system: "", api: [], view: [] };
+  stopVoice();
+  S.session = { mode: modeId, graded: !!opts.graded, scenario: opts.scenario || "", focus: opts.focus || "", started: Date.now(), lastAt: Date.now(), help: {}, system: "", api: [], view: [] };
   S.session.system = buildSystem(S.session);
   const opener = `[App note: the student opened "${m.name}". ${opts.focus ? "They wrote: " + opts.focus : "They didn't name a focus."}]`;
   S.session.api.push({ role: "user", content: opener });
@@ -1454,6 +1633,7 @@ function openChat(fresh) {
   $("#chatMeta").textContent = [courseSummary(), m.graded ? (s.graded ? "graded work: Johann coaches only" : "practice") : ""].filter(Boolean).join(" · ");
   $("#legend").hidden = !m.legend;
   $("#gkey").hidden = !wordHelpOn();
+  setupVoiceBar(m);
   const q = $("#quick");
   q.innerHTML = "";
   for (const label of m.quick) {
@@ -1478,8 +1658,11 @@ function quickAction(label) {
     autosize();
     return;
   }
+  countHelp({ "Tipp": "tipp", "💡 Tipp": "tipp", "Auf Englisch?": "english", "Einfacher, bitte": "simpler", "Ich verstehe es nicht": "simpler", "Langsamer, bitte": "simpler" }[label]);
   const map = {
     "Tipp": "Tipp, bitte! (Just a small hint, please.)",
+    "Langsamer, bitte": "Langsamer und einfacher, bitte.",
+    "Noch einmal": "Noch einmal, bitte.",
     "Einfacher, bitte": "Einfacher, bitte. (Can you say that more simply?)",
     "Auf Englisch?": "Can you explain that in English?",
     "Ich verstehe es nicht": "Ich verstehe es nicht. Kannst du es anders erklären?",
@@ -1531,7 +1714,7 @@ function renderMsg(v) {
     b.appendChild(body);
   }
   if (v.saved && v.saved.length) b.appendChild(savedChips(v.saved));
-  if (v.card) b.appendChild(v.card.kind === "writing" ? renderWritingCard(v) : renderExerciseCard(v));
+  if (v.card) b.appendChild(v.card.kind === "writing" ? renderWritingCard(v) : v.card.kind === "repeat" ? renderRepeatCard(v) : renderExerciseCard(v));
   if (v.who === "johann" && v.text && "speechSynthesis" in window) b.appendChild(speakBtn(v.text));
   wrap.appendChild(b);
   viewEl.set(v, wrap);
@@ -1541,7 +1724,7 @@ function renderMsg(v) {
 function savedChips(saved) {
   const d = document.createElement("div");
   d.className = "saved";
-  const icon = { merk: "📒", fehler: "🔎", ziel: "🎯", niveau: "📏" };
+  const icon = { merk: "📒", fehler: "🔎", ziel: "🎯", niveau: "📏", besser: "📉", kann: "🏅" };
   d.innerHTML = saved.map(s => `<span class="pill">${icon[s.type] || "📒"} ${esc(s.text)}</span>`).join("");
   d.setAttribute("aria-label", "Saved to your notebook");
   return d;
@@ -1579,6 +1762,8 @@ function send(text) {
   }
   const v = { who: "student", text };
   S.session.view.push(v);
+  S.session.lastAt = Date.now();
+  logActivity("msgs");
   $("#log").appendChild(renderMsg(v));
   $("#input").value = "";
   autosize();
@@ -1630,6 +1815,7 @@ async function runTurn() {
     s.pendingRetry = true;
     if (lastErr && lastErr.name === "AbortError") { save(); return; }
     // Leave the unanswered student message in place; they can press Senden again to retry.
+    if (MODES[s.mode].voice && voice.on) setVState(SR ? "idle" : "nosr");
     sysNote((lastErr && lastErr.message) || "Something went wrong.", true);
     addRetryButton();
     save();
@@ -1666,6 +1852,8 @@ async function runTurn() {
   }
   const tags = extractTags(fullText);
   const saved = addToNotebook(tags);
+  applyProgressTags(tags, saved);
+  s.lastAt = Date.now();
   const lvl = tags.find(t => t.type === "niveau");
   const lvlCode = lvl && (lvl.text.toUpperCase().match(/[ABC][12]/) || [])[0];
   if (lvlCode) {
@@ -1682,8 +1870,10 @@ async function runTurn() {
   }
   if (result.stopReason === "max_tokens" && !toolBlock) sysNote("Johann's answer was cut off because it got very long. Ask him to continue if you need the rest.");
   save();
-  if (S.prefs.autoSpeak && v.text) speak(v.text);
+  if (MODES[s.mode].voice) voiceAfterReply(v);
+  else if (S.prefs.autoSpeak && v.text) speak(v.text);
   if (v.text && wordHelpOn()) annotate(v);
+  if (s.wrapAt != null && !toolBlock && !toolError) addReportButton();
 
   if (toolError) {
     // Tell Johann the card failed so he can fix it; after repeated failures, let the student carry on in chat.
@@ -1763,9 +1953,11 @@ $$(".keys button").forEach(b => b.addEventListener("click", () => {
 
 $("#btnWrap").addEventListener("click", () => {
   if (busy) return;
+  if (S.session) S.session.wrapAt = S.session.view.length;
   send("Lass uns für heute aufhören. (Let's wrap up for today.)");
 });
 $("#btnLeave").addEventListener("click", () => {
+  stopVoice();
   if (abortCtl) abortCtl.abort();
   show("home");
 });
@@ -1851,6 +2043,14 @@ function validateTool(name, inp) {
     }
     return null;
   }
+  if (name === "say_after_me") {
+    if (typeof inp.title !== "string") return "title must be a string.";
+    if (!Array.isArray(inp.sentences) || inp.sentences.length < 1 || inp.sentences.length > 8) return "sentences must hold 1–8 items.";
+    for (const [i, x] of inp.sentences.entries()) {
+      if (!x || typeof x.de !== "string" || !x.de.trim() || typeof x.en !== "string" || typeof x.tip !== "string") return `sentences[${i}]: needs de (non-empty), en, tip strings.`;
+    }
+    return null;
+  }
   return "Unknown tool " + name;
 }
 
@@ -1871,6 +2071,9 @@ function makeCard(block, s) {
     });
     if (inp.type === "match") st.partners = shuffle([...new Set(inp.items.map(it => it.answers[0]))]);
     return { kind: "exercise", toolId: block.id, input: inp, st };
+  }
+  if (block.name === "say_after_me") {
+    return { kind: "repeat", toolId: block.id, input: inp, st: { items: inp.sentences.map(() => ({ best: null, tries: 0 })), sent: false, closed: false } };
   }
   // Writing: compare with the previous marked version to show what got fixed.
   const prev = [...s.view].reverse().find(v => v.card && v.card.kind === "writing");
@@ -2007,8 +2210,8 @@ function renderExItem(v, it, ist, i, active) {
   else if (ist.tries.length) {
     fb.innerHTML = `<span class="bad">✗ ${ist.almost ? esc(ist.almost) : "Noch nicht. Try again!"}</span>`;
     if (ist.hint && it.hint) fb.insertAdjacentHTML("beforeend", `<span>💡 ${esc(it.hint)}</span>`);
-    if (active && !ist.hint && it.hint) fb.appendChild(button("💡 Tipp", "tool", () => { ist.hint = true; save(); refreshMsg(v); }));
-    if (active && ist.tries.length >= 2) fb.appendChild(button("Lösung zeigen", "tool", () => { ist.revealed = true; save(); refreshMsg(v); }));
+    if (active && !ist.hint && it.hint) fb.appendChild(button("💡 Tipp", "tool", () => { ist.hint = true; countHelp("hints"); save(); refreshMsg(v); }));
+    if (active && ist.tries.length >= 2) fb.appendChild(button("Lösung zeigen", "tool", () => { ist.revealed = true; countHelp("reveals"); save(); refreshMsg(v); }));
   }
   if (fb.childNodes.length) li.appendChild(fb);
   return li;
@@ -2049,6 +2252,8 @@ function submitExercise(v) {
     return { prompt: it.prompt, expected: it.answers[0], attempts: ist.tries, correct: ist.ok, hint_opened: ist.hint, solution_shown: ist.revealed };
   });
   const ok = items.filter(x => x.correct).length;
+  logActivity("cards", items.length);
+  logActivity("cardsOk", ok);
   const result = { card: inp.title, type: inp.type, score: `${ok}/${items.length}`, items, note: "The app has already shown the student which items were right." };
   c.st.sent = true;
   refreshMsg(v);
@@ -2140,7 +2345,7 @@ function renderWritingCard(v) {
     d.className = "wr-detail";
     d.innerHTML = `<b>[${esc(m.code)}] ${esc(CODES[m.code])}</b> · „${esc(m.quote)}“<div style="margin-top:4px">💡 ${esc(m.hint)}</div>`;
     if (st.hint2.includes(st.open)) d.insertAdjacentHTML("beforeend", `<div style="margin-top:4px">💡💡 ${esc(m.hint2)}</div>`);
-    else if (m.hint2) d.appendChild(button("Stärkerer Tipp · stronger hint", "tool", () => { st.hint2.push(st.open); save(); refreshMsg(v); }));
+    else if (m.hint2) d.appendChild(button("Stärkerer Tipp · stronger hint", "tool", () => { st.hint2.push(st.open); countHelp("hint2"); save(); refreshMsg(v); }));
     el.appendChild(d);
   }
 
@@ -2181,6 +2386,7 @@ function submitRevision(v, text) {
   if (!cardActive(v) || !text) return;
   if (text === c.input.text.trim()) { sysToast(v, "Change something first, then send it."); return; }
   c.st.sent = true; c.st.editing = false;
+  countHelp("revisions");
   refreshMsg(v);
   sendToolResult(c.toolId, JSON.stringify({ revised_text: text, stronger_hints_opened: c.st.hint2.length }),
     "✍️ Neue Version:\n" + text);
@@ -2189,6 +2395,10 @@ function submitRevision(v, text) {
 function cardSummary(v) {
   if (!v.card) return "";
   const c = v.card;
+  if (c.kind === "repeat") {
+    const t = c.st.items.filter(x => x.best);
+    return `\n[Nachsprechen "${c.input.title}": ${c.input.sentences.map(x => x.de).join(" | ")}]` + (t.length ? ` → Ø ${Math.round(t.reduce((a, x) => a + x.best.score, 0) / t.length)}%` : "");
+  }
   if (c.kind === "writing") return `\n[Schreibcheck: ${c.input.marks.length} mark${c.input.marks.length === 1 ? "" : "s"}${c.fixed ? `, ${c.fixed.fixed} of ${c.fixed.of} earlier marks fixed` : ""}]`;
   const ok = c.st.items.filter(x => x.ok).length;
   return `\n[Übung "${c.input.title}": ${c.input.items.map(it => it.prompt).join(" | ")}]` + (c.st.sent ? ` → ${ok}/${c.input.items.length} richtig` : "");
@@ -2318,16 +2528,26 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeGloss
 $("#log").addEventListener("scroll", closeGloss);
 
 /* ---------------- voice ---------------- */
-function speak(text) {
-  if (!("speechSynthesis" in window)) return;
+function speak(text, opts = {}) {
+  if (!("speechSynthesis" in window)) { if (opts.onend) opts.onend(); return; }
   speechSynthesis.cancel();
-  const plain = text.replace(/[*_`>#]/g, "").replace(/\[(G|K|V|WS|R|WW|\?)\]/g, "");
-  const u = new SpeechSynthesisUtterance(plain);
-  u.lang = "de-DE";
-  const v = speechSynthesis.getVoices().find(v => /^de(-|_)/i.test(v.lang));
-  if (v) u.voice = v;
-  u.rate = S.course.level === "A1" ? 0.85 : 0.95;
-  speechSynthesis.speak(u);
+  const plain = text
+    .replace(/[*_`>#]/g, "")
+    .replace(/\[(G|K|V|WS|R|WW|\?)\]/g, "")
+    .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+    .replace(/\s+/g, " ").trim();
+  // Speak sentence by sentence: some browsers cut off long utterances.
+  const parts = plain.match(/[^.!?…]+[.!?…]*\s*/g) || [plain];
+  const voice = speechSynthesis.getVoices().find(v => /^de(-|_)/i.test(v.lang));
+  const rate = opts.rate || (S.prefs.slowVoice ? 0.75 : S.course.level === "A1" ? 0.85 : 0.95);
+  parts.forEach((part, k) => {
+    const u = new SpeechSynthesisUtterance(part.trim());
+    u.lang = "de-DE";
+    if (voice) u.voice = voice;
+    u.rate = rate;
+    if (k === parts.length - 1 && opts.onend) { u.onend = opts.onend; u.onerror = opts.onend; }
+    speechSynthesis.speak(u);
+  });
 }
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 if (SR) {
@@ -2353,6 +2573,641 @@ if (SR) {
   });
 }
 
+/* ---------------- progress: activity log, streak, patterns, can-dos ---------------- */
+const today = () => new Date().toLocaleDateString("sv");          // YYYY-MM-DD, local time
+function addDays(d, n) { const x = new Date(d + "T12:00:00"); x.setDate(x.getDate() + n); return x.toLocaleDateString("sv"); }
+function logActivity(kind, n = 1) {
+  if (!n) return;
+  const d = today();
+  const day = S.stats.days[d] || (S.stats.days[d] = {});
+  day[kind] = (day[kind] || 0) + n;
+}
+const dayTotal = (d) => { const x = S.stats.days[d]; return x ? (x.msgs || 0) + (x.reviews || 0) + (x.cards || 0) + (x.speak || 0) : 0; };
+function streak() {
+  let d = today();
+  if (!dayTotal(d)) d = addDays(d, -1);           // today still counts until midnight
+  let n = 0;
+  while (dayTotal(d) > 0) { n++; d = addDays(d, -1); }
+  return n;
+}
+function countHelp(k) {
+  if (!k || !S.session) return;
+  const h = S.session.help || (S.session.help = {});
+  h[k] = (h[k] || 0) + 1;
+}
+
+const wordSet = (x) => new Set(String(x).toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(w => w.length > 2));
+function similar(a, b) {
+  const A = wordSet(a), B = wordSet(b);
+  if (!A.size || !B.size) return String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+  let inter = 0;
+  A.forEach(w => { if (B.has(w)) inter++; });
+  return inter / Math.min(A.size, B.size) >= 0.6;
+}
+
+/* active → better (Johann saw it used correctly, or it hasn't come up for two weeks) → done */
+function patternStatus(n) {
+  if (n.done) return "done";
+  const quietDays = (Date.now() - (n.last || n.ts)) / 864e5;
+  if ((n.improved || 0) >= 1 || quietDays >= 14) return "better";
+  return "active";
+}
+
+function canDoGroups() {
+  const c = S.course, groups = [];
+  const own = (c.cando || "").split("\n").map(x => x.replace(/^[-•*]\s*/, "").trim()).filter(Boolean);
+  if (own.length) groups.push({ title: c.name || "Mein Kurs", items: own, current: true });
+  if (c.program === "kleinhausen") {
+    for (const u of KLEINHAUSEN_UNITS) groups.push({ title: `Episode ${u.n}: ${u.title}`, items: u.canDo || [], current: String(u.n) === String(c.unitPick) });
+  }
+  return groups;
+}
+const canDone = (t) => !!(S.cando[t] && (S.cando[t].self || S.cando[t].johann));
+function canDoForPrompt() {
+  const cur = canDoGroups().filter(g => g.current);
+  if (!cur.length) return "None listed for this course.";
+  return cur.flatMap(g => g.items).map(t => `- ${t}${S.cando[t] && S.cando[t].johann ? " (you already confirmed this)" : canDone(t) ? " (the student ticked this)" : ""}`).join("\n");
+}
+
+function applyProgressTags(tags, saved) {
+  for (const t of tags) {
+    if (t.type === "besser") {
+      const p = S.notebook.find(n => n.type === "fehler" && !n.done && similar(n.text, t.text));
+      if (!p) continue;
+      p.improved = (p.improved || 0) + 1;
+      p.lastGood = Date.now();
+      if (p.improved >= 2) p.done = true;
+      saved.push({ type: "besser", text: p.text });
+    } else if (t.type === "kann") {
+      const all = canDoGroups().flatMap(g => g.items);
+      const item = all.find(x => x.toLowerCase() === t.text.toLowerCase()) || all.find(x => similar(x, t.text));
+      if (!item) continue;
+      S.cando[item] = { ...(S.cando[item] || {}), johann: Date.now() };
+      saved.push({ type: "kann", text: item });
+    }
+  }
+}
+
+/* ---------------- daily review (spaced repetition) ---------------- */
+const INTERVALS = [1, 1, 3, 7, 14, 30, 60];      // days until the next review, by box
+function parseEntry(t) {
+  const parts = String(t).split(/\s+[—–-]\s+/);
+  return { de: parts[0].trim(), en: parts.slice(1).join(" — ").trim() };
+}
+function srsOf(n) { return n.srs || (n.srs = { box: 0, due: today(), reps: 0 }); }
+const merkWords = () => S.notebook.filter(n => n.type === "merk");
+const dueWords = () => merkWords().filter(n => srsOf(n).due <= today());
+function gradeWord(n, g) {
+  const s = srsOf(n);
+  s.reps++;
+  if (g === 0) s.box = 1;
+  else if (g === 2) s.box = Math.min(6, s.box + 1);
+  else s.box = Math.max(1, s.box);
+  s.due = addDays(today(), g === 0 ? 1 : INTERVALS[s.box]);
+  s.last = today();
+  logActivity("reviews");
+}
+
+let rv = null;
+function startReview() {
+  const due = dueWords();
+  if (!due.length) { show("progress"); return; }
+  rv = { queue: shuffle(due).slice(0, 20), i: 0, again: new Set(), tally: [0, 0, 0], step: "front", reverse: false, answer: "", verdict: null };
+  pickDirection();
+  show("review");
+  renderReview();
+}
+function pickDirection() {
+  const n = rv.queue[rv.i];
+  rv.reverse = !!n && !!parseEntry(n.text).en && srsOf(n).box >= 2 && Math.random() < 0.5;
+  rv.step = "front"; rv.answer = ""; rv.verdict = null;
+}
+function renderReview() {
+  const el = $("#rvCard");
+  if (!rv) { el.innerHTML = ""; return; }
+  if (rv.i >= rv.queue.length) {
+    save();
+    const tomorrow = merkWords().filter(n => srsOf(n).due === addDays(today(), 1)).length;
+    el.innerHTML = `<div class="rv-front">Fertig! 🎉</div>
+      <p>${rv.tally[2]} gewusst · ${rv.tally[1]} schwer · ${rv.tally[0]} nochmal</p>
+      <p class="hint">${tomorrow ? `${tomorrow} word${tomorrow === 1 ? "" : "s"} come back tomorrow.` : "Nothing due tomorrow."} 🔥 ${streak()} day${streak() === 1 ? "" : "s"} in a row.</p>`;
+    const row = document.createElement("div");
+    row.className = "btn-row";
+    row.appendChild(button("Fortschritt ansehen", "btn", () => show("progress")));
+    row.appendChild(button("Use these words with Johann", "btn secondary", () => openStart("vocab", "The words I just reviewed, especially the hard ones.")));
+    row.appendChild(button("Zurück", "btn secondary", () => show("home")));
+    el.appendChild(row);
+    rv = null;
+    return;
+  }
+  const n = rv.queue[rv.i], { de, en } = parseEntry(n.text);
+  const pct = Math.round(rv.i / rv.queue.length * 100);
+  el.innerHTML = `<div class="rv-count">Wiederholung · ${rv.i + 1} / ${rv.queue.length}</div><div class="rv-bar"><i style="width:${pct}%"></i></div>`;
+  const front = document.createElement("div");
+  front.className = "rv-front";
+  front.textContent = rv.reverse ? en : de;
+  el.appendChild(front);
+  el.insertAdjacentHTML("beforeend", `<div class="hint">${rv.reverse ? "Write it in German (with the article for nouns)." : "Do you know what it means? Think, then reveal."}</div>`);
+  const row = document.createElement("div");
+  row.className = "btn-row";
+
+  if (rv.reverse && rv.step === "front") {
+    const inp = document.createElement("input");
+    inp.type = "text"; inp.autocomplete = "off"; inp.spellcheck = false;
+    inp.setAttribute("aria-label", "German word");
+    inp.value = rv.answer;
+    inp.addEventListener("input", () => { rv.answer = inp.value; });
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); checkReverse(); } });
+    el.appendChild(inp);
+    row.appendChild(button("Prüfen", "btn", checkReverse));
+    row.appendChild(button("Ich weiß es nicht", "btn secondary", () => { rv.answer = ""; checkReverse(); }));
+    el.appendChild(row);
+    setTimeout(() => inp.focus(), 0);
+    return;
+  }
+  if (!rv.reverse && rv.step === "front") {
+    if ("speechSynthesis" in window) row.appendChild(button("🔊", "btn secondary", () => speak(de)));
+    row.appendChild(button("Zeigen · reveal", "btn", () => { rv.step = "back"; renderReview(); }));
+    el.appendChild(row);
+    return;
+  }
+  // back side
+  const back = document.createElement("div");
+  back.className = "rv-back";
+  if (rv.reverse) {
+    const v = rv.verdict;
+    back.innerHTML = `${v.ok ? '<b style="color:var(--ok)">✓ Richtig!</b>' : v.almost ? `<b style="color:var(--gold)">Fast! ${esc(v.almost)}</b>` : '<b style="color:var(--accent)">Noch nicht.</b>'}<div style="margin-top:6px">${esc(de)}</div>`;
+  } else {
+    back.textContent = en || "(no meaning saved, just check if you knew it)";
+  }
+  el.appendChild(back);
+  if ("speechSynthesis" in window) row.appendChild(button("🔊", "btn secondary", () => speak(de)));
+  [["Nochmal", 0], ["Schwer", 1], ["Gewusst", 2]].forEach(([label, g]) => {
+    const b = button(`${label}`, g === 2 ? "btn" : "btn secondary", () => gradeAndNext(g));
+    if (rv.reverse && rv.verdict && rv.verdict.suggest === g) b.className = "btn";
+    else if (rv.reverse) b.className = "btn secondary";
+    row.appendChild(b);
+  });
+  el.appendChild(row);
+  el.insertAdjacentHTML("beforeend", `<p class="hint" style="margin-top:8px">Keys: 1 Nochmal · 2 Schwer · 3 Gewusst</p>`);
+}
+function checkReverse() {
+  const n = rv.queue[rv.i], { de } = parseEntry(n.text);
+  const art = de.match(/^(der|die|das)\s+(.+)$/i);
+  let v = judge(rv.answer, [de], "gap");
+  if (!v.ok && art && normAns(rv.answer).toLowerCase() === normAns(art[2]).toLowerCase()) v = { ok: false, almost: "Don't forget the article." };
+  if (v.empty) v = { ok: false };
+  v.suggest = v.ok ? 2 : v.almost ? 1 : 0;
+  rv.verdict = v;
+  rv.step = "back";
+  renderReview();
+}
+function gradeAndNext(g) {
+  const n = rv.queue[rv.i];
+  gradeWord(n, g);
+  rv.tally[g]++;
+  if (g === 0 && !rv.again.has(n)) { rv.again.add(n); rv.queue.push(n); }   // see it once more today
+  rv.i++;
+  pickDirection();
+  save();
+  renderReview();
+}
+document.addEventListener("keydown", (e) => {
+  if (!rv || !$("#review").classList.contains("active") || e.target.tagName === "INPUT") return;
+  if (rv.step === "back" && ["1", "2", "3"].includes(e.key)) gradeAndNext(Number(e.key) - 1);
+  else if (rv.step === "front" && !rv.reverse && (e.key === " " || e.key === "Enter")) { e.preventDefault(); rv.step = "back"; renderReview(); }
+});
+
+function renderToday() {
+  const words = merkWords().length, due = dueWords().length, st = streak();
+  $("#todayCard").hidden = !words && !st;
+  $("#todayDue").textContent = due ? `🔁 Heute fällig: ${due} ${due === 1 ? "Wort" : "Wörter"} (about ${Math.max(1, Math.round(due / 6))} min)` : words ? "✓ Alles wiederholt für heute. All caught up!" : "📒 Save words to your Merkheft and they'll come back here.";
+  $("#todayStreak").textContent = st ? `🔥 ${st} Tag${st === 1 ? "" : "e"} in Folge (${st} day${st === 1 ? "" : "s"} in a row). Komm morgen wieder!` : "Start a streak today: any practice counts.";
+  $("#btnReviewHome").hidden = !due;
+}
+$("#btnReviewHome").addEventListener("click", startReview);
+$("#btnProgress").addEventListener("click", () => show(connected() ? "progress" : "setup"));
+
+function renderProgress() {
+  const words = merkWords(), learned = words.filter(n => srsOf(n).box >= 4).length, due = dueWords().length;
+  let cards = 0, ok = 0;
+  for (let k = 0; k < 7; k++) { const d = S.stats.days[addDays(today(), -k)] || {}; cards += d.cards || 0; ok += d.cardsOk || 0; }
+  const groups = canDoGroups(), allItems = groups.flatMap(g => g.items), doneItems = allItems.filter(canDone).length;
+  const cur = groups.filter(g => g.current).flatMap(g => g.items);
+  const st = streak();
+  const tile = (num, lbl, sub) => `<div class="tile"><div class="num">${num}</div><div class="lbl">${lbl}</div><div class="sub">${sub}</div></div>`;
+  $("#progTiles").innerHTML =
+    tile(`🔥 ${st}`, `Tag${st === 1 ? "" : "e"} in Folge`, st ? "days in a row with practice" : "practise today to start a streak") +
+    tile(words.length, "Wörter im Merkheft", `${learned} learned for good · ${due} due today`) +
+    tile(cards, "Card answers this week", cards ? `${Math.round(ok / cards * 100)}% correct` : "exercise cards you answered") +
+    tile(allItems.length ? `${doneItems}/${allItems.length}` : "–", "Can-do goals", cur.length ? `this unit: ${cur.filter(canDone).length} of ${cur.length}` : "add goals in Mein Kurs");
+
+  // 14-day activity strip (single hue, darker = more practice)
+  const strip = $("#progStrip"), list = $("#progStripList");
+  strip.innerHTML = ""; list.innerHTML = "";
+  const fmt = (d) => new Date(d + "T12:00:00").toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "numeric" });
+  let activeDays = 0;
+  for (let k = 13; k >= 0; k--) {
+    const d = addDays(today(), -k), x = S.stats.days[d] || {}, tot = dayTotal(d);
+    if (tot) activeDays++;
+    const parts = [x.msgs && `${x.msgs} messages`, x.reviews && `${x.reviews} reviews`, x.cards && `${x.cards} card answers`, x.speak && `${x.speak} spoken tries`].filter(Boolean);
+    const tip = `${fmt(d)}: ${parts.length ? parts.join(" · ") : "no practice"}`;
+    const cell = document.createElement("div");
+    cell.className = "day" + (k === 0 ? " today-mark" : "");
+    cell.dataset.l = tot === 0 ? "0" : tot <= 5 ? "1" : tot <= 15 ? "2" : "3";
+    cell.dataset.tip = tip;
+    cell.tabIndex = 0;
+    strip.appendChild(cell);
+    list.insertAdjacentHTML("beforeend", `<li>${esc(tip)}</li>`);
+  }
+  strip.setAttribute("aria-label", `Practice on ${activeDays} of the last 14 days`);
+  $("#stripStart").textContent = fmt(addDays(today(), -13));
+  const rr = $("#progReviewRow");
+  rr.innerHTML = "";
+  if (due) rr.appendChild(button(`🔁 ${due} ${due === 1 ? "Wort" : "Wörter"} wiederholen`, "btn", startReview));
+
+  // can-do goals
+  const cd = $("#progCando");
+  cd.innerHTML = "";
+  if (!groups.length) cd.innerHTML = `<p class="empty">Your course has no can-do goals yet. You or your teacher can add them in Mein Kurs (Kleinhausen has them built in).</p>`;
+  for (const g of groups) {
+    const det = document.createElement("details");
+    det.className = "unit";
+    det.open = g.current || groups.length === 1;
+    const done = g.items.filter(canDone).length;
+    det.innerHTML = `<summary>${esc(g.title)} <span class="hint">· ${done}/${g.items.length}</span></summary>`;
+    const ul = document.createElement("ul");
+    ul.className = "plist";
+    for (const t of g.items) {
+      const li = document.createElement("li");
+      const lab = document.createElement("label");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = canDone(t);
+      cb.addEventListener("change", () => {
+        const e = S.cando[t] || {};
+        e.self = cb.checked;
+        if (!cb.checked) delete e.johann;
+        S.cando[t] = e;
+        save();
+        renderProgress();
+      });
+      lab.appendChild(cb);
+      lab.append(document.createTextNode(t));
+      li.appendChild(lab);
+      if (S.cando[t] && S.cando[t].johann) li.insertAdjacentHTML("beforeend", `<span class="badge">✓ seen by Johann</span>`);
+      ul.appendChild(li);
+    }
+    det.appendChild(ul);
+    cd.appendChild(det);
+  }
+
+  // mistake patterns
+  const pl = $("#progPatterns");
+  const pats = S.notebook.filter(n => n.type === "fehler");
+  pl.innerHTML = pats.length ? "" : `<li class="empty">No patterns yet. Johann notes one when the same kind of mistake comes up twice.</li>`;
+  const order = { active: 0, better: 1, done: 2 };
+  pats.slice().sort((a, b) => order[patternStatus(a)] - order[patternStatus(b)]).forEach(n => {
+    const stt = patternStatus(n);
+    const li = document.createElement("li");
+    li.innerHTML = `<div><div>${esc(n.text)}</div><div class="hint">seen ${n.seen || 1}×${n.improved ? ` · used correctly ${n.improved}×` : ""}</div></div>`;
+    const right = document.createElement("div");
+    right.style.cssText = "display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end";
+    right.insertAdjacentHTML("beforeend", `<span class="status ${stt}">${{ active: "● active", better: "↘ getting better", done: "✓ mastered" }[stt]}</span>`);
+    right.appendChild(button(stt === "done" ? "Reopen" : "Mastered", "tool", () => { n.done = stt !== "done"; if (!n.done) { n.improved = 0; n.last = Date.now(); } save(); renderProgress(); }));
+    li.appendChild(right);
+    pl.appendChild(li);
+  });
+}
+
+/* ---------------- speaking: hands-free conversation ---------------- */
+const voice = { on: false, paused: false, rec: null };
+function setVState(st) {
+  const el = $("#vstate");
+  el.className = "vstate " + st;
+  el.innerHTML = {
+    idle: "Tap 🎤 to answer out loud",
+    listening: '<span class="pulse"></span>Ich höre zu… (listening)',
+    speaking: "🔊 Johann spricht…",
+    thinking: "⏳ Johann denkt…",
+    paused: "⏸ Pausiert",
+    nosr: "🔊 Johann speaks. Type your answers here (speech recognition works in Chrome or Edge).",
+    denied: "🎤 The microphone is blocked. Allow it in your browser, then tap 🎤."
+  }[st];
+  $("#vPause").textContent = voice.paused ? "▶ Weiter" : "⏸ Pause";
+}
+function setupVoiceBar(m) {
+  $("#voicebar").hidden = !m.voice;
+  if (!m.voice) { voice.on = false; return; }
+  voice.on = true;
+  voice.paused = false;
+  $("#vTalk").hidden = !SR;
+  $("#vSlow").setAttribute("aria-pressed", String(!!S.prefs.slowVoice));
+  setVState(SR ? "idle" : "nosr");
+}
+function stopVoice() {
+  voice.on = false;
+  if (voice.rec) { try { voice.rec.abort(); } catch (e) {} voice.rec = null; }
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+}
+function voiceAfterReply(v) {
+  if (!voice.on || voice.paused || !v.text) { if (voice.on) setVState(voice.paused ? "paused" : SR ? "idle" : "nosr"); return; }
+  setVState("speaking");
+  speak(v.text, { onend: () => {
+    if (!voice.on || voice.paused) return;
+    if (SR) listen(); else setVState("nosr");
+  } });
+}
+function listen() {
+  if (!SR || busy || voice.rec || !voice.on) return;
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  const rec = new SR();
+  voice.rec = rec;
+  rec.lang = "de-DE";
+  rec.interimResults = true;
+  rec.continuous = false;
+  let finalText = "", denied = false;
+  setVState("listening");
+  rec.onresult = (e) => {
+    let interim = "";
+    finalText = "";
+    for (const r of e.results) { if (r.isFinal) finalText += r[0].transcript; else interim += r[0].transcript; }
+    $("#input").value = (finalText + " " + interim).trim();
+    autosize();
+  };
+  rec.onerror = (e) => {
+    if (e.error === "not-allowed" || e.error === "service-not-allowed") { denied = true; voice.paused = true; }
+  };
+  rec.onend = () => {
+    voice.rec = null;
+    if (denied) { setVState("denied"); return; }
+    const t = finalText.trim();
+    if (voice.on && !voice.paused && t) { setVState("thinking"); send(t); }
+    else if (voice.on) setVState(voice.paused ? "paused" : "idle");
+  };
+  try { rec.start(); } catch (e) { voice.rec = null; setVState("idle"); }
+}
+$("#vTalk").addEventListener("click", () => { voice.paused = false; listen(); });
+$("#vPause").addEventListener("click", () => {
+  voice.paused = !voice.paused;
+  if (voice.paused) {
+    if (voice.rec) { try { voice.rec.abort(); } catch (e) {} voice.rec = null; }
+    if ("speechSynthesis" in window) speechSynthesis.cancel();
+    setVState("paused");
+  } else {
+    setVState(SR ? "idle" : "nosr");
+  }
+});
+$("#vSlow").addEventListener("click", () => {
+  S.prefs.slowVoice = !S.prefs.slowVoice;
+  $("#vSlow").setAttribute("aria-pressed", String(S.prefs.slowVoice));
+  save();
+});
+
+/* ---------------- speaking: say it after me ---------------- */
+const speechNorm = (w) => w.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+function compareSpeech(target, heard) {
+  const disp = target.trim().split(/\s+/);
+  const t = disp.map(speechNorm), h = heard.trim().split(/\s+/).map(speechNorm).filter(Boolean);
+  const eq = (a, b) => a === b || foldUmlauts(a) === foldUmlauts(b);
+  // longest common subsequence over words
+  const L = Array.from({ length: t.length + 1 }, () => new Array(h.length + 1).fill(0));
+  for (let i = t.length - 1; i >= 0; i--) for (let j = h.length - 1; j >= 0; j--)
+    L[i][j] = t[i] && eq(t[i], h[j]) ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const hits = new Array(t.length).fill(false);
+  for (let i = 0, j = 0; i < t.length && j < h.length; ) {
+    if (t[i] && eq(t[i], h[j])) { hits[i] = true; i++; j++; }
+    else if (L[i + 1][j] >= L[i][j + 1]) i++; else j++;
+  }
+  const counted = t.map((x, i) => !!x);
+  const total = counted.filter(Boolean).length || 1;
+  const got = hits.filter((x, i) => x && counted[i]).length;
+  return { score: Math.round(got / total * 100), hits: disp.map((w, i) => ({ w, hit: hits[i] || !counted[i] })), heard };
+}
+
+function renderRepeatCard(v) {
+  const c = v.card, inp = c.input, st = c.st, active = cardActive(v);
+  const el = document.createElement("div");
+  el.className = "card-ex";
+  el.innerHTML = `<div class="ex-head"><span class="ico" aria-hidden="true">🗣️</span><div><b>${esc(inp.title)}</b><div class="hint">${SR ? "Listen, then press 🎙️ and say it. You can try each one a few times." : "Listen and repeat out loud. (Checking what you said needs Chrome or Edge.)"}</div></div></div>`;
+  const ol = document.createElement("ol");
+  ol.className = "ex-items";
+  inp.sentences.forEach((sn, i) => {
+    const ist = st.items[i];
+    const li = document.createElement("li");
+    li.className = "ex-item";
+    li.dataset.state = ist.best ? (ist.best.score >= 80 ? "ok" : "bad") : "";
+    li.innerHTML = `<div class="rp-de">${esc(sn.de)}</div><div class="hint">${esc(sn.en)}${sn.tip ? ` · 💡 ${esc(sn.tip)}` : ""}</div>`;
+    const row = document.createElement("div");
+    row.className = "opts";
+    if ("speechSynthesis" in window) {
+      row.appendChild(button("🔊 Hören", "opt", () => speak(sn.de)));
+      row.appendChild(button("🐢 Langsam", "opt", () => speak(sn.de, { rate: 0.6 })));
+    }
+    if (SR && active && ist.tries < 5) row.appendChild(button(ist.tries ? "🎙️ Nochmal" : "🎙️ Sagen", "opt", (e) => recordSentence(v, i, e.currentTarget)));
+    li.appendChild(row);
+    if (ist.best) {
+      const h = document.createElement("div");
+      h.className = "rp-heard";
+      h.innerHTML = `<span class="rp-score">${ist.best.score}%</span> · ` + ist.best.hits.map(x => `<span class="${x.hit ? "hit" : "miss"}">${esc(x.w)}</span>`).join(" ") +
+        `<div class="hint">Heard: „${esc(ist.best.heard)}“ · ${ist.tries} ${ist.tries === 1 ? "try" : "tries"}</div>`;
+      li.appendChild(h);
+    }
+    ol.appendChild(li);
+  });
+  el.appendChild(ol);
+  const foot = document.createElement("div");
+  foot.className = "ex-foot";
+  const tried = st.items.filter(x => x.best);
+  const avg = tried.length ? Math.round(tried.reduce((a, x) => a + x.best.score, 0) / tried.length) : 0;
+  if (active) {
+    foot.appendChild(button("An Johann senden", tried.length === inp.sentences.length ? "btn" : "btn secondary", () => submitRepeat(v)));
+    if (tried.length) foot.insertAdjacentHTML("beforeend", `<span class="card-done">Ø ${avg}% · ${tried.length}/${inp.sentences.length} said</span>`);
+  } else if (st.sent) foot.innerHTML = `<span class="card-done">✓ An Johann geschickt · Ø ${avg}%</span>`;
+  else if (st.closed) foot.innerHTML = `<span class="card-done">Karte geschlossen</span>`;
+  el.appendChild(foot);
+  return el;
+}
+
+function recordSentence(v, i, btn) {
+  if (!SR || voice.rec || !cardActive(v)) return;
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  const sn = v.card.input.sentences[i], ist = v.card.st.items[i];
+  const rec = new SR();
+  voice.rec = rec;
+  rec.lang = "de-DE";
+  rec.interimResults = false;
+  rec.maxAlternatives = 5;
+  btn.textContent = "⏺ Ich höre…";
+  btn.disabled = true;
+  let got = false;
+  rec.onresult = (e) => {
+    got = true;
+    const alts = Array.from(e.results[0] || []).map(a => a.transcript);
+    // The recognizer offers alternatives; count the one closest to the sentence.
+    const best = alts.map(a => compareSpeech(sn.de, a)).sort((a, b) => b.score - a.score)[0];
+    ist.tries++;
+    if (best && (!ist.best || best.score > ist.best.score)) ist.best = best;
+    else if (best && !ist.best) ist.best = best;
+    logActivity("speak");
+    save();
+  };
+  rec.onerror = (e) => { if (e.error === "not-allowed" || e.error === "service-not-allowed") sysToast(v, "The microphone is blocked. Allow it in your browser."); };
+  rec.onend = () => {
+    voice.rec = null;
+    if (!got) sysToast(v, "I didn't catch anything. Press 🎙️ and speak right after.");
+    refreshMsg(v);
+  };
+  try { rec.start(); } catch (e) { voice.rec = null; refreshMsg(v); }
+}
+
+function submitRepeat(v) {
+  const c = v.card;
+  if (!cardActive(v)) return;
+  const items = c.input.sentences.map((sn, i) => {
+    const b = c.st.items[i].best;
+    return { sentence: sn.de, best_score: b ? b.score : null, heard: b ? b.heard : "", missed_words: b ? b.hits.filter(x => !x.hit).map(x => x.w) : [], tries: c.st.items[i].tries };
+  });
+  const tried = items.filter(x => x.best_score != null);
+  const avg = tried.length ? Math.round(tried.reduce((a, x) => a + x.best_score, 0) / tried.length) : 0;
+  c.st.sent = true;
+  refreshMsg(v);
+  sendToolResult(c.toolId, JSON.stringify({ card: c.input.title, average_score: tried.length ? avg : null, sentences: items, note: "Scores come from browser speech recognition, which can mishear." }),
+    `🗣️ ${c.input.title}: ${tried.length ? `Ø ${avg}%` : "listened only"} · ${tried.length}/${items.length} said`);
+}
+
+/* ---------------- session report for teachers ---------------- */
+function reportData(s) {
+  const m = MODES[s.mode];
+  const auto = /^(✅|✍️ Neue Version|🗣️)/;
+  const own = s.view.filter(v => v.who === "student" && !auto.test(v.text));
+  const ex = s.view.filter(v => v.card && v.card.kind === "exercise");
+  const wr = s.view.filter(v => v.card && v.card.kind === "writing");
+  const rp = s.view.filter(v => v.card && v.card.kind === "repeat");
+  const saved = s.view.flatMap(v => v.saved || []);
+  let summary = "";
+  if (s.wrapAt != null) {
+    const w = s.view.slice(s.wrapAt).find(v => v.who === "johann" && v.text);
+    if (w) summary = w.text;
+  }
+  return { m, own, ex, wr, rp, saved, summary, help: s.help || {},
+    words: own.reduce((a, v) => a + v.text.split(/\s+/).filter(Boolean).length, 0),
+    minutes: Math.max(1, Math.round(((s.lastAt || Date.now()) - s.started) / 60000)) };
+}
+
+function buildReport(includeTranscript) {
+  const s = S.session, d = reportData(s), m = d.m;
+  const name = S.profile.name || "—";
+  const started = new Date(s.started);
+  const row = (k, v) => `<tr><th>${esc(k)}</th><td>${v}</td></tr>`;
+  const help = d.help;
+  const helpTotal = ["tipp", "english", "simpler", "hints", "hint2", "reveals"].reduce((a, k) => a + (help[k] || 0), 0);
+
+  let results = "";
+  if (d.ex.length) {
+    results += `<h3>Exercise cards</h3><table class="grid"><tr><th>Card</th><th>Right first try</th><th>Right after retrying</th><th>Hints</th><th>Answer shown</th></tr>` +
+      d.ex.map(v => {
+        const its = v.card.st.items;
+        const first = its.filter(x => x.ok && x.tries.length === 1).length;
+        const later = its.filter(x => x.ok && x.tries.length > 1).length;
+        return `<tr><td>${esc(v.card.input.title)}${v.card.st.sent ? "" : " <i>(not finished)</i>"}</td><td>${first} / ${its.length}</td><td>${later}</td><td>${its.filter(x => x.hint).length}</td><td>${its.filter(x => x.revealed).length}</td></tr>`;
+      }).join("") + `</table>`;
+  }
+  if (d.wr.length) {
+    const marks = d.wr.map(v => v.card.input.marks.length);
+    const fixed = d.wr.reduce((a, v) => a + (v.card.fixed ? v.card.fixed.fixed : 0), 0);
+    results += `<h3>Writing</h3><p>${d.wr.length} version${d.wr.length === 1 ? "" : "s"} checked · marks per version: ${marks.join(" → ")} · <b>${fixed} mark${fixed === 1 ? "" : "s"} fixed by the student</b>. Johann marks errors with hints and never supplies corrected text.</p>`;
+  }
+  if (d.rp.length) {
+    results += `<h3>Pronunciation (say it after me)</h3><table class="grid"><tr><th>Set</th><th>Sentences said</th><th>Average match</th></tr>` +
+      d.rp.map(v => {
+        const t = v.card.st.items.filter(x => x.best);
+        const avg = t.length ? Math.round(t.reduce((a, x) => a + x.best.score, 0) / t.length) + "%" : "–";
+        return `<tr><td>${esc(v.card.input.title)}</td><td>${t.length} / ${v.card.st.items.length}</td><td>${avg}</td></tr>`;
+      }).join("") + `</table><p class="note">Match scores come from browser speech recognition and are a rough guide only.</p>`;
+  }
+  if (!results) results = `<p>This session was conversation only (no cards).</p>`;
+
+  const savedList = d.saved.length ? `<ul>${d.saved.map(x => `<li>${{ merk: "Word", fehler: "Pattern to watch", ziel: "Goal", besser: "Getting better", kann: "Can-do confirmed", niveau: "Level estimate" }[x.type] || ""}: ${esc(x.text)}</li>`).join("")}</ul>` : "<p>None.</p>";
+
+  let transcript = "";
+  if (includeTranscript) {
+    transcript = `<h2>Conversation</h2><div class="tx">` + s.view.filter(v => v.who !== "sys").map(v =>
+      `<p><b>${v.who === "johann" ? "Johann" : esc(name === "—" ? "Student" : name)}:</b> ${esc(v.text).replace(/\n/g, "<br>")}${v.card ? `<br><i>${esc(cardSummary(v).trim())}</i>` : ""}</p>`).join("") + `</div>`;
+  }
+
+  return `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>Lernbericht – ${esc(name)} – ${started.toLocaleDateString("de-DE")}</title>
+<style>
+  body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#1d232a;max-width:760px;margin:24px auto;padding:0 20px;line-height:1.45;font-size:14px}
+  h1{font-size:22px;margin:0 0 2px} h2{font-size:16px;margin:20px 0 6px;border-bottom:2px solid #c8553d;padding-bottom:3px} h3{font-size:14px;margin:12px 0 4px}
+  .sub{color:#5b6470;margin:0 0 12px} table{border-collapse:collapse;width:100%} th,td{text-align:left;padding:4px 8px;vertical-align:top}
+  .meta th{width:170px;color:#5b6470;font-weight:600} .grid th{background:#f1ead8} .grid td,.grid th{border:1px solid #ddd2ba}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0} .stat{border:1px solid #ddd2ba;border-radius:8px;padding:8px}
+  .stat b{display:block;font-size:20px} .stat span{color:#5b6470;font-size:12px} .summary{background:#faf6ec;border-left:4px solid #e0a841;padding:8px 12px;border-radius:6px}
+  .note{color:#5b6470;font-size:12px} .tx p{margin:6px 0} footer{margin-top:22px;color:#5b6470;font-size:11.5px;border-top:1px solid #ddd2ba;padding-top:8px}
+  .printbar{text-align:right} @media print{.printbar{display:none} body{margin:0}}
+</style></head><body>
+<div class="printbar"><button onclick="print()">Print / save as PDF</button></div>
+<h1>Lernbericht · Session report</h1>
+<p class="sub">Johann, AI German tutor</p>
+<table class="meta">
+${row("Student", esc(name))}
+${row("Date", esc(started.toLocaleString("de-DE", { dateStyle: "full", timeStyle: "short" })) + ` · about ${d.minutes} min`)}
+${row("Course", esc(courseSummary()))}
+${row("Activity", esc(`${m.name} (${m.en})`) + (m.graded ? (s.graded ? " · for graded work: Johann coached only" : " · practice") : ""))}
+${s.focus ? row("Focus", esc(s.focus)) : ""}${s.scenario ? row("Scenario", esc(s.scenario)) : ""}
+</table>
+<h2>At a glance</h2>
+<div class="stats">
+  <div class="stat"><b>${d.own.length}</b><span>messages I wrote or said</span></div>
+  <div class="stat"><b>${d.words}</b><span>words of my own</span></div>
+  <div class="stat"><b>${d.ex.reduce((a, v) => a + v.card.st.items.filter(x => x.ok).length, 0)}</b><span>card items right</span></div>
+  <div class="stat"><b>${helpTotal}</b><span>times I asked for help</span></div>
+</div>
+${d.summary ? `<h2>Johann's summary</h2><div class="summary">${md(d.summary)}</div>` : `<p class="note">Tip: press "Sitzung beenden" before making the report to get Johann's summary of the session.</p>`}
+<h2>What I practised and how it went</h2>
+${results}
+<h2>Help I asked for</h2>
+<table class="meta">
+${row("Hints (Tipp button)", help.tipp || 0)}
+${row("Hints opened on cards", help.hints || 0)}
+${row("Stronger writing hints", help.hint2 || 0)}
+${row("Answers shown after two tries", help.reveals || 0)}
+${row("Explanations in English / simpler", (help.english || 0) + (help.simpler || 0))}
+${row("Revisions I submitted", help.revisions || 0)}
+</table>
+<h2>Saved for later</h2>
+${savedList}
+${transcript}
+<footer>Generated by the Johann app from this session's own record on the student's device (${esc(new Date().toLocaleString("de-DE"))}). Johann is set up to coach: he explains, hints, and checks, but doesn't write or correct graded work for the student. Card scores are checked by the app; speaking scores come from speech recognition and are approximate.</footer>
+</body></html>`;
+}
+
+function openReport() {
+  if (!S.session || !S.session.view.some(v => v.who === "student")) { alert("There's nothing to report yet. Do some practice first!"); return; }
+  renderReport();
+  $("#dlgReport").showModal();
+}
+function renderReport() { $("#repFrame").srcdoc = buildReport($("#repTranscript").checked); }
+$("#repTranscript").addEventListener("change", renderReport);
+$("#btnReport").addEventListener("click", openReport);
+$("#btnRepPrint").addEventListener("click", () => { const w = $("#repFrame").contentWindow; w.focus(); w.print(); });
+$("#btnRepDownload").addEventListener("click", () => {
+  const s = S.session, nm = (S.profile.name || "student").toLowerCase().replace(/\W+/g, "-");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([buildReport($("#repTranscript").checked)], { type: "text/html;charset=utf-8" }));
+  a.download = `lernbericht-${nm}-${new Date(s.started).toISOString().slice(0, 10)}.html`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+});
+function addReportButton() {
+  const b = button("📄 Make a report for my teacher", "tool", openReport);
+  b.style.alignSelf = "center";
+  $("#log").appendChild(b);
+  $("#log").scrollTop = $("#log").scrollHeight;
+}
+
 /* ---------------- course dialog ---------------- */
 function fillProgramSelect() {
   $("#cProgram").innerHTML = Object.entries(PROGRAMS).map(([k, p]) => `<option value="${k}">${esc(p.label)}</option>`).join("");
@@ -2371,6 +3226,7 @@ function openCourse() {
   $("#cVocab").value = c.vocab;
   $("#cAddress").value = c.address;
   $("#cNotes").value = c.notes;
+  $("#cCando").value = c.cando || "";
   draftSupport = c.support;
   setPressed($("#cSupport"), draftSupport);
   $("#cUnitPickWrap").hidden = c.program !== "kleinhausen";
@@ -2411,6 +3267,7 @@ function readCourseForm() {
     support: draftSupport,
     address: $("#cAddress").value,
     notes: $("#cNotes").value.trim(),
+    cando: $("#cCando").value.trim(),
     locked: S.course.locked
   };
 }
@@ -2544,7 +3401,7 @@ $("#btnReset").addEventListener("click", () => {
   show("setup");
 });
 
-$("#btnHome").addEventListener("click", () => { if (abortCtl) abortCtl.abort(); show(connected() ? "home" : "setup"); });
+$("#btnHome").addEventListener("click", () => { stopVoice(); if (abortCtl) abortCtl.abort(); show(connected() ? "home" : "setup"); });
 $("#btnCourse").addEventListener("click", openCourse);
 
 /* ---------------- profile ---------------- */

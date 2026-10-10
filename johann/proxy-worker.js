@@ -10,7 +10,7 @@
 
 const MODELS = ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-5-5"];
 const MAX_TOKENS = 16000;
-const TOOLS = ["show_exercise", "mark_writing"];   // Johann's own app tools
+const TOOLS = ["show_exercise", "mark_writing", "say_after_me"];   // Johann's own app tools
 
 export default {
   async fetch(request, env) {

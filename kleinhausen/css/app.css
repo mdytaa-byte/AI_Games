@@ -1251,6 +1251,74 @@ html[data-contrast="hoch"] .listen-deck { border-width: 4px; }
 html[data-contrast="hoch"] .ws-mark { background: #000; color: #fff; }
 html[data-contrast="hoch"] .ws-box i.on { background: #000; border-color: #000; }
 
+/* Grammatik-Ecke */
+/* .chip is styled for the dark top bar; inside the page and pop-ups it needs ink. */
+.main .chip, .gr-modal .chip { color: var(--navy); border-color: var(--line); background: var(--paper-2); }
+.main .chip:hover, .gr-modal .chip:hover { border-color: var(--navy); background: var(--cream); }
+.gr-links { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0; }
+.gr-links > span { font-size: .85rem; font-weight: 600; color: var(--ink-soft); }
+.gr-search { max-width: 34em; }
+.gr-search input { width: 100%; font-size: 1.1rem; padding: .45em .6em; border: 2px solid var(--line); border-radius: 8px; background: var(--cream); color: var(--ink); }
+.gr-count { font-size: .85rem; color: var(--ink-soft); }
+.gr-list { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.gr-open {
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-2);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+.gr-open:hover { border-color: var(--navy); }
+.gr-open strong { font-family: var(--display); font-size: 1.1rem; color: var(--navy); }
+.gr-item-ep { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.gr-item-kurz { font-size: .9rem; color: var(--ink-soft); }
+.gr-done { color: var(--moss); font-weight: 700; }
+.gr-seen { font-size: .75rem; color: var(--ink-soft); }
+.gr-card { max-width: 52em; }
+.gr-kurz { font-family: var(--display); font-size: 1.2rem; margin: 0 0 6px; }
+.gr-en { color: var(--ink-soft); font-style: italic; margin: 0 0 10px; }
+.gr-table-wrap { overflow-x: auto; margin: 10px 0 4px; }
+.gr-table { border-collapse: collapse; min-width: 60%; }
+.gr-table th, .gr-table td { border: 1px solid var(--line); padding: .35em .7em; text-align: left; }
+.gr-table th { background: var(--paper); font-size: .85rem; }
+.gr-exs { list-style: none; padding: 0; margin: 0; }
+.gr-ex { padding: 8px 0; border-top: 1px solid var(--line); }
+.gr-ex p { margin: 0; }
+.gr-ex-who { font-size: .75rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.gr-ex-de { font-family: var(--display); font-size: 1.1rem; }
+.gr-say { margin-left: 6px; font-family: var(--sans); font-size: .75rem; color: var(--navy); border-color: var(--line); }
+.gr-achtung { margin: 16px 0; padding: 10px 14px; border-left: 5px solid var(--post-deep); background: var(--cream); border-radius: 0 8px 8px 0; }
+.gr-achtung .kicker { margin: 0 0 2px; }
+.gr-achtung p { margin: 0 0 4px; }
+.gr-q { margin: 10px 0 14px; }
+.gr-q p { margin: 0 0 6px; }
+.gr-q-out:empty { display: none; }
+.gr-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 16px;
+  overflow-y: auto;
+  background: rgba(12, 36, 60, .55);
+}
+.gr-dialog { width: 100%; max-width: 46em; }
+.gr-dialog:focus { outline: none; }
+.gr-dialog-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.gr-dialog-head h2 { margin-top: 0; }
+html[data-contrast="hoch"] .gr-open, html[data-contrast="hoch"] .gr-table th, html[data-contrast="hoch"] .gr-table td { border-color: #000; }
+html[data-contrast="hoch"] .gr-achtung { border-left-color: #000; background: #fff; }
+
 .print-only { display: none; }
 
 @media print {

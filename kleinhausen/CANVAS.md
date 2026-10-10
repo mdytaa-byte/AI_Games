@@ -51,6 +51,17 @@ The **Wörter** tab is a short daily review, built for about five minutes. The b
 - **Where it’s stored:** the deck lives in the browser save and in **Heft → JSON**. It is not sent through SCORM `suspend_data`, which is too small. Lehrerzimmer shows *Wörter sicher* per student after JSON import.
 - **Editing words:** `js/wortschatz-data.js`. Each episode word is `[de, en, line, line in English, who]`. `tools/lint-content.js` fails if an episode `vocab` word has no entry, or if its line does not contain the word.
 
+## Grammatik-Ecke (grammar reference)
+The **Grammatik** tab has 20 short cards, one for each grammar point in the 16 episodes (sein, Sie/du, der/die/das, Verb auf Platz 2, Uhrzeit, Modalverben, weil, and the rest). Students can search by German word, topic or English term.
+
+- **Examples come only from the story.** Each one names who said it and in which episode. `tools/lint-content.js` fails if an example is not a line in the course.
+- **Each card has:** a one-line rule in German, an English explanation, a small table, an “Achtung” box with the common mistake, and a 1–2 question Kurz-Check.
+- **Inside an episode:** the header lists that episode’s cards. Each one opens as a pop-up over the scene, so the scene keeps its place. Escape closes it, and the scene’s 1/2/3 keys stay inactive while it’s open.
+- **From the Wortschatz:** a right noun with the wrong article links to the *der, die, das* card.
+- **For an AI tutor:** Lehrerzimmer → **Grammatik-Ecke als Text (KI-Tutor)** downloads all cards as Markdown. Paste it into the tutor’s instructions so its explanations and examples match the course.
+- Which cards a student has read and passed is saved in **Heft → JSON**. It is not graded.
+- **Editing cards:** `js/grammatik-data.js`. In each card, `eps[0]` is the episode that teaches the point.
+
 ## Accessibility
 Students open **Zugang** (header): contrast, type size, Verdana, reduced motion, TTS, captions/transcripts, English gloss, low-fi graphics. High-graphics mode walks the same first-person Kleinhausen as Foto-Schnitzeljagd and Lieferdienst (shared save + weather). Low-fi is a text list — no WebGL. Praxis games opened from an episode receive that weather and can write completion back to the course.
 

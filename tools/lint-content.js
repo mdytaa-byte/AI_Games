@@ -25,6 +25,7 @@ load("js/modules-b.js");
 load("js/sidequests.js");
 load("js/town3d.js");
 load("js/wortschatz-data.js");
+load("js/grammatik-data.js");
 
 const KH = sandbox.KH;
 const mods = KH.MODULES || [];
@@ -137,6 +138,32 @@ Object.keys(KH.PLACES || {}).forEach(function (id) {
   const hit = marks.some(function (l) { return l.place === id; });
   if (!hit) errors.push("3D landmark missing for place: " + id);
 });
+
+/* Grammatik-Ecke: every episode has a card, and every example is a real story line. */
+const flat = function (s) { return String(s).replace(/<[^>]+>/g, " ").replace(/[„“"«»]/g, "").replace(/\s+/g, " ").trim(); };
+const story = [];
+JSON.stringify([mods, KH.LOCATIONS, KH.SIDEQUESTS], function (k, v) { if (typeof v === "string") story.push(flat(v)); return v; });
+const storyText = story.join("\n");
+const gIds = {};
+(KH.GRAMMATIK || []).forEach(function (c) {
+  if (gIds[c.id]) errors.push("Grammatik duplicate id " + c.id);
+  gIds[c.id] = true;
+  if (!c.title || !c.kurz || !c.en || !c.achtung || !c.eps || !c.eps.length) errors.push("Grammatik " + c.id + " incomplete");
+  (c.eps || []).forEach(function (ep) { if (ids.indexOf(ep) < 0) errors.push("Grammatik " + c.id + " unknown episode " + ep); });
+  if (!c.beispiele || c.beispiele.length < 2) errors.push("Grammatik " + c.id + " needs at least 2 story examples");
+  (c.beispiele || []).forEach(function (b) {
+    if (b.length !== 4) errors.push("Grammatik " + c.id + " example shape: " + b[0]);
+    if (storyText.indexOf(flat(b[0])) < 0) errors.push("Grammatik " + c.id + " example not in story: " + b[0]);
+  });
+  (c.check || []).forEach(function (q) {
+    if (!(q.ok >= 0 && q.ok < q.opts.length)) errors.push("Grammatik " + c.id + " check answer out of range: " + q.q);
+  });
+});
+ids.forEach(function (ep) {
+  if (!(KH.GRAMMATIK || []).some(function (c) { return c.eps.indexOf(ep) >= 0; })) errors.push("No Grammatik card for " + ep);
+});
+if (indexHtml.indexOf("js/grammatik.js") < 0) errors.push("index.html must load grammatik.js");
+if (manifest.indexOf("js/grammatik.js") < 0) errors.push("SCORM manifest missing grammatik.js");
 
 if (errors.length) {
   console.error(errors.join("\n"));

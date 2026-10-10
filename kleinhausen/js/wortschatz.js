@@ -369,6 +369,11 @@
         '<div class="row-btns"><button class="btn post" type="button" id="ws-next">Weiter</button></div>';
       KH.live(result === "right" ? "Richtig" : (result === "almost" ? "Fast" : "Falsch") + ": " + info.de);
       KH.speak(info.de);
+      if (result === "almost" && KH.grammarModal) {
+        out.querySelector(".feedback").insertAdjacentHTML("beforeend",
+          '<p><button type="button" class="chip" id="ws-gram">Grammatik-Ecke: der, die, das</button></p>');
+        document.getElementById("ws-gram").addEventListener("click", function () { KH.grammarModal("artikel"); });
+      }
       const nb = document.getElementById("ws-next");
       nb.focus();
       nb.addEventListener("click", function () { i += 1; next(); });

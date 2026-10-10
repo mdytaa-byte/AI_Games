@@ -39,6 +39,7 @@
       btn("pass", "Pass") +
       btn("journal", "Heft") +
       btn("words", "Wörter" + wordsDueLabel()) +
+      btn("grammar", "Grammatik") +
       btn("discover", "Entdecken") +
       btn("settings", "Zugang") +
       "</nav></header>" +
@@ -421,13 +422,15 @@
     KH.shell(
       '<div class="ep-head"><div><p class="kicker">Episode ' + mod.n + " von 16 · " + KH.esc(mod.season) + "</p>" +
       "<h1>" + KH.esc(mod.titleLong) + "</h1>" +
-      "<p>Can-Do: " + mod.canDo.map(function (c) { return c.de; }).join(" · ") + "</p>" + voiceChip + "</div>" +
+      "<p>Can-Do: " + mod.canDo.map(function (c) { return c.de; }).join(" · ") + "</p>" +
+      (KH.grammarChips ? KH.grammarChips(mod.id) : "") + voiceChip + "</div>" +
       '<button class="btn ghost" type="button" id="tohub">Zur Stadt</button></div>' +
       '<div class="progress-track" aria-label="Fortschritt"><span style="width:' + pct + '%"></span></div>' +
       '<div id="scene-root"></div>',
       { here: "hub" }
     );
     document.getElementById("tohub").addEventListener("click", KH.view.hub);
+    if (KH.bindGrammarChips) KH.bindGrammarChips(document.querySelector(".ep-head"));
     const root = document.getElementById("scene-root");
     const scene = KH.resolveScene ? KH.resolveScene(scenes[index]) : scenes[index];
     KH.mountScene(root, scene, function (res) {
@@ -701,7 +704,8 @@
       (me.words ? " · Wörter sicher " + me.words.known + "/" + me.words.total + " (" + me.words.days + " Tage geübt)" : "") + ".</p>" +
       '<p><button class="btn" type="button" id="unlock">Alle Episoden öffnen (Demo)</button> ' +
       '<button class="btn ghost" type="button" id="exp2">Dieser Stand JSON</button> ' +
-      '<button class="btn ghost" type="button" id="print-rubric">IPA-Rubrik drucken</button></p>' +
+      '<button class="btn ghost" type="button" id="print-rubric">IPA-Rubrik drucken</button> ' +
+      '<button class="btn ghost" type="button" id="gram-text">Grammatik-Ecke als Text (KI-Tutor)</button></p>' +
       '<div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Episode</th><th>Status</th><th>IPA</th><th>Code</th><th>Mündlich</th><th>SPR-Code</th><th>Min</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
       "<h2>Klassenliste (statisch)</h2>" +
       "<p>Kein Roster-Server. Du importierst die JSON-Exporte aus dem Heft. Canvas bleibt: 16 Code-Aufgaben + Sprechen-Upload + optional SCORM-Gesamtwert.</p>" +
@@ -733,6 +737,13 @@
       a.click();
     });
     document.getElementById("print-rubric").addEventListener("click", function () { window.print(); });
+    document.getElementById("gram-text").addEventListener("click", function () {
+      const blob = new Blob([KH.grammarText()], { type: "text/markdown" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "kleinhausen-grammatik.md";
+      a.click();
+    });
     const input = document.getElementById("roster-in");
     if (input) {
       input.addEventListener("change", function () {

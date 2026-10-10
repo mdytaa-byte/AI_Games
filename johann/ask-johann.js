@@ -9,6 +9,7 @@
      data-course, data-level, data-program, data-unit, data-grammar, data-vocab,
      data-cando. Also: data-preset="kleinhausen" with data-ep="5".
      Button: data-label, data-position="left|right", data-floating="off".
+     Tutor: data-tutor="johanna" suggests Johanna (a student's own choice wins).
      Optional school link: data-proxy, data-code.
 
   2. Buttons for a specific task, no JavaScript needed:
@@ -23,20 +24,32 @@
   if (window.AskJohann) return;
   const script = document.currentScript;
   const base = new URL(".", script ? script.src : location.href).href;
-  const KEYS = ["kurs", "preset", "ep", "mode", "context", "graded", "focus", "program", "level", "course", "unit", "grammar", "vocab", "cando", "proxy", "code"];
+  const KEYS = ["kurs", "preset", "ep", "mode", "context", "graded", "focus", "program", "level", "course", "unit", "grammar", "vocab", "cando", "proxy", "code", "tutor"];
   const defaults = {};
-  const ui = { label: "Frag Johann", position: "right", floating: "on" };
+  const ui = { label: "", position: "right", floating: "on" };
   if (script) {
     for (const k of KEYS) if (script.dataset[k] != null) defaults[k] = script.dataset[k];
     for (const k of Object.keys(ui)) if (script.dataset[k]) ui[k] = script.dataset[k];
   }
   let enabled = true, hidden = false;
 
+  // Johann or Johanna: the student's choice (same site), else the page's or school's suggestion.
+  function tutorId() {
+    try {
+      const t = ((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs) || {}).tutor;
+      if (t === "johann" || t === "johanna") return t;
+    } catch (e) { /* storage blocked */ }
+    if (defaults.tutor === "johanna" || defaults.tutor === "johann") return defaults.tutor;
+    return (window.JOHANN_CONFIG && window.JOHANN_CONFIG.tutor === "johanna") ? "johanna" : "johann";
+  }
+  const tutorName = () => tutorId() === "johanna" ? "Johanna" : "Johann";
+
   // School settings (johann/config.js) can switch every button off.
   const cfg = document.createElement("script");
   cfg.src = base + "config.js";
   cfg.onload = () => {
-    if (window.JOHANN_CONFIG && window.JOHANN_CONFIG.buttons === false) { enabled = false; render(); }
+    if (window.JOHANN_CONFIG && window.JOHANN_CONFIG.buttons === false) { enabled = false; }
+    render();
   };
   document.head.appendChild(cfg);
 
@@ -69,14 +82,20 @@
     [hidden]{display:none !important}
   </style>
   <button class="fab" type="button" part="button" aria-haspopup="dialog"><i aria-hidden="true">🎓</i><span></span></button>
-  <div class="panel" role="dialog" aria-label="Johann, German tutor">
-    <div class="bar"><span>Johann · dein Deutschlehrer</span><a class="tab" target="_blank" rel="noopener" title="Open in a new tab">↗</a><button class="x" type="button" aria-label="Close Johann">✕</button></div>
+  <div class="panel" role="dialog">
+    <div class="bar"><span class="who"></span><a class="tab" target="_blank" rel="noopener" title="Open in a new tab">↗</a><button class="x" type="button"></button></div>
   </div>`;
   const fab = root.querySelector(".fab"), panel = root.querySelector(".panel"), tab = root.querySelector(".tab");
-  fab.querySelector("span").textContent = ui.label;
+  root.querySelector(".x").textContent = "✕";
   let frame = null, lastFocus = null;
 
   function render() {
+    const name = tutorName(), f = name === "Johanna";
+    fab.querySelector("span").textContent = ui.label || "Frag " + name;
+    panel.setAttribute("aria-label", name + ", German tutor");
+    root.querySelector(".who").textContent = name + (f ? " · deine Deutschlehrerin" : " · dein Deutschlehrer");
+    root.querySelector(".x").setAttribute("aria-label", "Close " + name);
+    if (frame) frame.title = name + ", German tutor";
     fab.hidden = !enabled || hidden || ui.floating === "off" || panel.classList.contains("open");
   }
   function open(opts) {
@@ -85,7 +104,7 @@
     if (!frame || frame.dataset.src !== src) {
       if (frame) frame.remove();
       frame = document.createElement("iframe");
-      frame.title = "Johann, German tutor";
+      frame.title = tutorName() + ", German tutor";
       frame.allow = "microphone; autoplay; clipboard-write";
       frame.dataset.src = src;
       frame.src = src;
@@ -125,6 +144,10 @@
   });
 
   function mount() { document.body.appendChild(host); render(); }
+  // The student switched tutor (in Johann or the panel): relabel the buttons.
+  window.addEventListener("storage", (e) => {
+    if (e.key === "johann.v1") { render(); document.dispatchEvent(new CustomEvent("askjohann:tutor", { detail: tutorName() })); }
+  });
   if (document.body) mount(); else document.addEventListener("DOMContentLoaded", mount);
 
   window.AskJohann = {
@@ -135,7 +158,8 @@
     },
     hide() { hidden = true; if (panel.classList.contains("open")) close(); render(); },
     show() { hidden = false; render(); },
-    get enabled() { return enabled; }
+    get enabled() { return enabled; },
+    get tutorName() { return tutorName(); }
   };
   document.dispatchEvent(new CustomEvent("askjohann:ready"));
 })();

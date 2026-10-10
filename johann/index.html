@@ -306,6 +306,13 @@
   .swatch[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
   .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:4px 12px;margin-top:4px}
   .checks label,.check{display:flex;gap:8px;align-items:center;font-size:.92rem}
+  .tutor-pick{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 10px}
+  .tutor-opt{display:flex;align-items:center;gap:10px;background:var(--panel-2);border:2px solid var(--line);border-radius:14px;padding:8px 14px 8px 8px;color:var(--ink);text-align:left}
+  .tutor-opt[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+  .tutor-opt .avatar{width:44px;height:44px}
+  .tutor-opt .avatar svg{width:32px;height:32px}
+  .tutor-opt b{display:block}
+  .tutor-opt span{display:block;font-size:.8rem;color:var(--ink-soft)}
   .profile-nudge{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
   /* opened inside an "Ask Johann" panel */
   :root[data-embed="1"] body{padding:8px}
@@ -401,6 +408,7 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
         <div class="avatar" aria-hidden="true"></div>
         <div>
           <h2 id="setupTitle">Hallo! Ich bin Johann.</h2>
+          <div class="tutor-pick" data-tutor-pick role="group" aria-label="Choose your tutor"></div>
           <p>I'm a German tutor who works alongside whatever course you're taking: a textbook, a school or university class, an exam course, or an app. I'll explain things, chat with you in German, check your writing, and quiz you. I won't do your homework for you, though. I'll help you get to where you can do it yourself.</p>
         </div>
       </div>
@@ -840,6 +848,8 @@ try { applyLook((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || 
 <dialog id="dlgSettings" aria-labelledby="setTitle">
   <form class="dlg" method="dialog">
     <h2 id="setTitle">Einstellungen</h2>
+    <h3>Dein Tutor · Your tutor</h3>
+    <div class="tutor-pick" data-tutor-pick role="group" aria-label="Choose your tutor"></div>
     <h3>Connection</h3>
     <p class="hint" id="setConn"></p>
     <div class="btn-row"><button class="btn secondary" type="button" id="btnReconnect">Change connection…</button></div>
@@ -950,7 +960,7 @@ Now and then, when the same pattern keeps tripping them up, offer a quick exerci
   },
   ask: {
     tools: ["exercise"],
-    ico: "❓", name: "Frag Johann", en: "Ask a question", effort: "medium", graded: true,
+    ico: "❓", get name() { return "Frag " + tutor().name; }, en: "Ask a question", effort: "medium", graded: true,
     desc: "Grammar, vocabulary, culture, or something from class you didn't get.",
     focusLabel: "Your question (optional, you can also ask in the chat)", focusPh: "e.g. When do I use 'denn' and when 'weil'?",
     quick: ["Tipp", "Noch ein Beispiel", "Auf Englisch?", "Ich verstehe es nicht"],
@@ -1205,6 +1215,104 @@ function save() {
   catch (e) { sysNote("Couldn't save to this browser's storage. Your session will be lost if you close the page.", true); }
 }
 
+/* ---------------- tutor: Johann or Johanna ---------------- */
+const TUTORS = {
+  johann:  { id: "johann",  name: "Johann",  lehrer: "dein Deutschlehrer",   f: false, svg: `<svg viewBox="0 0 48 48"><circle cx="24" cy="19" r="9" fill="#FAF6EC"/><path d="M11 42c1.5-8 7-12 13-12s11.5 4 13 12" fill="#FAF6EC"/><path d="M15 17c1-7 6-10 11-9 5 1 7 5 7 9-3-2-7-3-12-2-2 .4-4 1-6 2z" fill="#5A3B26"/><rect x="17" y="18" width="6" height="4" rx="2" fill="none" stroke="#22282F" stroke-width="1.3"/><rect x="25" y="18" width="6" height="4" rx="2" fill="none" stroke="#22282F" stroke-width="1.3"/><path d="M23 20h2" stroke="#22282F" stroke-width="1.3"/></svg>`,
+             blurb: "Er · ein Deutschlehrer aus Leipzig" },
+  johanna: { id: "johanna", name: "Johanna", lehrer: "deine Deutschlehrerin", f: true,  svg: `<svg viewBox="0 0 48 48"><path d="M13.5 21c0-8.5 4.5-13.5 10.5-13.5S34.5 12.5 34.5 21v7.5c-1.8 1.4-4 1.6-6 .6V22h-9v7.1c-2 1-4.2.8-6-.6z" fill="#4E2616"/><circle cx="24" cy="19" r="9" fill="#FAF6EC"/><path d="M11 42c1.5-8 7-12 13-12s11.5 4 13 12" fill="#FAF6EC"/><path d="M11 42c1.2-6.4 5-10.3 9.5-11.5l3.5 5 3.5-5c4.5 1.2 8.3 5.1 9.5 11.5" fill="#E0A841" opacity=".9"/><path d="M14.8 18.5c1.2-6.5 5.2-9.5 9.7-9.5 4.6 0 8.2 3 8.9 8.4-2.6-2.3-6.4-3.4-10.4-3.1-3 .3-5.6 1.8-8.2 4.2z" fill="#4E2616"/><circle cx="20.3" cy="20.2" r="1" fill="#22282F"/><circle cx="27.7" cy="20.2" r="1" fill="#22282F"/><path d="M21.5 24c1.5 1.2 3.5 1.2 5 0" stroke="#C8553D" stroke-width="1.1" fill="none" stroke-linecap="round"/><circle cx="15.2" cy="22.5" r="1.1" fill="#E0A841"/><circle cx="32.8" cy="22.5" r="1.1" fill="#E0A841"/></svg>`,
+             blurb: "Sie · eine Deutschlehrerin aus Leipzig" }
+};
+function tutor(id) {
+  const cfg = window.JOHANN_CONFIG || {};
+  return TUTORS[id || S.prefs.tutor || cfg.tutor] || TUTORS.johann;
+}
+/* Interface text is written for Johann; for Johanna, swap the name, "dein Deutschlehrer", and
+   he/him/his in the same sentence. Chat messages and anything the student typed are left alone. */
+function tutorize(text, t) {
+  t = t || tutor();
+  if (!t.f || !/Johann(?!a)|Deutschlehrer(?!in)/.test(text)) return text;
+  return text
+    .replace(/dein Deutschlehrer(?!in)/g, "deine Deutschlehrerin")
+    .replace(/Johann(?!a)/g, "Johanna")
+    .replace(/\bhe'll\b/g, "she'll").replace(/\bHe'll\b/g, "She'll")
+    .replace(/\bhimself\b/g, "herself")
+    .replace(/\bhe\b/g, "she").replace(/\bHe\b/g, "She")
+    .replace(/\bhim\b/g, "her").replace(/\bhis\b/g, "her").replace(/\bHis\b/g, "Her");
+}
+const tutorOrig = new WeakMap();
+const TUTOR_ATTRS = ["aria-label", "title", "placeholder"];
+function tutorizeTree(root) {
+  if (!root) return;
+  const skip = (el) => el && el.closest && el.closest(".bubble .body, script, style, textarea, .wpop, .tutor-keep");
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  if (root.nodeType === 3) nodes.push(root);
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const n of nodes) {
+    if (skip(n.parentElement)) continue;
+    if (!tutorOrig.has(n)) { if (!/Johann|Deutschlehrer/.test(n.nodeValue)) continue; tutorOrig.set(n, n.nodeValue); }
+    const v = tutorize(tutorOrig.get(n));
+    if (n.nodeValue !== v) n.nodeValue = v;
+  }
+  if (root.querySelectorAll) {
+    for (const el of [root, ...root.querySelectorAll("[aria-label], [title], [placeholder]")]) {
+      if (!el.getAttribute || skip(el)) continue;
+      for (const a of TUTOR_ATTRS) {
+        const key = "data-orig-" + a, cur = el.getAttribute(a);
+        if (cur == null) continue;
+        if (!el.hasAttribute(key)) { if (!/Johann/.test(cur)) continue; el.setAttribute(key, cur); }
+        const v = tutorize(el.getAttribute(key));
+        if (cur !== v) el.setAttribute(a, v);
+      }
+    }
+  }
+}
+function applyTutor() {
+  const t = tutor();
+  document.title = `${t.name} — ${t.lehrer}`;
+  // Header avatar is the template the chat copies; chat bubbles keep their session's tutor.
+  $("header .avatar").innerHTML = t.svg;
+  $$(".avatar").forEach(a => { if (!a.closest(".msg, .tutor-opt, .chat-top")) a.innerHTML = t.svg; });
+  const top = $(".chat-top .avatar");
+  if (top) top.innerHTML = tutor(S.session && S.session.tutor).svg;
+  $$("[data-tutor-pick]").forEach(renderTutorPick);
+  tutorizeTree(document.body);
+}
+function renderTutorPick(box) {
+  box.innerHTML = "";
+  for (const t of Object.values(TUTORS)) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tutor-opt tutor-keep";
+    b.setAttribute("aria-pressed", String(tutor().id === t.id));
+    b.innerHTML = `<div class="avatar" aria-hidden="true">${t.svg}</div><div><b>${t.name}</b><span>${t.blurb}</span></div>`;
+    b.addEventListener("click", () => setTutor(t.id));
+    box.appendChild(b);
+  }
+}
+function setTutor(id) {
+  if (!TUTORS[id] || S.prefs.tutor === id) return;
+  S.prefs.tutor = id;
+  save();
+  applyTutor();
+  if (S.session && S.session.tutor !== id && $("#chat").classList.contains("active")) {
+    sysNote(`${tutor().name} takes over from your next activity.`);
+  }
+}
+// New interface text (dialogs, notes, cards) gets the same treatment as it appears.
+new MutationObserver((muts) => {
+  if (!tutor().f) return;
+  for (const m of muts) for (const n of m.addedNodes) if (n.nodeType === 1 || n.nodeType === 3) tutorizeTree(n);
+}).observe(document.body, { childList: true, subtree: true });
+// Another tab or the Ask Johann panel switched tutor: follow it (only the tutor, nothing else).
+window.addEventListener("storage", (e) => {
+  if (e.key !== STORE_KEY || !e.newValue) return;
+  try {
+    const t = (JSON.parse(e.newValue).prefs || {}).tutor;
+    if (t && TUTORS[t] && t !== S.prefs.tutor) { S.prefs.tutor = t; applyTutor(); }
+  } catch (err) { /* ignore */ }
+});
+
 /* ---------------- helpers ---------------- */
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -1337,7 +1445,8 @@ function buildSystem(session) {
         : "The student says this session is practice, not graded work. Model language more freely, but still let them try first.")
     : "";
 
-  return `You are Johann, a German teacher who tutors students one-on-one in a study app. Students use you alongside a German course they're taking; the course details are below.
+  const T = tutor(session.tutor);
+  return tutorPrompt(`You are Johann, a German teacher who tutors students one-on-one in a study app. Students use you alongside a German course they're taking; the course details are below.
 
 ## Who Johann is
 You're warm, patient, and a little playful. You grew up in Leipzig, taught German for many years, and still get excited when a student finally gets the dative. You believe anyone can get good at German with steady practice, and you say so when it matters, without gushing. Keep the persona light: the student's German is always the focus.
@@ -1404,7 +1513,14 @@ Your app tools this session: ${toolsFor(session.mode).map(t => t.name).join(", "
 ` : ""}## Starting and wrapping up
 The first user message is an automatic note from the app saying the student opened this activity, possibly with their focus. Greet them briefly (by name if you know it) and start the activity right away.
 Use what you know about the student to choose topics, examples, comparisons, pace, and difficulty, without reciting their profile back to them. Teacher notes and the course still set the boundaries.
-When the student wants to wrap up, give: one specific thing they did well, one or two things to practise, and one concrete next step, plus any notebook tags worth saving.`;
+When the student wants to wrap up, give: one specific thing they did well, one or two things to practise, and one concrete next step, plus any notebook tags worth saving.`, T);
+}
+
+/* The prompt is written for Johann; Johanna gets her name and a note on feminine forms. */
+function tutorPrompt(text, T) {
+  if (!T.f) return text;
+  return text.replace(/Johann(?!a)/g, "Johanna") +
+    "\n\nYou are a woman: in German, use feminine forms for yourself (ich bin Lehrerin, deine Deutschlehrerin).";
 }
 
 /* ---------------- Claude API ---------------- */
@@ -1656,7 +1772,7 @@ $("#btnStartGo").addEventListener("click", () => {
 function startSession(modeId, opts) {
   const m = MODES[modeId];
   stopVoice();
-  S.session = { mode: modeId, graded: !!opts.graded, scenario: opts.scenario || "", focus: opts.focus || "", context: opts.context || "", started: Date.now(), lastAt: Date.now(), help: {}, system: "", api: [], view: [] };
+  S.session = { mode: modeId, graded: !!opts.graded, scenario: opts.scenario || "", focus: opts.focus || "", context: opts.context || "", tutor: tutor().id, started: Date.now(), lastAt: Date.now(), help: {}, system: "", api: [], view: [] };
   S.session.system = buildSystem(S.session);
   const opener = `[App note: the student opened "${m.name}"${opts.context ? ` from ${opts.context}` : ""}. ${opts.focus ? "They wrote: " + opts.focus : "They didn't name a focus."}]`;
   S.session.api.push({ role: "user", content: opener });
@@ -1672,6 +1788,8 @@ function openChat(fresh) {
   const s = S.session;
   if (!s) return show("home");
   const m = MODES[s.mode];
+  const top = $(".chat-top .avatar");
+  if (top) top.innerHTML = tutor(s.tutor).svg;
   $("#chatTitle").textContent = `${m.name} · ${m.en}`;
   $("#chatMeta").textContent = [s.context ? "from " + s.context : courseSummary(), m.graded ? (s.graded ? "graded work: Johann coaches only" : "practice") : ""].filter(Boolean).join(" · ");
   $("#legend").hidden = !m.legend;
@@ -1740,7 +1858,7 @@ function renderMsg(v) {
   if (v.who === "johann") {
     const av = document.createElement("div");
     av.className = "avatar sm"; av.setAttribute("aria-hidden", "true");
-    av.innerHTML = $("header .avatar").innerHTML;
+    av.innerHTML = tutor(S.session && S.session.tutor).svg;
     wrap.appendChild(av);
   }
   const b = document.createElement("div");
@@ -1823,7 +1941,7 @@ async function runTurn() {
   // Live bubble while streaming.
   const live = document.createElement("div");
   live.className = "msg johann";
-  live.innerHTML = `<div class="avatar sm" aria-hidden="true">${$("header .avatar").innerHTML}</div><div class="bubble"><div class="body"><span class="typing" aria-label="Johann is typing"><span></span><span></span><span></span></span></div></div>`;
+  live.innerHTML = `<div class="avatar sm" aria-hidden="true">${tutor(s.tutor).svg}</div><div class="bubble"><div class="body"><span class="typing" aria-label="${tutor(s.tutor).name} is typing"><span></span><span></span><span></span></span></div></div>`;
   $("#log").appendChild(live);
   $("#log").scrollTop = $("#log").scrollHeight;
   const liveBody = $(".body", live);
@@ -2571,6 +2689,14 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeGloss
 $("#log").addEventListener("scroll", closeGloss);
 
 /* ---------------- voice ---------------- */
+/* Device voices rarely say their gender, so go by well-known voice names, then any German voice. */
+const VOICE_F = /female|frau|anna|helena|hedda|katja|petra|marlene|vicki|amala|seraphina|elke|gisela|ingrid|louisa|maja|tanja|google deutsch/i;
+const VOICE_M = /\bmale|mann|markus|yannick|conrad|stefan|hans|klaus|florian|killian|ralf|bernd|christoph|kasper|viktor|jonas/i;
+function pickVoice() {
+  const de = speechSynthesis.getVoices().filter(v => /^de(-|_)/i.test(v.lang));
+  const want = tutor(S.session && S.session.tutor).f ? VOICE_F : VOICE_M;
+  return de.find(v => want.test(v.name) && !(want === VOICE_F ? /\bmale\b/i : /female/i).test(v.name)) || de[0];
+}
 function speak(text, opts = {}) {
   if (!("speechSynthesis" in window)) { if (opts.onend) opts.onend(); return; }
   speechSynthesis.cancel();
@@ -2581,7 +2707,7 @@ function speak(text, opts = {}) {
     .replace(/\s+/g, " ").trim();
   // Speak sentence by sentence: some browsers cut off long utterances.
   const parts = plain.match(/[^.!?…]+[.!?…]*\s*/g) || [plain];
-  const voice = speechSynthesis.getVoices().find(v => /^de(-|_)/i.test(v.lang));
+  const voice = pickVoice();
   const rate = opts.rate || (S.prefs.slowVoice ? 0.75 : S.course.level === "A1" ? 0.85 : 0.95);
   parts.forEach((part, k) => {
     const u = new SpeechSynthesisUtterance(part.trim());
@@ -3159,7 +3285,7 @@ function buildReport(includeTranscript) {
   if (d.wr.length) {
     const marks = d.wr.map(v => v.card.input.marks.length);
     const fixed = d.wr.reduce((a, v) => a + (v.card.fixed ? v.card.fixed.fixed : 0), 0);
-    results += `<h3>Writing</h3><p>${d.wr.length} version${d.wr.length === 1 ? "" : "s"} checked · marks per version: ${marks.join(" → ")} · <b>${fixed} mark${fixed === 1 ? "" : "s"} fixed by the student</b>. Johann marks errors with hints and never supplies corrected text.</p>`;
+    results += `<h3>Writing</h3><p>${d.wr.length} version${d.wr.length === 1 ? "" : "s"} checked · marks per version: ${marks.join(" → ")} · <b>${fixed} mark${fixed === 1 ? "" : "s"} fixed by the student</b>. ${tutorize("Johann marks errors with hints and never supplies corrected text.", tutor(s.tutor))}</p>`;
   }
   if (d.rp.length) {
     results += `<h3>Pronunciation (say it after me)</h3><table class="grid"><tr><th>Set</th><th>Sentences said</th><th>Average match</th></tr>` +
@@ -3176,7 +3302,7 @@ function buildReport(includeTranscript) {
   let transcript = "";
   if (includeTranscript) {
     transcript = `<h2>Conversation</h2><div class="tx">` + s.view.filter(v => v.who !== "sys").map(v =>
-      `<p><b>${v.who === "johann" ? "Johann" : esc(name === "—" ? "Student" : name)}:</b> ${esc(v.text).replace(/\n/g, "<br>")}${v.card ? `<br><i>${esc(cardSummary(v).trim())}</i>` : ""}</p>`).join("") + `</div>`;
+      `<p><b>${v.who === "johann" ? esc(tutor(s.tutor).name) : esc(name === "—" ? "Student" : name)}:</b> ${esc(v.text).replace(/\n/g, "<br>")}${v.card ? `<br><i>${esc(cardSummary(v).trim())}</i>` : ""}</p>`).join("") + `</div>`;
   }
 
   return `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>Lernbericht – ${esc(name)} – ${started.toLocaleDateString("de-DE")}</title>
@@ -3192,12 +3318,12 @@ function buildReport(includeTranscript) {
 </style></head><body>
 <div class="printbar"><button onclick="print()">Print / save as PDF</button></div>
 <h1>Lernbericht · Session report</h1>
-<p class="sub">Johann, AI German tutor</p>
+<p class="sub">${esc(tutor(s.tutor).name)}, AI German tutor</p>
 <table class="meta">
 ${row("Student", esc(name))}
 ${row("Date", esc(started.toLocaleString("de-DE", { dateStyle: "full", timeStyle: "short" })) + ` · about ${d.minutes} min`)}
 ${row("Course", esc(courseSummary()))}
-${row("Activity", esc(`${m.name} (${m.en})`) + (m.graded ? (s.graded ? " · for graded work: Johann coached only" : " · practice") : ""))}
+${row("Activity", esc(`${m.name} (${m.en})`) + (m.graded ? (s.graded ? ` · for graded work: ${esc(tutor(s.tutor).name)} coached only` : " · practice") : ""))}
 ${s.focus ? row("Focus", esc(s.focus)) : ""}${s.scenario ? row("Scenario", esc(s.scenario)) : ""}
 </table>
 <h2>At a glance</h2>
@@ -3207,7 +3333,7 @@ ${s.focus ? row("Focus", esc(s.focus)) : ""}${s.scenario ? row("Scenario", esc(s
   <div class="stat"><b>${d.ex.reduce((a, v) => a + v.card.st.items.filter(x => x.ok).length, 0)}</b><span>card items right</span></div>
   <div class="stat"><b>${helpTotal}</b><span>times I asked for help</span></div>
 </div>
-${d.summary ? `<h2>Johann's summary</h2><div class="summary">${md(d.summary)}</div>` : `<p class="note">Tip: press "Sitzung beenden" before making the report to get Johann's summary of the session.</p>`}
+${d.summary ? `<h2>${esc(tutor(s.tutor).name)}'s summary</h2><div class="summary">${md(d.summary)}</div>` : `<p class="note">Tip: press "Sitzung beenden" before making the report to get ${esc(tutor(s.tutor).name)}'s summary of the session.</p>`}
 <h2>What I practised and how it went</h2>
 ${results}
 <h2>Help I asked for</h2>
@@ -3222,7 +3348,7 @@ ${row("Revisions I submitted", help.revisions || 0)}
 <h2>Saved for later</h2>
 ${savedList}
 ${transcript}
-<footer>Generated by the Johann app from this session's own record on the student's device (${esc(new Date().toLocaleString("de-DE"))}). Johann is set up to coach: he explains, hints, and checks, but doesn't write or correct graded work for the student. Card scores are checked by the app; speaking scores come from speech recognition and are approximate.</footer>
+<footer>${tutorize(`Generated by the Johann app from this session's own record on the student's device (${esc(new Date().toLocaleString("de-DE"))}). Johann is set up to coach: he explains, hints, and checks, but doesn't write or correct graded work for the student.`, tutor(s.tutor))} Card scores are checked by the app; speaking scores come from speech recognition and are approximate.</footer>
 </body></html>`;
 }
 
@@ -3637,7 +3763,7 @@ function readLaunch() {
   const q = new URLSearchParams(location.search);
   if (![...q.keys()].length) return null;
   const l = {};
-  for (const k of ["kurs", "preset", "ep", "mode", "context", "focus", "program", "level", "course", "unit", "grammar", "vocab", "cando", "proxy", "code"]) {
+  for (const k of ["kurs", "preset", "ep", "mode", "context", "focus", "program", "level", "course", "unit", "grammar", "vocab", "cando", "proxy", "code", "tutor"]) {
     const v = q.get(k);
     if (v != null && v.trim()) l[k] = v.trim().slice(0, k === "vocab" || k === "cando" ? 3000 : 400);
   }
@@ -3648,6 +3774,8 @@ function readLaunch() {
 }
 function applyLaunch(l) {
   if (l.embed) document.documentElement.dataset.embed = "1";
+  // A page can suggest Johann or Johanna; the student's own choice wins.
+  if (l.tutor && TUTORS[l.tutor] && !S.prefs.tutor) S.prefs.tutor = l.tutor;
   // A school link handed over by the page only fills an empty connection.
   if (!S.conn.mode && l.proxy && /^https:\/\//i.test(l.proxy)) {
     S.conn.mode = "proxy"; S.conn.proxyUrl = l.proxy; S.conn.proxyCode = l.code || "";
@@ -3691,6 +3819,7 @@ function runLaunch(l) {
   }
   const launch = readLaunch();
   if (launch) applyLaunch(launch);
+  applyTutor();
   const m = location.hash.match(/kurs=([^&]+)/);
   if (m) {
     try {

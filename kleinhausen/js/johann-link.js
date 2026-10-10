@@ -16,7 +16,6 @@
     const s = document.createElement("script");
     s.src = srcs[0];
     s.dataset.preset = "kleinhausen";
-    s.dataset.label = "Frag Johann";
     s.onload = function () { ready = true; KH.johannSync(); };
     s.onerror = function () { s.remove(); load(srcs.slice(1)); };
     document.body.appendChild(s);
@@ -57,7 +56,10 @@
   KH.johannSync = function (opts) {
     if (opts) scene = opts.scene || null;
     const headBtn = document.getElementById("askj");
-    if (headBtn) headBtn.hidden = !KH.johannAllowed();
+    if (headBtn) {
+      headBtn.hidden = !KH.johannAllowed();
+      headBtn.textContent = "🎓 Frag " + (global.AskJohann ? global.AskJohann.tutorName : "Johann");
+    }
     if (!global.AskJohann) return;
     if (!KH.johannAllowed()) { global.AskJohann.hide(); return; }
     const c = context();
@@ -78,6 +80,8 @@
     if (e.origin !== location.origin && e.origin !== "null") return;
     KH.askJohann({ context: d.context || undefined });
   });
+
+  document.addEventListener("askjohann:tutor", function () { KH.johannSync(); });
 
   function start() { load(["../johann/ask-johann.js", "johann/ask-johann.js"]); }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);

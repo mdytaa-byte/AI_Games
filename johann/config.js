@@ -8,9 +8,12 @@
              opens this file, so leave it empty if students should type it once.
   buttons    false hides every "Ask Johann" button (for example in Kleinhausen)
              without removing them from the pages.
+  tutor      "johann" or "johanna": who students meet first. Each student can
+             still switch in Einstellungen.
 */
 window.JOHANN_CONFIG = {
   proxyUrl: "",
   classCode: "",
-  buttons: true
+  buttons: true,
+  tutor: "johann"
 };

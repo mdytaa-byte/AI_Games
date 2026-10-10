@@ -40,12 +40,17 @@
   wx.setAttribute("aria-hidden", "true");
   document.body.appendChild(wx);
 
+  function tutorName() {
+    try { return ((JSON.parse(localStorage.getItem("johann.v1") || "{}").prefs || {}).tutor === "johanna") ? "Johanna" : "Johann"; }
+    catch (e) { return "Johann"; }
+  }
+
   const bar = document.createElement("div");
   bar.id = "kh-course-bar";
   const label = { rain: "Regen", sun: "Sonne", cold: "Kalt", overcast: "Bewölkt" }[weather] || weather;
   bar.innerHTML = "<span>Kleinhausen · " + label + (name ? " · " + name : "") + "</span>" +
     '<span id="kh-course-note">Mission zu Ende spielen — dann zählt sie im Heft.</span>' +
-    (params.get("johann") === "1" ? '<button type="button" id="kh-course-johann">🎓 Frag Johann</button>' : "") +
+    (params.get("johann") === "1" ? '<button type="button" id="kh-course-johann">🎓 Frag ' + tutorName() + "</button>" : "") +
     '<button type="button" id="kh-course-back" disabled>Noch nicht fertig</button>';
   document.body.appendChild(bar);
 

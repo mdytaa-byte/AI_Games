@@ -67,6 +67,15 @@ In **Über mich**, students can describe themselves (every field is optional):
 
 The profile stays in the student's browser and is never included in course codes. Teacher notes and the course still set the boundaries.
 
+### Johann or Johanna
+
+Students choose their tutor on the setup screen or in **Einstellungen → Dein Tutor**: **Johann** (dein Deutschlehrer) or **Johanna** (deine Deutschlehrerin). Each has their own avatar. Switching to Johanna changes:
+- her name throughout the app, and the persona Claude plays (she uses feminine forms for herself in German)
+- the voice: the app looks for a matching German voice on the device, though not every device has one
+- the Ask Johann buttons, which become "Frag Johanna"
+
+A switch takes effect from the next activity, so a conversation already underway keeps its tutor. Teachers can set who students meet first with `tutor` in `config.js`. An Ask Johann button can suggest one with `data-tutor="johanna"`, or `tutor=johanna` in a link. A student's own choice always wins.
+
 ### Appearance
 
 In **Einstellungen → Darstellung**: seven colour schemes, light, dark or automatic, high contrast, four text sizes, easy-to-read fonts (Atkinson Hyperlegible, Lexend), extra line and letter spacing, compact or comfortable spacing, a wide layout, and reduced motion. Changes apply right away and are remembered.

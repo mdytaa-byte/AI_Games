@@ -77,6 +77,7 @@
       flags: flags,
       exam: !!(state.player && state.player.exam),
       accommodation: !!(state.player && state.player.accommodation),
+      words: KH.wordStats ? KH.wordStats(state) : null,
       importedAt: Date.now()
     };
   };

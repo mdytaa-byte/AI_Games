@@ -24,6 +24,8 @@ load("js/modules-a.js");
 load("js/modules-b.js");
 load("js/sidequests.js");
 load("js/town3d.js");
+load("js/wortschatz-data.js");
+load("js/grammatik-data.js");
 
 const KH = sandbox.KH;
 const mods = KH.MODULES || [];
@@ -73,6 +75,14 @@ mods.forEach(function (m) {
     }
   });
   if (!m.canDo || !m.canDo.length) errors.push(m.id + " missing can-do");
+  const words = (KH.WORTSCHATZ || {})[m.id] || [];
+  (m.vocab || []).forEach(function (v) {
+    const row = words.find(function (r) { return r[0] === v; });
+    if (!row) { errors.push(m.id + " Wortschatz missing: " + v); return; }
+    if (row.length !== 5 || row.some(function (x) { return !x; })) errors.push(m.id + " Wortschatz incomplete: " + v);
+    const noun = v.replace(/^(der|die|das) /, "").toLowerCase();
+    if (row[2] && row[2].toLowerCase().indexOf(noun) < 0) errors.push(m.id + " Wortschatz line lacks the word: " + v);
+  });
 });
 
 if ((KH.SIDEQUESTS || []).length < 6) errors.push("Need at least 6 sidequests");
@@ -109,9 +119,11 @@ if (indexHtml.indexOf("js/speak.js") < 0) errors.push("index.html must load spea
 if (indexHtml.indexOf("js/listen.js") < 0) errors.push("index.html must load listen.js");
 if (indexHtml.indexOf("js/memory.js") < 0) errors.push("index.html must load memory.js");
 if (indexHtml.indexOf("js/class.js") < 0) errors.push("index.html must load class.js");
+if (indexHtml.indexOf("js/wortschatz.js") < 0) errors.push("index.html must load wortschatz.js");
 const manifest = fs.readFileSync(path.join(root, "canvas/imsmanifest.xml"), "utf8");
 if (manifest.indexOf("js/speak.js") < 0) errors.push("SCORM manifest missing speak.js");
 if (manifest.indexOf("js/memory.js") < 0) errors.push("SCORM manifest missing memory.js");
+if (manifest.indexOf("js/wortschatz.js") < 0) errors.push("SCORM manifest missing wortschatz.js");
 if (manifest.indexOf("css/enamel.css") < 0) errors.push("SCORM manifest missing enamel.css");
 if (!fs.existsSync(path.join(root, "js/speak.js"))) errors.push("missing js/speak.js");
 if (!fs.existsSync(path.join(root, "js/memory.js"))) errors.push("missing js/memory.js");
@@ -126,6 +138,32 @@ Object.keys(KH.PLACES || {}).forEach(function (id) {
   const hit = marks.some(function (l) { return l.place === id; });
   if (!hit) errors.push("3D landmark missing for place: " + id);
 });
+
+/* Grammatik-Ecke: every episode has a card, and every example is a real story line. */
+const flat = function (s) { return String(s).replace(/<[^>]+>/g, " ").replace(/[„“"«»]/g, "").replace(/\s+/g, " ").trim(); };
+const story = [];
+JSON.stringify([mods, KH.LOCATIONS, KH.SIDEQUESTS], function (k, v) { if (typeof v === "string") story.push(flat(v)); return v; });
+const storyText = story.join("\n");
+const gIds = {};
+(KH.GRAMMATIK || []).forEach(function (c) {
+  if (gIds[c.id]) errors.push("Grammatik duplicate id " + c.id);
+  gIds[c.id] = true;
+  if (!c.title || !c.kurz || !c.en || !c.achtung || !c.eps || !c.eps.length) errors.push("Grammatik " + c.id + " incomplete");
+  (c.eps || []).forEach(function (ep) { if (ids.indexOf(ep) < 0) errors.push("Grammatik " + c.id + " unknown episode " + ep); });
+  if (!c.beispiele || c.beispiele.length < 2) errors.push("Grammatik " + c.id + " needs at least 2 story examples");
+  (c.beispiele || []).forEach(function (b) {
+    if (b.length !== 4) errors.push("Grammatik " + c.id + " example shape: " + b[0]);
+    if (storyText.indexOf(flat(b[0])) < 0) errors.push("Grammatik " + c.id + " example not in story: " + b[0]);
+  });
+  (c.check || []).forEach(function (q) {
+    if (!(q.ok >= 0 && q.ok < q.opts.length)) errors.push("Grammatik " + c.id + " check answer out of range: " + q.q);
+  });
+});
+ids.forEach(function (ep) {
+  if (!(KH.GRAMMATIK || []).some(function (c) { return c.eps.indexOf(ep) >= 0; })) errors.push("No Grammatik card for " + ep);
+});
+if (indexHtml.indexOf("js/grammatik.js") < 0) errors.push("index.html must load grammatik.js");
+if (manifest.indexOf("js/grammatik.js") < 0) errors.push("SCORM manifest missing grammatik.js");
 
 if (errors.length) {
   console.error(errors.join("\n"));

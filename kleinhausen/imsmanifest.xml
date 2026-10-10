@@ -32,6 +32,10 @@
       <file href="js/sidequests.js"/>
       <file href="js/map.js"/>
       <file href="js/app.js"/>
+      <file href="js/wortschatz-data.js"/>
+      <file href="js/wortschatz.js"/>
+      <file href="js/grammatik-data.js"/>
+      <file href="js/grammatik.js"/>
       <file href="praxis/foto-schnitzeljagd.html"/>
       <file href="praxis/kleiderschrank.html"/>
       <file href="praxis/lieferdienst.html"/>

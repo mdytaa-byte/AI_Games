@@ -78,6 +78,7 @@
       exam: !!(state.player && state.player.exam),
       accommodation: !!(state.player && state.player.accommodation),
       words: KH.wordStats ? KH.wordStats(state) : null,
+      skills: KH.skillReport ? KH.skillReport(state).reduce(function (o, s) { o[s.id] = s.recent; return o; }, {}) : null,
       importedAt: Date.now()
     };
   };

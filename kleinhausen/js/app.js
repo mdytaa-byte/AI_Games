@@ -24,6 +24,7 @@
 
   KH.shell = function (inner, opts) {
     opts = opts || {};
+    KH.practiceMode = false;
     if (!opts.town && KH.Town) KH.Town.hide();
     document.body.classList.toggle("town-live", !!opts.town);
     const rank = KH.residentRank();
@@ -40,6 +41,7 @@
       btn("journal", "Heft") +
       btn("words", "Wörter" + wordsDueLabel()) +
       btn("grammar", "Grammatik") +
+      btn("stand", "Wo stehe ich?") +
       btn("discover", "Entdecken") +
       btn("settings", "Zugang") +
       "</nav></header>" +
@@ -434,6 +436,7 @@
     const root = document.getElementById("scene-root");
     const scene = KH.resolveScene ? KH.resolveScene(scenes[index]) : scenes[index];
     KH.mountScene(root, scene, function (res) {
+      if (KH.recordResult) KH.recordResult(mod.id, index, scene, res);
       if (res && res.ok) KH.addPoints("verstehen", 2);
       if (res && res.kind === "ipa") {
         KH.state.episodes[mod.id].summative = {
@@ -522,6 +525,7 @@
         ? " · ohne Aufnahme kein Stempel"
         : "") + "</p>" +
       '<p class="voice-chip">Minuten in der Stadt: <strong>' + (KH.minutesOnTask ? KH.minutesOnTask() : 0) + "</strong></p>" +
+      '<p class="row-btns"><button class="btn post" type="button" data-go="stand">Wo stehe ich? — Fertigkeiten &amp; Kann-Sätze</button></p>' +
       '<h2 style="margin-top:22px">Stempel</h2><div class="stamp-sheet">' + stamps + "</div>" +
       '<h2 style="margin-top:22px">Die Stadt merkt sich</h2>' +
       ((KH.memoryCards && KH.memoryCards().length)
@@ -691,9 +695,10 @@
     const roster = (KH.rosterLoad ? KH.rosterLoad() : []).map(function (r) {
       return "<tr><td>" + KH.esc(r.vorname) + "</td><td>" + r.done + "/16</td><td>" +
         (r.ipa != null ? r.ipa : "—") + "</td><td>" + r.spoken + "</td><td>" + r.minutes +
+        "</td><td>" + (r.skills ? ["hoeren", "lesen", "sprechen", "schreiben"].map(function (k) { return r.skills[k] == null ? "—" : r.skills[k]; }).join(" / ") : "—") +
         "</td><td>" + (r.words ? r.words.known + "/" + r.words.total + " · " + r.words.days + " T" : "—") +
         "</td><td>" + KH.esc((r.flags || []).slice(0, 4).join(", ") || "—") + "</td></tr>";
-    }).join("") || "<tr><td colspan=\"7\">Noch leer. Schüler exportieren Heft → JSON; du lädst die Dateien hier.</td></tr>";
+    }).join("") || "<tr><td colspan=\"8\">Noch leer. Schüler exportieren Heft → JSON; du lädst die Dateien hier.</td></tr>";
     const me = KH.summarizeStudent ? KH.summarizeStudent() : {};
     KH.shell(
       "<h1>Lehrerzimmer</h1>" +
@@ -711,7 +716,7 @@
       "<p>Kein Roster-Server. Du importierst die JSON-Exporte aus dem Heft. Canvas bleibt: 16 Code-Aufgaben + Sprechen-Upload + optional SCORM-Gesamtwert.</p>" +
       '<p><label class="btn ghost">JSON importieren <input type="file" id="roster-in" accept="application/json" multiple hidden></label> ' +
       '<button class="btn ghost" type="button" id="roster-clear">Liste leeren</button></p>' +
-      '<div class="card" style="overflow:auto"><table><thead><tr><th>Name</th><th>Fertig</th><th>IPA</th><th>Mündlich</th><th>Min</th><th>Wörter sicher</th><th>Stadt merkt</th></tr></thead><tbody>' + roster + "</tbody></table></div>" +
+      '<div class="card" style="overflow:auto"><table><thead><tr><th>Name</th><th>Fertig</th><th>IPA</th><th>Mündlich</th><th>Min</th><th>Hö / Le / Sp / Sc</th><th>Wörter sicher</th><th>Stadt merkt</th></tr></thead><tbody>' + roster + "</tbody></table></div>" +
       '<section class="print-only" id="rubric-print">' + (KH.rubricHtml ? KH.rubricHtml() : "") + "</section>" +
       "<h2>Annahmen dieses Builds</h2><ul>" +
       "<li>US-Schuljahr / College German 1, ca. 16 Sitzungen plus Hauspraxis.</li>" +

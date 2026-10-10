@@ -139,12 +139,14 @@
   };
 
   KH.addPoints = function (kind, n) {
+    if (KH.practiceMode) return;
     if (!KH.state.points[kind]) KH.state.points[kind] = 0;
     KH.state.points[kind] += n;
     KH.save();
   };
 
   KH.trust = function (npc, delta) {
+    if (KH.practiceMode) return (KH.state.npcs[npc] && KH.state.npcs[npc].trust) || 0;
     if (!KH.state.npcs[npc]) KH.state.npcs[npc] = { trust: 0 };
     KH.state.npcs[npc].trust = Math.max(0, Math.min(5, (KH.state.npcs[npc].trust || 0) + delta));
     KH.save();

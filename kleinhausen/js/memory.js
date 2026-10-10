@@ -127,7 +127,7 @@
   };
 
   KH.applyChoice = function (opt) {
-    if (!opt) return;
+    if (!opt || KH.practiceMode) return;
     if (opt.flag) KH.setFlag(opt.flag, true);
     if (opt.flagOff) KH.setFlag(opt.flagOff, false);
     if (opt.flags) {

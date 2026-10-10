@@ -449,7 +449,7 @@
         "Treffer: " + r.hits + "." +
         '<span class="en">This is a first-pass check. Your teacher can still score with the rubric.</span>';
       box.appendChild(f);
-      KH.state.journal.push({ at: Date.now(), ep: scene.ep || "", title: scene.title, text: ta.value, score: r.score });
+      if (!KH.practiceMode) KH.state.journal.push({ at: Date.now(), ep: scene.ep || "", title: scene.title, text: ta.value, score: r.score });
       KH.save();
       go.disabled = true;
       box.appendChild(continueBtn("Weiter", function () {

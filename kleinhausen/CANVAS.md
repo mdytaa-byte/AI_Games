@@ -62,6 +62,17 @@ The **Grammatik** tab has 20 short cards, one for each grammar point in the 16 e
 - Which cards a student has read and passed is saved in **Heft → JSON**. It is not graded.
 - **Editing cards:** `js/grammatik-data.js`. In each card, `eps[0]` is the episode that teaches the point.
 
+## Wo stehe ich? (student progress view)
+The **Wo stehe ich?** tab (also linked from the Pass) shows students where they are. It is an estimate for the student, not a grade.
+
+- **Four skill meters:** Hören, Lesen, Sprechen and Schreiben, each on a Novice Low → Mid → High track. Position = share of the course done × how solid the last six results in that skill are (80 % counts as solid). So a student who stays solid reaches Novice High at the end of Episode 16. A trend arrow appears when the last three results differ by 10 points or more from the three before them.
+- **What counts:** listening, radio and reading scenes, dialogues and speaking scenes, and writing, form and gap-fill scenes. Each part of the IPA counts for its own skill. Rooms, culture notes and praxis games don’t count. Dialogues and speaking scenes give 100 if the answer was appropriate and 50 if not, the same as the IPA.
+- **Weak spots:** for up to three skills, the episodes averaging under 70 %. Each offers the weakest scene to practise again, plus that episode’s grammar cards.
+- **Practice is ungraded.** It never changes stamps, codes, IPA scores, points, NPC trust or town memory, and practice writing is not added to the Heft. Only the student’s current level in that skill updates.
+- **Kann-Sätze map:** all 16 episodes with their can-do statements. Each shows what the course measured (✓ sicher ≥ 80 %, ~ geht ≥ 60 %, ! üben) and the student’s own rating (*noch nicht / mit Hilfe / kann ich*). When a student says *kann ich* but the tasks say *üben*, a short note says so.
+- **For you:** Lehrerzimmer → roster shows each student’s recent Hö / Le / Sp / Sc percentages after JSON import.
+- **Older saves:** results are recorded from this version on. Episodes finished earlier still show their IPA score in the can-do map.
+
 ## Accessibility
 Students open **Zugang** (header): contrast, type size, Verdana, reduced motion, TTS, captions/transcripts, English gloss, low-fi graphics. High-graphics mode walks the same first-person Kleinhausen as Foto-Schnitzeljagd and Lieferdienst (shared save + weather). Low-fi is a text list — no WebGL. Praxis games opened from an episode receive that weather and can write completion back to the course.
 

@@ -25,6 +25,11 @@
   KH.shell = function (inner, opts) {
     opts = opts || {};
     KH.practiceMode = false;
+    /* Pop-ups live on <body>; a new view closes them. */
+    ["gr-modal", "tutor-modal"].forEach(function (id) {
+      const m = document.getElementById(id);
+      if (m) m.remove();
+    });
     if (!opts.town && KH.Town) KH.Town.hide();
     document.body.classList.toggle("town-live", !!opts.town);
     const rank = KH.residentRank();
@@ -426,12 +431,18 @@
       "<h1>" + KH.esc(mod.titleLong) + "</h1>" +
       "<p>Can-Do: " + mod.canDo.map(function (c) { return c.de; }).join(" · ") + "</p>" +
       (KH.grammarChips ? KH.grammarChips(mod.id) : "") + voiceChip + "</div>" +
-      '<button class="btn ghost" type="button" id="tohub">Zur Stadt</button></div>' +
+      '<div class="ep-head-btns"><button class="btn ghost" type="button" id="tutor-ep">Tutor fragen</button>' +
+      '<button class="btn ghost" type="button" id="tohub">Zur Stadt</button></div></div>' +
       '<div class="progress-track" aria-label="Fortschritt"><span style="width:' + pct + '%"></span></div>' +
       '<div id="scene-root"></div>',
       { here: "hub" }
     );
     document.getElementById("tohub").addEventListener("click", KH.view.hub);
+    const tutorBtn = document.getElementById("tutor-ep");
+    if (tutorBtn) {
+      if (!KH.tutorPanel) tutorBtn.hidden = true;
+      else tutorBtn.addEventListener("click", function () { KH.tutorPanel({ inScene: true }); });
+    }
     if (KH.bindGrammarChips) KH.bindGrammarChips(document.querySelector(".ep-head"));
     const root = document.getElementById("scene-root");
     const scene = KH.resolveScene ? KH.resolveScene(scenes[index]) : scenes[index];
@@ -710,7 +721,10 @@
       '<p><button class="btn" type="button" id="unlock">Alle Episoden öffnen (Demo)</button> ' +
       '<button class="btn ghost" type="button" id="exp2">Dieser Stand JSON</button> ' +
       '<button class="btn ghost" type="button" id="print-rubric">IPA-Rubrik drucken</button> ' +
-      '<button class="btn ghost" type="button" id="gram-text">Grammatik-Ecke als Text (KI-Tutor)</button></p>' +
+      '<button class="btn ghost" type="button" id="gram-text">Grammatik-Ecke als Text (KI-Tutor)</button> ' +
+      '<button class="btn ghost" type="button" id="tutor-guide">Tutor-Anleitung herunterladen</button></p>' +
+      "<p>Der KI-Tutor bekommt zweimal Kontext: einmal die <strong>Tutor-Anleitung</strong> (Kurs, Personen, Wortschatz, Grammatik — in die Anweisungen des Tutors einfügen), und pro Gespräch den <strong>Tutor-Brief</strong> des Students (Knopf „Tutor fragen“). Tutor-Link: <code>js/tutor-config.js</code>" +
+      (KH.TUTOR && KH.TUTOR.url ? " · gesetzt: " + KH.esc(KH.TUTOR.url) : " · noch nicht gesetzt (Students kopieren und fügen ein)") + ".</p>" +
       '<div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Episode</th><th>Status</th><th>IPA</th><th>Code</th><th>Mündlich</th><th>SPR-Code</th><th>Min</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
       "<h2>Klassenliste (statisch)</h2>" +
       "<p>Kein Roster-Server. Du importierst die JSON-Exporte aus dem Heft. Canvas bleibt: 16 Code-Aufgaben + Sprechen-Upload + optional SCORM-Gesamtwert.</p>" +
@@ -742,6 +756,13 @@
       a.click();
     });
     document.getElementById("print-rubric").addEventListener("click", function () { window.print(); });
+    document.getElementById("tutor-guide").addEventListener("click", function () {
+      const blob = new Blob([KH.tutorGuide()], { type: "text/markdown" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "kleinhausen-tutor-anleitung.md";
+      a.click();
+    });
     document.getElementById("gram-text").addEventListener("click", function () {
       const blob = new Blob([KH.grammarText()], { type: "text/markdown" });
       const a = document.createElement("a");

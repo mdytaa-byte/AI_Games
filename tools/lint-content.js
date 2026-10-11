@@ -162,6 +162,8 @@ const gIds = {};
 ids.forEach(function (ep) {
   if (!(KH.GRAMMATIK || []).some(function (c) { return c.eps.indexOf(ep) >= 0; })) errors.push("No Grammatik card for " + ep);
 });
+if (indexHtml.indexOf("js/tutor.js") < 0 || indexHtml.indexOf("js/tutor-config.js") < 0) errors.push("index.html must load tutor-config.js and tutor.js");
+if (manifest.indexOf("js/tutor.js") < 0 || manifest.indexOf("js/tutor-config.js") < 0) errors.push("SCORM manifest missing tutor files");
 if (indexHtml.indexOf("js/stand.js") < 0) errors.push("index.html must load stand.js");
 if (manifest.indexOf("js/stand.js") < 0) errors.push("SCORM manifest missing stand.js");
 if (indexHtml.indexOf("js/grammatik.js") < 0) errors.push("index.html must load grammatik.js");

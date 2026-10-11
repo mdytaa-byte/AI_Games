@@ -216,6 +216,7 @@
           "<p><strong>" + sp.skill.de + " in " + epRangeLabel(sp.eps) + ": " + sp.score + " %.</strong> " +
           "Am schwersten war „" + KH.esc(sceneTitle(scene, mod)) + "“ (Episode " + mod.n + ", " + sp.worst.s + " %).</p>" +
           '<div class="row-btns"><button class="btn post" type="button" data-practice="' + i + '">' + sp.skill.again + "</button>" +
+          (KH.tutorPanel && !KH.state.player.exam ? '<button class="btn ghost" type="button" data-tutor-focus="' + i + '">Mit dem Tutor üben</button>' : "") +
           grams.map(function (c) { return '<button class="btn ghost" type="button" data-gram="' + c.id + '">Grammatik: ' + KH.esc(c.title.split(" — ")[0]) + "</button>"; }).join("") +
           "</div></li>";
       }).join("")
@@ -258,6 +259,10 @@
       '<h2>Vier Fertigkeiten</h2><ul class="st-skills">' + meters + "</ul>" +
       "<h2>Was du jetzt üben kannst</h2>" +
       '<ul class="st-spots">' + spotHtml + "</ul>" +
+      (KH.tutorPanel && !KH.state.player.exam
+        ? '<div class="card st-tutor"><p><strong>' + KH.esc((KH.TUTOR && KH.TUTOR.name) || "KI-Tutor") + "</strong> weiß, wo du stehst, wenn du ihm deinen Tutor-Brief schickst: Episode, Fertigkeiten, Schwachstellen, wackelige Wörter.</p>" +
+          '<div class="row-btns"><button class="btn" type="button" id="st-tutor">Tutor-Brief öffnen</button></div></div>'
+        : "") +
       (due ? '<p class="voice-chip">' + due + ' Wörter warten im <button type="button" class="chip" data-go="words">Wortschatz</button></p>' : "") +
       "<h2>Kann-Sätze</h2>" +
       '<p>Für jede Episode: Was zeigen deine Aufgaben, und was sagst du selbst? <span class="st-legend"><span class="st-ev st-ev-solid">✓ sicher</span> <span class="st-ev st-ev-ok">~ geht</span> <span class="st-ev st-ev-practice">! üben</span></span></p>' +
@@ -272,6 +277,11 @@
       });
     });
     if (KH.bindGrammarChips) KH.bindGrammarChips(document.querySelector(".st-spots"));
+    document.querySelectorAll("[data-tutor-focus]").forEach(function (b) {
+      b.addEventListener("click", function () { KH.tutorPanel({ focus: +b.getAttribute("data-tutor-focus") }); });
+    });
+    const stTutor = document.getElementById("st-tutor");
+    if (stTutor) stTutor.addEventListener("click", function () { KH.tutorPanel({}); });
     document.querySelectorAll("[data-cd]").forEach(function (b) {
       b.addEventListener("click", function () {
         const key = b.getAttribute("data-cd");

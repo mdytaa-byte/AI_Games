@@ -1362,6 +1362,25 @@ html[data-contrast="hoch"] .st-track, html[data-contrast="hoch"] .st-tile-fill {
 html[data-contrast="hoch"] .st-fill, html[data-contrast="hoch"] .st-tile-fill span { background: #000; }
 html[data-contrast="hoch"] .st-skill, html[data-contrast="hoch"] .st-tile { border-color: #000; }
 
+/* Tutor-Brief */
+.ep-head-btns { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+.tutor-brief {
+  width: 100%;
+  font-family: var(--mono);
+  font-size: .82rem;
+  line-height: 1.45;
+  padding: 10px 12px;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  background: var(--cream);
+  color: var(--ink);
+  resize: vertical;
+}
+.tutor-opt { display: flex; gap: 8px; align-items: center; margin: 8px 0; font-size: .9rem; }
+.tutor-status { font-size: .9rem; color: var(--moss); min-height: 1.2em; }
+.st-tutor { margin: 12px 0; }
+.st-tutor p { margin: 0 0 6px; }
+
 .print-only { display: none; }
 
 @media print {

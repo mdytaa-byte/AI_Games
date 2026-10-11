@@ -73,6 +73,27 @@ The **Wo stehe ich?** tab (also linked from the Pass) shows students where they 
 - **For you:** Lehrerzimmer → roster shows each student’s recent Hö / Le / Sp / Sc percentages after JSON import.
 - **Older saves:** results are recorded from this version on. Episodes finished earlier still show their IPA score in the can-do map.
 
+## KI-Tutor: where each student is
+Your AI tutor lives outside this course, so the course gives it context in two parts.
+
+1. **Once, for you: the Tutor-Anleitung.** Lehrerzimmer → **Tutor-Anleitung herunterladen** gives you one Markdown file. Paste it into your tutor’s standing instructions (a Claude project, custom GPT, school chatbot, …). It has:
+   - how to read a student’s brief
+   - the rules: Novice-level German, no spoilers, coach graded work instead of doing it, correct one or two patterns at a time
+   - the course map: each episode’s goals, grammar and words, with no plot
+   - the people of Kleinhausen and all Grammatik-Ecke cards
+2. **Every conversation, from the student: the Tutor-Brief.** The **Tutor fragen** button in each episode header, and **Tutor-Brief öffnen** / **Mit dem Tutor üben** in *Wo stehe ich?*, build a short text with:
+   - the current episode, and the scene if they are stuck in one, with its can-dos, grammar and words
+   - a spoiler line naming the highest episode they know
+   - skill estimates and weak spots
+   - can-dos the student isn’t sure of
+   - shaky words, unpassed grammar checks
+   - what the town remembers about their choices
+   - what they want to practise
+
+   Students see the full text before copying it. The brief shares only their first name and course progress: no recordings, no e-mail, no grades. Their latest written text is included only if they tick the box.
+- **No help during graded work:** the tutor button is turned off during an IPA and in Prüfungsmodus.
+- **Tutor link:** set `url` in `js/tutor-config.js` to open the tutor from the course. If your tutor can pre-fill the first message from a URL parameter, set `prefill` to that parameter’s name (for example `"q"`) and the brief arrives already typed. With no `url`, the button only copies the brief for students to paste.
+
 ## Accessibility
 Students open **Zugang** (header): contrast, type size, Verdana, reduced motion, TTS, captions/transcripts, English gloss, low-fi graphics. High-graphics mode walks the same first-person Kleinhausen as Foto-Schnitzeljagd and Lieferdienst (shared save + weather). Low-fi is a text list — no WebGL. Praxis games opened from an episode receive that weather and can write completion back to the course.
 

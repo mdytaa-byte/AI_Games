@@ -1381,6 +1381,21 @@ html[data-contrast="hoch"] .st-skill, html[data-contrast="hoch"] .st-tile { bord
 .st-tutor { margin: 12px 0; }
 .st-tutor p { margin: 0 0 6px; }
 
+/* Schreib-Check */
+.wc-out:empty { display: none; }
+.wc-out { margin-top: 12px; }
+.wc-out .kicker { margin-top: 0; }
+.wc-good { color: var(--moss); }
+.wc-cov { font-size: .9rem; color: var(--ink-soft); }
+.wc-notes { padding-left: 1.3em; margin: 6px 0; }
+.wc-note { margin: 0 0 12px; }
+.wc-note p { margin: 0 0 4px; }
+.wc-note-title { font-weight: 700; color: var(--navy); }
+.wc-where { font-family: var(--display); font-size: 1.05rem; }
+.wc-where mark { background: var(--post); color: var(--navy-deep); padding: 0 .15em; border-radius: 3px; }
+.wc-note-off { font-size: .9rem; color: var(--ink-soft); margin: 0; align-self: center; }
+html[data-contrast="hoch"] .wc-where mark { background: #000; color: #fff; }
+
 .print-only { display: none; }
 
 @media print {

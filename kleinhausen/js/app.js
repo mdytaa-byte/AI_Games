@@ -569,7 +569,10 @@
     const entries = (KH.state.journal || []).slice().reverse().map(function (j) {
       return '<article class="journal-entry' + (j.kind === "praxis" ? " journal-praxis" : "") + '"><h3>' +
         KH.esc(j.title || "Text") + "</h3><p>" + KH.esc(j.text || "") + "</p>" +
-        (j.score != null ? "<p>Auto-Score: " + j.score + "</p>" : "") + "</article>";
+        (j.score != null ? "<p>Auto-Score: " + j.score + (j.checks ? " · Schreib-Checks vorher: " + j.checks : "") + "</p>" : "") +
+        (j.fixed && j.fixed.length ? '<p class="wc-good">Verbessert: ' + KH.esc(j.fixed.map(KH.writingPatternTitle || String).join(", ")) + "</p>" : "") +
+        (j.patterns && j.patterns.length ? "<p>Noch im Text: " + KH.esc(j.patterns.map(KH.writingPatternTitle || String).join(", ")) + "</p>" : "") +
+        (j.firstDraft && j.firstDraft !== j.text ? "<details><summary>Erster Entwurf</summary><p>" + KH.esc(j.firstDraft) + "</p></details>" : "") + "</article>";
     }).join("") || "<p>Noch leer. Schreibaufgaben und fertige Praxis (Postkarte, Bon, Schicht) landen hier.</p>";
     const mem = (KH.memoryCards ? KH.memoryCards() : []).map(function (c) {
       return '<article class="memory-card"><p class="kicker">' + KH.esc(c.who) + "</p><p>" + KH.esc(c.de) + "</p></article>";
@@ -707,10 +710,19 @@
       return "<tr><td>" + KH.esc(r.vorname) + "</td><td>" + r.done + "/16</td><td>" +
         (r.ipa != null ? r.ipa : "—") + "</td><td>" + r.spoken + "</td><td>" + r.minutes +
         "</td><td>" + (r.skills ? ["hoeren", "lesen", "sprechen", "schreiben"].map(function (k) { return r.skills[k] == null ? "—" : r.skills[k]; }).join(" / ") : "—") +
+        "</td><td>" + KH.esc(topPatterns(r.patterns, 2) || "—") + (r.revised ? " · " + r.revised + "× überarbeitet" : "") +
         "</td><td>" + (r.words ? r.words.known + "/" + r.words.total + " · " + r.words.days + " T" : "—") +
         "</td><td>" + KH.esc((r.flags || []).slice(0, 4).join(", ") || "—") + "</td></tr>";
-    }).join("") || "<tr><td colspan=\"8\">Noch leer. Schüler exportieren Heft → JSON; du lädst die Dateien hier.</td></tr>";
+    }).join("") || "<tr><td colspan=\"9\">Noch leer. Schüler exportieren Heft → JSON; du lädst die Dateien hier.</td></tr>";
     const me = KH.summarizeStudent ? KH.summarizeStudent() : {};
+    function topPatterns(p, n) {
+      return Object.keys(p || {}).sort(function (a, b) { return p[b] - p[a]; }).slice(0, n)
+        .map(function (id) { return (KH.writingPatternTitle ? KH.writingPatternTitle(id) : id) + " (" + p[id] + ")"; }).join(", ");
+    }
+    const classPatterns = (KH.rosterLoad ? KH.rosterLoad() : []).reduce(function (o, r) {
+      Object.keys(r.patterns || {}).forEach(function (k) { o[k] = (o[k] || 0) + 1; });
+      return o;
+    }, {});
     KH.shell(
       "<h1>Lehrerzimmer</h1>" +
       "<p>Zielniveau: ACTFL <strong>Novice High</strong>. Jede Episode endet mit einer Mini-IPA. Der Stempel ist summativ. Minuten, Codes und die Stadt-Flags (Haller / Otto / Amira / Aylin) überleben im JSON — ohne LTI-Server.</p>" +
@@ -727,10 +739,14 @@
       (KH.TUTOR && KH.TUTOR.url ? " · gesetzt: " + KH.esc(KH.TUTOR.url) : " · noch nicht gesetzt (Students kopieren und fügen ein)") + ".</p>" +
       '<div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Episode</th><th>Status</th><th>IPA</th><th>Code</th><th>Mündlich</th><th>SPR-Code</th><th>Min</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
       "<h2>Klassenliste (statisch)</h2>" +
+      (Object.keys(classPatterns).length ? "<p><strong>Schreib-Muster in der Klasse</strong> (Anzahl Students mit dem Muster in abgegebenen Texten): " +
+        KH.esc(Object.keys(classPatterns).sort(function (a, b) { return classPatterns[b] - classPatterns[a]; }).slice(0, 4)
+          .map(function (id) { return (KH.writingPatternTitle ? KH.writingPatternTitle(id) : id) + " " + classPatterns[id]; }).join(" · ")) +
+        " — Kandidaten für eine Mini-Lektion.</p>" : "") +
       "<p>Kein Roster-Server. Du importierst die JSON-Exporte aus dem Heft. Canvas bleibt: 16 Code-Aufgaben + Sprechen-Upload + optional SCORM-Gesamtwert.</p>" +
       '<p><label class="btn ghost">JSON importieren <input type="file" id="roster-in" accept="application/json" multiple hidden></label> ' +
       '<button class="btn ghost" type="button" id="roster-clear">Liste leeren</button></p>' +
-      '<div class="card" style="overflow:auto"><table><thead><tr><th>Name</th><th>Fertig</th><th>IPA</th><th>Mündlich</th><th>Min</th><th>Hö / Le / Sp / Sc</th><th>Wörter sicher</th><th>Stadt merkt</th></tr></thead><tbody>' + roster + "</tbody></table></div>" +
+      '<div class="card" style="overflow:auto"><table><thead><tr><th>Name</th><th>Fertig</th><th>IPA</th><th>Mündlich</th><th>Min</th><th>Hö / Le / Sp / Sc</th><th>Schreib-Muster</th><th>Wörter sicher</th><th>Stadt merkt</th></tr></thead><tbody>' + roster + "</tbody></table></div>" +
       '<section class="print-only" id="rubric-print">' + (KH.rubricHtml ? KH.rubricHtml() : "") + "</section>" +
       "<h2>Annahmen dieses Builds</h2><ul>" +
       "<li>US-Schuljahr / College German 1, ca. 16 Sitzungen plus Hauspraxis.</li>" +

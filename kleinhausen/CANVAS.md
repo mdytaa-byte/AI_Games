@@ -94,6 +94,31 @@ Your AI tutor lives outside this course, so the course gives it context in two p
 - **No help during graded work:** the tutor button is turned off during an IPA and in Prüfungsmodus.
 - **Tutor link:** set `url` in `js/tutor-config.js` to open the tutor from the course. If your tutor can pre-fill the first message from a URL parameter, set `prefill` to that parameter’s name (for example `"q"`) and the brief arrives already typed. With no `url`, the button only copies the brief for students to paste.
 
+## Schreib-Check (feedback on writing)
+Every writing task now has three buttons: **Schreib-Check**, **Feedback vom Tutor**, and **Abgeben** (submit). Before, the first click scored the text and locked it.
+
+- **Schreib-Check** is ungraded and can be repeated. It shows:
+  - one or two things that already work
+  - how many of the task’s content points it recognises
+  - **at most two** patterns, with the spot marked in the student’s own sentence, the rule, and a link to the grammar card
+
+  It never shows the corrected text. Students revise and check again.
+- **The patterns, checked in this order:**
+  1. writing in English
+  2. formal greeting and closing in an e-mail
+  3. verb in second place (*Heute ich bin* …)
+  4. verb at the end after *weil* / *dass*
+  5. verb ending with *ich*
+  6. age with *haben*
+  7. *der/die/das* or *mein/meine* with nouns from the Wortschatz
+  8. lowercase nouns
+  9. lowercase polite *Sie*
+
+  Each pattern is narrow so it doesn’t flag correct German. `node tools/test-writing.js` runs about 40 right and wrong sentences against the rules. It doesn’t catch everything, and it says so.
+- **Feedback vom Tutor** sends the task and draft to your AI tutor with a request to name one strength and at most two patterns, and not to rewrite the text. Hidden on IPA writing and in Prüfungsmodus. Allowed in ungraded practice replays.
+- **IPAs:** 13 of the 14 writing tasks are IPA writing parts, so the Schreib-Check is **allowed** there by default (hints, no answers). Set `KH.WRITING.checkInIpa = false` in `js/schreiben.js` to turn it off for IPAs. Prüfungsmodus always turns it off.
+- **What you see:** after submission, the Heft shows how many checks the student used, which patterns they fixed (*Verbessert*) and which are still in the text (*Noch im Text*), plus their first draft. Lehrerzimmer → roster shows each student’s most frequent patterns, and above it, the patterns most common across the class. Those make good mini-lessons. The auto-score is unchanged; your rubric is still the grade.
+
 ## Accessibility
 Students open **Zugang** (header): contrast, type size, Verdana, reduced motion, TTS, captions/transcripts, English gloss, low-fi graphics. High-graphics mode walks the same first-person Kleinhausen as Foto-Schnitzeljagd and Lieferdienst (shared save + weather). Low-fi is a text list — no WebGL. Praxis games opened from an episode receive that weather and can write completion back to the course.
 

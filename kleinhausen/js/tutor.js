@@ -157,7 +157,16 @@
       if (trust.length) lines.push("Vertrauen: " + trust.join(", "));
     }
 
-    if (opts.lastText) {
+    if (opts.writing) {
+      const w = opts.writing;
+      lines.push("");
+      lines.push("## Schreibaufgabe: „" + (w.title || "Text") + "“");
+      if (w.prompt) lines.push(String(w.prompt).replace(/<[^>]+>/g, ""));
+      if (w.checklist && w.checklist.length) lines.push("Checkliste: " + w.checklist.join(" · "));
+      lines.push("");
+      lines.push("## Mein Entwurf");
+      lines.push(String(w.text || "").slice(0, 1500));
+    } else if (opts.lastText) {
       const j = (KH.state.journal || []).filter(function (x) { return x.text && x.kind !== "praxis"; }).slice(-1)[0];
       if (j) {
         lines.push("");
@@ -168,7 +177,10 @@
 
     lines.push("");
     lines.push("## Bitte");
-    if (focus) {
+    if (opts.writing) {
+      lines.push("Gib mir Feedback zu meinem Entwurf: zuerst eine Sache, die schon gut ist. Dann höchstens zwei Muster (z. B. Verbposition, Artikel): Zeig die Stelle, nenn die Regel, gib ein Beispiel aus Kleinhausen.");
+      lines.push("Schreib meinen Text NICHT neu und gib mir keine fertigen Sätze — ich verbessere selbst und schicke dir die neue Version.");
+    } else if (focus) {
       lines.push("Ich möchte heute üben: " + focus.skill.de + " (Episode " + focus.eps.map(function (e) { return parseInt(e.slice(1), 10); }).join(", ") + ").");
     } else if (sl) {
       lines.push("Ich hänge gerade in dieser Szene. Hilf mir, ohne die Antwort zu verraten.");
@@ -196,8 +208,8 @@
       if (blocked) {
         return '<p class="feedback no">' + KH.esc(blocked) + "</p>";
       }
-      const brief = KH.tutorBrief({ focus: opts.focus, inScene: opts.inScene, lastText: lastText });
-      const hasText = (KH.state.journal || []).some(function (x) { return x.text && x.kind !== "praxis"; });
+      const brief = KH.tutorBrief({ focus: opts.focus, inScene: opts.inScene, lastText: lastText, writing: opts.writing });
+      const hasText = !opts.writing && (KH.state.journal || []).some(function (x) { return x.text && x.kind !== "praxis"; });
       return "<p>Damit dein Tutor weiß, wo du stehst: Kopier diesen Brief und schick ihn als erste Nachricht. " +
         (c.url ? "Oder öffne den Tutor direkt." : "") + "</p>" +
         '<p class="en">This is everything that gets shared: your first name, your progress, your choices in the story. No recordings, no e-mail, no grades.</p>' +
@@ -209,7 +221,7 @@
     }
     function render() {
       wrap.innerHTML = '<div class="card gr-card gr-dialog" role="dialog" aria-modal="true" aria-labelledby="tutor-title" tabindex="-1">' +
-        '<div class="gr-dialog-head"><div><p class="kicker">' + KH.esc(c.name) + '</p><h2 id="tutor-title">Tutor-Brief</h2></div>' +
+        '<div class="gr-dialog-head"><div><p class="kicker">' + KH.esc(c.name) + '</p><h2 id="tutor-title">' + (opts.writing ? "Feedback zu deinem Entwurf" : "Tutor-Brief") + "</h2></div>" +
         '<button class="btn ghost" type="button" id="tutor-close">Schließen</button></div>' + body() + "</div>";
       bind();
     }
@@ -273,6 +285,7 @@
     out.push("- **Wörter / Grammatik-Ecke**: shaky words and grammar cards not yet mastered. Weave them into practice.");
     out.push("- **Was die Stadt sich merkt**: choices the student made (e.g. how they treated Frau Haller). Characters can remember these.");
     out.push("- **Bitte**: what they want right now. If they are stuck in a scene, give hints and model sentences, not the answer.");
+    out.push("- **Schreibaufgabe / Mein Entwurf**: a draft for feedback. Name one thing that works, then at most two patterns (quote the spot, give the rule, show a Kleinhausen example). Never rewrite the draft or hand over finished sentences; ask them to revise and send the new version. Graded IPA writing never reaches you.");
     out.push("If there is no brief, ask which episode they are on before going further.");
     out.push("");
     out.push("## Rules");

@@ -182,6 +182,30 @@
     return KH.state.cando;
   }
 
+  /* Finished writing tasks (incl. IPA writing parts) that can be replayed with feedback. */
+  function writingTasks() {
+    const out = [];
+    (KH.MODULES || []).forEach(function (m) {
+      if (KH.state.episodes[m.id].status !== "done") return;
+      m.scenes.forEach(function (s, i) {
+        if (s.type === "write") out.push({ ep: m.id, key: String(i), n: m.n, title: s.title });
+        if (s.type === "ipa" && (s.presentational.type || "write") === "write") out.push({ ep: m.id, key: i + ".2", n: m.n, title: s.presentational.title });
+      });
+    });
+    return out;
+  }
+
+  function writingPracticeHtml() {
+    if (KH.state.player.exam) return "";
+    const tasks = writingTasks();
+    if (!tasks.length) return "";
+    return "<h2>Schreiben üben</h2>" +
+      "<p>Schreib eine Aufgabe noch einmal — mit Schreib-Check und Tutor-Feedback. Keine Note, dein Stempel bleibt.</p>" +
+      '<div class="row-btns st-write">' + tasks.map(function (t) {
+        return '<button class="btn ghost" type="button" data-write-ep="' + t.ep + '" data-write-key="' + t.key + '">E' + t.n + " · " + KH.esc(t.title || "Text") + "</button>";
+      }).join("") + "</div>";
+  }
+
   /* ---------- View ---------- */
 
   KH.view.stand = function () {
@@ -264,6 +288,7 @@
           '<div class="row-btns"><button class="btn" type="button" id="st-tutor">Tutor-Brief öffnen</button></div></div>'
         : "") +
       (due ? '<p class="voice-chip">' + due + ' Wörter warten im <button type="button" class="chip" data-go="words">Wortschatz</button></p>' : "") +
+      writingPracticeHtml() +
       "<h2>Kann-Sätze</h2>" +
       '<p>Für jede Episode: Was zeigen deine Aufgaben, und was sagst du selbst? <span class="st-legend"><span class="st-ev st-ev-solid">✓ sicher</span> <span class="st-ev st-ev-ok">~ geht</span> <span class="st-ev st-ev-practice">! üben</span></span></p>' +
       '<ul class="st-map">' + tiles + "</ul>",
@@ -279,6 +304,9 @@
     if (KH.bindGrammarChips) KH.bindGrammarChips(document.querySelector(".st-spots"));
     document.querySelectorAll("[data-tutor-focus]").forEach(function (b) {
       b.addEventListener("click", function () { KH.tutorPanel({ focus: +b.getAttribute("data-tutor-focus") }); });
+    });
+    document.querySelectorAll("[data-write-ep]").forEach(function (b) {
+      b.addEventListener("click", function () { KH.view.practice(b.getAttribute("data-write-ep"), b.getAttribute("data-write-key")); });
     });
     const stTutor = document.getElementById("st-tutor");
     if (stTutor) stTutor.addEventListener("click", function () { KH.tutorPanel({}); });

@@ -569,10 +569,7 @@
     const entries = (KH.state.journal || []).slice().reverse().map(function (j) {
       return '<article class="journal-entry' + (j.kind === "praxis" ? " journal-praxis" : "") + '"><h3>' +
         KH.esc(j.title || "Text") + "</h3><p>" + KH.esc(j.text || "") + "</p>" +
-        (j.score != null ? "<p>Auto-Score: " + j.score + (j.checks ? " · Schreib-Checks vorher: " + j.checks : "") + "</p>" : "") +
-        (j.fixed && j.fixed.length ? '<p class="wc-good">Verbessert: ' + KH.esc(j.fixed.map(KH.writingPatternTitle || String).join(", ")) + "</p>" : "") +
-        (j.patterns && j.patterns.length ? "<p>Noch im Text: " + KH.esc(j.patterns.map(KH.writingPatternTitle || String).join(", ")) + "</p>" : "") +
-        (j.firstDraft && j.firstDraft !== j.text ? "<details><summary>Erster Entwurf</summary><p>" + KH.esc(j.firstDraft) + "</p></details>" : "") + "</article>";
+        (j.score != null ? "<p>Auto-Score: " + j.score + "</p>" : "") + "</article>";
     }).join("") || "<p>Noch leer. Schreibaufgaben und fertige Praxis (Postkarte, Bon, Schicht) landen hier.</p>";
     const mem = (KH.memoryCards ? KH.memoryCards() : []).map(function (c) {
       return '<article class="memory-card"><p class="kicker">' + KH.esc(c.who) + "</p><p>" + KH.esc(c.de) + "</p></article>";
@@ -710,7 +707,7 @@
       return "<tr><td>" + KH.esc(r.vorname) + "</td><td>" + r.done + "/16</td><td>" +
         (r.ipa != null ? r.ipa : "—") + "</td><td>" + r.spoken + "</td><td>" + r.minutes +
         "</td><td>" + (r.skills ? ["hoeren", "lesen", "sprechen", "schreiben"].map(function (k) { return r.skills[k] == null ? "—" : r.skills[k]; }).join(" / ") : "—") +
-        "</td><td>" + KH.esc(topPatterns(r.patterns, 2) || "—") + (r.revised ? " · " + r.revised + "× überarbeitet" : "") +
+        "</td><td>" + KH.esc(topPatterns(r.patterns, 2) || "—") +
         "</td><td>" + (r.words ? r.words.known + "/" + r.words.total + " · " + r.words.days + " T" : "—") +
         "</td><td>" + KH.esc((r.flags || []).slice(0, 4).join(", ") || "—") + "</td></tr>";
     }).join("") || "<tr><td colspan=\"9\">Noch leer. Schüler exportieren Heft → JSON; du lädst die Dateien hier.</td></tr>";

@@ -1,13 +1,12 @@
 /* Schreib-Check: formative feedback on a draft before it is handed in.
    Narrow, high-precision patterns for Novice High writers. The check shows at most
    two patterns, marks where they are and gives the rule, not the corrected text.
-   Students revise and check again; the submitted text is scored as before. */
+   Students revise and check again. Only in ungraded practice replays ("Wo stehe ich?"):
+   graded episode and IPA writing is handed in without it. */
 (function (global) {
   const KH = global.KH = global.KH || {};
 
-  /* Teacher settings. checkInIpa: allow the Schreib-Check on IPA writing
-     (checks and the first draft are kept in the Heft either way). */
-  KH.WRITING = Object.assign({ checkInIpa: true, maxNotes: 2 }, KH.WRITING || {});
+  KH.WRITING = Object.assign({ maxNotes: 2 }, KH.WRITING || {});
 
   const PRON = "ich|du|er|sie|es|wir|ihr|man";
   const FINITE = "bin|bist|ist|sind|seid|habe|hast|hat|haben|habt|mag|magst|kann|kannst|will|willst|muss|musst|möchte|möchtest|wohne|wohnst|wohnt|komme|kommst|kommt|gehe|gehst|geht|spiele|spielst|spielt|finde|findest|findet|lerne|lernst|lernt|trinke|trinkst|trinkt|kaufe|kaufst|kauft|mache|machst|macht|brauche|brauchst|braucht|heiße|heißt|esse|isst|fahre|fährst|fährt|sehe|siehst|sieht|liebe|liebst|liebt|warte|wartest|wartet";
@@ -235,10 +234,9 @@
     };
   };
 
-  KH.writingCheckAllowed = function (scene) {
-    if (KH.state.player.exam) return false;
-    if (scene && scene.ipa && !KH.WRITING.checkInIpa) return false;
-    return true;
+  /* Writing feedback (Schreib-Check and tutor) appears only in practice replays. */
+  KH.writingCheckAllowed = function () {
+    return !!KH.practiceMode && !KH.state.player.exam;
   };
 
   KH.writingCheckHtml = function (res, round) {

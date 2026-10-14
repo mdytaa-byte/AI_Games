@@ -442,9 +442,7 @@
     out.className = "wc-out";
     out.setAttribute("aria-live", "polite");
     let checks = 0;
-    let firstDraft = null;
-    let firstNotes = null;
-    /* Schreib-Check: formative, repeatable, no score. */
+    /* Schreib-Check: formative, repeatable, no score — practice replays only. */
     if (KH.checkWriting && KH.writingCheckAllowed && KH.writingCheckAllowed(scene)) {
       const chk = document.createElement("button");
       chk.className = "btn";
@@ -453,9 +451,7 @@
       chk.addEventListener("click", function () {
         if (!ta.value.trim()) { KH.live("Schreib zuerst etwas."); ta.focus(); return; }
         checks += 1;
-        if (firstDraft == null) firstDraft = ta.value;
         const res = KH.checkWriting(ta.value, scene);
-        if (firstNotes == null) firstNotes = KH.checkWriting(ta.value, scene, { all: true }).notes.map(function (n) { return n.id; });
         out.className = "wc-out card";
         out.innerHTML = KH.writingCheckHtml(res, checks);
         if (KH.bindGrammarChips) KH.bindGrammarChips(out);
@@ -463,14 +459,14 @@
         KH.live(res.notes.length ? res.notes.length + " Stellen zum Anschauen" : "Keine typischen Muster gefunden");
       });
       tools.appendChild(chk);
-    } else if (scene.ipa && !KH.state.player.exam) {
+    } else if (!KH.state.player.exam) {
       const note = document.createElement("p");
       note.className = "wc-note-off";
-      note.textContent = "IPA: Hier gibt es keinen Schreib-Check vorher.";
+      note.textContent = "Schreib-Check und Tutor-Feedback gibt es beim Üben: unter „Wo stehe ich?“, nachdem du abgegeben hast.";
       tools.appendChild(note);
     }
-    /* The AI tutor never sees IPA writing before it is handed in. */
-    if (KH.tutorPanel && (!scene.ipa || KH.practiceMode) && !KH.state.player.exam) {
+    /* The AI tutor only sees drafts from ungraded practice. */
+    if (KH.tutorPanel && KH.writingCheckAllowed && KH.writingCheckAllowed()) {
       const tut = document.createElement("button");
       tut.className = "btn ghost";
       tut.type = "button";
@@ -492,19 +488,14 @@
       f.className = "feedback " + (r.score >= 60 ? "ok" : "no");
       f.innerHTML = "Abgegeben. Automatische Wertung: " + r.score +
         " / 100. " + (r.longEnough ? "Länge ist okay. " : "Der Text ist kurz. ") +
-        "Treffer: " + r.hits + "." + (checks ? " Schreib-Checks vorher: " + checks + "." : "") +
+        "Treffer: " + r.hits + "." +
         '<span class="en">This is a first-pass check. Your teacher can still score with the rubric.</span>';
       box.appendChild(f);
       if (!KH.practiceMode) {
         const entry = { at: Date.now(), ep: scene.ep || KH.currentEpisode || "", title: scene.title, text: ta.value, score: r.score, ipa: !!scene.ipa };
-        /* Teacher record: patterns still in the handed-in text, and those fixed since the first check. */
+        /* Teacher record only (students don't see it here): patterns in the handed-in text. */
         if (KH.checkWriting) {
           entry.patterns = KH.checkWriting(ta.value, scene, { all: true }).notes.map(function (n) { return n.id; });
-        }
-        if (checks) {
-          entry.checks = checks;
-          entry.firstDraft = firstDraft;
-          entry.fixed = (firstNotes || []).filter(function (id) { return (entry.patterns || []).indexOf(id) < 0; });
         }
         KH.state.journal.push(entry);
       }

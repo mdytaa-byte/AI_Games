@@ -82,7 +82,6 @@
         (j.patterns || []).forEach(function (p) { o[p] = (o[p] || 0) + 1; });
         return o;
       }, {}),
-      revised: (state.journal || []).filter(function (j) { return j.checks && j.firstDraft && j.firstDraft !== j.text; }).length,
       skills: KH.skillReport ? KH.skillReport(state).reduce(function (o, s) { o[s.id] = s.recent; return o; }, {}) : null,
       importedAt: Date.now()
     };

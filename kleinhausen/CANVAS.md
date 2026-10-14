@@ -33,12 +33,92 @@ Upload the `kleinhausen` folder to **Files**, then embed `index.html` in a Page.
 | Speak codes | `SPR-E01-NAME-####` in Heft / stamp screen | Paste next to the audio file |
 | Capstone | Episode 16 speech / script | Human scored with the Novice High rubric below |
 | Minutes | Time-on-task in the hub (Lehrerzimmer + JSON) | Attendance / effort note — not a grade |
+| Wortschatz | Daily story-tied word review (**Wörter** tab) | Practice; roster shows words secure / total and days practiced — not a grade |
 | Roster | Import student `Heft → JSON` in **Lehrerzimmer** | Static class list: episodes, IPA, oral, minutes, town flags |
 | Town flags | Haller / Otto / Amira / Aylin remembered | Not graded; they change later lines and the compromise’s texture |
 
 **Novice High (human overlay):** student uses practiced sentences, handles a simple unexpected follow-up, is understandable to a sympathetic listener/reader, still makes gender/case errors.
 
 Students **cannot** finish the year on clicks alone. Dialogue and speak scenes will not advance until a recording (or typed accommodation) is in. Prüfungsmodus is only for silent proctoring.
+
+## Wortschatz (vocabulary review)
+The **Wörter** tab is a short daily review, built for about five minutes. The badge shows how many cards are due.
+
+- **Where words come from:** an episode stamp adds that episode’s `vocab` list. Clicking things in rooms and at places (“Schau dich um”) adds those nouns too.
+- **Every card is a line from the story:** who said it, which episode, and the German sentence with its English.
+- **Two modes:** new or shaky words (box 0–1) show the word in its line and ask for the meaning (four choices, keys 1–4). Words from box 2 on show the line with a gap; the student types the German **with the article**. ae/oe/ue/ss count as ä/ö/ü/ß. A right noun with the wrong article is marked “fast” and comes back tomorrow without dropping back.
+- **Scheduling (Leitner):** right → up one box (back in 1, 2, 4, 8, 16 days). Wrong → box 1, one retry in the same session, back tomorrow. Box 4+ counts as *sicher*.
+- **Where it’s stored:** the deck lives in the browser save and in **Heft → JSON**. It is not sent through SCORM `suspend_data`, which is too small. Lehrerzimmer shows *Wörter sicher* per student after JSON import.
+- **Editing words:** `js/wortschatz-data.js`. Each episode word is `[de, en, line, line in English, who]`. `tools/lint-content.js` fails if an episode `vocab` word has no entry, or if its line does not contain the word.
+
+## Grammatik-Ecke (grammar reference)
+The **Grammatik** tab has 20 short cards, one for each grammar point in the 16 episodes (sein, Sie/du, der/die/das, Verb auf Platz 2, Uhrzeit, Modalverben, weil, and the rest). Students can search by German word, topic or English term.
+
+- **Examples come only from the story.** Each one names who said it and in which episode. `tools/lint-content.js` fails if an example is not a line in the course.
+- **Each card has:** a one-line rule in German, an English explanation, a small table, an “Achtung” box with the common mistake, and a 1–2 question Kurz-Check.
+- **Inside an episode:** the header lists that episode’s cards. Each one opens as a pop-up over the scene, so the scene keeps its place. Escape closes it, and the scene’s 1/2/3 keys stay inactive while it’s open.
+- **From the Wortschatz:** a right noun with the wrong article links to the *der, die, das* card.
+- **For an AI tutor:** Lehrerzimmer → **Grammatik-Ecke als Text (KI-Tutor)** downloads all cards as Markdown. Paste it into the tutor’s instructions so its explanations and examples match the course.
+- Which cards a student has read and passed is saved in **Heft → JSON**. It is not graded.
+- **Editing cards:** `js/grammatik-data.js`. In each card, `eps[0]` is the episode that teaches the point.
+
+## Wo stehe ich? (student progress view)
+The **Wo stehe ich?** tab (also linked from the Pass) shows students where they are. It is an estimate for the student, not a grade.
+
+- **Four skill meters:** Hören, Lesen, Sprechen and Schreiben, each on a Novice Low → Mid → High track. Position = share of the course done × how solid the last six results in that skill are (80 % counts as solid). So a student who stays solid reaches Novice High at the end of Episode 16. A trend arrow appears when the last three results differ by 10 points or more from the three before them.
+- **What counts:** listening, radio and reading scenes, dialogues and speaking scenes, and writing, form and gap-fill scenes. Each part of the IPA counts for its own skill. Rooms, culture notes and praxis games don’t count. Dialogues and speaking scenes give 100 if the answer was appropriate and 50 if not, the same as the IPA.
+- **Weak spots:** for up to three skills, the episodes averaging under 70 %. Each offers the weakest scene to practise again, plus that episode’s grammar cards.
+- **Practice is ungraded.** It never changes stamps, codes, IPA scores, points, NPC trust or town memory, and practice writing is not added to the Heft. Only the student’s current level in that skill updates.
+- **Kann-Sätze map:** all 16 episodes with their can-do statements. Each shows what the course measured (✓ sicher ≥ 80 %, ~ geht ≥ 60 %, ! üben) and the student’s own rating (*noch nicht / mit Hilfe / kann ich*). When a student says *kann ich* but the tasks say *üben*, a short note says so.
+- **For you:** Lehrerzimmer → roster shows each student’s recent Hö / Le / Sp / Sc percentages after JSON import.
+- **Older saves:** results are recorded from this version on. Episodes finished earlier still show their IPA score in the can-do map.
+
+## KI-Tutor: where each student is
+Your AI tutor lives outside this course, so the course gives it context in two parts.
+
+1. **Once, for you: the Tutor-Anleitung.** Lehrerzimmer → **Tutor-Anleitung herunterladen** gives you one Markdown file. Paste it into your tutor’s standing instructions (a Claude project, custom GPT, school chatbot, …). It has:
+   - how to read a student’s brief
+   - the rules: Novice-level German, no spoilers, coach graded work instead of doing it, correct one or two patterns at a time
+   - the course map: each episode’s goals, grammar and words, with no plot
+   - the people of Kleinhausen and all Grammatik-Ecke cards
+2. **Every conversation, from the student: the Tutor-Brief.** The **Tutor fragen** button in each episode header, and **Tutor-Brief öffnen** / **Mit dem Tutor üben** in *Wo stehe ich?*, build a short text with:
+   - the current episode, and the scene if they are stuck in one, with its can-dos, grammar and words
+   - a spoiler line naming the highest episode they know
+   - skill estimates and weak spots
+   - can-dos the student isn’t sure of
+   - shaky words, unpassed grammar checks
+   - what the town remembers about their choices
+   - what they want to practise
+
+   Students see the full text before copying it. The brief shares only their first name and course progress: no recordings, no e-mail, no grades. Their latest written text is included only if they tick the box.
+- **No help during graded work:** the tutor button is turned off during an IPA and in Prüfungsmodus.
+- **Tutor link:** set `url` in `js/tutor-config.js` to open the tutor from the course. If your tutor can pre-fill the first message from a URL parameter, set `prefill` to that parameter’s name (for example `"q"`) and the brief arrives already typed. With no `url`, the button only copies the brief for students to paste.
+
+## Schreib-Check (feedback on writing)
+Writing feedback appears **only in ungraded practice replays**. Graded writing (the Episode 1 message and every IPA writing part) is handed in with **Abgeben** alone. A short note there tells students where to practise once they have submitted.
+
+- **Where students practise:** *Wo stehe ich?* → **Schreiben üben** lists every writing task from finished episodes. A weak spot in Schreiben also opens a replay. Practice never changes stamps, codes, scores, points, trust or town memory, and is not added to the Heft.
+- **Schreib-Check** in practice is repeatable. It shows:
+  - one or two things that already work
+  - how many of the task’s content points it recognises
+  - **at most two** patterns, with the spot marked in the student’s own sentence, the rule, and a link to the grammar card
+
+  It never shows the corrected text.
+- **The patterns, checked in this order:**
+  1. writing in English
+  2. formal greeting and closing in an e-mail
+  3. verb in second place (*Heute ich bin* …)
+  4. verb at the end after *weil* / *dass*
+  5. verb ending with *ich*
+  6. age with *haben*
+  7. *der/die/das* or *mein/meine* with nouns from the Wortschatz
+  8. lowercase nouns
+  9. lowercase polite *Sie*
+
+  Each pattern is narrow so it doesn’t flag correct German. `node tools/test-writing.js` runs right and wrong sentences against the rules.
+- **Feedback vom Tutor** (also practice only) sends the task and draft to your AI tutor, asking for one strength and at most two patterns without rewriting.
+- **Prüfungsmodus** turns both off, practice included.
+- **What you see:** every graded submission is checked silently for those patterns. Students don’t see the result. Lehrerzimmer → roster shows each student’s most frequent patterns, and above it the patterns most common across the class, as candidates for a mini-lesson. The auto-score is unchanged; your rubric is still the grade.
 
 ## Accessibility
 Students open **Zugang** (header): contrast, type size, Verdana, reduced motion, TTS, captions/transcripts, English gloss, low-fi graphics. High-graphics mode walks the same first-person Kleinhausen as Foto-Schnitzeljagd and Lieferdienst (shared save + weather). Low-fi is a text list — no WebGL. Praxis games opened from an episode receive that weather and can write completion back to the course.

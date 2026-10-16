@@ -775,7 +775,7 @@ How are you today?</textarea>
     <ul>
       <li><b>Cast:</b> Variants A, B, and C are three characters you can switch while keeping a lesson scene. Cast cards load a full look (body, hair, outfit, face, and a starter line) onto the active slot. Fill A · B · C puts Energetic, Polite, and Teacher on the three slots and starts a greetings class play.</li>
       <li><b>Dialogue:</b> Write Japanese with optional furigana like <span class="jp-text">先生(せんせい)</span>. Use ◀ ▶ on the speech bubble to step through a conversation, and 🔊 to hear Japanese speech. Class play in Dialogue Studio assigns each line to A, B, or C so the speaker walks on stage.</li>
-      <li><b>Present:</b> Hide the editor and show only the character and dialogue — useful on a classroom projector. Press <kbd>P</kbd> to enter or exit, ◀ ▶ to step lines, and <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> to switch A / B / C.</li>
+      <li><b>Present:</b> Hide the editor and show only the character and dialogue — useful on a classroom projector. Press <kbd>P</kbd> to enter or exit, ◀ ▶ to step lines, and <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> to bring A, B, or C on stage (and jump to that speaker's line in class play).</li>
       <li><b>Export:</b> PNG and SVG download the character (optionally with the scene). Lesson Card makes a simple HTML slide with the portrait and lines. Open Project reloads a saved JSON file.</li>
       <li><b>Look:</b> Body type, face, hair, outfit, and expression all feed the same illustration. Polite and Determined are the classroom lesson faces. Collar / trim is a second clothing color for sailor collars, blazer linings, and festival details. Custom color pickers sit next to the palettes when you need a specific shade.</li>
     </ul>
@@ -4172,7 +4172,24 @@ document.addEventListener('keydown', e=>{
   } else if($('#app').classList.contains('presenting') && e.key==='ArrowLeft'){ stepLine(-1); }
   else if($('#app').classList.contains('presenting') && e.key==='ArrowRight'){ stepLine(1); }
   else if($('#app').classList.contains('presenting') && (e.key==='1'||e.key==='2'||e.key==='3')){
-    activeVariant = {1:'A',2:'B',3:'C'}[e.key];
+    const id = {1:'A',2:'B',3:'C'}[e.key];
+    if(lessonPlay.enabled && lessonPlay.lines.length){
+      const lines = lessonPlay.lines;
+      const from = Number(lessonPlay.lineIndex||0);
+      let idx = -1;
+      for(let i=0;i<lines.length;i++){
+        const j = (from + i) % lines.length;
+        if(lines[j].speaker === id){ idx = j; break; }
+      }
+      if(idx>=0){
+        lessonPlay.lineIndex = idx;
+        applyLessonPlaySpeaker(lines[idx]);
+      } else {
+        activeVariant = id;
+      }
+    } else {
+      activeVariant = id;
+    }
     renderAvatar();
   }
   else if($('#app').classList.contains('presenting') && e.key==='Escape'){ setPresenting(false); }

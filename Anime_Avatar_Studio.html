@@ -98,6 +98,11 @@ button{cursor:pointer}
   max-width:240px;padding:14px 16px;font-size:18px;font-weight:900;box-shadow:0 8px 24px rgba(0,0,0,.08)
 }
 .speech small{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-top:6px}
+.speech .speaker-label{display:none;font-size:11px;font-weight:800;color:var(--accent);margin-bottom:6px;letter-spacing:.02em}
+.speech.class-play .speaker-label{display:block}
+.dialogue-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dialogue-grid.play{grid-template-columns:78px 1fr 1fr}
+#dialogueSpeaker{min-height:80px;font-weight:800;text-transform:uppercase}
 .tools{
   position:absolute;right:18px;bottom:18px;background:#fff;border:1px solid var(--line);border-radius:15px;
   width:260px;padding:14px;box-shadow:var(--shadow);z-index:3;font-size:12px
@@ -597,6 +602,7 @@ details.look .group{margin-top:12px}
         </svg>
       </div>
       <div class="speech" id="speechBubble">
+        <b class="speaker-label" id="speakerLabel"></b>
         <span id="jpSpeech" class="jp-text" lang="ja">おはようございます！</span>
         <small id="enSpeech">English: Good morning!</small>
         <div class="speech-controls">
@@ -642,7 +648,7 @@ details.look .group{margin-top:12px}
           <button class="thumb" data-cast="hana"><span class="icon">🎐</span>Festival</button>
           <button class="thumb" data-cast="nakamura"><span class="icon">🚉</span>Station</button>
         </div>
-        <div class="art-notes">Each card loads a full look onto this variant. Fill A · B · C puts Energetic, Polite, and Teacher on the three slots for a lesson dialogue.</div>
+        <div class="art-notes">Each card loads a full look onto this variant. Fill A · B · C puts Energetic, Polite, and Teacher on the three slots and starts a greetings class play. ◀ ▶ then switches the speaker.</div>
       </div>
 
       <div class="group">
@@ -693,7 +699,13 @@ Use in Unit 1 – Day 2</textarea>
       <button class="close" data-close>✕</button>
     </div>
     <p style="margin:0 0 12px;color:var(--muted);font-size:13px">One Japanese line and one English line per row. Add furigana with <code class="jp-text">漢字(かな)</code> — for example <code class="jp-text">今日(きょう)は 元気(げんき)ですか？</code></p>
-    <div class="grid2">
+    <label class="tick" style="margin:0 0 12px"><input type="checkbox" id="classPlayOn"> Class play — each line can switch variant A, B, or C on stage</label>
+    <div class="dialogue-grid" id="dialogueGrid">
+      <label class="field" id="speakerField" style="display:none">Speaker
+        <textarea id="dialogueSpeaker" spellcheck="false" aria-label="Speaker per line, A B or C">A
+B
+C</textarea>
+      </label>
       <label class="field">Japanese
         <textarea id="dialogueJP" class="jp-text">おはようございます！
 今日(きょう)は 元気(げんき)ですか？</textarea>
@@ -761,9 +773,9 @@ How are you today?</textarea>
     </div>
     <p>Build a Japanese lesson character, give them dialogue, then project or export. The character is a vector illustration you can customize; the classroom tools around it are for teaching.</p>
     <ul>
-      <li><b>Cast:</b> Variants A, B, and C are three characters you can switch while keeping a lesson scene. Cast cards load a full look (body, hair, outfit, face, and a starter line) onto the active slot. Fill A · B · C puts Energetic, Polite, and Teacher on the three slots for a conversation. Save a finished student to the browser library, then click their card to load them back.</li>
-      <li><b>Dialogue:</b> Write Japanese with optional furigana like <span class="jp-text">先生(せんせい)</span>. Use ◀ ▶ on the speech bubble to step through a conversation, and 🔊 to hear Japanese speech.</li>
-      <li><b>Present:</b> Hide the editor and show only the character and dialogue — useful on a classroom projector. Press <kbd>P</kbd> to enter or exit.</li>
+      <li><b>Cast:</b> Variants A, B, and C are three characters you can switch while keeping a lesson scene. Cast cards load a full look (body, hair, outfit, face, and a starter line) onto the active slot. Fill A · B · C puts Energetic, Polite, and Teacher on the three slots and starts a greetings class play.</li>
+      <li><b>Dialogue:</b> Write Japanese with optional furigana like <span class="jp-text">先生(せんせい)</span>. Use ◀ ▶ on the speech bubble to step through a conversation, and 🔊 to hear Japanese speech. Class play in Dialogue Studio assigns each line to A, B, or C so the speaker walks on stage.</li>
+      <li><b>Present:</b> Hide the editor and show only the character and dialogue — useful on a classroom projector. Press <kbd>P</kbd> to enter or exit, ◀ ▶ to step lines, and <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> to switch A / B / C.</li>
       <li><b>Export:</b> PNG and SVG download the character (optionally with the scene). Lesson Card makes a simple HTML slide with the portrait and lines. Open Project reloads a saved JSON file.</li>
       <li><b>Look:</b> Body type, face, hair, outfit, and expression all feed the same illustration. Polite and Determined are the classroom lesson faces. Collar / trim is a second clothing color for sailor collars, blazer linings, and festival details. Custom color pickers sit next to the palettes when you need a specific shade.</li>
     </ul>
@@ -851,6 +863,7 @@ let variants = {
   C: {...JSON.parse(JSON.stringify(DEFAULT)), hair:'#a56d40', outfit:'casual', shirt:'#45546c', trim:'#efefef', name:'Ren'}
 };
 let activeVariant = 'A';
+let lessonPlay = {enabled:false, lineIndex:0, lines:[]};
 let history = [];
 let future = [];
 let activePane = 'character';
@@ -862,7 +875,7 @@ const NS = 'http://www.w3.org/2000/svg';
 function current(){ return variants[activeVariant]; }
 function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
 function snapshot(){
-  history.push(JSON.stringify({variants:clone(variants),activeVariant}));
+  history.push(JSON.stringify({variants:clone(variants),activeVariant,lessonPlay:clone(lessonPlay)}));
   if(history.length > 60) history.shift();
   future = [];
   updateUndo();
@@ -3190,13 +3203,27 @@ function spokenJapanese(src){
   return String(src||'').replace(/([\u4e00-\u9fff々〆ヵヶ]+)\(([^)]+)\)/g,'$2').replace(/([\u4e00-\u9fff々〆ヵヶ]+)（([^）]+)）/g,'$2');
 }
 function currentLine(s){
+  if(lessonPlay.enabled && Array.isArray(lessonPlay.lines) && lessonPlay.lines.length){
+    const lines = lessonPlay.lines;
+    const i = Math.max(0, Math.min(lines.length-1, Number(lessonPlay.lineIndex||0)));
+    return {lines, i, line:lines[i], play:true};
+  }
   const lines = Array.isArray(s.dialogue) && s.dialogue.length ? s.dialogue : [{jp:s.jp,en:s.en}];
   const i = Math.max(0, Math.min(lines.length-1, Number(s.lineIndex||0)));
-  return {lines, i, line:lines[i]};
+  return {lines, i, line:lines[i], play:false};
 }
 function syncDialogueFields(s){
-  const {line} = currentLine(s);
-  s.jp = line.jp; s.en = line.en;
+  const {line, play} = currentLine(s);
+  if(!play){ s.jp = line.jp; s.en = line.en; }
+}
+function speakerName(line){
+  const id = line && line.speaker;
+  if(id && variants[id] && variants[id].name) return variants[id].name;
+  return current().name || '';
+}
+function applyLessonPlaySpeaker(line){
+  const id = line && line.speaker;
+  if(id && variants[id] && activeVariant !== id) activeVariant = id;
 }
 function autoAltText(s){
   const poseNames = {wave:'waving',neutral:'standing',bow:'bowing',point:'pointing',think:'thinking',crossed:'standing with arms crossed',hips:'standing with hands on hips',hold:'holding a prop',seated:'sitting',walk:'walking'};
@@ -3489,9 +3516,13 @@ function renderAvatar(){
   renderSceneArt(s.scene);
   const spoken = currentLine(s);
   const line = spoken.line;
-  s.jp = line.jp; s.en = line.en;
+  if(!spoken.play){ s.jp = line.jp; s.en = line.en; }
   const speech = $('#speechBubble');
-  if(speech) speech.style.display = showSpeech ? '' : 'none';
+  if(speech){
+    speech.style.display = showSpeech ? '' : 'none';
+    speech.classList.toggle('class-play', !!spoken.play);
+  }
+  if($('#speakerLabel')) $('#speakerLabel').textContent = speakerName(line);
   $('#jpSpeech').innerHTML = parseRuby(line.jp);
   $('#enSpeech').textContent = 'English: ' + line.en;
   if($('#lineCount')) $('#lineCount').textContent = `${spoken.i+1} / ${spoken.lines.length}`;
@@ -3617,9 +3648,20 @@ function fillClassCast(){
   variants.A = characterFromCast(CAST_CLASS.A);
   variants.B = characterFromCast(CAST_CLASS.B);
   variants.C = characterFromCast(CAST_CLASS.C);
+  lessonPlay = {
+    enabled:true,
+    lineIndex:0,
+    lines:[
+      {speaker:'A', jp:(variants.A.dialogue[0]||{}).jp, en:(variants.A.dialogue[0]||{}).en},
+      {speaker:'B', jp:(variants.B.dialogue[0]||{}).jp, en:(variants.B.dialogue[0]||{}).en},
+      {speaker:'A', jp:(variants.A.dialogue[1]||variants.A.dialogue[0]||{}).jp, en:(variants.A.dialogue[1]||variants.A.dialogue[0]||{}).en},
+      {speaker:'B', jp:(variants.B.dialogue[1]||variants.B.dialogue[0]||{}).jp, en:(variants.B.dialogue[1]||variants.B.dialogue[0]||{}).en},
+      {speaker:'C', jp:(variants.C.dialogue[0]||{}).jp, en:(variants.C.dialogue[0]||{}).en}
+    ]
+  };
   activeVariant = 'A';
   renderAllVariants();
-  toast('Class loaded: Haruto, Aiko, and Sato-sensei');
+  toast('Class loaded with a greetings play');
 }
 function renderAllVariants(){
   const keep = activeVariant;
@@ -3703,7 +3745,7 @@ function randomize(){
   renderAvatar();
 }
 function saveStateFile(){
-  const data = {version:4, rendererStep:18, studio:'anime-avatar-studio-classroom', expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'articulated-anime-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'material-variable-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'anatomy-aware-v1', activeVariant, variants};
+  const data = {version:5, rendererStep:18, studio:'anime-avatar-studio-classroom', lessonPlay, expressionModel:'parametric-expression-mixer-v1', artDirectionModel:'master-anime-art-direction-v1', hairModel:'gravity-aware-lock-motion-v1', foldModel:'pose-driven-fabric-v1', castShadowModel:'dynamic-cel-cast-shadow-v1', depthRigModel:'joint-z-foreshortening-v1', gazeModel:'independent-iris-gaze-v1', faceModel:'parametric-anatomy-v1', headTurnModel:'continuous-three-quarter-yaw-v1', handModel:'articulated-anime-hand-v1', styleModel:'continuous-anime-exaggeration-v1', exportPipeline:'multi-resolution-svg-v1', lightingModel:'upper-left-cel-v1', lineArtModel:'material-variable-v1', rigModel:'joint-coordinate-v1', jointBlendModel:'continuous-bezier-v1', clothingModel:'anatomy-aware-v1', activeVariant, variants};
   const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
   downloadBlob(blob, safeFileName(current().name) + '-studio-project.json');
   toast('Project JSON downloaded');
@@ -3747,7 +3789,11 @@ function loadStateFile(file){
         C: mergeCharacter(data.variants.C)
       };
       activeVariant = ['A','B','C'].includes(data.activeVariant) ? data.activeVariant : 'A';
-      renderAvatar();
+      lessonPlay = data.lessonPlay && typeof data.lessonPlay === 'object'
+        ? {enabled:!!data.lessonPlay.enabled, lineIndex:Number(data.lessonPlay.lineIndex||0), lines:Array.isArray(data.lessonPlay.lines)?clone(data.lessonPlay.lines):[]}
+        : {enabled:false, lineIndex:0, lines:[]};
+      if(lessonPlay.enabled && lessonPlay.lines[lessonPlay.lineIndex]) applyLessonPlaySpeaker(lessonPlay.lines[lessonPlay.lineIndex]);
+      renderAllVariants();
       toast('Project loaded');
     }catch(err){
       toast('Could not read that JSON file');
@@ -3777,7 +3823,10 @@ ruby rt{font-size:12px}
   <div class="portrait">${portrait.replace(/^<\?xml[^>]*>\n?/,'')}</div>
   <div class="jp" lang="ja">${parseRuby(line.jp)}</div>
   <div class="en">${escapeXml(line.en)}</div>
-  <div class="lines">${lines.map((ln,idx)=>`<div><b>${idx+1}.</b> ${parseRuby(ln.jp)} <span class="en">— ${escapeXml(ln.en)}</span></div>`).join('')}</div>
+  <div class="lines">${lines.map((ln,idx)=>{
+    const who = ln.speaker && variants[ln.speaker] ? variants[ln.speaker].name : s.name;
+    return `<div><b>${idx+1}.</b> ${escapeXml(who)} — ${parseRuby(ln.jp)} <span class="en">— ${escapeXml(ln.en)}</span></div>`;
+  }).join('')}</div>
   <div class="meta">
     <div><b>Scene:</b> ${escapeXml(s.scene)}</div>
     <div><b>Outfit:</b> ${escapeXml(s.outfit)}${s.outfit==='school' ? ' / ' + escapeXml(s.schoolStyle || 'blazer') : ''}</div>
@@ -3962,16 +4011,18 @@ document.addEventListener('click', e=>{
 
 $('#undoBtn').onclick = ()=>{
   if(!history.length) return;
-  future.push(JSON.stringify({variants:clone(variants),activeVariant}));
+  future.push(JSON.stringify({variants:clone(variants),activeVariant,lessonPlay:clone(lessonPlay)}));
   const prev = JSON.parse(history.pop());
   variants = prev.variants; activeVariant = prev.activeVariant;
+  lessonPlay = prev.lessonPlay || {enabled:false, lineIndex:0, lines:[]};
   renderAvatar();
 };
 $('#redoBtn').onclick = ()=>{
   if(!future.length) return;
-  history.push(JSON.stringify({variants:clone(variants),activeVariant}));
+  history.push(JSON.stringify({variants:clone(variants),activeVariant,lessonPlay:clone(lessonPlay)}));
   const next = JSON.parse(future.pop());
   variants = next.variants; activeVariant = next.activeVariant;
+  lessonPlay = next.lessonPlay || {enabled:false, lineIndex:0, lines:[]};
   renderAvatar();
 };
 $('#randomBtn').onclick = randomize;
@@ -3981,27 +4032,54 @@ function splitLines(text){
 }
 function applyDialogueLines(){
   snapshot();
-  const s = current();
   const jp = splitLines($('#dialogueJP').value);
   const en = splitLines($('#dialogueEN').value);
   const n = Math.max(jp.length, en.length, 1);
-  s.dialogue = Array.from({length:n}, (_,i)=>({jp:jp[i]||jp[jp.length-1]||'', en:en[i]||en[en.length-1]||''}));
-  s.lineIndex = 0;
-  syncDialogueFields(s);
+  const classPlay = $('#classPlayOn') && $('#classPlayOn').checked;
+  if(classPlay){
+    const speakers = splitLines($('#dialogueSpeaker').value).map(x=>String(x).trim().toUpperCase().replace(/[^ABC]/g,'').charAt(0)).filter(Boolean);
+    lessonPlay.enabled = true;
+    lessonPlay.lineIndex = 0;
+    lessonPlay.lines = Array.from({length:n}, (_,i)=>({
+      speaker: speakers[i] || speakers[speakers.length-1] || 'A',
+      jp: jp[i]||jp[jp.length-1]||'',
+      en: en[i]||en[en.length-1]||''
+    }));
+    applyLessonPlaySpeaker(lessonPlay.lines[0]);
+  } else {
+    lessonPlay.enabled = false;
+    const s = current();
+    s.dialogue = Array.from({length:n}, (_,i)=>({jp:jp[i]||jp[jp.length-1]||'', en:en[i]||en[en.length-1]||''}));
+    s.lineIndex = 0;
+    syncDialogueFields(s);
+  }
   $('#dialogueModal').classList.remove('open');
   renderAvatar();
-  toast(`${s.dialogue.length} dialogue line${s.dialogue.length>1?'s':''} applied`);
+  toast(classPlay ? `Class play · ${n} line${n>1?'s':''}` : `${n} dialogue line${n>1?'s':''} applied`);
 }
 function previewDialogue(){
   const jp = splitLines($('#dialogueJP').value)[0] || '';
   const en = splitLines($('#dialogueEN').value)[0] || '';
-  $('#dialoguePreview').innerHTML = 'Preview: ' + parseRuby(jp) + ' — ' + escapeXml(en);
+  const speaker = $('#classPlayOn') && $('#classPlayOn').checked ? (splitLines($('#dialogueSpeaker').value)[0] || 'A') + ' · ' : '';
+  $('#dialoguePreview').innerHTML = 'Preview: ' + speaker + parseRuby(jp) + ' — ' + escapeXml(en);
+}
+function toggleClassPlayFields(){
+  const on = $('#classPlayOn') && $('#classPlayOn').checked;
+  if($('#speakerField')) $('#speakerField').style.display = on ? '' : 'none';
+  if($('#dialogueGrid')) $('#dialogueGrid').classList.toggle('play', !!on);
+  previewDialogue();
 }
 function stepLine(dir){
   const s = current();
-  const {lines, i} = currentLine(s);
-  s.lineIndex = (i + dir + lines.length) % lines.length;
-  syncDialogueFields(s);
+  const {lines, i, play} = currentLine(s);
+  const next = (i + dir + lines.length) % lines.length;
+  if(play){
+    lessonPlay.lineIndex = next;
+    applyLessonPlaySpeaker(lines[next]);
+  } else {
+    s.lineIndex = next;
+    syncDialogueFields(s);
+  }
   renderAvatar();
 }
 function speakJapanese(){
@@ -4024,10 +4102,12 @@ function typingTarget(el){
 
 function openDialogueStudio(){
   const s = current();
-  const {lines} = currentLine(s);
+  const {lines, play} = currentLine(s);
+  if($('#classPlayOn')) $('#classPlayOn').checked = !!play;
   $('#dialogueJP').value = lines.map(l=>l.jp).join('\n');
   $('#dialogueEN').value = lines.map(l=>l.en).join('\n');
-  previewDialogue();
+  if($('#dialogueSpeaker')) $('#dialogueSpeaker').value = play ? lines.map(l=>l.speaker||'A').join('\n') : activeVariant;
+  toggleClassPlayFields();
   $('#dialogueModal').classList.add('open');
 }
 $('#helpBtn').onclick = ()=>$('#helpModal').classList.add('open');
@@ -4036,19 +4116,21 @@ $('#dialogueFooterBtn').onclick = openDialogueStudio;
 $('#applyDialogue').onclick = applyDialogueLines;
 $('#dialogueJP').addEventListener('input', previewDialogue);
 $('#dialogueEN').addEventListener('input', previewDialogue);
+if($('#dialogueSpeaker')) $('#dialogueSpeaker').addEventListener('input', previewDialogue);
+if($('#classPlayOn')) $('#classPlayOn').onchange = toggleClassPlayFields;
 $('#jpInput').addEventListener('input', e=>{
   const s = current();
-  const {lines, i} = currentLine(s);
+  const {lines, i, play} = currentLine(s);
   lines[i] = {...lines[i], jp:e.target.value};
-  s.dialogue = lines; s.jp = e.target.value;
-  $('#jpSpeech').innerHTML = parseRuby(s.jp);
+  if(!play){ s.dialogue = lines; s.jp = e.target.value; }
+  $('#jpSpeech').innerHTML = parseRuby(e.target.value);
 });
 $('#enInput').addEventListener('input', e=>{
   const s = current();
-  const {lines, i} = currentLine(s);
+  const {lines, i, play} = currentLine(s);
   lines[i] = {...lines[i], en:e.target.value};
-  s.dialogue = lines; s.en = e.target.value;
-  $('#enSpeech').textContent = 'English: ' + s.en;
+  if(!play){ s.dialogue = lines; s.en = e.target.value; }
+  $('#enSpeech').textContent = 'English: ' + e.target.value;
 });
 $('#charName').addEventListener('input', e=>{ current().name = e.target.value; if(!current().altManual) current().alt = autoAltText(current()); });
 $('#charRole').addEventListener('change', e=>{ current().role = e.target.value; if(!current().altManual){ current().alt = autoAltText(current()); $('#altText').value = current().alt; }});
@@ -4089,6 +4171,10 @@ document.addEventListener('keydown', e=>{
     setPresenting(!$('#app').classList.contains('presenting'));
   } else if($('#app').classList.contains('presenting') && e.key==='ArrowLeft'){ stepLine(-1); }
   else if($('#app').classList.contains('presenting') && e.key==='ArrowRight'){ stepLine(1); }
+  else if($('#app').classList.contains('presenting') && (e.key==='1'||e.key==='2'||e.key==='3')){
+    activeVariant = {1:'A',2:'B',3:'C'}[e.key];
+    renderAvatar();
+  }
   else if($('#app').classList.contains('presenting') && e.key==='Escape'){ setPresenting(false); }
 });
 const styleRangeControl=$('#styleRange');

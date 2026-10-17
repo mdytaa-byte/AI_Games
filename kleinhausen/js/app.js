@@ -17,12 +17,19 @@
     }
     KH.applyPrefs();
     if (KH.startClock) KH.startClock();
+    if (KH.syncWords) KH.syncWords();
     if (!KH.state.onboarding) KH.view.splash();
     else KH.view.hub();
   };
 
   KH.shell = function (inner, opts) {
     opts = opts || {};
+    KH.practiceMode = false;
+    /* Pop-ups live on <body>; a new view closes them. */
+    ["gr-modal", "tutor-modal"].forEach(function (id) {
+      const m = document.getElementById(id);
+      if (m) m.remove();
+    });
     if (!opts.town && KH.Town) KH.Town.hide();
     document.body.classList.toggle("town-live", !!opts.town);
     const rank = KH.residentRank();
@@ -37,6 +44,9 @@
       btn("hub", "Stadt") +
       btn("pass", "Pass") +
       btn("journal", "Heft") +
+      btn("words", "Wörter" + wordsDueLabel()) +
+      btn("grammar", "Grammatik") +
+      btn("stand", "Wo stehe ich?") +
       btn("discover", "Entdecken") +
       btn("settings", "Zugang") +
       "</nav></header>" +
@@ -48,6 +58,10 @@
         if (KH.view[go]) KH.view[go]();
       });
     });
+    function wordsDueLabel() {
+      const n = KH.wordsDue ? KH.wordsDue().length : 0;
+      return n ? ' <span class="ws-badge" aria-label="' + n + ' fällig">' + n + "</span>" : "";
+    }
     function btn(id, label) {
       return '<button class="chip" type="button" data-go="' + id + '"' + (opts.here === id ? ' aria-current="page"' : "") + ">" + label + "</button>";
     }
@@ -321,6 +335,10 @@
         KH.speak(h.label + ". " + (h.de || ""));
         KH.live(h.label);
         if (h.discover) KH.discover(h.discover);
+        const meta = KH.PLACES[KH.currentPlace];
+        if (KH.collectWord && KH.collectWord(h.label, h.de, h.en, meta && meta.name) && out) {
+          out.innerHTML += '<span class="ws-got">+ Wortschatz: ' + KH.esc(h.label) + "</span>";
+        }
       });
     });
   }
@@ -411,16 +429,25 @@
     KH.shell(
       '<div class="ep-head"><div><p class="kicker">Episode ' + mod.n + " von 16 · " + KH.esc(mod.season) + "</p>" +
       "<h1>" + KH.esc(mod.titleLong) + "</h1>" +
-      "<p>Can-Do: " + mod.canDo.map(function (c) { return c.de; }).join(" · ") + "</p>" + voiceChip + "</div>" +
-      '<button class="btn ghost" type="button" id="tohub">Zur Stadt</button></div>' +
+      "<p>Can-Do: " + mod.canDo.map(function (c) { return c.de; }).join(" · ") + "</p>" +
+      (KH.grammarChips ? KH.grammarChips(mod.id) : "") + voiceChip + "</div>" +
+      '<div class="ep-head-btns"><button class="btn ghost" type="button" id="tutor-ep">Tutor fragen</button>' +
+      '<button class="btn ghost" type="button" id="tohub">Zur Stadt</button></div></div>' +
       '<div class="progress-track" aria-label="Fortschritt"><span style="width:' + pct + '%"></span></div>' +
       '<div id="scene-root"></div>',
       { here: "hub" }
     );
     document.getElementById("tohub").addEventListener("click", KH.view.hub);
+    const tutorBtn = document.getElementById("tutor-ep");
+    if (tutorBtn) {
+      if (!KH.tutorPanel) tutorBtn.hidden = true;
+      else tutorBtn.addEventListener("click", function () { KH.tutorPanel({ inScene: true }); });
+    }
+    if (KH.bindGrammarChips) KH.bindGrammarChips(document.querySelector(".ep-head"));
     const root = document.getElementById("scene-root");
     const scene = KH.resolveScene ? KH.resolveScene(scenes[index]) : scenes[index];
     KH.mountScene(root, scene, function (res) {
+      if (KH.recordResult) KH.recordResult(mod.id, index, scene, res);
       if (res && res.ok) KH.addPoints("verstehen", 2);
       if (res && res.kind === "ipa") {
         KH.state.episodes[mod.id].summative = {
@@ -466,12 +493,14 @@
     ep.summative.code = KH.makeCode(mod.id);
     if (KH.makeSpeakCode) ep.summative.speakCode = KH.makeSpeakCode(mod.id);
     KH.completeEpisode(mod.id, ep.summative);
+    const newWords = KH.addEpisodeWords ? KH.addEpisodeWords(mod.id) : 0;
     KH.shell(
       '<p class="kicker">Stempel</p><h1>' + KH.esc(KH.STAMPS[mod.id] || mod.title) + "</h1>" +
       "<p>Episode " + mod.n + " ist im Pass. Einwohnerstatus: <strong>" + KH.esc(KH.residentRank().de) + "</strong>.</p>" +
       '<p>Lehrer-Code:</p><div class="code-box">' + KH.esc(ep.summative.code) + "</div>" +
       (ep.summative.speakCode ? '<p>Sprechen-Code:</p><div class="code-box">' + KH.esc(ep.summative.speakCode) + "</div>" : "") +
       '<p class="en">Share this code in Canvas if your teacher asked for it. Score estimate: ' + score + "%. Upload your recording to „Sprechen — Partner hört zu“.</p>" +
+      (newWords ? '<p class="voice-chip">' + newWords + ' neue Wörter aus dieser Episode liegen im <button type="button" class="chip" data-go="words">Wortschatz</button></p>' : "") +
       '<div class="row-btns"><button class="btn post" data-go="hub" type="button">Zurück in die Stadt</button>' +
       (mod.n < 16 ? '<button class="btn" id="next" type="button">Nächste Episode</button>' : '<button class="btn" data-go="pass" type="button">Pass ansehen</button>') +
       "</div>"
@@ -507,6 +536,7 @@
         ? " · ohne Aufnahme kein Stempel"
         : "") + "</p>" +
       '<p class="voice-chip">Minuten in der Stadt: <strong>' + (KH.minutesOnTask ? KH.minutesOnTask() : 0) + "</strong></p>" +
+      '<p class="row-btns"><button class="btn post" type="button" data-go="stand">Wo stehe ich? — Fertigkeiten &amp; Kann-Sätze</button></p>' +
       '<h2 style="margin-top:22px">Stempel</h2><div class="stamp-sheet">' + stamps + "</div>" +
       '<h2 style="margin-top:22px">Die Stadt merkt sich</h2>' +
       ((KH.memoryCards && KH.memoryCards().length)
@@ -676,24 +706,44 @@
     const roster = (KH.rosterLoad ? KH.rosterLoad() : []).map(function (r) {
       return "<tr><td>" + KH.esc(r.vorname) + "</td><td>" + r.done + "/16</td><td>" +
         (r.ipa != null ? r.ipa : "—") + "</td><td>" + r.spoken + "</td><td>" + r.minutes +
+        "</td><td>" + (r.skills ? ["hoeren", "lesen", "sprechen", "schreiben"].map(function (k) { return r.skills[k] == null ? "—" : r.skills[k]; }).join(" / ") : "—") +
+        "</td><td>" + KH.esc(topPatterns(r.patterns, 2) || "—") +
+        "</td><td>" + (r.words ? r.words.known + "/" + r.words.total + " · " + r.words.days + " T" : "—") +
         "</td><td>" + KH.esc((r.flags || []).slice(0, 4).join(", ") || "—") + "</td></tr>";
-    }).join("") || "<tr><td colspan=\"6\">Noch leer. Schüler exportieren Heft → JSON; du lädst die Dateien hier.</td></tr>";
+    }).join("") || "<tr><td colspan=\"9\">Noch leer. Schüler exportieren Heft → JSON; du lädst die Dateien hier.</td></tr>";
     const me = KH.summarizeStudent ? KH.summarizeStudent() : {};
+    function topPatterns(p, n) {
+      return Object.keys(p || {}).sort(function (a, b) { return p[b] - p[a]; }).slice(0, n)
+        .map(function (id) { return (KH.writingPatternTitle ? KH.writingPatternTitle(id) : id) + " (" + p[id] + ")"; }).join(", ");
+    }
+    const classPatterns = (KH.rosterLoad ? KH.rosterLoad() : []).reduce(function (o, r) {
+      Object.keys(r.patterns || {}).forEach(function (k) { o[k] = (o[k] || 0) + 1; });
+      return o;
+    }, {});
     KH.shell(
       "<h1>Lehrerzimmer</h1>" +
       "<p>Zielniveau: ACTFL <strong>Novice High</strong>. Jede Episode endet mit einer Mini-IPA. Der Stempel ist summativ. Minuten, Codes und die Stadt-Flags (Haller / Otto / Amira / Aylin) überleben im JSON — ohne LTI-Server.</p>" +
       "<p><strong>Sprechen ist nicht optional.</strong> Spine-Dialoge brauchen Aufnahme plus Nachfrage. Partnerhören: Canvas „Sprechen — Partner hört zu“.</p>" +
       "<p>Dieser Browser: <strong>" + KH.esc(me.vorname || "Gast") + "</strong> · " +
-      (me.minutes || 0) + " min · " + (me.done || 0) + "/16 Episoden · mündlich " + (me.spoken || 0) + ".</p>" +
+      (me.minutes || 0) + " min · " + (me.done || 0) + "/16 Episoden · mündlich " + (me.spoken || 0) +
+      (me.words ? " · Wörter sicher " + me.words.known + "/" + me.words.total + " (" + me.words.days + " Tage geübt)" : "") + ".</p>" +
       '<p><button class="btn" type="button" id="unlock">Alle Episoden öffnen (Demo)</button> ' +
       '<button class="btn ghost" type="button" id="exp2">Dieser Stand JSON</button> ' +
-      '<button class="btn ghost" type="button" id="print-rubric">IPA-Rubrik drucken</button></p>' +
+      '<button class="btn ghost" type="button" id="print-rubric">IPA-Rubrik drucken</button> ' +
+      '<button class="btn ghost" type="button" id="gram-text">Grammatik-Ecke als Text (KI-Tutor)</button> ' +
+      '<button class="btn ghost" type="button" id="tutor-guide">Tutor-Anleitung herunterladen</button></p>' +
+      "<p>Der KI-Tutor bekommt zweimal Kontext: einmal die <strong>Tutor-Anleitung</strong> (Kurs, Personen, Wortschatz, Grammatik — in die Anweisungen des Tutors einfügen), und pro Gespräch den <strong>Tutor-Brief</strong> des Students (Knopf „Tutor fragen“). Tutor-Link: <code>js/tutor-config.js</code>" +
+      (KH.TUTOR && KH.TUTOR.url ? " · gesetzt: " + KH.esc(KH.TUTOR.url) : " · noch nicht gesetzt (Students kopieren und fügen ein)") + ".</p>" +
       '<div class="card" style="overflow:auto"><table><thead><tr><th>#</th><th>Episode</th><th>Status</th><th>IPA</th><th>Code</th><th>Mündlich</th><th>SPR-Code</th><th>Min</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
       "<h2>Klassenliste (statisch)</h2>" +
+      (Object.keys(classPatterns).length ? "<p><strong>Schreib-Muster in der Klasse</strong> (Anzahl Students mit dem Muster in abgegebenen Texten): " +
+        KH.esc(Object.keys(classPatterns).sort(function (a, b) { return classPatterns[b] - classPatterns[a]; }).slice(0, 4)
+          .map(function (id) { return (KH.writingPatternTitle ? KH.writingPatternTitle(id) : id) + " " + classPatterns[id]; }).join(" · ")) +
+        " — Kandidaten für eine Mini-Lektion.</p>" : "") +
       "<p>Kein Roster-Server. Du importierst die JSON-Exporte aus dem Heft. Canvas bleibt: 16 Code-Aufgaben + Sprechen-Upload + optional SCORM-Gesamtwert.</p>" +
       '<p><label class="btn ghost">JSON importieren <input type="file" id="roster-in" accept="application/json" multiple hidden></label> ' +
       '<button class="btn ghost" type="button" id="roster-clear">Liste leeren</button></p>' +
-      '<div class="card" style="overflow:auto"><table><thead><tr><th>Name</th><th>Fertig</th><th>IPA</th><th>Mündlich</th><th>Min</th><th>Stadt merkt</th></tr></thead><tbody>' + roster + "</tbody></table></div>" +
+      '<div class="card" style="overflow:auto"><table><thead><tr><th>Name</th><th>Fertig</th><th>IPA</th><th>Mündlich</th><th>Min</th><th>Hö / Le / Sp / Sc</th><th>Schreib-Muster</th><th>Wörter sicher</th><th>Stadt merkt</th></tr></thead><tbody>' + roster + "</tbody></table></div>" +
       '<section class="print-only" id="rubric-print">' + (KH.rubricHtml ? KH.rubricHtml() : "") + "</section>" +
       "<h2>Annahmen dieses Builds</h2><ul>" +
       "<li>US-Schuljahr / College German 1, ca. 16 Sitzungen plus Hauspraxis.</li>" +
@@ -719,6 +769,20 @@
       a.click();
     });
     document.getElementById("print-rubric").addEventListener("click", function () { window.print(); });
+    document.getElementById("tutor-guide").addEventListener("click", function () {
+      const blob = new Blob([KH.tutorGuide()], { type: "text/markdown" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "kleinhausen-tutor-anleitung.md";
+      a.click();
+    });
+    document.getElementById("gram-text").addEventListener("click", function () {
+      const blob = new Blob([KH.grammarText()], { type: "text/markdown" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "kleinhausen-grammatik.md";
+      a.click();
+    });
     const input = document.getElementById("roster-in");
     if (input) {
       input.addEventListener("change", function () {

@@ -436,27 +436,80 @@
     ta.setAttribute("aria-label", scene.title || "Dein Text");
     card.appendChild(ta);
     box.appendChild(card);
+    const tools = document.createElement("div");
+    tools.className = "row-btns";
+    const out = document.createElement("div");
+    out.className = "wc-out";
+    out.setAttribute("aria-live", "polite");
+    let checks = 0;
+    /* Schreib-Check: formative, repeatable, no score — practice replays only. */
+    if (KH.checkWriting && KH.writingCheckAllowed && KH.writingCheckAllowed(scene)) {
+      const chk = document.createElement("button");
+      chk.className = "btn";
+      chk.type = "button";
+      chk.textContent = "Schreib-Check";
+      chk.addEventListener("click", function () {
+        if (!ta.value.trim()) { KH.live("Schreib zuerst etwas."); ta.focus(); return; }
+        checks += 1;
+        const res = KH.checkWriting(ta.value, scene);
+        out.className = "wc-out card";
+        out.innerHTML = KH.writingCheckHtml(res, checks);
+        if (KH.bindGrammarChips) KH.bindGrammarChips(out);
+        chk.textContent = "Noch einmal prüfen";
+        KH.live(res.notes.length ? res.notes.length + " Stellen zum Anschauen" : "Keine typischen Muster gefunden");
+      });
+      tools.appendChild(chk);
+    } else if (!KH.state.player.exam) {
+      const note = document.createElement("p");
+      note.className = "wc-note-off";
+      note.textContent = "Schreib-Check und Tutor-Feedback gibt es beim Üben: unter „Wo stehe ich?“, nachdem du abgegeben hast.";
+      tools.appendChild(note);
+    }
+    /* The AI tutor only sees drafts from ungraded practice. */
+    if (KH.tutorPanel && KH.writingCheckAllowed && KH.writingCheckAllowed()) {
+      const tut = document.createElement("button");
+      tut.className = "btn ghost";
+      tut.type = "button";
+      tut.textContent = "Feedback vom Tutor";
+      tut.addEventListener("click", function () {
+        if (!ta.value.trim()) { KH.live("Schreib zuerst etwas."); ta.focus(); return; }
+        KH.tutorPanel({ inScene: !!KH.currentEpisode, writing: { title: scene.title, prompt: scene.prompt, checklist: scene.checklist, text: ta.value } });
+      });
+      tools.appendChild(tut);
+    }
     const go = document.createElement("button");
     go.className = "btn post";
     go.type = "button";
-    go.textContent = "Feedback holen";
+    go.textContent = "Abgeben";
     go.addEventListener("click", function () {
+      if (!ta.value.trim()) { KH.live("Schreib zuerst etwas."); ta.focus(); return; }
       const r = KH.scoreWrite(ta.value, scene.rubric || {});
       const f = document.createElement("div");
       f.className = "feedback " + (r.score >= 60 ? "ok" : "no");
-      f.innerHTML = "Automatisches Feedback: " + r.score +
-        " / 100. " + (r.longEnough ? "Länge ist okay. " : "Schreib bitte etwas länger. ") +
+      f.innerHTML = "Abgegeben. Automatische Wertung: " + r.score +
+        " / 100. " + (r.longEnough ? "Länge ist okay. " : "Der Text ist kurz. ") +
         "Treffer: " + r.hits + "." +
         '<span class="en">This is a first-pass check. Your teacher can still score with the rubric.</span>';
       box.appendChild(f);
-      KH.state.journal.push({ at: Date.now(), ep: scene.ep || "", title: scene.title, text: ta.value, score: r.score });
+      if (!KH.practiceMode) {
+        const entry = { at: Date.now(), ep: scene.ep || KH.currentEpisode || "", title: scene.title, text: ta.value, score: r.score, ipa: !!scene.ipa };
+        /* Teacher record only (students don't see it here): patterns in the handed-in text. */
+        if (KH.checkWriting) {
+          entry.patterns = KH.checkWriting(ta.value, scene, { all: true }).notes.map(function (n) { return n.id; });
+        }
+        KH.state.journal.push(entry);
+      }
       KH.save();
+      ta.readOnly = true;
+      tools.querySelectorAll("button").forEach(function (b) { b.disabled = true; });
       go.disabled = true;
       box.appendChild(continueBtn("Weiter", function () {
         done({ kind: "write", ok: r.score >= 60, score: r.score, text: ta.value });
       }));
     });
-    box.appendChild(go);
+    tools.appendChild(go);
+    box.appendChild(tools);
+    box.appendChild(out);
   };
 
   KH.scenes.speak = function (box, scene, done) {
@@ -575,6 +628,9 @@
         (h.en ? '<span class="en">' + h.en + "</span>" : "");
       KH.speak(h.label + ". " + (h.de || ""));
       KH.live(h.label);
+      if (KH.collectWord && KH.collectWord(h.label, h.de, h.en, scene.title)) {
+        info.innerHTML += '<span class="ws-got">+ Wortschatz: ' + KH.esc(h.label) + "</span>";
+      }
       if (Object.keys(found).length >= spots.length && !room.dataset.done) {
         room.dataset.done = "1";
         box.appendChild(continueBtn("Ich kenne mein Zimmer", function () {

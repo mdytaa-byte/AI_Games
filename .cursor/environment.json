@@ -1,0 +1,14 @@
+{
+  "name": "AI_Games",
+  "install": "python3 --version && echo \"$(ls -1 *.html | wc -l) HTML games ready to serve\"",
+  "terminals": [
+    {
+      "name": "static-server",
+      "command": "python3 -m http.server 8000",
+      "description": "Serves the static HTML language-learning games at http://localhost:8000 (directory listing available at the root URL)."
+    }
+  ],
+  "ports": [
+    { "name": "static site", "port": 8000 }
+  ]
+}

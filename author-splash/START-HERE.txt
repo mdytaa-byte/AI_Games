@@ -1,0 +1,26 @@
+Michael D. Young — author splash files
+=====================================
+
+Open deploy.html in a browser for WordPress paste steps.
+
+Preview pages (open in a browser)
+---------------------------------
+index.html          Beandom homepage splash
+chess-quest.html    Chess Quest series splash
+picture-books.html  Picture books splash (David Michaels)
+
+WordPress.com paste files
+-------------------------
+wordpress/custom-html-with-styles.html           Homepage
+wordpress/chess-custom-html-with-styles.html     /the-chess-quest-series/
+wordpress/picture-custom-html-with-styles.html   /picture-books/
+
+If WordPress strips the <style> tag, paste the matching *-splash-markup.html
+file instead, then add wordpress/additional.css under Appearance → Customize
+→ Additional CSS.
+
+Plugin (self-hosted / WP.com Business)
+--------------------------------------
+wordpress-plugin/amy-author-splash.zip
+
+Shortcodes: [amy_splash]  [amy_chess_splash]  [amy_picture_splash]
